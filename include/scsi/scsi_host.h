@@ -463,6 +463,9 @@ struct scsi_host_template {
 	 */
 	unsigned emulated:1;
 
+	/* True if a pseudo sdev should be allocated */
+	unsigned alloc_pseudo_sdev:1;
+
 	/*
 	 * True if the low-level driver performs its own reset-settle delays.
 	 */
@@ -721,6 +724,12 @@ struct Scsi_Host {
 
 	/* ldm bits */
 	struct device		shost_gendev, shost_dev;
+
+	/*
+	 * A SCSI device structure used for sending internal commands to the
+	 * HBA. There is no corresponding logical unit inside the SCSI device.
+	 */
+	struct scsi_device *pseudo_sdev;
 
 	/*
 	 * Points to the transport data (if any) which is allocated

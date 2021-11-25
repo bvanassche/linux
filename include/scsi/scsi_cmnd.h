@@ -396,5 +396,7 @@ extern void scsi_build_sense(struct scsi_cmnd *scmd, int desc,
 
 struct request *scsi_alloc_request(struct request_queue *q, blk_opf_t opf,
 				   blk_mq_req_flags_t flags);
+struct request *scsi_alloc_request_hctx(struct request_queue *q, blk_opf_t opf,
+			blk_mq_req_flags_t flags, unsigned int hctx_idx);
 
 #endif /* _SCSI_SCSI_CMND_H */

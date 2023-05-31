@@ -57,6 +57,11 @@ void blk_set_stacking_limits(struct queue_limits *lim)
 	lim->max_hw_zone_append_sectors = UINT_MAX;
 	lim->max_user_discard_sectors = UINT_MAX;
 	lim->atomic_write_hw_max = UINT_MAX;
+
+	lim->max_user_copy_sectors = UINT_MAX;
+	lim->max_copy_hw_sectors = UINT_MAX;
+	lim->max_copy_src_segments = U16_MAX;
+	lim->max_copy_dst_segments = U16_MAX;
 }
 EXPORT_SYMBOL(blk_set_stacking_limits);
 
@@ -334,6 +339,21 @@ unsupported:
 }
 
 /*
+ * Check whether max_copy_hw_sectors and max_copy_{src,dst}_segments are
+ * either all nonzero or all zero.
+ */
+static int blk_validate_copy_limits(const struct queue_limits *lim)
+{
+	if (lim->max_copy_hw_sectors && lim->max_copy_src_segments &&
+	    lim->max_copy_dst_segments)
+		return 0;
+	if (!lim->max_copy_hw_sectors && !lim->max_copy_src_segments &&
+	    !lim->max_copy_dst_segments)
+		return 0;
+	return -EINVAL;
+}
+
+/*
  * Check that the limits in lim are valid, initialize defaults for unset
  * values, and cap values based on others where needed.
  */
@@ -510,6 +530,13 @@ int blk_validate_limits(struct queue_limits *lim)
 	err = blk_validate_integrity_limits(lim);
 	if (err)
 		return err;
+
+	err = blk_validate_copy_limits(lim);
+	if (err)
+		return err;
+	lim->max_copy_sectors =
+		min(lim->max_copy_hw_sectors, lim->max_user_copy_sectors);
+
 	return blk_validate_zoned_limits(lim);
 }
 EXPORT_SYMBOL_GPL(blk_validate_limits);
@@ -528,6 +555,7 @@ int blk_set_default_limits(struct queue_limits *lim)
 	 */
 	lim->max_user_discard_sectors = UINT_MAX;
 	lim->max_user_wzeroes_unmap_sectors = UINT_MAX;
+	lim->max_user_copy_sectors = UINT_MAX;
 	return blk_validate_limits(lim);
 }
 
@@ -828,6 +856,14 @@ int blk_stack_limits(struct queue_limits *t, struct queue_limits *b,
 
 	t->max_segment_size = min_not_zero(t->max_segment_size,
 					   b->max_segment_size);
+
+	t->max_copy_hw_sectors =
+		min(t->max_copy_hw_sectors, b->max_copy_hw_sectors);
+	t->max_copy_src_segments =
+		min(t->max_copy_src_segments, b->max_copy_src_segments);
+	t->max_copy_dst_segments =
+		min(t->max_copy_dst_segments, b->max_copy_dst_segments);
+	t->max_copy_sectors = min(t->max_copy_sectors, b->max_copy_sectors);
 
 	alignment = queue_limit_alignment_offset(b, start);
 

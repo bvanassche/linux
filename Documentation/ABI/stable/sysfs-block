@@ -239,6 +239,30 @@ Description:
 		last zone of the device which may be smaller.
 
 
+What:		/sys/block/<disk>/queue/copy_max_bytes
+Date:		May 2026
+Contact:	linux-block@vger.kernel.org
+Description:
+		[RW] This is the maximum number of bytes that the block layer
+		will allow for a copy request. This is always smaller or
+		equal to the maximum size allowed by the block driver.
+		Any value higher than 'copy_max_hw_bytes' will be reduced to
+		'copy_max_hw_bytes'. Writing '0' to this attribute will disable
+		copy offloading for this block device. If copy offloading is
+		disabled, copy requests will be translated into read and write
+		requests.
+
+
+What:		/sys/block/<disk>/queue/copy_max_hw_bytes
+Date:		May 2026
+Contact:	linux-block@vger.kernel.org
+Description:
+		[RO] This is the maximum number of bytes that is allowed for
+		a single data copy request. Set by the block driver. The value
+		zero indicates that the block device does not support copy
+		offloading.
+
+
 What:		/sys/block/<disk>/queue/crypto/
 Date:		February 2022
 Contact:	linux-block@vger.kernel.org

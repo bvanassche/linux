@@ -325,6 +325,36 @@ queue_max_sectors_store(struct gendisk *disk, const char *page, size_t count,
 	return 0;
 }
 
+static ssize_t queue_copy_hw_max_show(struct gendisk *disk, char *page)
+{
+	return queue_var_show(
+		disk->queue->limits.max_copy_hw_sectors << SECTOR_SHIFT, page);
+}
+
+static ssize_t queue_copy_max_show(struct gendisk *disk, char *page)
+{
+	return queue_var_show(
+		disk->queue->limits.max_copy_sectors << SECTOR_SHIFT, page);
+}
+
+static int queue_copy_max_store(struct gendisk *disk, const char *page,
+				size_t count, struct queue_limits *lim)
+{
+	unsigned long max_copy_bytes;
+	ssize_t ret;
+
+	ret = queue_var_store(&max_copy_bytes, page, count);
+	if (ret < 0)
+		return ret;
+
+	if ((max_copy_bytes >> SECTOR_SHIFT) > UINT_MAX)
+		return -EINVAL;
+
+	lim->max_user_copy_sectors = max_copy_bytes >> SECTOR_SHIFT;
+
+	return 0;
+}
+
 static ssize_t queue_feature_store(struct gendisk *disk, const char *page,
 		size_t count, struct queue_limits *lim, blk_features_t feature)
 {
@@ -652,6 +682,9 @@ QUEUE_RO_ENTRY(queue_nr_zones, "nr_zones");
 QUEUE_LIM_RO_ENTRY(queue_max_open_zones, "max_open_zones");
 QUEUE_LIM_RO_ENTRY(queue_max_active_zones, "max_active_zones");
 
+QUEUE_LIM_RO_ENTRY(queue_copy_hw_max, "copy_max_hw_bytes");
+QUEUE_LIM_RW_ENTRY(queue_copy_max, "copy_max_bytes");
+
 QUEUE_RW_ENTRY(queue_nomerges, "nomerges");
 QUEUE_LIM_RW_ENTRY(queue_iostats_passthrough, "iostats_passthrough");
 QUEUE_RW_ENTRY(queue_rq_affinity, "rq_affinity");
@@ -760,6 +793,8 @@ static const struct attribute *const queue_attrs[] = {
 	&queue_max_hw_wzeroes_unmap_sectors_entry.attr,
 	&queue_max_wzeroes_unmap_sectors_entry.attr,
 	&queue_max_zone_append_sectors_entry.attr,
+	&queue_copy_hw_max_entry.attr,
+	&queue_copy_max_entry.attr,
 	&queue_zone_write_granularity_entry.attr,
 	&queue_rotational_entry.attr,
 	&queue_zoned_entry.attr,

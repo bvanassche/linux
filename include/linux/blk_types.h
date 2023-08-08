@@ -284,6 +284,8 @@ struct bio {
 	atomic_t		__bi_cnt;	/* pin count */
 
 	struct bio_set		*bi_pool;
+
+	void			*bi_copy_ctx;
 };
 
 #define BIO_RESET_BYTES		offsetof(struct bio, bi_max_vecs)
@@ -369,6 +371,10 @@ enum req_op {
 	REQ_OP_ZONE_RESET	= (__force blk_opf_t)17,
 	/** @REQ_OP_ZONE_RESET_ALL: reset all the zone present on the device */
 	REQ_OP_ZONE_RESET_ALL	= (__force blk_opf_t)19,
+
+	/* copy offload source and destination operations */
+	REQ_OP_COPY_SRC		= (__force blk_opf_t)20,
+	REQ_OP_COPY_DST		= (__force blk_opf_t)21,
 
 	/* Driver private requests */
 	/* private: */
@@ -459,6 +465,17 @@ static inline enum req_op bio_op(const struct bio *bio)
 static inline bool op_is_write(blk_opf_t op)
 {
 	return !!(op & (__force blk_opf_t)1);
+}
+
+static inline bool op_is_copy(blk_opf_t op)
+{
+	switch (op & REQ_OP_MASK) {
+	case REQ_OP_COPY_DST:
+	case REQ_OP_COPY_SRC:
+		return true;
+	default:
+		return false;
+	}
 }
 
 /*

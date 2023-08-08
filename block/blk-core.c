@@ -16,6 +16,7 @@
 #include <linux/module.h>
 #include <linux/bio.h>
 #include <linux/blkdev.h>
+#include <linux/blk-copy.h>
 #include <linux/blk-pm.h>
 #include <linux/blk-integrity.h>
 #include <linux/highmem.h>
@@ -108,6 +109,8 @@ static const char *const blk_op_name[] = {
 	REQ_OP_NAME(ZONE_FINISH),
 	REQ_OP_NAME(ZONE_APPEND),
 	REQ_OP_NAME(WRITE_ZEROES),
+	REQ_OP_NAME(COPY_SRC),
+	REQ_OP_NAME(COPY_DST),
 	REQ_OP_NAME(DRV_IN),
 	REQ_OP_NAME(DRV_OUT),
 };
@@ -782,6 +785,8 @@ void submit_bio_noacct(struct bio *bio)
 	struct block_device *bdev = bio->bi_bdev;
 	struct request_queue *q = bdev_get_queue(bdev);
 	blk_status_t status = BLK_STS_IOERR;
+	struct bio_copy_offload_ctx *copy_ctx;
+	u32 bio_count;
 
 	might_sleep();
 
@@ -875,6 +880,39 @@ void submit_bio_noacct(struct bio *bio)
 		 * requests.
 		 */
 		fallthrough;
+	case REQ_OP_COPY_SRC:
+	case REQ_OP_COPY_DST:
+		copy_ctx = bio->bi_copy_ctx;
+		WARN_ON_ONCE(copy_ctx->phase == BLKDEV_COPY_DONE);
+		if (copy_ctx->phase == BLKDEV_COPY)
+			break;
+		/* If copy offloading is not supported, fail the bio. */
+		if (!q->limits.max_copy_sectors) {
+			scoped_guard(spinlock_irqsave, &copy_ctx->lock)
+				copy_ctx->bio_count--;
+			goto not_supported;
+		}
+		/*
+		 * If the block driver is a stacking driver that supports copy
+		 * offloading, submit the bio.
+		 */
+		if (q->limits.features & BLK_FEAT_STACKING_COPY_OFFL)
+			break;
+		/*
+		 * Append the bio at the end of the bio->bi_copy_ctx->bios list.
+		 */
+		scoped_guard(spinlock_irqsave, &copy_ctx->lock) {
+			if (copy_ctx->biotail)
+				copy_ctx->biotail->bi_next = bio;
+			else
+				copy_ctx->bios = bio;
+			copy_ctx->biotail = bio;
+			bio_count = --copy_ctx->bio_count;
+		}
+		WARN_ON_ONCE(bio_count < 0);
+		if (bio_count == 0)
+			copy_ctx->translation_complete(copy_ctx);
+		return;
 	default:
 		goto not_supported;
 	}

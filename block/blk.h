@@ -379,6 +379,8 @@ struct bio *bio_split_rw(struct bio *bio, const struct queue_limits *lim,
 		unsigned *nr_segs);
 struct bio *bio_split_zone_append(struct bio *bio,
 		const struct queue_limits *lim, unsigned *nr_segs);
+struct bio *bio_split_copy(struct bio *bio, const struct queue_limits *lim,
+			   unsigned int *nsegs);
 
 /*
  * All drivers must accept single-segments bios that are smaller than PAGE_SIZE.
@@ -435,6 +437,9 @@ static inline struct bio *__bio_split_to_limits(struct bio *bio,
 		return bio_split_discard(bio, lim, nr_segs);
 	case REQ_OP_WRITE_ZEROES:
 		return bio_split_write_zeroes(bio, lim, nr_segs);
+	case REQ_OP_COPY_SRC:
+	case REQ_OP_COPY_DST:
+		return bio_split_copy(bio, lim, nr_segs);
 	default:
 		/* other operations can't be split */
 		*nr_segs = 0;

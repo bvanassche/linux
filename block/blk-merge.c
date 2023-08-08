@@ -207,6 +207,19 @@ struct bio *bio_split_discard(struct bio *bio, const struct queue_limits *lim,
 	return __bio_split_discard(bio, lim, nsegs, max_sectors);
 }
 
+struct bio *bio_split_copy(struct bio *bio, const struct queue_limits *lim,
+			   unsigned int *nsegs)
+{
+	*nsegs = 1;
+	if (bio_sectors(bio) <= lim->max_copy_sectors)
+		return bio;
+
+	/* Splitting a REQ_OP_COPY_* bio is not supported. */
+	bio->bi_status = BLK_STS_NOTSUPP;
+	bio_endio(bio);
+	return NULL;
+}
+
 static inline unsigned int blk_boundary_sectors(const struct queue_limits *lim,
 						bool is_atomic)
 {

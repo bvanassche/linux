@@ -7,6 +7,26 @@
 #include <linux/blk-copy.h>
 #include <linux/blk-mq.h>
 
+/**
+ * struct blkdev_copy_onload_ctx - Tracks the state of a single onloaded copy operation.
+ * @params: Data copy parameters.
+ * @read_work: For scheduling read work.
+ * @write_work: For scheduling write work.
+ * @buf: Data buffer.
+ * @buf_len: Length in bytes of @buf.
+ * @offset: Current copying offset. Range: [0, @len[.
+ * @chunk: Size in bytes of the chunk of data that is being copied.
+ */
+struct blkdev_copy_onload_ctx {
+	struct blk_copy_params *params;
+	struct work_struct read_work;
+	struct work_struct write_work;
+	void *buf;
+	ssize_t buf_len;
+	loff_t offset;
+	loff_t chunk;
+};
+
 /* End all bios in the @ctx->bios list with status @ctx->status. */
 static void blkdev_end_bios(struct bio_copy_offload_ctx *ctx)
 {
@@ -353,3 +373,212 @@ int blkdev_copy_offload(struct blk_copy_params *params)
 	return -EIOCBQUEUED;
 }
 EXPORT_SYMBOL_GPL(blkdev_copy_offload);
+
+static void *blkdev_copy_alloc_buf(size_t req_size, size_t *alloc_size)
+{
+	unsigned int min_size = PAGE_SIZE;
+	char *buf;
+
+	while (req_size >= min_size) {
+		buf = kmalloc(req_size, GFP_NOIO | __GFP_NOWARN);
+		if (buf) {
+			*alloc_size = req_size;
+			return buf;
+		}
+		req_size >>= 1;
+	}
+
+	return NULL;
+}
+
+static struct bio *bio_map_buf(void *buf, unsigned int len)
+{
+	struct page *page;
+	struct bio *bio;
+	static const uint16_t nr_vecs = 1;
+
+	bio = bio_kmalloc(nr_vecs, GFP_NOIO);
+	if (!bio)
+		return NULL;
+	bio_init_inline(bio, /*bdev=*/NULL, /*max_vecs=*/nr_vecs, /*opf=*/0);
+
+	page = virt_to_page(buf);
+	if (bio_add_page(bio, page, len, offset_in_page(buf)) < len) {
+		/* we don't support partial mappings */
+		bio_uninit(bio);
+		kfree(bio);
+		WARN_ON_ONCE(true);
+		return NULL;
+	}
+
+	return bio;
+}
+
+static void blkdev_write_done(struct bio *bio)
+{
+	struct blkdev_copy_onload_ctx *ctx = bio->bi_copy_ctx;
+	struct blk_copy_params *params = ctx->params;
+	blk_status_t sts = bio->bi_status;
+
+	kfree(bio);
+
+	if (sts) {
+		params->status = sts;
+		params->end_io(params);
+		return;
+	}
+
+	ctx->offset += ctx->chunk;
+
+	schedule_work(&ctx->read_work);
+}
+
+static sector_t blkdev_offset_to_out_pos(const struct blk_copy_params *params,
+					 loff_t offset)
+{
+	for (int i = 0; i < params->out_nseg; i++) {
+		loff_t rem = params->out_segs[i].len - offset;
+
+		if (rem > 0)
+			return params->out_segs[i].pos + offset;
+		offset -= params->out_segs[i].len;
+	}
+	return 0;
+}
+
+static void blkdev_write_work(struct work_struct *work)
+{
+	struct blkdev_copy_onload_ctx *ctx =
+		container_of(work, typeof(*ctx), read_work);
+	struct blk_copy_params *params = ctx->params;
+	struct bio *bio;
+	loff_t out_pos;
+
+	out_pos = blkdev_offset_to_out_pos(params, ctx->offset);
+
+	bio = bio_map_buf(ctx->buf, ctx->buf_len);
+	if (!bio) {
+		params->status = BLK_STS_AGAIN;
+		params->end_io(params);
+		return;
+	}
+	bio->bi_opf = REQ_OP_WRITE;
+	bio_set_dev(bio, params->out_bdev);
+	bio->bi_iter.bi_sector = out_pos >> SECTOR_SHIFT;
+	bio->bi_iter.bi_size = ctx->chunk;
+	bio->bi_end_io = blkdev_write_done;
+	bio->bi_copy_ctx = ctx;
+	submit_bio(bio);
+}
+
+static void blkdev_read_done(struct bio *bio)
+{
+	struct blkdev_copy_onload_ctx *ctx = bio->bi_copy_ctx;
+	struct blk_copy_params *params = ctx->params;
+	blk_status_t sts = bio->bi_status;
+
+	kfree(bio);
+
+	if (sts) {
+		params->status = sts;
+		params->end_io(params);
+		return;
+	}
+
+	schedule_work(&ctx->write_work);
+}
+
+static sector_t blkdev_offset_to_in_pos(const struct blk_copy_params *params,
+					loff_t offset, loff_t *chunk)
+{
+	for (int i = 0; i < params->in_nseg; i++) {
+		loff_t rem = params->in_segs[i].len - offset;
+
+		if (rem > 0) {
+			if (*chunk > rem)
+				*chunk = rem;
+			return params->in_segs[i].pos + offset;
+		}
+		offset -= params->in_segs[i].len;
+	}
+	*chunk = 0;
+	return 0;
+}
+
+static void blkdev_read_work(struct work_struct *work)
+{
+	struct blkdev_copy_onload_ctx *ctx =
+		container_of(work, typeof(*ctx), read_work);
+	struct blk_copy_params *params = ctx->params;
+	loff_t offset = ctx->offset;
+	sector_t in_pos;
+	struct bio *bio;
+
+	ctx->chunk = min(ctx->buf_len, params->len - offset);
+	if (ctx->chunk)
+		in_pos = blkdev_offset_to_in_pos(params, offset, &ctx->chunk);
+	if (ctx->chunk == 0) {
+		params->end_io(params);
+		return;
+	}
+
+	bio = bio_map_buf(ctx->buf, ctx->buf_len);
+	if (!bio) {
+		params->status = BLK_STS_AGAIN;
+		params->end_io(params);
+		return;
+	}
+	bio->bi_opf = REQ_OP_READ;
+	bio_set_dev(bio, params->in_bdev);
+	bio->bi_iter.bi_sector = in_pos >> SECTOR_SHIFT;
+	bio->bi_iter.bi_size = ctx->chunk;
+	bio->bi_end_io = blkdev_read_done;
+	bio->bi_copy_ctx = ctx;
+	submit_bio(bio);
+}
+
+/**
+ * blkdev_copy_onload - asynchronously copy data between two block devices using
+ *	read and write operations.
+ * @params: Input and output block devices, input and output ranges and
+ *	completion callback pointer.
+ * Return: 0 upon success; -EIOCBQUEUED if the completion callback function will
+ *	be called or has already been called.
+ */
+int blkdev_copy_onload(struct blk_copy_params *params)
+{
+	loff_t max_hw_bytes =
+		min(queue_max_hw_sectors(params->in_bdev->bd_queue),
+		    queue_max_hw_sectors(params->out_bdev->bd_queue)) <<
+		SECTOR_SHIFT;
+	struct blkdev_copy_onload_ctx *ctx;
+	loff_t len;
+	int ret;
+
+	ret = blkdev_copy_check_params(params, &len);
+	if (ret)
+		return ret;
+
+	params->len = len;
+
+	ctx = kzalloc_obj(*ctx);
+	if (!ctx)
+		return -ENOMEM;
+
+	INIT_WORK(&ctx->read_work, blkdev_read_work);
+	INIT_WORK(&ctx->write_work, blkdev_write_work);
+	ctx->params = params;
+
+	ctx->buf = blkdev_copy_alloc_buf(min(max_hw_bytes, len), &ctx->buf_len);
+	if (!ctx->buf)
+		goto err;
+
+	blkdev_read_work(&ctx->read_work);
+
+	return -EIOCBQUEUED;
+
+err:
+	kfree(ctx);
+	return -ENOMEM;
+}
+EXPORT_SYMBOL_GPL(blkdev_copy_onload);

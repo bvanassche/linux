@@ -729,8 +729,7 @@ static void nvmet_execute_identify_ctrl(struct nvmet_req *req)
 	id->mnan = cpu_to_le32(NVMET_MAX_NAMESPACES);
 	id->oncs = cpu_to_le16(NVME_CTRL_ONCS_DSM |
 			NVME_CTRL_ONCS_WRITE_ZEROES |
-			NVME_CTRL_ONCS_RESERVATIONS);
-
+			NVME_CTRL_ONCS_RESERVATIONS | NVME_CTRL_ONCS_COPY);
 	/* XXX: don't report vwc if the underlying device is write through */
 	id->vwc = NVME_CTRL_VWC_PRESENT;
 
@@ -793,6 +792,27 @@ out:
 	nvmet_req_complete(req, status);
 }
 
+static void nvmet_set_copy_limits(struct nvme_id_ns *id)
+{
+	/*
+	 * MSRC = Maximum Source Range Count - the maximum number of
+	 * source ranges that may be used to specify source data in a
+	 * Copy command. 0's based.
+	 */
+	id->msrc = 256 - 1;
+	/*
+	 * MSSRL = Maximum Single Source Range Length - the maximum number
+	 * of logical blocks that may be specified in the Number of Logical
+	 * Blocks field in each valid Source Range Entries Descriptor.
+	 */
+	id->mssrl = cpu_to_le16(U16_MAX);
+	/*
+	 * MCL = Maximum Copy Length - the maximum number of logical
+	 * blocks that may be specified in a Copy command.
+	 */
+	id->mcl = cpu_to_le32(U32_MAX);
+}
+
 static void nvmet_execute_identify_ns(struct nvmet_req *req)
 {
 	struct nvme_id_ns *id;
@@ -840,6 +860,8 @@ static void nvmet_execute_identify_ns(struct nvmet_req *req)
 
 	if (req->ns->bdev)
 		nvmet_bdev_set_limits(req->ns->bdev, id);
+
+	nvmet_set_copy_limits(id);
 
 	/*
 	 * We just provide a single LBA format that matches what the

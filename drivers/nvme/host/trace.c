@@ -143,7 +143,7 @@ static const char *nvme_trace_read_write(struct trace_seq *p, u8 *cdw10)
 	u16 length = get_unaligned_le16(cdw10 + 8);
 	u16 control = get_unaligned_le16(cdw10 + 10);
 	u32 dsmgmt = get_unaligned_le32(cdw10 + 12);
-	u32 reftag = get_unaligned_le32(cdw10 +  16);
+	u32 reftag = get_unaligned_le32(cdw10 + 16);
 
 	trace_seq_printf(p,
 			 "slba=%llu, len=%u, ctrl=0x%x, dsmgmt=%u, reftag=%u",

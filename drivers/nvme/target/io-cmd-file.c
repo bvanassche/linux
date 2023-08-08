@@ -131,11 +131,7 @@ static bool nvmet_file_execute_io(struct nvmet_req *req, int ki_flags)
 	if (req->f.mpool_alloc && nr_bvec > NVMET_MAX_MPOOL_BVEC)
 		is_sync = true;
 
-	pos = le64_to_cpu(req->cmd->rw.slba) << req->ns->blksize_shift;
-	if (unlikely(pos + req->transfer_len > req->ns->size)) {
-		nvmet_req_complete(req, errno_to_nvme_status(req, -ENOSPC));
-		return true;
-	}
+	pos = le64_to_cpu(req->cmd->copy.sdlba) << req->ns->blksize_shift;
 
 	memset(&req->f.iocb, 0, sizeof(struct kiocb));
 	for_each_sg(req->sg, sg, req->sg_cnt, i) {
@@ -321,11 +317,61 @@ static void nvmet_file_dsm_work(struct work_struct *w)
 	}
 }
 
+static void nvmet_file_copy_work(struct work_struct *w)
+{
+	struct nvmet_req *req = container_of(w, struct nvmet_req, f.work);
+	u32 id, nr_range = req->cmd->copy.nr_range + 1;
+	loff_t dst_pos;
+	ssize_t ret;
+	u16 status;
+
+	status = errno_to_nvme_status(req, -ENOSPC);
+	dst_pos = le64_to_cpu(req->cmd->copy.sdlba) << req->ns->blksize_shift;
+
+	for (id = 0; id < nr_range; id++) {
+		struct nvme_copy_range range;
+		loff_t src_pos, src_len;
+
+		status = nvmet_copy_from_sgl(req, id * sizeof(range), &range,
+					     sizeof(range));
+		if (status)
+			goto out;
+		/*
+		 * TO DO: implement support for different source and destination namespace
+		 * IDs.
+		 */
+		status = errno_to_nvme_status(req, -EIO);
+		if (le32_to_cpu(range.nsid) != req->ns->nsid)
+			goto out;
+		src_pos = le64_to_cpu(range.slba) << (req->ns->blksize_shift);
+		src_len = (le16_to_cpu(range.nlb) + 1) << req->ns->blksize_shift;
+		ret = vfs_copy_file_range(req->ns->file, src_pos, req->ns->file,
+					  dst_pos, src_len, COPY_FILE_SPLICE);
+		if (ret != src_len) {
+			req->cqe->result.u32 = cpu_to_le32(id);
+			status = errno_to_nvme_status(req, ret < 0 ? ret : -EIO);
+			goto out;
+		}
+		dst_pos += ret;
+	}
+
+	status = 0;
+
+out:
+	nvmet_req_complete(req, status);
+}
+
 static void nvmet_file_execute_dsm(struct nvmet_req *req)
 {
 	if (!nvmet_check_data_len_lte(req, nvmet_dsm_len(req)))
 		return;
 	INIT_WORK(&req->f.work, nvmet_file_dsm_work);
+	queue_work(nvmet_wq, &req->f.work);
+}
+
+static void nvmet_file_execute_copy(struct nvmet_req *req)
+{
+	INIT_WORK(&req->f.work, nvmet_file_copy_work);
 	queue_work(nvmet_wq, &req->f.work);
 }
 
@@ -374,6 +420,9 @@ u16 nvmet_file_parse_io_cmd(struct nvmet_req *req)
 		return 0;
 	case nvme_cmd_write_zeroes:
 		req->execute = nvmet_file_execute_write_zeroes;
+		return 0;
+	case nvme_cmd_copy:
+		req->execute = nvmet_file_execute_copy;
 		return 0;
 	default:
 		return nvmet_report_invalid_opcode(req);

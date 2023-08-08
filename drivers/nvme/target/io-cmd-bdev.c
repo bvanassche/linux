@@ -451,6 +451,83 @@ static void nvmet_bdev_execute_write_zeroes(struct nvmet_req *req)
 	}
 }
 
+static void nvmet_bdev_copy_endio(const struct blk_copy_params *params)
+{
+	struct nvmet_req *rq = params->private;
+	blk_status_t status = params->status;
+
+	/*
+	 * From the NVM Command Set Specification section about the Copy
+	 * Command: "If the command completes with failure (i.e., completes with
+	 * a status code other than Successful Completion), then: [ ... ] Dword
+	 * 0 of the completion queue entry contains the number of the lowest
+	 * numbered Source Range entry that was not successfully copied". Since
+	 * that information is not available, clear Dword 0.
+	 */
+	rq->cqe->result.u32 = cpu_to_le32(0);
+
+	nvmet_req_complete(rq, blk_to_nvme_status(rq, status));
+}
+
+static void nvmet_bdev_execute_copy(struct nvmet_req *rq)
+{
+	u32 i, nr_range = (u32)rq->cmd->copy.nr_range + 1;
+	struct blk_copy_seg *in_segs __free(kfree) = NULL;
+	struct nvme_command *cmd = rq->cmd;
+	struct nvme_copy_range range;
+	u64 src_len, copy_len = 0;
+	loff_t dst_pos, src_pos;
+	u16 status;
+	int ret;
+
+	status = NVME_SC_INTERNAL;
+	in_segs = kmalloc_array(nr_range, sizeof(*in_segs), GFP_KERNEL);
+	if (!in_segs)
+		goto err_rq_complete;
+
+	for (i = 0; i < nr_range; i++) {
+		status = nvmet_copy_from_sgl(rq, i * sizeof(range), &range,
+					     sizeof(range));
+		if (WARN_ON_ONCE(status))
+			goto err_rq_complete;
+		/*
+		 * TO DO: implement support for different source and destination namespace
+		 * IDs.
+		 */
+		status = errno_to_nvme_status(rq, -EIO);
+		if (le32_to_cpu(range.nsid) != rq->ns->nsid)
+			goto err_rq_complete;
+		src_pos = le64_to_cpu(range.slba) << rq->ns->blksize_shift;
+		src_len = (le16_to_cpu(range.nlb) + 1) << rq->ns->blksize_shift;
+		in_segs[i] =
+			(struct blk_copy_seg){ .pos = src_pos, .len = src_len };
+		copy_len += src_len;
+	}
+
+	dst_pos = le64_to_cpu(cmd->copy.sdlba) << rq->ns->blksize_shift;
+	struct blk_copy_seg out_seg = { .pos = dst_pos, .len = copy_len };
+	struct blk_copy_params params = {
+		.in_bdev = rq->ns->bdev,
+		.in_segs = in_segs,
+		.in_nseg = nr_range,
+		.out_bdev = rq->ns->bdev,
+		.out_segs = &out_seg,
+		.out_nseg = 1,
+		.end_io = nvmet_bdev_copy_endio,
+		.private = rq,
+	};
+	ret = blkdev_copy_offload(&params);
+	if (ret == -EIOCBQUEUED)
+		return;
+	if (ret)
+		ret = blkdev_copy_onload(&params);
+
+	rq->cqe->result.u32 = cpu_to_le32(ret == 0);
+	status = errno_to_nvme_status(rq, ret);
+err_rq_complete:
+	nvmet_req_complete(rq, status);
+}
+
 u16 nvmet_bdev_parse_io_cmd(struct nvmet_req *req)
 {
 	switch (req->cmd->common.opcode) {
@@ -468,6 +545,9 @@ u16 nvmet_bdev_parse_io_cmd(struct nvmet_req *req)
 		return 0;
 	case nvme_cmd_write_zeroes:
 		req->execute = nvmet_bdev_execute_write_zeroes;
+		return 0;
+	case nvme_cmd_copy:
+		req->execute = nvmet_bdev_execute_copy;
 		return 0;
 	default:
 		return nvmet_report_invalid_opcode(req);

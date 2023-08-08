@@ -6,6 +6,7 @@
 
 #include <linux/async.h>
 #include <linux/blkdev.h>
+#include <linux/blk-copy.h>
 #include <linux/blk-mq.h>
 #include <linux/blk-integrity.h>
 #include <linux/compat.h>
@@ -826,6 +827,87 @@ static inline void nvme_setup_flush(struct nvme_ns *ns,
 	cmnd->common.nsid = cpu_to_le32(ns->head->ns_id);
 }
 
+/*
+ * Translate REQ_OP_COPY_SRC and REQ_OP_COPY_DST bios into an NVMe Copy command.
+ * The NVMe copy command supports multiple source LBA ranges, a single
+ * destination LBA range, and also supports copying across NVMe namespaces. This
+ * implementation supports all these features except copying across NVMe
+ * namespaces.
+ */
+static inline blk_status_t nvme_setup_copy_offload(struct nvme_ns *ns,
+						   struct request *req,
+						   struct nvme_command *cmnd)
+{
+	const u32 nr_range = blk_copy_bio_count(req, REQ_OP_COPY_SRC);
+	struct nvme_ns *src_ns, *dst_ns;
+	struct bio *src_bio = NULL, *dst_bio;
+	struct nvme_copy_range *range;
+	u16 control = 0;
+	u64 dlba;
+
+	dst_bio = blk_first_copy_bio(req, REQ_OP_COPY_DST);
+
+	if (WARN_ON_ONCE(!dst_bio))
+		return BLK_STS_IOERR;
+
+	/* TO DO: derive dst_ns from dst_bio. */
+	dst_ns = ns;
+	dlba = nvme_sect_to_lba(dst_ns->head, dst_bio->bi_iter.bi_sector);
+
+	if (req->cmd_flags & REQ_FUA)
+		control |= NVME_RW_FUA;
+
+	if (req->cmd_flags & REQ_FAILFAST_DEV)
+		control |= NVME_RW_LR;
+
+	*cmnd = (typeof(*cmnd)){
+		.copy = {
+			.opcode = nvme_cmd_copy,
+			.nsid = cpu_to_le32(dst_ns->head->ns_id),
+			.control = cpu_to_le16(control),
+			.sdlba = cpu_to_le64(dlba),
+			.desfmt_prinfor = 2, /* DESFMT=2 */
+			.nr_range = nr_range - 1, /* 0's based */
+		}
+	};
+
+	range = kmalloc_array(nr_range, sizeof(*range),
+			      GFP_ATOMIC | __GFP_ZERO | __GFP_NOWARN);
+	if (!range)
+		return BLK_STS_RESOURCE;
+
+	for (unsigned int i = 0; i < nr_range; i++) {
+		u64 slba;
+		u32 nslb;
+
+		if (!src_bio)
+			src_bio = blk_first_copy_bio(req, REQ_OP_COPY_SRC);
+		else
+			src_bio = blk_next_copy_bio(src_bio);
+		if (WARN_ON_ONCE(!src_bio))
+			goto free_range;
+		/* TO DO: derive src_ns from src_bio. */
+		src_ns = ns;
+		slba = nvme_sect_to_lba(src_ns->head,
+					src_bio->bi_iter.bi_sector);
+		nslb = src_bio->bi_iter.bi_size >> src_ns->head->lba_shift;
+		range[i].nsid = cpu_to_le32(src_ns->head->ns_id); /* requires DESFMT=2 */
+		range[i].slba = cpu_to_le64(slba);
+		range[i].nlb = cpu_to_le16(nslb - 1);
+	}
+
+	req->special_vec.bv_page = virt_to_page(range);
+	req->special_vec.bv_offset = offset_in_page(range);
+	req->special_vec.bv_len = sizeof(*range) * nr_range;
+	req->rq_flags |= RQF_SPECIAL_PAYLOAD;
+
+	return BLK_STS_OK;
+
+free_range:
+	kfree(range);
+	return BLK_STS_IOERR;
+}
+
 static blk_status_t nvme_setup_discard(struct nvme_ns *ns, struct request *req,
 		struct nvme_command *cmnd)
 {
@@ -1126,6 +1208,10 @@ blk_status_t nvme_setup_cmd(struct nvme_ns *ns, struct request *req)
 		break;
 	case REQ_OP_ZONE_APPEND:
 		ret = nvme_setup_rw(ns, req, cmd, nvme_cmd_zone_append);
+		break;
+	case REQ_OP_COPY_DST:
+	case REQ_OP_COPY_SRC:
+		ret = nvme_setup_copy_offload(ns, req, cmd);
 		break;
 	default:
 		WARN_ON_ONCE(1);
@@ -1889,6 +1975,21 @@ static bool nvme_init_integrity(struct nvme_ns_head *head,
 	return true;
 }
 
+static void nvme_config_copy(struct nvme_ns *ns, struct nvme_id_ns *id,
+			     struct queue_limits *lim)
+{
+	struct nvme_ctrl *ctrl = ns->ctrl;
+
+	if (!(ctrl->oncs & NVME_CTRL_ONCS_COPY)) {
+		lim->max_copy_hw_sectors = 0;
+		return;
+	}
+	lim->max_copy_hw_sectors = nvme_lba_to_sect(ns->head,
+						    le16_to_cpu(id->mssrl));
+	lim->max_copy_src_segments = 256;
+	lim->max_copy_dst_segments = 1;
+}
+
 static bool nvme_ns_ids_equal(struct nvme_ns_ids *a, struct nvme_ns_ids *b)
 {
 	return uuid_equal(&a->uuid, &b->uuid) &&
@@ -2421,6 +2522,7 @@ static int nvme_update_ns_info_block(struct nvme_ns *ns,
 	if (!nvme_update_disk_info(ns, id, nvm, &lim))
 		capacity = 0;
 
+	nvme_config_copy(ns, id, &lim);
 	if (IS_ENABLED(CONFIG_BLK_DEV_ZONED) &&
 	    ns->head->ids.csi == NVME_CSI_ZNS)
 		nvme_update_zone_info(ns, &lim, &zi);
@@ -2547,6 +2649,9 @@ static int nvme_update_ns_info(struct nvme_ns *ns, struct nvme_ns_info *info)
 		lim.physical_block_size = ns_lim->physical_block_size;
 		lim.io_min = ns_lim->io_min;
 		lim.io_opt = ns_lim->io_opt;
+		lim.max_copy_hw_sectors = UINT_MAX;
+		lim.max_copy_src_segments = U16_MAX;
+		lim.max_copy_dst_segments = U16_MAX;
 		queue_limits_stack_bdev(&lim, ns->disk->part0, 0,
 					ns->head->disk->disk_name);
 		if (unsupported)
@@ -5374,6 +5479,7 @@ static inline void _nvme_check_size(void)
 	BUILD_BUG_ON(sizeof(struct nvme_download_firmware) != 64);
 	BUILD_BUG_ON(sizeof(struct nvme_format_cmd) != 64);
 	BUILD_BUG_ON(sizeof(struct nvme_dsm_cmd) != 64);
+	BUILD_BUG_ON(sizeof(struct nvme_copy_command) != 64);
 	BUILD_BUG_ON(sizeof(struct nvme_write_zeroes_cmd) != 64);
 	BUILD_BUG_ON(sizeof(struct nvme_abort_cmd) != 64);
 	BUILD_BUG_ON(sizeof(struct nvme_get_log_page_command) != 64);

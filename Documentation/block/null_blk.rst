@@ -149,3 +149,7 @@ zone_size=[MB]: Default: 256
 zone_nr_conv=[nr_conv]: Default: 0
   The number of conventional zones to create when block device is zoned.  If
   zone_nr_conv >= nr_zones, it will be reduced to nr_zones - 1.
+
+max_copy_bytes=[size in bytes]: Default: UINT_MAX
+  A module and configfs parameter which can be used to set hardware/driver
+  supported maximum copy offload limit.

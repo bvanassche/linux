@@ -9,6 +9,7 @@
 #include <linux/sched.h>
 #include <linux/fs.h>
 #include <linux/init.h>
+#include <linux/blk-copy.h>
 #include "null_blk.h"
 
 #undef pr_fmt
@@ -168,6 +169,10 @@ MODULE_PARM_DESC(bs, "Block size (in bytes)");
 static int g_max_sectors;
 module_param_named(max_sectors, g_max_sectors, int, 0444);
 MODULE_PARM_DESC(max_sectors, "Maximum size of a command (in 512B sectors)");
+
+static unsigned long g_max_copy_bytes = UINT_MAX;
+module_param_named(max_copy_bytes, g_max_copy_bytes, ulong, 0444);
+MODULE_PARM_DESC(max_copy_bytes, "Maximum size of a copy command (in bytes)");
 
 static unsigned int nr_devices = 1;
 module_param(nr_devices, uint, 0444);
@@ -450,6 +455,7 @@ NULLB_DEVICE_ATTR(home_node, uint, NULL);
 NULLB_DEVICE_ATTR(queue_mode, uint, NULL);
 NULLB_DEVICE_ATTR(blocksize, uint, NULL);
 NULLB_DEVICE_ATTR(max_sectors, uint, NULL);
+NULLB_DEVICE_ATTR(max_copy_bytes, uint, NULL);
 NULLB_DEVICE_ATTR(irqmode, uint, NULL);
 NULLB_DEVICE_ATTR(hw_queue_depth, uint, NULL);
 NULLB_DEVICE_ATTR(index, uint, NULL);
@@ -601,6 +607,7 @@ static struct configfs_attribute *nullb_device_attrs[] = {
 	&nullb_device_attr_blocksize,
 	&nullb_device_attr_cache_size,
 	&nullb_device_attr_completion_nsec,
+	&nullb_device_attr_max_copy_bytes,
 	&nullb_device_attr_discard,
 	&nullb_device_attr_fua,
 	&nullb_device_attr_home_node,
@@ -805,6 +812,7 @@ static struct nullb_device *null_alloc_dev(void)
 	dev->queue_mode = g_queue_mode;
 	dev->blocksize = g_bs;
 	dev->max_sectors = g_max_sectors;
+	dev->max_copy_bytes = g_max_copy_bytes;
 	dev->irqmode = g_irqmode;
 	dev->hw_queue_depth = g_hw_queue_depth;
 	dev->blocking = g_blocking;
@@ -1275,6 +1283,96 @@ static blk_status_t null_transfer(struct nullb *nullb, struct page *page,
 	return err;
 }
 
+static ssize_t nullb_copy_sector(struct nullb *nullb, sector_t sector_in,
+				 sector_t sector_out, ssize_t rem, bool is_fua)
+{
+	struct nullb_page *t_page_in, *t_page_out;
+	loff_t offset_in, offset_out;
+	void *in, *out;
+	ssize_t chunk;
+
+	chunk = min_t(size_t, nullb->dev->blocksize, rem);
+	offset_in = (sector_in & SECTOR_MASK) << SECTOR_SHIFT;
+	offset_out = (sector_out & SECTOR_MASK) << SECTOR_SHIFT;
+
+	guard(spinlock_irq)(&nullb->lock);
+
+	if (null_cache_active(nullb) && !is_fua)
+		null_make_cache_space(nullb, PAGE_SIZE);
+
+	t_page_in = null_insert_page(nullb, sector_in,
+				     !null_cache_active(nullb));
+	if (!t_page_in)
+		return -1;
+	t_page_out = null_insert_page(nullb, sector_out,
+				      !null_cache_active(nullb) || is_fua);
+	if (!t_page_out)
+		return -1;
+
+	in = kmap_local_page(t_page_in->page);
+	out = kmap_local_page(t_page_out->page);
+	memcpy(out + offset_out, in + offset_in, chunk);
+	kunmap_local(out);
+	kunmap_local(in);
+
+	__set_bit(sector_out & SECTOR_MASK, t_page_out->bitmap);
+
+	if (is_fua)
+		null_free_sector(nullb, sector_out, true);
+
+	return chunk;
+}
+
+static blk_status_t nullb_do_copy(struct nullb *nullb, struct request *rq)
+{
+	sector_t sector_in, sector_in_end, sector_out, sector_out_end;
+	struct bio_copy_offload_ctx *copy_ctx = rq->bio->bi_copy_ctx;
+	ssize_t chunk, rem = copy_ctx->len;
+	struct bio *src_bio, *dst_bio;
+
+	src_bio = blk_first_copy_bio(rq, REQ_OP_COPY_SRC);
+	dst_bio = blk_first_copy_bio(rq, REQ_OP_COPY_DST);
+
+	if (WARN_ON_ONCE(!src_bio || !dst_bio))
+		return BLK_STS_IOERR;
+
+	sector_in = src_bio->bi_iter.bi_sector;
+	sector_in_end = sector_in + (src_bio->bi_iter.bi_size >> SECTOR_SHIFT);
+	sector_out = dst_bio->bi_iter.bi_sector;
+	sector_out_end = sector_out + (dst_bio->bi_iter.bi_size >> SECTOR_SHIFT);
+
+	while (rem > 0) {
+		chunk = nullb_copy_sector(nullb, sector_in, sector_out, rem,
+					  rq->cmd_flags & REQ_FUA);
+		if (chunk < 0)
+			return BLK_STS_IOERR;
+		rem -= chunk;
+		if (!rem)
+			break;
+		sector_in += chunk >> SECTOR_SHIFT;
+		if (sector_in >= sector_in_end) {
+			src_bio = blk_next_copy_bio(src_bio);
+			if (WARN_ON_ONCE(!src_bio))
+				return BLK_STS_IOERR;
+			sector_in = src_bio->bi_iter.bi_sector;
+			sector_in_end = sector_in +
+				(src_bio->bi_iter.bi_size >> SECTOR_SHIFT);
+		}
+		sector_out += chunk >> SECTOR_SHIFT;
+		if (sector_out >= sector_out_end) {
+			dst_bio = blk_next_copy_bio(dst_bio);
+			if (WARN_ON_ONCE(!dst_bio))
+				return BLK_STS_IOERR;
+			sector_out = dst_bio->bi_iter.bi_sector;
+			sector_out_end = sector_out +
+				(dst_bio->bi_iter.bi_size >> SECTOR_SHIFT);
+		}
+		cond_resched();
+	}
+
+	return BLK_STS_OK;
+}
+
 /*
  * Transfer data for the given request. The transfer size is capped with the
  * nr_sectors argument.
@@ -1291,6 +1389,9 @@ static blk_status_t null_handle_data_transfer(struct nullb_cmd *cmd,
 	unsigned int transferred_bytes = 0;
 	struct req_iterator iter;
 	struct bio_vec bvec;
+
+	if (op_is_copy(req_op(rq)))
+		return nullb_do_copy(nullb, rq);
 
 	spin_lock_irq(&nullb->lock);
 	rq_for_each_segment(bvec, rq, iter) {
@@ -1806,6 +1907,13 @@ static void null_config_discard(struct nullb *nullb, struct queue_limits *lim)
 	lim->max_hw_discard_sectors = UINT_MAX >> 9;
 }
 
+static void null_config_copy(struct nullb *nullb, struct queue_limits *lim)
+{
+	lim->max_copy_hw_sectors = nullb->dev->max_copy_bytes >> SECTOR_SHIFT;
+	lim->max_copy_src_segments = nullb->dev->max_copy_bytes ? U16_MAX : 0;
+	lim->max_copy_dst_segments = lim->max_copy_src_segments;
+}
+
 static const struct block_device_operations null_ops = {
 	.owner		= THIS_MODULE,
 	.report_zones	= null_report_zones,
@@ -1922,6 +2030,9 @@ static int null_validate_conf(struct nullb_device *dev)
 		return -EINVAL;
 	}
 
+	if (dev->queue_mode == NULL_Q_BIO)
+		dev->max_copy_bytes = 0;
+
 	return 0;
 }
 
@@ -1989,6 +2100,8 @@ static int null_add_dev(struct nullb_device *dev)
 	if (dev->virt_boundary)
 		lim.virt_boundary_mask = PAGE_SIZE - 1;
 	null_config_discard(nullb, &lim);
+	null_config_copy(nullb, &lim);
+
 	if (dev->zoned) {
 		rv = null_init_zoned_dev(dev, &lim);
 		if (rv)

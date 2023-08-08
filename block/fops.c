@@ -19,6 +19,7 @@
 #include <linux/iomap.h>
 #include <linux/module.h>
 #include <linux/io_uring/cmd.h>
+#include <linux/splice.h>
 #include "blk.h"
 
 static inline struct inode *bdev_file_inode(struct file *file)
@@ -861,6 +862,58 @@ reexpand:
 	return ret;
 }
 
+static ssize_t blkdev_copy_file_range(struct file *file_in, loff_t pos_in,
+				      struct file *file_out, loff_t pos_out,
+				      size_t len, unsigned int flags)
+{
+	struct block_device *in_bdev = I_BDEV(bdev_file_inode(file_in));
+	struct block_device *out_bdev = I_BDEV(bdev_file_inode(file_out));
+	loff_t in_end, out_end;
+	int err;
+
+	if (check_add_overflow(pos_in, len, &in_end) ||
+	    PAGE_ALIGN(in_end) < in_end ||
+	    check_add_overflow(pos_out, len, &out_end) ||
+	    PAGE_ALIGN(out_end) < out_end)
+		return -EINVAL;
+
+	/*
+	 * filemap_write_and_wait_range() and filemap_invalidate_inode() expect
+	 * that the 'end' argument is rounded up to the next multiple of
+	 * PAGE_SIZE.
+	 */
+	in_end = PAGE_ALIGN(in_end);
+	out_end = PAGE_ALIGN(out_end);
+
+	if (bdev_max_copy_sectors(in_bdev) && bdev_max_copy_sectors(out_bdev) &&
+	    file_in->f_iocb_flags & file_out->f_iocb_flags & IOCB_DIRECT) {
+		struct blk_copy_seg in_seg = { .pos = pos_in, .len = len };
+		struct blk_copy_seg out_seg = { .pos = pos_out, .len = len };
+		struct blk_copy_params params = {
+			.in_bdev = in_bdev,
+			.out_bdev = out_bdev,
+			.in_nseg = 1,
+			.in_segs = &in_seg,
+			.out_nseg = 1,
+			.out_segs = &out_seg,
+		};
+		err = filemap_write_and_wait_range(file_in->f_mapping, pos_in,
+						   in_end);
+		if (err)
+			return err;
+		err = filemap_invalidate_inode(bdev_file_inode(file_out),
+					       /*flush=*/false,
+					       pos_out, out_end);
+		if (err)
+			return err;
+		if (blkdev_copy_offload(&params) == 0)
+			return len;
+		/* If copy offloading fails, fall back to onloading. */
+	}
+
+	return splice_copy_file_range(file_in, pos_in, file_out, pos_out, len);
+}
+
 #define	BLKDEV_FALLOC_FL_SUPPORTED					\
 		(FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE |		\
 		 FALLOC_FL_ZERO_RANGE | FALLOC_FL_WRITE_ZEROES)
@@ -967,6 +1020,7 @@ const struct file_operations def_blk_fops = {
 	.fallocate	= blkdev_fallocate,
 	.uring_cmd	= blkdev_uring_cmd,
 	.fop_flags	= FOP_BUFFER_RASYNC,
+	.copy_file_range = blkdev_copy_file_range,
 };
 
 static __init int blkdev_init(void)

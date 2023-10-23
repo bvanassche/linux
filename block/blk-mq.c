@@ -4603,6 +4603,39 @@ static void blk_mq_unfreeze_tag_set(struct blk_mq_tag_set *set)
 		blk_mq_unfreeze_queue(q);
 }
 
+/* Whether or not fair tag sharing across request queues is enabled. */
+bool blk_mq_fair_sharing(const struct blk_mq_tag_set *set)
+{
+	return !(set->flags & BLK_MQ_F_DISABLE_FAIR_TAG_SHARING);
+}
+EXPORT_SYMBOL(blk_mq_fair_sharing);
+
+/*
+ * Enable or disable fair tag sharing for all request queues associated with
+ * a tag set.
+ */
+void blk_mq_update_fair_sharing(struct blk_mq_tag_set *set, bool enable)
+{
+	const unsigned int DFTS_BIT = ilog2(BLK_MQ_F_DISABLE_FAIR_TAG_SHARING);
+	struct blk_mq_hw_ctx *hctx;
+	struct request_queue *q;
+	unsigned long i;
+
+	/*
+	 * Serialize against blk_mq_update_nr_hw_queues() and
+	 * blk_mq_realloc_hw_ctxs().
+	 */
+	mutex_lock(&set->tag_list_lock);
+	blk_mq_freeze_tag_set(set);
+	assign_bit(DFTS_BIT, &set->flags, !enable);
+	list_for_each_entry(q, &set->tag_list, tag_set_list)
+		queue_for_each_hw_ctx(q, hctx, i)
+			assign_bit(DFTS_BIT, &hctx->flags, !enable);
+	blk_mq_unfreeze_tag_set(set);
+	mutex_unlock(&set->tag_list_lock);
+}
+EXPORT_SYMBOL(blk_mq_update_fair_sharing);
+
 int blk_mq_update_nr_requests(struct request_queue *q, unsigned int nr)
 {
 	struct blk_mq_tag_set *set = q->tag_set;

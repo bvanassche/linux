@@ -4189,6 +4189,9 @@ static void blk_mq_realloc_hw_ctxs(struct blk_mq_tag_set *set,
 	struct blk_mq_hw_ctx *hctx;
 	unsigned long i, j;
 
+	if (!list_empty(&q->tag_set_list))
+		lockdep_assert_held(&set->tag_list_lock);
+
 	/* protect against switching io scheduler  */
 	mutex_lock(&q->sysfs_lock);
 	for (i = 0; i < set->nr_hw_queues; i++) {
@@ -4249,6 +4252,7 @@ int blk_mq_init_allocated_queue(struct blk_mq_tag_set *set,
 	/* init q->mq_kobj and sw queues' kobjects */
 	blk_mq_sysfs_init(q);
 
+	INIT_LIST_HEAD(&q->tag_set_list);
 	INIT_LIST_HEAD(&q->unused_hctx_list);
 	spin_lock_init(&q->unused_hctx_lock);
 

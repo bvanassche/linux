@@ -4587,6 +4587,22 @@ void blk_mq_free_tag_set(struct blk_mq_tag_set *set)
 }
 EXPORT_SYMBOL(blk_mq_free_tag_set);
 
+static void blk_mq_freeze_tag_set(struct blk_mq_tag_set *set)
+{
+	struct request_queue *q;
+
+	list_for_each_entry(q, &set->tag_list, tag_set_list)
+		blk_mq_freeze_queue(q);
+}
+
+static void blk_mq_unfreeze_tag_set(struct blk_mq_tag_set *set)
+{
+	struct request_queue *q;
+
+	list_for_each_entry(q, &set->tag_list, tag_set_list)
+		blk_mq_unfreeze_queue(q);
+}
+
 int blk_mq_update_nr_requests(struct request_queue *q, unsigned int nr)
 {
 	struct blk_mq_tag_set *set = q->tag_set;
@@ -4734,8 +4750,8 @@ static void __blk_mq_update_nr_hw_queues(struct blk_mq_tag_set *set,
 	if (set->nr_maps == 1 && nr_hw_queues == set->nr_hw_queues)
 		return;
 
-	list_for_each_entry(q, &set->tag_list, tag_set_list)
-		blk_mq_freeze_queue(q);
+	blk_mq_freeze_tag_set(set);
+
 	/*
 	 * Switch IO scheduler to 'none', cleaning up the data associated
 	 * with the previous scheduler. We will switch back once we are done
@@ -4782,8 +4798,7 @@ switch_back:
 	list_for_each_entry(q, &set->tag_list, tag_set_list)
 		blk_mq_elv_switch_back(&head, q);
 
-	list_for_each_entry(q, &set->tag_list, tag_set_list)
-		blk_mq_unfreeze_queue(q);
+	blk_mq_unfreeze_tag_set(set);
 
 	/* Free the excess tags when nr_hw_queues shrink. */
 	for (i = set->nr_hw_queues; i < prev_nr_hw_queues; i++)

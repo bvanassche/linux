@@ -131,7 +131,7 @@ static ssize_t energy_perf_bias_show(struct device *dev,
 				     struct device_attribute *attr,
 				     char *buf)
 {
-	unsigned int cpu = dev->id;
+	unsigned int cpu = to_cpu(dev)->cpuid;
 	u64 epb;
 	int ret;
 
@@ -146,7 +146,7 @@ static ssize_t energy_perf_bias_store(struct device *dev,
 				      struct device_attribute *attr,
 				      const char *buf, size_t count)
 {
-	unsigned int cpu = dev->id;
+	unsigned int cpu = to_cpu(dev)->cpuid;
 	u64 epb, val;
 	int ret;
 

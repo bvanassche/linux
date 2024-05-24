@@ -715,7 +715,7 @@ static DEVICE_ATTR_WO(reload);
 static ssize_t version_show(struct device *dev,
 			struct device_attribute *attr, char *buf)
 {
-	struct ucode_cpu_info *uci = ucode_cpu_info + dev->id;
+	struct ucode_cpu_info *uci = ucode_cpu_info + to_cpu(dev)->cpuid;
 
 	return sprintf(buf, "0x%x\n", uci->cpu_sig.rev);
 }
@@ -723,7 +723,7 @@ static ssize_t version_show(struct device *dev,
 static ssize_t processor_flags_show(struct device *dev,
 			struct device_attribute *attr, char *buf)
 {
-	struct ucode_cpu_info *uci = ucode_cpu_info + dev->id;
+	struct ucode_cpu_info *uci = ucode_cpu_info + to_cpu(dev)->cpuid;
 
 	return sprintf(buf, "0x%x\n", uci->cpu_sig.pf);
 }

@@ -1511,7 +1511,7 @@ static int cpu_down(unsigned int cpu, enum cpuhp_state target)
  */
 int cpu_device_down(struct device *dev)
 {
-	return cpu_down(dev->id, CPUHP_OFFLINE);
+	return cpu_down(to_cpu(dev)->cpuid, CPUHP_OFFLINE);
 }
 
 int remove_cpu(unsigned int cpu)
@@ -1727,7 +1727,7 @@ out:
  */
 int cpu_device_up(struct device *dev)
 {
-	return cpu_up(dev->id, CPUHP_ONLINE);
+	return cpu_up(to_cpu(dev)->cpuid, CPUHP_ONLINE);
 }
 
 int add_cpu(unsigned int cpu)
@@ -2703,7 +2703,8 @@ int cpuhp_smt_enable(void)
 static ssize_t state_show(struct device *dev,
 			  struct device_attribute *attr, char *buf)
 {
-	struct cpuhp_cpu_state *st = per_cpu_ptr(&cpuhp_state, dev->id);
+	struct cpuhp_cpu_state *st =
+		per_cpu_ptr(&cpuhp_state, to_cpu(dev)->cpuid);
 
 	return sprintf(buf, "%d\n", st->state);
 }
@@ -2712,7 +2713,8 @@ static DEVICE_ATTR_RO(state);
 static ssize_t target_store(struct device *dev, struct device_attribute *attr,
 			    const char *buf, size_t count)
 {
-	struct cpuhp_cpu_state *st = per_cpu_ptr(&cpuhp_state, dev->id);
+	struct cpuhp_cpu_state *st =
+		per_cpu_ptr(&cpuhp_state, to_cpu(dev)->cpuid);
 	struct cpuhp_step *sp;
 	int target, ret;
 
@@ -2740,9 +2742,9 @@ static ssize_t target_store(struct device *dev, struct device_attribute *attr,
 		goto out;
 
 	if (st->state < target)
-		ret = cpu_up(dev->id, target);
+		ret = cpu_up(to_cpu(dev)->cpuid, target);
 	else if (st->state > target)
-		ret = cpu_down(dev->id, target);
+		ret = cpu_down(to_cpu(dev)->cpuid, target);
 	else if (WARN_ON(st->target != target))
 		st->target = target;
 out:
@@ -2753,7 +2755,8 @@ out:
 static ssize_t target_show(struct device *dev,
 			   struct device_attribute *attr, char *buf)
 {
-	struct cpuhp_cpu_state *st = per_cpu_ptr(&cpuhp_state, dev->id);
+	struct cpuhp_cpu_state *st =
+		per_cpu_ptr(&cpuhp_state, to_cpu(dev)->cpuid);
 
 	return sprintf(buf, "%d\n", st->target);
 }
@@ -2762,7 +2765,8 @@ static DEVICE_ATTR_RW(target);
 static ssize_t fail_store(struct device *dev, struct device_attribute *attr,
 			  const char *buf, size_t count)
 {
-	struct cpuhp_cpu_state *st = per_cpu_ptr(&cpuhp_state, dev->id);
+	struct cpuhp_cpu_state *st =
+		per_cpu_ptr(&cpuhp_state, to_cpu(dev)->cpuid);
 	struct cpuhp_step *sp;
 	int fail, ret;
 
@@ -2812,7 +2816,8 @@ static ssize_t fail_store(struct device *dev, struct device_attribute *attr,
 static ssize_t fail_show(struct device *dev,
 			 struct device_attribute *attr, char *buf)
 {
-	struct cpuhp_cpu_state *st = per_cpu_ptr(&cpuhp_state, dev->id);
+	struct cpuhp_cpu_state *st =
+		per_cpu_ptr(&cpuhp_state, to_cpu(dev)->cpuid);
 
 	return sprintf(buf, "%d\n", st->fail);
 }

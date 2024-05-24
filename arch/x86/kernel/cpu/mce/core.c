@@ -2493,10 +2493,10 @@ static ssize_t show_bank(struct device *s, struct device_attribute *attr,
 	u8 bank = attr_to_bank(attr)->bank;
 	struct mce_bank *b;
 
-	if (bank >= per_cpu(mce_num_banks, s->id))
+	if (bank >= per_cpu(mce_num_banks, to_cpu(s)->cpuid))
 		return -EINVAL;
 
-	b = &per_cpu(mce_banks_array, s->id)[bank];
+	b = &per_cpu(mce_banks_array, to_cpu(s)->cpuid)[bank];
 
 	if (!b->init)
 		return -ENODEV;
@@ -2514,10 +2514,10 @@ static ssize_t set_bank(struct device *s, struct device_attribute *attr,
 	if (kstrtou64(buf, 0, &new) < 0)
 		return -EINVAL;
 
-	if (bank >= per_cpu(mce_num_banks, s->id))
+	if (bank >= per_cpu(mce_num_banks, to_cpu(s)->cpuid))
 		return -EINVAL;
 
-	b = &per_cpu(mce_banks_array, s->id)[bank];
+	b = &per_cpu(mce_banks_array, to_cpu(s)->cpuid)[bank];
 	if (!b->init)
 		return -ENODEV;
 

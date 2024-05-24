@@ -158,6 +158,7 @@ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev,
 	struct opp_device *opp_dev;
 	struct opp_table *opp_table;
 	struct device *dev;
+	u32 cpu_dev_id = to_cpu(cpu_dev)->cpuid;
 	int cpu, ret = 0;
 
 	opp_table = _find_opp_table(cpu_dev);
@@ -165,7 +166,7 @@ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev,
 		return PTR_ERR(opp_table);
 
 	for_each_cpu(cpu, cpumask) {
-		if (cpu == cpu_dev->id)
+		if (cpu == cpu_dev_id)
 			continue;
 
 		dev = get_cpu_device(cpu);
@@ -222,10 +223,11 @@ int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
 	if (opp_table->shared_opp == OPP_TABLE_ACCESS_SHARED) {
 		mutex_lock(&opp_table->lock);
 		list_for_each_entry(opp_dev, &opp_table->dev_list, node)
-			cpumask_set_cpu(opp_dev->dev->id, cpumask);
+			cpumask_set_cpu(to_const_cpu(opp_dev->dev)->cpuid,
+					cpumask);
 		mutex_unlock(&opp_table->lock);
 	} else {
-		cpumask_set_cpu(cpu_dev->id, cpumask);
+		cpumask_set_cpu(to_cpu(cpu_dev)->cpuid, cpumask);
 	}
 
 put_opp_table:

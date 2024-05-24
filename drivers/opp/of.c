@@ -1347,14 +1347,14 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
 		return -ENOENT;
 	}
 
-	cpumask_set_cpu(cpu_dev->id, cpumask);
+	cpumask_set_cpu(to_cpu(cpu_dev)->cpuid, cpumask);
 
 	/* OPPs are shared ? */
 	if (!of_property_read_bool(np, "opp-shared"))
 		goto put_cpu_node;
 
 	for_each_possible_cpu(cpu) {
-		if (cpu == cpu_dev->id)
+		if (cpu == to_cpu(cpu_dev)->cpuid)
 			continue;
 
 		cpu_np = of_cpu_device_node_get(cpu);

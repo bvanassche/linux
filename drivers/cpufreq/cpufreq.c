@@ -1621,7 +1621,7 @@ out_free_policy:
 static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
 {
 	struct cpufreq_policy *policy;
-	unsigned cpu = dev->id;
+	unsigned cpu = to_cpu(dev)->cpuid;
 	int ret;
 
 	dev_dbg(dev, "%s: adding CPU%u\n", __func__, cpu);
@@ -1715,7 +1715,7 @@ static int cpufreq_offline(unsigned int cpu)
  */
 static void cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
 {
-	unsigned int cpu = dev->id;
+	unsigned int cpu = to_cpu(dev)->cpuid;
 	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
 
 	if (!policy)

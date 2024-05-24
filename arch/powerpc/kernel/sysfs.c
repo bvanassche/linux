@@ -98,7 +98,7 @@ static ssize_t show_##NAME(struct device *dev, \
 { \
 	struct cpu *cpu = to_cpu(dev); \
 	unsigned long val; \
-	smp_call_function_single(cpu->dev.id, read_##NAME, &val, 1);	\
+	smp_call_function_single(cpu->cpuid, read_##NAME, &val, 1);	\
 	return sprintf(buf, "%lx\n", val); \
 } \
 static ssize_t __used \
@@ -110,7 +110,7 @@ static ssize_t __used \
 	int ret = sscanf(buf, "%lx", &val); \
 	if (ret != 1) \
 		return -EINVAL; \
-	smp_call_function_single(cpu->dev.id, write_##NAME, &val, 1); \
+	smp_call_function_single(cpu->cpuid, write_##NAME, &val, 1); \
 	return count; \
 }
 
@@ -778,7 +778,7 @@ static ssize_t idle_purr_show(struct device *dev,
 	struct cpu *cpu = to_cpu(dev);
 	u64 val;
 
-	smp_call_function_single(cpu->dev.id, read_idle_purr, &val, 1);
+	smp_call_function_single(cpu->cpuid, read_idle_purr, &val, 1);
 	return sprintf(buf, "%llx\n", val);
 }
 static DEVICE_ATTR(idle_purr, 0400, idle_purr_show, NULL);
@@ -808,7 +808,7 @@ static ssize_t idle_spurr_show(struct device *dev,
 	struct cpu *cpu = to_cpu(dev);
 	u64 val;
 
-	smp_call_function_single(cpu->dev.id, read_idle_spurr, &val, 1);
+	smp_call_function_single(cpu->cpuid, read_idle_spurr, &val, 1);
 	return sprintf(buf, "%llx\n", val);
 }
 static DEVICE_ATTR(idle_spurr, 0400, idle_spurr_show, NULL);

@@ -29,6 +29,7 @@ static int exynos_asv_update_cpu_opps(struct exynos_asv *asv,
 	struct exynos_asv_subsys *subsys = NULL;
 	struct dev_pm_opp *opp;
 	unsigned int opp_freq;
+	const u32 cpu_id = to_cpu(cpu)->cpuid;
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(asv->subsys); i++) {
@@ -50,7 +51,7 @@ static int exynos_asv_update_cpu_opps(struct exynos_asv *asv,
 		opp = dev_pm_opp_find_freq_exact(cpu, opp_freq * MHZ, true);
 		if (IS_ERR(opp)) {
 			dev_info(asv->dev, "cpu%d opp%d, freq: %u missing\n",
-				 cpu->id, i, opp_freq);
+				 cpu_id, i, opp_freq);
 
 			continue;
 		}
@@ -67,11 +68,11 @@ static int exynos_asv_update_cpu_opps(struct exynos_asv *asv,
 		if (ret < 0)
 			dev_err(asv->dev,
 				"Failed to adjust OPP %u Hz/%u uV for cpu%d\n",
-				opp_freq, new_volt, cpu->id);
+				opp_freq, new_volt, cpu_id);
 		else
 			dev_dbg(asv->dev,
 				"Adjusted OPP %u Hz/%u -> %u uV, cpu%d\n",
-				opp_freq, volt, new_volt, cpu->id);
+				opp_freq, volt, new_volt, cpu_id);
 	}
 
 	return 0;

@@ -211,7 +211,7 @@ static ssize_t cpu_capacity_show(struct device *dev,
 {
 	struct cpu *cpu = to_cpu(dev);
 
-	return sysfs_emit(buf, "%lu\n", topology_get_cpu_scale(cpu->dev.id));
+	return sysfs_emit(buf, "%lu\n", topology_get_cpu_scale(cpu->cpuid));
 }
 
 static void update_topology_flags_workfn(struct work_struct *work);

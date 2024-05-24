@@ -746,7 +746,7 @@ static inline u64 __init sgx_calc_section_metric(u64 low, u64 high)
 #ifdef CONFIG_NUMA
 static ssize_t sgx_total_bytes_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return sysfs_emit(buf, "%lu\n", sgx_numa_nodes[dev->id].size);
+	return sysfs_emit(buf, "%lu\n", sgx_numa_nodes[get_device_id(dev)].size);
 }
 static DEVICE_ATTR_RO(sgx_total_bytes);
 

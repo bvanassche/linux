@@ -25,6 +25,7 @@ struct device_node;
 struct attribute_group;
 
 struct cpu {
+	u32 cpuid;
 	int node_id;		/* The node which contains the CPU */
 	int hotpluggable;	/* creates sysfs control file if hotpluggable */
 	struct device dev;

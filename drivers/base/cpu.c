@@ -68,11 +68,16 @@ const struct cpu *to_const_cpu(const struct device *dev)
 }
 EXPORT_SYMBOL_GPL(to_const_cpu);
 
+static u32 cpu_get_cpuid(struct device *dev)
+{
+	return to_cpu(dev)->cpuid;
+}
+
 #ifdef CONFIG_HOTPLUG_CPU
 static void change_cpu_under_node(struct cpu *cpu,
 			unsigned int from_nid, unsigned int to_nid)
 {
-	int cpuid = cpu->dev.id;
+	int cpuid = cpu->cpuid;
 	unregister_cpu_under_node(cpuid, from_nid);
 	register_cpu_under_node(cpuid, to_nid);
 	cpu->node_id = to_nid;
@@ -81,7 +86,7 @@ static void change_cpu_under_node(struct cpu *cpu,
 static int cpu_subsys_online(struct device *dev)
 {
 	struct cpu *cpu = to_cpu(dev);
-	int cpuid = dev->id;
+	int cpuid = cpu->cpuid;
 	int from_nid, to_nid;
 	int ret;
 	int retries = 0;
@@ -126,7 +131,7 @@ static int cpu_subsys_offline(struct device *dev)
 
 void unregister_cpu(struct cpu *cpu)
 {
-	int logical_cpu = cpu->dev.id;
+	int logical_cpu = cpu->cpuid;
 
 	unregister_cpu_under_node(logical_cpu, cpu_to_node(logical_cpu));
 
@@ -188,7 +193,7 @@ static ssize_t crash_notes_show(struct device *dev,
 	unsigned long long addr;
 	int cpunum;
 
-	cpunum = cpu->dev.id;
+	cpunum = cpu->cpuid;
 
 	/*
 	 * Might be reading other cpu's data based on which cpu read thread
@@ -384,6 +389,7 @@ const struct bus_type cpu_subsys = {
 	.name = "cpu",
 	.dev_name = "cpu",
 	.match = cpu_subsys_match,
+	.get_id = cpu_get_cpuid,
 #ifdef CONFIG_HOTPLUG_CPU
 	.online = cpu_subsys_online,
 	.offline = cpu_subsys_offline,
@@ -408,7 +414,7 @@ int register_cpu(struct cpu *cpu, int num)
 
 	cpu->node_id = cpu_to_node(num);
 	memset(&cpu->dev, 0x00, sizeof(struct device));
-	cpu->dev.id = num;
+	cpu->cpuid = num;
 	cpu->dev.bus = &cpu_subsys;
 	cpu->dev.release = cpu_device_release;
 	cpu->dev.offline_disabled = !cpu->hotpluggable;

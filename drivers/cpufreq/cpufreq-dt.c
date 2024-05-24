@@ -70,7 +70,7 @@ static const char *find_supply_name(struct device *dev)
 {
 	struct device_node *np __free(device_node) = of_node_get(dev->of_node);
 	struct property *pp;
-	int cpu = dev->id;
+	int cpu = to_cpu(dev)->cpuid;
 
 	/* This must be valid for sure */
 	if (WARN_ON(!np))

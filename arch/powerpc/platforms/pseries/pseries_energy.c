@@ -236,7 +236,7 @@ static ssize_t get_best_energy_data(struct device *dev,
 		flags |= FLAGS_ACTIVATE;
 
 	rc = plpar_hcall9(H_BEST_ENERGY, retbuf, flags,
-				cpu_to_drc_index(dev->id),
+				cpu_to_drc_index(to_cpu(dev)->cpuid),
 				0, 0, 0, 0, 0, 0, 0);
 
 	if (rc != H_SUCCESS)

@@ -139,7 +139,7 @@ static ssize_t therm_throt_device_show_##event##_##name(		\
 			struct device_attribute *attr,			\
 			char *buf)					\
 {									\
-	unsigned int cpu = dev->id;					\
+	unsigned int cpu = to_cpu(dev)->cpuid;				\
 	ssize_t ret;							\
 									\
 	preempt_disable();	/* CPU hotplug */			\

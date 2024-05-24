@@ -18,7 +18,8 @@
 static ssize_t name##_show(struct device *dev,				\
 			   struct device_attribute *attr, char *buf)	\
 {									\
-	return sysfs_emit(buf, fmt "\n", topology_##name(dev->id));	\
+	return sysfs_emit(buf, fmt "\n",				\
+			  topology_##name(get_device_id(dev)));		\
 }
 
 #define define_siblings_read_func(name, mask)					\
@@ -28,7 +29,8 @@ static ssize_t name##_read(struct file *file, struct kobject *kobj,		\
 {										\
 	struct device *dev = kobj_to_dev(kobj);                                 \
 										\
-	return cpumap_print_bitmask_to_buf(buf, topology_##mask(dev->id),	\
+	return cpumap_print_bitmask_to_buf(buf,					\
+					   topology_##mask(get_device_id(dev)),	\
 					   off, count);                         \
 }										\
 										\
@@ -38,7 +40,8 @@ static ssize_t name##_list_read(struct file *file, struct kobject *kobj,	\
 {										\
 	struct device *dev = kobj_to_dev(kobj);					\
 										\
-	return cpumap_print_list_to_buf(buf, topology_##mask(dev->id),		\
+	return cpumap_print_list_to_buf(buf,					\
+					topology_##mask(get_device_id(dev)),	\
 					off, count);				\
 }
 
@@ -155,7 +158,8 @@ static struct attribute *default_attrs[] = {
 static umode_t topology_is_visible(struct kobject *kobj,
 				   struct attribute *attr, int unused)
 {
-	if (attr == &dev_attr_ppin.attr && !topology_ppin(kobj_to_dev(kobj)->id))
+	if (attr == &dev_attr_ppin.attr &&
+	    !topology_ppin(get_device_id(kobj_to_dev(kobj))))
 		return 0;
 
 	return attr->mode;

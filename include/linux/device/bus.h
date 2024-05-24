@@ -99,6 +99,8 @@ struct bus_type {
 	int (*dma_configure)(struct device *dev);
 	void (*dma_cleanup)(struct device *dev);
 
+	u32 (*get_id)(struct device *dev);
+
 	const struct dev_pm_ops *pm;
 
 	bool need_parent_lock;

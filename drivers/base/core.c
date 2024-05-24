@@ -3527,6 +3527,16 @@ int dev_set_name(struct device *dev, const char *fmt, ...)
 }
 EXPORT_SYMBOL_GPL(dev_set_name);
 
+int get_device_id(struct device *dev)
+{
+	if (dev->bus && dev->bus->get_id)
+		return dev->bus->get_id(dev);
+	if (dev->class && dev->class->get_id)
+		return dev->class->get_id(dev);
+	return dev->id;
+}
+EXPORT_SYMBOL_GPL(get_device_id);
+
 /* select a /sys/dev/ directory for the device */
 static struct kobject *device_to_dev_kobj(struct device *dev)
 {
@@ -3633,7 +3643,8 @@ int device_add(struct device *dev)
 		error = 0;
 	/* subsystems can specify simple device enumeration */
 	else if (dev->bus && dev->bus->dev_name)
-		error = dev_set_name(dev, "%s%u", dev->bus->dev_name, dev->id);
+		error = dev_set_name(dev, "%s%u", dev->bus->dev_name,
+				     get_device_id(dev));
 	else
 		error = -EINVAL;
 	if (error)

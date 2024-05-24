@@ -895,6 +895,8 @@ static inline const char *dev_bus_name(const struct device *dev)
 
 __printf(2, 3) int dev_set_name(struct device *dev, const char *name, ...);
 
+int get_device_id(struct device *dev);
+
 #ifdef CONFIG_NUMA
 static inline int dev_to_node(struct device *dev)
 {

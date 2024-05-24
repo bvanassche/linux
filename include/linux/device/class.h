@@ -53,6 +53,8 @@ struct class {
 	const struct attribute_group	**class_groups;
 	const struct attribute_group	**dev_groups;
 
+	u32 (*get_id)(const struct device *dev);
+
 	int (*dev_uevent)(const struct device *dev, struct kobj_uevent_env *env);
 	char *(*devnode)(const struct device *dev, umode_t *mode);
 

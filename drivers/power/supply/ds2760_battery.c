@@ -681,7 +681,7 @@ static int w1_ds2760_add_slave(struct w1_slave *sl)
 		goto di_alloc_failed;
 	}
 
-	snprintf(name, sizeof(name), "ds2760-battery.%d", dev->id);
+	snprintf(name, sizeof(name), "ds2760-battery.%d", get_device_id(dev));
 
 	di->dev				= dev;
 	di->bat_desc.name		= name;

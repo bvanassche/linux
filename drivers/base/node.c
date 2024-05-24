@@ -21,9 +21,15 @@
 #include <linux/swap.h>
 #include <linux/slab.h>
 
+static u32 node_get_id(struct device *dev)
+{
+	return to_node(dev)->id;
+}
+
 static const struct bus_type node_subsys = {
 	.name = "node",
 	.dev_name = "node",
+	.get_id = node_get_id,
 };
 
 static inline ssize_t cpumap_read(struct file *file, struct kobject *kobj,
@@ -38,7 +44,7 @@ static inline ssize_t cpumap_read(struct file *file, struct kobject *kobj,
 	if (!alloc_cpumask_var(&mask, GFP_KERNEL))
 		return 0;
 
-	cpumask_and(mask, cpumask_of_node(node_dev->dev.id), cpu_online_mask);
+	cpumask_and(mask, cpumask_of_node(node_dev->id), cpu_online_mask);
 	n = cpumap_print_bitmask_to_buf(buf, mask, off, count);
 	free_cpumask_var(mask);
 
@@ -59,7 +65,7 @@ static inline ssize_t cpulist_read(struct file *file, struct kobject *kobj,
 	if (!alloc_cpumask_var(&mask, GFP_KERNEL))
 		return 0;
 
-	cpumask_and(mask, cpumask_of_node(node_dev->dev.id), cpu_online_mask);
+	cpumask_and(mask, cpumask_of_node(node_dev->id), cpu_online_mask);
 	n = cpumap_print_list_to_buf(buf, mask, off, count);
 	free_cpumask_var(mask);
 
@@ -371,7 +377,7 @@ static ssize_t node_read_meminfo(struct device *dev,
 			struct device_attribute *attr, char *buf)
 {
 	int len = 0;
-	int nid = dev->id;
+	int nid = to_node(dev)->id;
 	struct pglist_data *pgdat = NODE_DATA(nid);
 	struct sysinfo i;
 	unsigned long sreclaimable, sunreclaimable;
@@ -496,6 +502,8 @@ static DEVICE_ATTR(meminfo, 0444, node_read_meminfo, NULL);
 static ssize_t node_read_numastat(struct device *dev,
 				  struct device_attribute *attr, char *buf)
 {
+	const u32 id = to_node(dev)->id;
+
 	fold_vm_numa_events();
 	return sysfs_emit(buf,
 			  "numa_hit %lu\n"
@@ -504,19 +512,19 @@ static ssize_t node_read_numastat(struct device *dev,
 			  "interleave_hit %lu\n"
 			  "local_node %lu\n"
 			  "other_node %lu\n",
-			  sum_zone_numa_event_state(dev->id, NUMA_HIT),
-			  sum_zone_numa_event_state(dev->id, NUMA_MISS),
-			  sum_zone_numa_event_state(dev->id, NUMA_FOREIGN),
-			  sum_zone_numa_event_state(dev->id, NUMA_INTERLEAVE_HIT),
-			  sum_zone_numa_event_state(dev->id, NUMA_LOCAL),
-			  sum_zone_numa_event_state(dev->id, NUMA_OTHER));
+			  sum_zone_numa_event_state(id, NUMA_HIT),
+			  sum_zone_numa_event_state(id, NUMA_MISS),
+			  sum_zone_numa_event_state(id, NUMA_FOREIGN),
+			  sum_zone_numa_event_state(id, NUMA_INTERLEAVE_HIT),
+			  sum_zone_numa_event_state(id, NUMA_LOCAL),
+			  sum_zone_numa_event_state(id, NUMA_OTHER));
 }
 static DEVICE_ATTR(numastat, 0444, node_read_numastat, NULL);
 
 static ssize_t node_read_vmstat(struct device *dev,
 				struct device_attribute *attr, char *buf)
 {
-	int nid = dev->id;
+	int nid = to_node(dev)->id;
 	struct pglist_data *pgdat = NODE_DATA(nid);
 	int i;
 	int len = 0;
@@ -550,7 +558,7 @@ static DEVICE_ATTR(vmstat, 0444, node_read_vmstat, NULL);
 static ssize_t node_read_distance(struct device *dev,
 				  struct device_attribute *attr, char *buf)
 {
-	int nid = dev->id;
+	int nid = to_node(dev)->id;
 	int len = 0;
 	int i;
 
@@ -615,7 +623,7 @@ static int register_node(struct node *node, int num)
 {
 	int error;
 
-	node->dev.id = num;
+	node->id = num;
 	node->dev.bus = &node_subsys;
 	node->dev.release = node_device_release;
 	node->dev.groups = node_dev_groups;

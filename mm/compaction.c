@@ -3008,7 +3008,7 @@ static ssize_t compact_store(struct device *dev,
 			     struct device_attribute *attr,
 			     const char *buf, size_t count)
 {
-	int nid = dev->id;
+	int nid = to_node(dev)->id;
 
 	if (nid >= 0 && nid < nr_node_ids && node_online(nid)) {
 		/* Flush pending updates to the LRU lists */

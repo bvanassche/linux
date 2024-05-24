@@ -38,6 +38,7 @@
 
 #include <linux/kernel.h>
 #include <linux/mm.h>
+#include <linux/node.h>
 #include <linux/page-flags.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
@@ -97,7 +98,7 @@ static ssize_t _name##_show(struct device *dev,			\
 			    char *buf)				\
 {								\
 	struct memory_failure_stats *mf_stats =			\
-		&NODE_DATA(dev->id)->mf_stats;			\
+		&NODE_DATA(to_node(dev)->id)->mf_stats;	\
 	return sprintf(buf, "%lu\n", mf_stats->_name);		\
 }								\
 static DEVICE_ATTR_RO(_name)

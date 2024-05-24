@@ -94,6 +94,7 @@ static inline void node_set_perf_attrs(unsigned int nid,
 
 struct node {
 	struct device	dev;
+	u32 id;
 	struct list_head access_list;
 #ifdef CONFIG_HMEM_REPORTING
 	struct list_head cache_attrs;

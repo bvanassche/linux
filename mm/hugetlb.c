@@ -4444,7 +4444,7 @@ static struct hstate *kobj_to_node_hstate(struct kobject *kobj, int *nidp)
 void hugetlb_unregister_node(struct node *node)
 {
 	struct hstate *h;
-	struct node_hstate *nhs = &node_hstates[node->dev.id];
+	struct node_hstate *nhs = &node_hstates[node->id];
 
 	if (!nhs->hugepages_kobj)
 		return;		/* no hstate attributes */
@@ -4474,7 +4474,7 @@ void hugetlb_unregister_node(struct node *node)
 void hugetlb_register_node(struct node *node)
 {
 	struct hstate *h;
-	struct node_hstate *nhs = &node_hstates[node->dev.id];
+	struct node_hstate *nhs = &node_hstates[node->id];
 	int err;
 
 	if (!hugetlb_sysfs_initialized)
@@ -4494,7 +4494,7 @@ void hugetlb_register_node(struct node *node)
 						&per_node_hstate_attr_group);
 		if (err) {
 			pr_err("HugeTLB: Unable to add hstate %s for node %d\n",
-				h->name, node->dev.id);
+				h->name, node->id);
 			hugetlb_unregister_node(node);
 			break;
 		}

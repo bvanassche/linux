@@ -65,12 +65,18 @@ static inline unsigned long phys_to_block_id(unsigned long phys)
 	return pfn_to_block_id(PFN_DOWN(phys));
 }
 
+static u32 memory_get_id(struct device *dev)
+{
+	return to_memory_block(dev)->id;
+}
+
 static int memory_subsys_online(struct device *dev);
 static int memory_subsys_offline(struct device *dev);
 
 static const struct bus_type memory_subsys = {
 	.name = MEMORY_CLASS_NAME,
 	.dev_name = MEMORY_CLASS_NAME,
+	.get_id = memory_get_id,
 	.online = memory_subsys_online,
 	.offline = memory_subsys_offline,
 };
@@ -681,7 +687,7 @@ static int __add_memory_block(struct memory_block *memory)
 	int ret;
 
 	memory->dev.bus = &memory_subsys;
-	memory->dev.id = memory->start_section_nr / sections_per_block;
+	memory->id = memory->start_section_nr / sections_per_block;
 	memory->dev.release = memory_block_release;
 	memory->dev.groups = memory_memblk_attr_groups;
 	memory->dev.offline = memory->state == MEM_OFFLINE;
@@ -691,7 +697,7 @@ static int __add_memory_block(struct memory_block *memory)
 		put_device(&memory->dev);
 		return ret;
 	}
-	ret = xa_err(xa_store(&memory_blocks, memory->dev.id, memory,
+	ret = xa_err(xa_store(&memory_blocks, memory->id, memory,
 			      GFP_KERNEL));
 	if (ret)
 		device_unregister(&memory->dev);
@@ -848,7 +854,7 @@ static void remove_memory_block(struct memory_block *memory)
 	if (WARN_ON_ONCE(memory->dev.bus != &memory_subsys))
 		return;
 
-	WARN_ON(xa_erase(&memory_blocks, memory->dev.id) == NULL);
+	WARN_ON(xa_erase(&memory_blocks, memory->id) == NULL);
 
 	if (memory->group) {
 		list_del(&memory->group_next);

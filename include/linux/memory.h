@@ -67,6 +67,7 @@ struct memory_group {
 struct memory_block {
 	unsigned long start_section_nr;
 	unsigned long state;		/* serialized by the dev->lock */
+	u32 id;
 	int online_type;		/* for passing data to online routine */
 	int nid;			/* NID for this memory block */
 	/*

@@ -250,7 +250,6 @@ static int register_balloon(struct device *dev)
 	if (error)
 		return error;
 
-	dev->id = 0;
 	dev->bus = &balloon_subsys;
 	dev->groups = balloon_groups;
 

@@ -65,9 +65,15 @@ struct pcpu {
 	uint32_t flags;
 };
 
+static u32 pcpu_get_id(struct device *dev)
+{
+	return container_of(dev, struct pcpu, dev)->cpu_id;
+}
+
 static const struct bus_type xen_pcpu_subsys = {
 	.name = "xen_cpu",
 	.dev_name = "xen_cpu",
+	.get_id = pcpu_get_id,
 };
 
 static DEFINE_MUTEX(xen_pcpu_lock);
@@ -141,6 +147,11 @@ static struct attribute *pcpu_dev_attrs[] = {
 	NULL
 };
 
+static struct pcpu *to_pcpu(struct device *dev)
+{
+	return container_of(dev, struct pcpu, dev);
+}
+
 static umode_t pcpu_dev_is_visible(struct kobject *kobj,
 				   struct attribute *attr, int idx)
 {
@@ -150,7 +161,7 @@ static umode_t pcpu_dev_is_visible(struct kobject *kobj,
 	 * and assumptions. This basically doesn't add a sys control
 	 * to user, one cannot attempt to offline BSP.
 	 */
-	return dev->id ? attr->mode : 0;
+	return to_pcpu(dev)->cpu_id ? attr->mode : 0;
 }
 
 static const struct attribute_group pcpu_dev_group = {
@@ -226,7 +237,6 @@ static int register_pcpu(struct pcpu *pcpu)
 
 	dev = &pcpu->dev;
 	dev->bus = &xen_pcpu_subsys;
-	dev->id = pcpu->cpu_id;
 	dev->release = pcpu_release;
 	dev->groups = pcpu_dev_groups;
 

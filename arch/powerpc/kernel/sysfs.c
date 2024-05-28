@@ -96,7 +96,7 @@ static ssize_t show_##NAME(struct device *dev, \
 			struct device_attribute *attr, \
 			char *buf) \
 { \
-	struct cpu *cpu = container_of(dev, struct cpu, dev); \
+	struct cpu *cpu = to_cpu(dev); \
 	unsigned long val; \
 	smp_call_function_single(cpu->dev.id, read_##NAME, &val, 1);	\
 	return sprintf(buf, "%lx\n", val); \
@@ -105,7 +105,7 @@ static ssize_t __used \
 	store_##NAME(struct device *dev, struct device_attribute *attr, \
 			const char *buf, size_t count) \
 { \
-	struct cpu *cpu = container_of(dev, struct cpu, dev); \
+	struct cpu *cpu = to_cpu(dev); \
 	unsigned long val; \
 	int ret = sscanf(buf, "%lx", &val); \
 	if (ret != 1) \
@@ -775,7 +775,7 @@ static void read_idle_purr(void *val)
 static ssize_t idle_purr_show(struct device *dev,
 			      struct device_attribute *attr, char *buf)
 {
-	struct cpu *cpu = container_of(dev, struct cpu, dev);
+	struct cpu *cpu = to_cpu(dev);
 	u64 val;
 
 	smp_call_function_single(cpu->dev.id, read_idle_purr, &val, 1);
@@ -805,7 +805,7 @@ static void read_idle_spurr(void *val)
 static ssize_t idle_spurr_show(struct device *dev,
 			       struct device_attribute *attr, char *buf)
 {
-	struct cpu *cpu = container_of(dev, struct cpu, dev);
+	struct cpu *cpu = to_cpu(dev);
 	u64 val;
 
 	smp_call_function_single(cpu->dev.id, read_idle_spurr, &val, 1);
@@ -1140,9 +1140,8 @@ EXPORT_SYMBOL_GPL(sysfs_remove_device_from_node);
 static ssize_t show_physical_id(struct device *dev,
 				struct device_attribute *attr, char *buf)
 {
-	struct cpu *cpu = container_of(dev, struct cpu, dev);
-
-	return sprintf(buf, "%d\n", get_hard_smp_processor_id(cpu->dev.id));
+	return sprintf(buf, "%d\n",
+		       get_hard_smp_processor_id(to_cpu(dev)->cpuid));
 }
 static DEVICE_ATTR(physical_id, 0444, show_physical_id, NULL);
 

@@ -524,7 +524,7 @@ int mte_ptrace_copy_tags(struct task_struct *child, long request,
 static ssize_t mte_tcf_preferred_show(struct device *dev,
 				      struct device_attribute *attr, char *buf)
 {
-	switch (per_cpu(mte_tcf_preferred, dev->id)) {
+	switch (per_cpu(mte_tcf_preferred, to_cpu(dev)->cpuid)) {
 	case MTE_CTRL_TCF_ASYNC:
 		return sysfs_emit(buf, "async\n");
 	case MTE_CTRL_TCF_SYNC:
@@ -552,7 +552,7 @@ static ssize_t mte_tcf_preferred_store(struct device *dev,
 		return -EINVAL;
 
 	device_lock(dev);
-	per_cpu(mte_tcf_preferred, dev->id) = tcf;
+	per_cpu(mte_tcf_preferred, to_cpu(dev)->cpuid) = tcf;
 	device_unlock(dev);
 
 	return count;

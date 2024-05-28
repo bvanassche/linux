@@ -89,7 +89,7 @@ static void p2sb_scan_and_cache_devfn(struct pci_bus *bus, unsigned int devfn)
 		return;
 
 	p2sb_read_bar0(pdev, &cache->res);
-	cache->bus_dev_id = bus->dev.id;
+	cache->bus_dev_id = get_device_id(&bus->dev);
 
 	pci_stop_and_remove_bus_device(pdev);
 }
@@ -197,7 +197,7 @@ int p2sb_bar(struct pci_bus *bus, unsigned int devfn, struct resource *mem)
 		p2sb_get_devfn(&devfn);
 
 	cache = &p2sb_resources[PCI_FUNC(devfn)];
-	if (cache->bus_dev_id != bus->dev.id)
+	if (cache->bus_dev_id != get_device_id(&bus->dev))
 		return -ENODEV;
 
 	if (!p2sb_valid_resource(&cache->res))

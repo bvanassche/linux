@@ -790,7 +790,6 @@ struct device {
 	int		numa_node;	/* NUMA node this device is close to */
 #endif
 	dev_t			devt;	/* dev_t, creates the sysfs "dev" */
-	u32			id;	/* device instance */
 
 	spinlock_t		devres_lock;
 	struct list_head	devres_head;

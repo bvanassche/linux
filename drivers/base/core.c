@@ -3533,7 +3533,8 @@ int get_device_id(struct device *dev)
 		return dev->bus->get_id(dev);
 	if (dev->class && dev->class->get_id)
 		return dev->class->get_id(dev);
-	return dev->id;
+	WARN_ON_ONCE(true); /* To do: remove this debugging code */
+	return 0;
 }
 EXPORT_SYMBOL_GPL(get_device_id);
 

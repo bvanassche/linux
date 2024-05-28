@@ -1221,7 +1221,8 @@ static int __threshold_add_blocks(struct threshold_bank *b)
 static int threshold_create_bank(struct threshold_bank **bp, unsigned int cpu,
 				 unsigned int bank)
 {
-	struct device *dev = this_cpu_read(mce_device);
+	struct mce_device *mce_dev = this_cpu_read(mce_device);
+	struct device *dev = &mce_dev->dev;
 	struct amd_northbridge *nb = NULL;
 	struct threshold_bank *b = NULL;
 	const char *name = get_name(cpu, bank, NULL);

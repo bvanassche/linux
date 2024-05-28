@@ -193,6 +193,7 @@ extern void mce_unregister_decode_chain(struct notifier_block *nb);
 
 #include <linux/percpu.h>
 #include <linux/atomic.h>
+#include <linux/device.h>
 
 extern int mce_p5_enabled;
 
@@ -223,7 +224,13 @@ static inline int apei_smca_report_x86_error(struct cper_ia_proc_ctx *ctx_info,
 
 void mce_setup(struct mce *m);
 void mce_log(struct mce *m);
-DECLARE_PER_CPU(struct device *, mce_device);
+
+struct mce_device {
+	struct device dev;
+	u32 id;
+};
+
+DECLARE_PER_CPU(struct mce_device *, mce_device);
 
 /* Maximum number of MCA banks per CPU. */
 #define MAX_NR_BANKS 64

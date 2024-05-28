@@ -2475,12 +2475,20 @@ static void mce_enable_ce(void *all)
 		__mcheck_cpu_init_timer();
 }
 
+static u32 mce_get_id(struct device *dev)
+{
+	struct mce_device *mce_dev = container_of(dev, typeof(*mce_dev), dev);
+
+	return mce_dev->id;
+}
+
 static const struct bus_type mce_subsys = {
 	.name		= "machinecheck",
 	.dev_name	= "machinecheck",
+	.get_id		= mce_get_id,
 };
 
-DEFINE_PER_CPU(struct device *, mce_device);
+DEFINE_PER_CPU(struct mce_device *, mce_device);
 
 static inline struct mce_bank_dev *attr_to_bank(struct device_attribute *attr)
 {
@@ -2642,18 +2650,20 @@ static void mce_device_release(struct device *dev)
 /* Per CPU device init. All of the CPUs still share the same bank device: */
 static int mce_device_create(unsigned int cpu)
 {
+	struct mce_device *mce_dev;
 	struct device *dev;
 	int err;
 	int i, j;
 
-	dev = per_cpu(mce_device, cpu);
-	if (dev)
+	mce_dev = per_cpu(mce_device, cpu);
+	if (mce_dev)
 		return 0;
 
-	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-	if (!dev)
+	mce_dev = kzalloc(sizeof(*mce_dev), GFP_KERNEL);
+	if (!mce_dev)
 		return -ENOMEM;
-	dev->id  = cpu;
+	dev = &mce_dev->dev;
+	mce_dev->id  = cpu;
 	dev->bus = &mce_subsys;
 	dev->release = &mce_device_release;
 
@@ -2674,7 +2684,7 @@ static int mce_device_create(unsigned int cpu)
 			goto error2;
 	}
 	cpumask_set_cpu(cpu, mce_device_initialized);
-	per_cpu(mce_device, cpu) = dev;
+	per_cpu(mce_device, cpu) = mce_dev;
 
 	return 0;
 error2:
@@ -2691,7 +2701,8 @@ error:
 
 static void mce_device_remove(unsigned int cpu)
 {
-	struct device *dev = per_cpu(mce_device, cpu);
+	struct mce_device *mce_dev = per_cpu(mce_device, cpu);
+	struct device *dev = &mce_dev->dev;
 	int i;
 
 	if (!cpumask_test_cpu(cpu, mce_device_initialized))

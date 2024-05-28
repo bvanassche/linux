@@ -659,12 +659,28 @@ void tick_cleanup_dead_cpu(int cpu)
 #endif
 
 #ifdef CONFIG_SYSFS
+struct tick_dev {
+	struct device dev;
+	u32 id;
+};
+
+static inline struct tick_dev *to_tick_dev(struct device *dev)
+{
+	return container_of(dev, struct tick_dev, dev);
+}
+
+static u32 tick_dev_get_id(struct device *dev)
+{
+	return to_tick_dev(dev)->id;
+}
+
 static const struct bus_type clockevents_subsys = {
 	.name		= "clockevents",
 	.dev_name       = "clockevent",
+	.get_id		= tick_dev_get_id,
 };
 
-static DEFINE_PER_CPU(struct device, tick_percpu_dev);
+static DEFINE_PER_CPU(struct tick_dev, tick_percpu_dev);
 static struct tick_device *tick_get_tick_dev(struct device *dev);
 
 static ssize_t current_device_show(struct device *dev,
@@ -700,7 +716,7 @@ static ssize_t unbind_device_store(struct device *dev,
 	raw_spin_lock_irq(&clockevents_lock);
 	list_for_each_entry(iter, &clockevent_devices, list) {
 		if (!strcmp(iter->name, name)) {
-			ret = __clockevents_try_unbind(iter, dev->id);
+			ret = __clockevents_try_unbind(iter, to_tick_dev(dev)->id);
 			ce = iter;
 			break;
 		}
@@ -710,7 +726,7 @@ static ssize_t unbind_device_store(struct device *dev,
 	 * We hold clockevents_mutex, so ce can't go away
 	 */
 	if (ret == -EAGAIN)
-		ret = clockevents_unbind(ce, dev->id);
+		ret = clockevents_unbind(ce, to_tick_dev(dev)->id);
 	mutex_unlock(&clockevents_mutex);
 	return ret ? ret : count;
 }
@@ -719,14 +735,13 @@ static DEVICE_ATTR_WO(unbind_device);
 #ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
 static struct device tick_bc_dev = {
 	.init_name	= "broadcast",
-	.id		= 0,
 	.bus		= &clockevents_subsys,
 };
 
 static struct tick_device *tick_get_tick_dev(struct device *dev)
 {
 	return dev == &tick_bc_dev ? tick_get_broadcast_device() :
-		&per_cpu(tick_cpu_device, dev->id);
+		&per_cpu(tick_cpu_device, to_tick_dev(dev)->id);
 }
 
 static __init int tick_broadcast_init_sysfs(void)
@@ -740,7 +755,7 @@ static __init int tick_broadcast_init_sysfs(void)
 #else
 static struct tick_device *tick_get_tick_dev(struct device *dev)
 {
-	return &per_cpu(tick_cpu_device, dev->id);
+	return &per_cpu(tick_cpu_device, to_tick_dev(dev)->id);
 }
 static inline int tick_broadcast_init_sysfs(void) { return 0; }
 #endif
@@ -750,10 +765,11 @@ static int __init tick_init_sysfs(void)
 	int cpu;
 
 	for_each_possible_cpu(cpu) {
-		struct device *dev = &per_cpu(tick_percpu_dev, cpu);
+		struct tick_dev *tick_dev = &per_cpu(tick_percpu_dev, cpu);
+		struct device *dev = &tick_dev->dev;
 		int err;
 
-		dev->id = cpu;
+		tick_dev->id = cpu;
 		dev->bus = &clockevents_subsys;
 		err = device_register(dev);
 		if (!err)

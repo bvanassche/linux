@@ -35,6 +35,39 @@ static int cpu_subsys_match(struct device *dev, struct device_driver *drv)
 	return 0;
 }
 
+static void cpu_device_release(struct device *dev)
+{
+	/*
+	 * This is an empty function to prevent the driver core from spitting a
+	 * warning at us.  Yes, I know this is directly opposite of what the
+	 * documentation for the driver core and kobjects say, and the author
+	 * of this code has already been publically ridiculed for doing
+	 * something as foolish as this.  However, at this point in time, it is
+	 * the only way to handle the issue of statically allocated cpu
+	 * devices.  The different architectures will have their cpu device
+	 * code reworked to properly handle this in the near future, so this
+	 * function will then be changed to correctly free up the memory held
+	 * by the cpu device.
+	 *
+	 * Never copy this way of doing things, or you too will be made fun of
+	 * on the linux-kernel list, you have been warned.
+	 */
+}
+
+struct cpu *to_cpu(struct device *dev)
+{
+	WARN_ON_ONCE(dev->release != cpu_device_release);
+
+	return container_of(dev, struct cpu, dev);
+}
+EXPORT_SYMBOL_GPL(to_cpu);
+
+const struct cpu *to_const_cpu(const struct device *dev)
+{
+	return to_cpu((struct device *)dev);
+}
+EXPORT_SYMBOL_GPL(to_const_cpu);
+
 #ifdef CONFIG_HOTPLUG_CPU
 static void change_cpu_under_node(struct cpu *cpu,
 			unsigned int from_nid, unsigned int to_nid)
@@ -47,7 +80,7 @@ static void change_cpu_under_node(struct cpu *cpu,
 
 static int cpu_subsys_online(struct device *dev)
 {
-	struct cpu *cpu = container_of(dev, struct cpu, dev);
+	struct cpu *cpu = to_cpu(dev);
 	int cpuid = dev->id;
 	int from_nid, to_nid;
 	int ret;
@@ -151,7 +184,7 @@ static ssize_t crash_notes_show(struct device *dev,
 				struct device_attribute *attr,
 				char *buf)
 {
-	struct cpu *cpu = container_of(dev, struct cpu, dev);
+	struct cpu *cpu = to_cpu(dev);
 	unsigned long long addr;
 	int cpunum;
 
@@ -310,25 +343,6 @@ static ssize_t crash_hotplug_show(struct device *dev,
 }
 static DEVICE_ATTR_ADMIN_RO(crash_hotplug);
 #endif
-
-static void cpu_device_release(struct device *dev)
-{
-	/*
-	 * This is an empty function to prevent the driver core from spitting a
-	 * warning at us.  Yes, I know this is directly opposite of what the
-	 * documentation for the driver core and kobjects say, and the author
-	 * of this code has already been publically ridiculed for doing
-	 * something as foolish as this.  However, at this point in time, it is
-	 * the only way to handle the issue of statically allocated cpu
-	 * devices.  The different architectures will have their cpu device
-	 * code reworked to properly handle this in the near future, so this
-	 * function will then be changed to correctly free up the memory held
-	 * by the cpu device.
-	 *
-	 * Never copy this way of doing things, or you too will be made fun of
-	 * on the linux-kernel list, you have been warned.
-	 */
-}
 
 #ifdef CONFIG_GENERIC_CPU_AUTOPROBE
 static ssize_t print_cpu_modalias(struct device *dev,
@@ -519,8 +533,9 @@ static const struct attribute_group *cpu_root_attr_groups[] = {
 bool cpu_is_hotpluggable(unsigned int cpu)
 {
 	struct device *dev = get_cpu_device(cpu);
-	return dev && container_of(dev, struct cpu, dev)->hotpluggable
-		&& tick_nohz_cpu_hotpluggable(cpu);
+
+	return dev && to_cpu(dev)->hotpluggable &&
+	       tick_nohz_cpu_hotpluggable(cpu);
 }
 EXPORT_SYMBOL_GPL(cpu_is_hotpluggable);
 

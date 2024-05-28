@@ -69,7 +69,7 @@ void noinstr arch_cpu_idle(void)
 static ssize_t show_idle_count(struct device *dev,
 			       struct device_attribute *attr, char *buf)
 {
-	struct s390_idle_data *idle = &per_cpu(s390_idle, dev->id);
+	struct s390_idle_data *idle = &per_cpu(s390_idle, to_cpu(dev)->cpuid);
 
 	return sysfs_emit(buf, "%lu\n", READ_ONCE(idle->idle_count));
 }
@@ -78,7 +78,7 @@ DEVICE_ATTR(idle_count, 0444, show_idle_count, NULL);
 static ssize_t show_idle_time(struct device *dev,
 			      struct device_attribute *attr, char *buf)
 {
-	struct s390_idle_data *idle = &per_cpu(s390_idle, dev->id);
+	struct s390_idle_data *idle = &per_cpu(s390_idle, to_cpu(dev)->cpuid);
 
 	return sysfs_emit(buf, "%lu\n", READ_ONCE(idle->idle_time) >> 12);
 }

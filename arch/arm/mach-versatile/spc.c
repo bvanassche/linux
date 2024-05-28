@@ -422,7 +422,7 @@ static int ve_init_opp_table(struct device *cpu_dev)
 	int idx, ret = 0, max_opp;
 	struct ve_spc_opp *opps;
 
-	cluster = topology_physical_package_id(cpu_dev->id);
+	cluster = topology_physical_package_id(to_cpu(cpu_dev)->cpuid);
 	cluster = cluster < 0 ? 0 : cluster;
 
 	max_opp = info->num_opps[cluster];
@@ -529,7 +529,7 @@ static struct clk *ve_spc_clk_register(struct device *cpu_dev)
 		return ERR_PTR(-ENOMEM);
 
 	spc->hw.init = &init;
-	spc->cluster = topology_physical_package_id(cpu_dev->id);
+	spc->cluster = topology_physical_package_id(to_cpu(cpu_dev)->cpuid);
 
 	spc->cluster = spc->cluster < 0 ? 0 : spc->cluster;
 
@@ -571,14 +571,14 @@ static int __init ve_spc_clk_init(void)
 			continue;
 		}
 
-		cluster = topology_physical_package_id(cpu_dev->id);
+		cluster = topology_physical_package_id(to_cpu(cpu_dev)->cpuid);
 		if (cluster < 0 || init_opp_table[cluster])
 			continue;
 
 		if (ve_init_opp_table(cpu_dev))
 			pr_warn("failed to initialise cpu%d opp table\n", cpu);
 		else if (dev_pm_opp_set_sharing_cpus(cpu_dev,
-			 topology_core_cpumask(cpu_dev->id)))
+				topology_core_cpumask(to_cpu(cpu_dev)->cpuid)))
 			pr_warn("failed to mark OPPs shared for cpu%d\n", cpu);
 		else
 			init_opp_table[cluster] = true;

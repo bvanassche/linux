@@ -426,7 +426,7 @@ static DEVICE_ATTR_RW(dispatching);
 static ssize_t cpu_polarization_show(struct device *dev,
 				     struct device_attribute *attr, char *buf)
 {
-	int cpu = dev->id;
+	int cpu = to_cpu(dev)->cpuid;
 	ssize_t count;
 
 	mutex_lock(&smp_cpu_state_mutex);
@@ -464,7 +464,7 @@ static struct attribute_group topology_cpu_attr_group = {
 static ssize_t cpu_dedicated_show(struct device *dev,
 				  struct device_attribute *attr, char *buf)
 {
-	int cpu = dev->id;
+	int cpu = to_cpu(dev)->cpuid;
 	ssize_t count;
 
 	mutex_lock(&smp_cpu_state_mutex);

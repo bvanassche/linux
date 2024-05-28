@@ -1010,7 +1010,7 @@ static ssize_t cpu_configure_show(struct device *dev,
 	ssize_t count;
 
 	mutex_lock(&smp_cpu_state_mutex);
-	count = sprintf(buf, "%d\n", pcpu_devices[dev->id].state);
+	count = sprintf(buf, "%d\n", pcpu_devices[to_cpu(dev)->cpuid].state);
 	mutex_unlock(&smp_cpu_state_mutex);
 	return count;
 }
@@ -1031,7 +1031,7 @@ static ssize_t cpu_configure_store(struct device *dev,
 	mutex_lock(&smp_cpu_state_mutex);
 	rc = -EBUSY;
 	/* disallow configuration changes of online cpus */
-	cpu = dev->id;
+	cpu = to_cpu(dev)->cpuid;
 	cpu = smp_get_base_cpu(cpu);
 	for (i = 0; i <= smp_cpu_mtid; i++)
 		if (cpu_online(cpu + i))
@@ -1082,7 +1082,7 @@ static DEVICE_ATTR(configure, 0644, cpu_configure_show, cpu_configure_store);
 static ssize_t show_cpu_address(struct device *dev,
 				struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", pcpu_devices[dev->id].address);
+	return sprintf(buf, "%d\n", pcpu_devices[to_cpu(dev)->cpuid].address);
 }
 static DEVICE_ATTR(address, 0444, show_cpu_address, NULL);
 

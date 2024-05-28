@@ -30,6 +30,8 @@ struct cpu {
 	struct device dev;
 };
 
+extern struct cpu *to_cpu(struct device *dev);
+extern const struct cpu *to_const_cpu(const struct device *dev);
 extern void boot_cpu_init(void);
 extern void boot_cpu_hotplug_init(void);
 extern void cpu_init(void);

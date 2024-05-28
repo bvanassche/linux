@@ -209,7 +209,7 @@ static ssize_t cpu_capacity_show(struct device *dev,
 				 struct device_attribute *attr,
 				 char *buf)
 {
-	struct cpu *cpu = container_of(dev, struct cpu, dev);
+	struct cpu *cpu = to_cpu(dev);
 
 	return sysfs_emit(buf, "%lu\n", topology_get_cpu_scale(cpu->dev.id));
 }

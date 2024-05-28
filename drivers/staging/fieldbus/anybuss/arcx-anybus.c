@@ -38,6 +38,7 @@
 
 struct controller_priv {
 	struct device *class_dev;
+	u32 id;
 	bool common_reset;
 	struct gpio_desc *reset_gpiod;
 	void __iomem *cpld_base;
@@ -218,8 +219,16 @@ static const struct regulator_desc can_power_desc = {
 	.ops = &can_power_ops,
 };
 
+static u32 get_controller_id(const struct device *dev)
+{
+	struct controller_priv *cd = dev_get_drvdata(dev);
+
+	return cd->id;
+}
+
 static const struct class controller_class = {
 	.name = "arcx_anybus_controller",
+	.get_id = get_controller_id,
 };
 
 static DEFINE_IDA(controller_index_ida);
@@ -307,7 +316,7 @@ static int controller_probe(struct platform_device *pdev)
 	cd->class_dev->class = &controller_class;
 	cd->class_dev->groups = controller_attribute_groups;
 	cd->class_dev->parent = dev;
-	cd->class_dev->id = id;
+	cd->id = id;
 	cd->class_dev->release = controller_device_release;
 	dev_set_name(cd->class_dev, "%d", cd->class_dev->id);
 	dev_set_drvdata(cd->class_dev, cd);

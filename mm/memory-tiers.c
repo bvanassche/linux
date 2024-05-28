@@ -20,6 +20,7 @@ struct memory_tier {
 	 * adistance_start .. adistance_start + MEMTIER_CHUNK_SIZE
 	 */
 	int adistance_start;
+	u32 id;
 	struct device dev;
 	/* All the nodes that are part of all the lower memory tiers. */
 	nodemask_t lower_tier_mask;
@@ -44,9 +45,20 @@ static LIST_HEAD(default_memory_types);
 static struct node_memory_type_map node_memory_types[MAX_NUMNODES];
 struct memory_dev_type *default_dram_type;
 
+static inline struct memory_tier *to_memory_tier(struct device *device)
+{
+	return container_of(device, struct memory_tier, dev);
+}
+
+static u32 memory_tier_get_id(struct device *dev)
+{
+	return to_memory_tier(dev)->id;
+}
+
 static const struct bus_type memory_tier_subsys = {
 	.name = "memory_tiering",
 	.dev_name = "memory_tier",
+	.get_id = memory_tier_get_id,
 };
 
 #ifdef CONFIG_MIGRATION
@@ -119,11 +131,6 @@ static bool default_dram_perf_error;
 static struct access_coordinate default_dram_perf;
 static int default_dram_perf_ref_nid = NUMA_NO_NODE;
 static const char *default_dram_perf_ref_source;
-
-static inline struct memory_tier *to_memory_tier(struct device *device)
-{
-	return container_of(device, struct memory_tier, dev);
-}
 
 static __always_inline nodemask_t get_memtier_nodemask(struct memory_tier *memtier)
 {
@@ -219,7 +226,7 @@ static struct memory_tier *find_create_memory_tier(struct memory_dev_type *memty
 	else
 		list_add_tail(&new_memtier->list, &memory_tiers);
 
-	new_memtier->dev.id = adistance >> MEMTIER_CHUNK_BITS;
+	new_memtier->id = adistance >> MEMTIER_CHUNK_BITS;
 	new_memtier->dev.bus = &memory_tier_subsys;
 	new_memtier->dev.release = memory_tier_device_release;
 	new_memtier->dev.groups = memtier_dev_groups;

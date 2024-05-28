@@ -292,9 +292,9 @@ int dell_smbios_call(struct calling_interface_buffer *buffer)
 
 	mutex_lock(&smbios_mutex);
 	list_for_each_entry(priv, &smbios_device_list, list) {
-		if (!selected_dev || priv->device->id >= selected_dev->id) {
+		if (!selected_dev || get_device_id(priv->device) >= get_device_id(selected_dev)) {
 			dev_dbg(priv->device, "Trying device ID: %d\n",
-				priv->device->id);
+				get_device_id(priv->device));
 			call_fn = priv->call_fn;
 			selected_dev = priv->device;
 		}

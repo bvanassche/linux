@@ -1464,13 +1464,18 @@ static struct attribute *clocksource_attrs[] = {
 };
 ATTRIBUTE_GROUPS(clocksource);
 
+static u32 clocksource_get_id(struct device *dev)
+{
+	return 0;
+}
+
 static const struct bus_type clocksource_subsys = {
 	.name = "clocksource",
 	.dev_name = "clocksource",
+	.get_id = clocksource_get_id,
 };
 
 static struct device device_clocksource = {
-	.id	= 0,
 	.bus	= &clocksource_subsys,
 	.groups	= clocksource_groups,
 };

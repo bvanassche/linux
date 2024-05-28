@@ -301,7 +301,7 @@ static int nsim_dev_debugfs_init(struct nsim_dev *nsim_dev)
 	char dev_ddir_name[sizeof(DRV_NAME) + 10];
 	int err;
 
-	sprintf(dev_ddir_name, DRV_NAME "%u", nsim_dev->nsim_bus_dev->dev.id);
+	sprintf(dev_ddir_name, DRV_NAME "%u", nsim_dev->nsim_bus_dev->id);
 	nsim_dev->ddir = debugfs_create_dir(dev_ddir_name, nsim_dev_ddir);
 	if (IS_ERR(nsim_dev->ddir))
 		return PTR_ERR(nsim_dev->ddir);
@@ -402,7 +402,7 @@ static int nsim_dev_port_debugfs_init(struct nsim_dev *nsim_dev,
 	if (IS_ERR(nsim_dev_port->ddir))
 		return PTR_ERR(nsim_dev_port->ddir);
 
-	sprintf(dev_link_name, "../../../" DRV_NAME "%u", nsim_bus_dev->dev.id);
+	sprintf(dev_link_name, "../../../" DRV_NAME "%u", nsim_bus_dev->id);
 	if (nsim_dev_port_is_vf(nsim_dev_port)) {
 		unsigned int vf_id = nsim_dev_port_index_to_vf_index(port_index);
 

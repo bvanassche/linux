@@ -425,6 +425,7 @@ struct nsim_bus_dev {
 				  */
 	unsigned int max_vfs;
 	unsigned int num_vfs;
+	u32 id;
 	bool init;
 };
 

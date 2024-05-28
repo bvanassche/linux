@@ -220,7 +220,7 @@ del_device_store(const struct bus_type *bus, const char *buf, size_t count)
 		return -EBUSY;
 	}
 	list_for_each_entry_safe(nsim_bus_dev, tmp, &nsim_bus_dev_list, list) {
-		if (nsim_bus_dev->dev.id != id)
+		if (nsim_bus_dev->id != id)
 			continue;
 		list_del(&nsim_bus_dev->list);
 		nsim_bus_dev_del(nsim_bus_dev);
@@ -405,9 +405,15 @@ static int nsim_num_vf(struct device *dev)
 	return nsim_bus_dev->num_vfs;
 }
 
+static u32 nsim_get_id(struct device *dev)
+{
+	return to_nsim_bus_dev(dev)->id;
+}
+
 static const struct bus_type nsim_bus = {
 	.name		= DRV_NAME,
 	.dev_name	= DRV_NAME,
+	.get_id		= nsim_get_id,
 	.bus_groups	= nsim_bus_groups,
 	.probe		= nsim_bus_probe,
 	.remove		= nsim_bus_remove,
@@ -429,7 +435,7 @@ nsim_bus_dev_new(unsigned int id, unsigned int port_count, unsigned int num_queu
 	err = ida_alloc_range(&nsim_bus_dev_ids, id, id, GFP_KERNEL);
 	if (err < 0)
 		goto err_nsim_bus_dev_free;
-	nsim_bus_dev->dev.id = err;
+	nsim_bus_dev->id = err;
 	nsim_bus_dev->dev.bus = &nsim_bus;
 	nsim_bus_dev->dev.type = &nsim_bus_dev_type;
 	nsim_bus_dev->port_count = port_count;
@@ -446,7 +452,7 @@ nsim_bus_dev_new(unsigned int id, unsigned int port_count, unsigned int num_queu
 	return nsim_bus_dev;
 
 err_nsim_bus_dev_id_free:
-	ida_free(&nsim_bus_dev_ids, nsim_bus_dev->dev.id);
+	ida_free(&nsim_bus_dev_ids, nsim_bus_dev->id);
 	put_device(&nsim_bus_dev->dev);
 	nsim_bus_dev = NULL;
 err_nsim_bus_dev_free:
@@ -458,7 +464,7 @@ static void nsim_bus_dev_del(struct nsim_bus_dev *nsim_bus_dev)
 {
 	/* Disallow using nsim_bus_dev */
 	smp_store_release(&nsim_bus_dev->init, false);
-	ida_free(&nsim_bus_dev_ids, nsim_bus_dev->dev.id);
+	ida_free(&nsim_bus_dev_ids, nsim_bus_dev->id);
 	device_unregister(&nsim_bus_dev->dev);
 }
 

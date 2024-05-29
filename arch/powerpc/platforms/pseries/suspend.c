@@ -150,7 +150,6 @@ static int pseries_suspend_sysfs_register(struct device *dev)
 	if ((rc = subsys_system_register(&suspend_subsys, NULL)))
 		return rc;
 
-	dev->id = 0;
 	dev->bus = &suspend_subsys;
 
 	dev_root = bus_get_dev_root(&suspend_subsys);

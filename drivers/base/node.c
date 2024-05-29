@@ -32,6 +32,14 @@ static const struct bus_type node_subsys = {
 	.get_id = node_get_id,
 };
 
+struct node *to_node(struct device *device)
+{
+	WARN_ON_ONCE(device->bus != &node_subsys);
+
+	return container_of(device, struct node, dev);
+}
+EXPORT_SYMBOL_GPL(to_node);
+
 static inline ssize_t cpumap_read(struct file *file, struct kobject *kobj,
 				  struct bin_attribute *attr, char *buf,
 				  loff_t off, size_t count)

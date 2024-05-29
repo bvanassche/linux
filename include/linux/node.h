@@ -180,6 +180,6 @@ static inline void unregister_memory_block_under_nodes(struct memory_block *mem_
 }
 #endif
 
-#define to_node(device) container_of(device, struct node, dev)
+struct node *to_node(struct device *device);
 
 #endif /* _LINUX_NODE_H_ */

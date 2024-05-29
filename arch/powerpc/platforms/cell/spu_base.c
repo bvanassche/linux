@@ -465,9 +465,17 @@ void spu_init_channels(struct spu *spu)
 }
 EXPORT_SYMBOL_GPL(spu_init_channels);
 
+static u32 spu_get_id(struct device *dev)
+{
+	struct spu *spu = container_of(dev, typeof(*spu), dev);
+
+	return spu->number;
+}
+
 static struct bus_type spu_subsys = {
 	.name = "spu",
 	.dev_name = "spu",
+	.get_id = spu_get_id,
 };
 
 int spu_add_dev_attr(struct device_attribute *attr)
@@ -537,7 +545,6 @@ static int __init spu_create_dev(struct spu *spu)
 {
 	int ret;
 
-	spu->dev.id = spu->number;
 	spu->dev.bus = &spu_subsys;
 	ret = device_register(&spu->dev);
 	if (ret) {

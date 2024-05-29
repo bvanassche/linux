@@ -28,7 +28,8 @@
 
 struct zorro_dev {
     struct ExpansionRom rom;
-    zorro_id id;
+    int dev_id;	    /* ID used by the driver core. Starts at 0. */
+    zorro_id id;    /* Zorro manufacturer, product and extended product ID. */
     struct device dev;			/* Generic device interface */
     u16 slotaddr;
     u16 slotsize;

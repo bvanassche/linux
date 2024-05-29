@@ -181,7 +181,7 @@ static int __init amiga_zorro_probe(struct platform_device *pdev)
 				z->name, &z->resource);
 		z->dev.parent = &bus->dev;
 		z->dev.bus = &zorro_bus_type;
-		z->dev.id = i;
+		z->dev_id = i;
 		switch (z->rom.er_Type & ERT_TYPEMASK) {
 		case ERT_ZORROIII:
 			z->dev.coherent_dma_mask = DMA_BIT_MASK(32);

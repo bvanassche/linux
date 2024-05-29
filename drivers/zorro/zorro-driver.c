@@ -150,6 +150,13 @@ static int zorro_uevent(const struct device *dev, struct kobj_uevent_env *env)
 	return 0;
 }
 
+static u32 zorro_get_id(struct device *dev)
+{
+	struct zorro_dev *z = container_of(dev, typeof(*z), dev);
+
+	return z->dev_id;
+}
+
 const struct bus_type zorro_bus_type = {
 	.name		= "zorro",
 	.dev_name	= "zorro",
@@ -158,6 +165,7 @@ const struct bus_type zorro_bus_type = {
 	.uevent		= zorro_uevent,
 	.probe		= zorro_device_probe,
 	.remove		= zorro_device_remove,
+	.get_id		= zorro_get_id,
 };
 EXPORT_SYMBOL(zorro_bus_type);
 

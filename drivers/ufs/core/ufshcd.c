@@ -1214,90 +1214,6 @@ static bool ufshcd_is_devfreq_scaling_required(struct ufs_hba *hba,
 	return false;
 }
 
-/*
- * Determine the number of pending commands by counting the bits in the SCSI
- * device budget maps. This approach has been selected because a bit is set in
- * the budget map before scsi_host_queue_ready() checks the host_self_blocked
- * flag. The host_self_blocked flag can be modified by calling
- * scsi_block_requests() or scsi_unblock_requests().
- */
-static u32 ufshcd_pending_cmds(struct ufs_hba *hba)
-{
-	const struct scsi_device *sdev;
-	u32 pending = 0;
-
-	lockdep_assert_held(hba->host->host_lock);
-	__shost_for_each_device(sdev, hba->host)
-		pending += sbitmap_weight(&sdev->budget_map);
-
-	return pending;
-}
-
-/*
- * Wait until all pending SCSI commands and TMFs have finished or the timeout
- * has expired.
- *
- * Return: 0 upon success; -EBUSY upon timeout.
- */
-static int ufshcd_wait_for_doorbell_clr(struct ufs_hba *hba,
-					u64 wait_timeout_us)
-{
-	unsigned long flags;
-	int ret = 0;
-	u32 tm_doorbell;
-	u32 tr_pending;
-	bool timeout = false, do_last_check = false;
-	ktime_t start;
-
-	ufshcd_hold(hba);
-	spin_lock_irqsave(hba->host->host_lock, flags);
-	/*
-	 * Wait for all the outstanding tasks/transfer requests.
-	 * Verify by checking the doorbell registers are clear.
-	 */
-	start = ktime_get();
-	do {
-		if (hba->ufshcd_state != UFSHCD_STATE_OPERATIONAL) {
-			ret = -EBUSY;
-			goto out;
-		}
-
-		tm_doorbell = ufshcd_readl(hba, REG_UTP_TASK_REQ_DOOR_BELL);
-		tr_pending = ufshcd_pending_cmds(hba);
-		if (!tm_doorbell && !tr_pending) {
-			timeout = false;
-			break;
-		} else if (do_last_check) {
-			break;
-		}
-
-		spin_unlock_irqrestore(hba->host->host_lock, flags);
-		io_schedule_timeout(msecs_to_jiffies(20));
-		if (ktime_to_us(ktime_sub(ktime_get(), start)) >
-		    wait_timeout_us) {
-			timeout = true;
-			/*
-			 * We might have scheduled out for long time so make
-			 * sure to check if doorbells are cleared by this time
-			 * or not.
-			 */
-			do_last_check = true;
-		}
-		spin_lock_irqsave(hba->host->host_lock, flags);
-	} while (tm_doorbell || tr_pending);
-
-	if (timeout) {
-		dev_err(hba->dev,
-			"%s: timedout waiting for doorbell to clear (tm=0x%x, tr=0x%x)\n",
-			__func__, tm_doorbell, tr_pending);
-		ret = -EBUSY;
-	}
-out:
-	spin_unlock_irqrestore(hba->host->host_lock, flags);
-	ufshcd_release(hba);
-	return ret;
-}
-
 /**
  * ufshcd_scale_gear - scale up/down UFS gear
  * @hba: per adapter instance
@@ -1350,33 +1266,62 @@ static int ufshcd_scale_gear(struct ufs_hba *hba, bool scale_up)
  */
 static int ufshcd_clock_scaling_prepare(struct ufs_hba *hba, u64 timeout_us)
 {
-	int ret = 0;
-	/*
-	 * make sure that there are no outstanding requests when
-	 * clock scaling is in progress
-	 */
-	blk_mq_quiesce_tagset(&hba->host->tag_set);
+	const unsigned long deadline = jiffies + usecs_to_jiffies(timeout_us);
+	struct scsi_device *sdev;
+
 	mutex_lock(&hba->wb_mutex);
 	down_write(&hba->clk_scaling_lock);
-
-	if (!hba->clk_scaling.is_allowed ||
-	    ufshcd_wait_for_doorbell_clr(hba, timeout_us)) {
-		ret = -EBUSY;
-		up_write(&hba->clk_scaling_lock);
-		mutex_unlock(&hba->wb_mutex);
-		blk_mq_unquiesce_tagset(&hba->host->tag_set);
-		goto out;
-	}
-
-	/* let's not get into low power until clock scaling is completed */
+	/* Prevent that clock gating happens before clock scaling completes. */
 	ufshcd_hold(hba);
 
-out:
-	return ret;
+	if (!hba->clk_scaling.is_allowed ||
+	    hba->ufshcd_state != UFSHCD_STATE_OPERATIONAL)
+		goto busy;
+
+	blk_freeze_queue_start(hba->tmf_queue);
+	shost_for_each_device(sdev, hba->host)
+		blk_freeze_queue_start(sdev->request_queue);
+
+	/*
+	 * Calling synchronize_*rcu_expedited() reduces the wait time from
+	 * milliseconds to less than a microsecond. See also
+	 * https://paulmck.livejournal.com/67547.html.
+	 */
+	if (hba->host->tag_set.flags & BLK_MQ_F_BLOCKING)
+		synchronize_srcu_expedited(hba->host->tag_set.srcu);
+	else
+		synchronize_rcu_expedited();
+
+	if (blk_mq_freeze_queue_wait_timeout(hba->tmf_queue,
+					     max(0, deadline - jiffies)) <= 0)
+		goto timeout;
+	shost_for_each_device(sdev, hba->host) {
+		if (blk_mq_freeze_queue_wait_timeout(sdev->request_queue,
+					max(0, deadline - jiffies)) <= 0)
+			goto timeout;
+	}
+
+	return 0;
+
+timeout:
+	blk_mq_unfreeze_queue(hba->tmf_queue);
+	shost_for_each_device(sdev, hba->host)
+		blk_mq_unfreeze_queue(sdev->request_queue);
+
+busy:
+	dev_err(hba->dev, "%s timed out\n", __func__);
+
+	ufshcd_release(hba);
+	up_write(&hba->clk_scaling_lock);
+	mutex_unlock(&hba->wb_mutex);
+
+	return -EBUSY;
 }
 
 static void ufshcd_clock_scaling_unprepare(struct ufs_hba *hba, int err, bool scale_up)
 {
+	struct scsi_device *sdev;
+
 	up_write(&hba->clk_scaling_lock);
 
 	/* Enable Write Booster if we have scaled up else disable it */
@@ -1385,7 +1330,10 @@ static void ufshcd_clock_scaling_unprepare(struct ufs_hba *hba, int err, bool sc
 
 	mutex_unlock(&hba->wb_mutex);
 
-	blk_mq_unquiesce_tagset(&hba->host->tag_set);
+	blk_mq_unfreeze_queue(hba->tmf_queue);
+	shost_for_each_device(sdev, hba->host)
+		blk_mq_unfreeze_queue(sdev->request_queue);
+
 	ufshcd_release(hba);
 }
 

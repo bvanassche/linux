@@ -6476,7 +6476,7 @@ out:
 	return SUCCESS;
 }
 
-static int pqi_slave_alloc(struct scsi_device *sdev)
+static int pqi_device_alloc(struct scsi_device *sdev)
 {
 	struct pqi_scsi_dev *device;
 	unsigned long flags;
@@ -6560,7 +6560,7 @@ static int pqi_slave_configure(struct scsi_device *sdev)
 	return rc;
 }
 
-static void pqi_slave_destroy(struct scsi_device *sdev)
+static void pqi_device_destroy(struct scsi_device *sdev)
 {
 	struct pqi_ctrl_info *ctrl_info;
 	struct pqi_scsi_dev *device;
@@ -7489,9 +7489,9 @@ static const struct scsi_host_template pqi_driver_template = {
 	.eh_device_reset_handler = pqi_eh_device_reset_handler,
 	.eh_abort_handler = pqi_eh_abort_handler,
 	.ioctl = pqi_ioctl,
-	.slave_alloc = pqi_slave_alloc,
+	.device_alloc = pqi_device_alloc,
 	.slave_configure = pqi_slave_configure,
-	.slave_destroy = pqi_slave_destroy,
+	.device_destroy = pqi_device_destroy,
 	.map_queues = pqi_map_queues,
 	.sdev_groups = pqi_sdev_groups,
 	.shost_groups = pqi_shost_groups,

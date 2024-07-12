@@ -857,7 +857,7 @@ static void slave_adjust_steering_mode(struct mlx4_dev *dev,
 		 mlx4_steering_mode_str(dev->caps.steering_mode));
 }
 
-static void mlx4_slave_destroy_special_qp_cap(struct mlx4_dev *dev)
+static void mlx4_device_destroy_special_qp_cap(struct mlx4_dev *dev)
 {
 	kfree(dev->caps.spec_qps);
 	dev->caps.spec_qps = NULL;
@@ -900,7 +900,7 @@ static int mlx4_slave_special_qp_cap(struct mlx4_dev *dev)
 
 err_mem:
 	if (err)
-		mlx4_slave_destroy_special_qp_cap(dev);
+		mlx4_device_destroy_special_qp_cap(dev);
 	kfree(func_cap);
 	return err;
 }
@@ -1084,7 +1084,7 @@ static int mlx4_slave_cap(struct mlx4_dev *dev)
 
 err_mem:
 	if (err)
-		mlx4_slave_destroy_special_qp_cap(dev);
+		mlx4_device_destroy_special_qp_cap(dev);
 free_mem:
 	kfree(hca_param);
 	kfree(func_cap);
@@ -2509,7 +2509,7 @@ unmap_bf:
 	unmap_bf_area(dev);
 
 	if (mlx4_is_slave(dev))
-		mlx4_slave_destroy_special_qp_cap(dev);
+		mlx4_device_destroy_special_qp_cap(dev);
 
 err_close:
 	if (mlx4_is_slave(dev))
@@ -3755,7 +3755,7 @@ err_master_mfunc:
 	}
 
 	if (mlx4_is_slave(dev))
-		mlx4_slave_destroy_special_qp_cap(dev);
+		mlx4_device_destroy_special_qp_cap(dev);
 
 err_close:
 	mlx4_close_hca(dev);
@@ -4165,7 +4165,7 @@ static void mlx4_unload_one(struct pci_dev *pdev)
 	if (!mlx4_is_slave(dev))
 		mlx4_free_ownership(dev);
 
-	mlx4_slave_destroy_special_qp_cap(dev);
+	mlx4_device_destroy_special_qp_cap(dev);
 	kfree(dev->dev_vfs);
 
 	mlx4_adev_cleanup(dev);

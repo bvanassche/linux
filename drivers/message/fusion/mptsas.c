@@ -1867,7 +1867,7 @@ mptsas_target_destroy(struct scsi_target *starget)
 
 
 static int
-mptsas_slave_alloc(struct scsi_device *sdev)
+mptsas_device_alloc(struct scsi_device *sdev)
 {
 	struct Scsi_Host	*host = sdev->host;
 	MPT_SCSI_HOST		*hd = shost_priv(host);
@@ -1880,7 +1880,7 @@ mptsas_slave_alloc(struct scsi_device *sdev)
 
 	vdevice = kzalloc(sizeof(VirtDevice), GFP_KERNEL);
 	if (!vdevice) {
-		printk(MYIOC_s_ERR_FMT "slave_alloc kzalloc(%zd) FAILED!\n",
+		printk(MYIOC_s_ERR_FMT "device_alloc kzalloc(%zd) FAILED!\n",
 				ioc->name, sizeof(VirtDevice));
 		return -ENOMEM;
 	}
@@ -2005,10 +2005,10 @@ static const struct scsi_host_template mptsas_driver_template = {
 	.info				= mptscsih_info,
 	.queuecommand			= mptsas_qcmd,
 	.target_alloc			= mptsas_target_alloc,
-	.slave_alloc			= mptsas_slave_alloc,
+	.device_alloc			= mptsas_device_alloc,
 	.slave_configure		= mptsas_slave_configure,
 	.target_destroy			= mptsas_target_destroy,
-	.slave_destroy			= mptscsih_slave_destroy,
+	.device_destroy			= mptscsih_device_destroy,
 	.change_queue_depth 		= mptscsih_change_queue_depth,
 	.eh_timed_out			= mptsas_eh_timed_out,
 	.eh_abort_handler		= mptscsih_abort,

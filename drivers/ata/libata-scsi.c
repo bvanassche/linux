@@ -1096,7 +1096,7 @@ int ata_scsi_dev_config(struct scsi_device *sdev, struct queue_limits *lim,
 }
 
 /**
- *	ata_scsi_slave_alloc - Early setup of SCSI device
+ *	ata_scsi_device_alloc - Early setup of SCSI device
  *	@sdev: SCSI device to examine
  *
  *	This is called from scsi_alloc_sdev() when the scsi device
@@ -1106,7 +1106,7 @@ int ata_scsi_dev_config(struct scsi_device *sdev, struct queue_limits *lim,
  *	Defined by SCSI layer.  We don't really care.
  */
 
-int ata_scsi_slave_alloc(struct scsi_device *sdev)
+int ata_scsi_device_alloc(struct scsi_device *sdev)
 {
 	struct ata_port *ap = ata_shost_to_port(sdev->host);
 	struct device_link *link;
@@ -1129,7 +1129,7 @@ int ata_scsi_slave_alloc(struct scsi_device *sdev)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(ata_scsi_slave_alloc);
+EXPORT_SYMBOL_GPL(ata_scsi_device_alloc);
 
 /**
  *	ata_scsi_device_configure - Set SCSI device attributes
@@ -1158,7 +1158,7 @@ int ata_scsi_device_configure(struct scsi_device *sdev,
 EXPORT_SYMBOL_GPL(ata_scsi_device_configure);
 
 /**
- *	ata_scsi_slave_destroy - SCSI device is about to be destroyed
+ *	ata_scsi_device_destroy - SCSI device is about to be destroyed
  *	@sdev: SCSI device to be destroyed
  *
  *	@sdev is about to be destroyed for hot/warm unplugging.  If
@@ -1171,7 +1171,7 @@ EXPORT_SYMBOL_GPL(ata_scsi_device_configure);
  *	LOCKING:
  *	Defined by SCSI layer.  We don't really care.
  */
-void ata_scsi_slave_destroy(struct scsi_device *sdev)
+void ata_scsi_device_destroy(struct scsi_device *sdev)
 {
 	struct ata_port *ap = ata_shost_to_port(sdev->host);
 	unsigned long flags;
@@ -1191,7 +1191,7 @@ void ata_scsi_slave_destroy(struct scsi_device *sdev)
 
 	kfree(sdev->dma_drain_buf);
 }
-EXPORT_SYMBOL_GPL(ata_scsi_slave_destroy);
+EXPORT_SYMBOL_GPL(ata_scsi_device_destroy);
 
 /**
  *	ata_scsi_start_stop_xlat - Translate SCSI START STOP UNIT command

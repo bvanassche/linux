@@ -816,7 +816,7 @@ static int uas_target_alloc(struct scsi_target *starget)
 	return 0;
 }
 
-static int uas_slave_alloc(struct scsi_device *sdev)
+static int uas_device_alloc(struct scsi_device *sdev)
 {
 	struct uas_dev_info *devinfo =
 		(struct uas_dev_info *)sdev->host->hostdata;
@@ -904,7 +904,7 @@ static const struct scsi_host_template uas_host_template = {
 	.name = "uas",
 	.queuecommand = uas_queuecommand,
 	.target_alloc = uas_target_alloc,
-	.slave_alloc = uas_slave_alloc,
+	.device_alloc = uas_device_alloc,
 	.device_configure = uas_device_configure,
 	.eh_abort_handler = uas_eh_abort_handler,
 	.eh_device_reset_handler = uas_eh_device_reset_handler,

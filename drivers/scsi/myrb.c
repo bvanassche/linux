@@ -1620,7 +1620,7 @@ static int myrb_queuecommand(struct Scsi_Host *shost,
 	return myrb_pthru_queuecommand(shost, scmd);
 }
 
-static int myrb_ldev_slave_alloc(struct scsi_device *sdev)
+static int myrb_ldev_device_alloc(struct scsi_device *sdev)
 {
 	struct myrb_hba *cb = shost_priv(sdev->host);
 	struct myrb_ldev_info *ldev_info;
@@ -1666,7 +1666,7 @@ static int myrb_ldev_slave_alloc(struct scsi_device *sdev)
 	return 0;
 }
 
-static int myrb_pdev_slave_alloc(struct scsi_device *sdev)
+static int myrb_pdev_device_alloc(struct scsi_device *sdev)
 {
 	struct myrb_hba *cb = shost_priv(sdev->host);
 	struct myrb_pdev_state *pdev_info;
@@ -1702,7 +1702,7 @@ static int myrb_pdev_slave_alloc(struct scsi_device *sdev)
 	return 0;
 }
 
-static int myrb_slave_alloc(struct scsi_device *sdev)
+static int myrb_device_alloc(struct scsi_device *sdev)
 {
 	if (sdev->channel > myrb_logical_channel(sdev->host))
 		return -ENXIO;
@@ -1711,9 +1711,9 @@ static int myrb_slave_alloc(struct scsi_device *sdev)
 		return -ENXIO;
 
 	if (sdev->channel == myrb_logical_channel(sdev->host))
-		return myrb_ldev_slave_alloc(sdev);
+		return myrb_ldev_device_alloc(sdev);
 
-	return myrb_pdev_slave_alloc(sdev);
+	return myrb_pdev_device_alloc(sdev);
 }
 
 static int myrb_slave_configure(struct scsi_device *sdev)
@@ -1742,7 +1742,7 @@ static int myrb_slave_configure(struct scsi_device *sdev)
 	return 0;
 }
 
-static void myrb_slave_destroy(struct scsi_device *sdev)
+static void myrb_device_destroy(struct scsi_device *sdev)
 {
 	kfree(sdev->hostdata);
 }
@@ -2209,9 +2209,9 @@ static const struct scsi_host_template myrb_template = {
 	.proc_name		= "myrb",
 	.queuecommand		= myrb_queuecommand,
 	.eh_host_reset_handler	= myrb_host_reset,
-	.slave_alloc		= myrb_slave_alloc,
+	.device_alloc		= myrb_device_alloc,
 	.slave_configure	= myrb_slave_configure,
-	.slave_destroy		= myrb_slave_destroy,
+	.device_destroy		= myrb_device_destroy,
 	.bios_param		= myrb_biosparam,
 	.cmd_size		= sizeof(struct myrb_cmdblk),
 	.shost_groups		= myrb_shost_groups,

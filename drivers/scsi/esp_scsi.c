@@ -2441,7 +2441,7 @@ static void esp_target_destroy(struct scsi_target *starget)
 	tp->starget = NULL;
 }
 
-static int esp_slave_alloc(struct scsi_device *dev)
+static int esp_device_alloc(struct scsi_device *dev)
 {
 	struct esp *esp = shost_priv(dev->host);
 	struct esp_target_data *tp = &esp->target[dev->id];
@@ -2479,7 +2479,7 @@ static int esp_slave_configure(struct scsi_device *dev)
 	return 0;
 }
 
-static void esp_slave_destroy(struct scsi_device *dev)
+static void esp_device_destroy(struct scsi_device *dev)
 {
 	struct esp_lun_data *lp = dev->hostdata;
 
@@ -2667,9 +2667,9 @@ const struct scsi_host_template scsi_esp_template = {
 	.queuecommand		= esp_queuecommand,
 	.target_alloc		= esp_target_alloc,
 	.target_destroy		= esp_target_destroy,
-	.slave_alloc		= esp_slave_alloc,
+	.device_alloc		= esp_device_alloc,
 	.slave_configure	= esp_slave_configure,
-	.slave_destroy		= esp_slave_destroy,
+	.device_destroy		= esp_device_destroy,
 	.eh_abort_handler	= esp_eh_abort_handler,
 	.eh_bus_reset_handler	= esp_eh_bus_reset_handler,
 	.eh_host_reset_handler	= esp_eh_host_reset_handler,

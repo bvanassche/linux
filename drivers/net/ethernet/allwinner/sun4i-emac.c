@@ -947,12 +947,12 @@ static int emac_configure_dma(struct emac_board_info *db)
 	if (err) {
 		netdev_err(ndev, "config dma slave failed\n");
 		err = -EINVAL;
-		goto out_slave_configure_err;
+		goto out_device_configure_err;
 	}
 
 	return err;
 
-out_slave_configure_err:
+out_device_configure_err:
 	dma_release_channel(db->rx_chan);
 
 out_clear_chan:

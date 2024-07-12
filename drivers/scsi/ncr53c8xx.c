@@ -7796,7 +7796,8 @@ static int ncr53c8xx_device_alloc(struct scsi_device *device)
 	return 0;
 }
 
-static int ncr53c8xx_slave_configure(struct scsi_device *device)
+static int ncr53c8xx_device_configure(struct scsi_device *device,
+				      struct queue_limits *lim)
 {
 	struct Scsi_Host *host = device->host;
 	struct ncb *np = ((struct host_data *) host->hostdata)->ncb;
@@ -8093,7 +8094,7 @@ struct Scsi_Host * __init ncr_attach(struct scsi_host_template *tpnt,
 		tpnt->shost_groups = ncr53c8xx_host_groups;
 
 	tpnt->queuecommand	= ncr53c8xx_queue_command;
-	tpnt->slave_configure	= ncr53c8xx_slave_configure;
+	tpnt->device_configure	= ncr53c8xx_device_configure;
 	tpnt->device_alloc	= ncr53c8xx_device_alloc;
 	tpnt->eh_bus_reset_handler = ncr53c8xx_bus_reset;
 	tpnt->can_queue		= SCSI_NCR_CAN_QUEUE;

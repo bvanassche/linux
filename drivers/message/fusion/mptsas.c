@@ -1710,7 +1710,7 @@ mptsas_firmware_event_work(struct work_struct *work)
 
 
 static int
-mptsas_slave_configure(struct scsi_device *sdev)
+mptsas_device_configure(struct scsi_device *sdev, struct queue_limits *lim)
 {
 	struct Scsi_Host	*host = sdev->host;
 	MPT_SCSI_HOST	*hd = shost_priv(host);
@@ -1736,7 +1736,7 @@ mptsas_slave_configure(struct scsi_device *sdev)
 	mptsas_add_device_component_starget(ioc, scsi_target(sdev));
 
  out:
-	return mptscsih_slave_configure(sdev);
+	return mptscsih_device_configure(sdev, lim);
 }
 
 static int
@@ -2006,7 +2006,7 @@ static const struct scsi_host_template mptsas_driver_template = {
 	.queuecommand			= mptsas_qcmd,
 	.target_alloc			= mptsas_target_alloc,
 	.device_alloc			= mptsas_device_alloc,
-	.slave_configure		= mptsas_slave_configure,
+	.device_configure		= mptsas_device_configure,
 	.target_destroy			= mptsas_target_destroy,
 	.device_destroy			= mptscsih_device_destroy,
 	.change_queue_depth 		= mptscsih_change_queue_depth,

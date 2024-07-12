@@ -49,7 +49,8 @@ static void zfcp_scsi_device_destroy(struct scsi_device *sdev)
 	put_device(&zfcp_sdev->port->dev);
 }
 
-static int zfcp_scsi_slave_configure(struct scsi_device *sdp)
+static int zfcp_scsi_device_configure(struct scsi_device *sdp,
+				      struct queue_limits *lim)
 {
 	if (sdp->tagged_supported)
 		scsi_change_queue_depth(sdp, default_depth);
@@ -428,7 +429,7 @@ static const struct scsi_host_template zfcp_scsi_host_template = {
 	.eh_target_reset_handler = zfcp_scsi_eh_target_reset_handler,
 	.eh_host_reset_handler	 = zfcp_scsi_eh_host_reset_handler,
 	.device_alloc		 = zfcp_scsi_device_alloc,
-	.slave_configure	 = zfcp_scsi_slave_configure,
+	.device_configure	 = zfcp_scsi_device_configure,
 	.device_destroy		 = zfcp_scsi_device_destroy,
 	.change_queue_depth	 = scsi_change_queue_depth,
 	.host_reset		 = zfcp_scsi_sysfs_host_reset,

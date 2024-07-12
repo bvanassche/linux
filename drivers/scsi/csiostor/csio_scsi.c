@@ -2237,7 +2237,7 @@ csio_device_alloc(struct scsi_device *sdev)
 }
 
 static int
-csio_slave_configure(struct scsi_device *sdev)
+csio_device_configure(struct scsi_device *sdev, struct queue_limits *lim)
 {
 	scsi_change_queue_depth(sdev, csio_lun_qdepth);
 	return 0;
@@ -2277,7 +2277,7 @@ struct scsi_host_template csio_fcoe_shost_template = {
 	.eh_abort_handler	= csio_eh_abort_handler,
 	.eh_device_reset_handler = csio_eh_lun_reset_handler,
 	.device_alloc		= csio_device_alloc,
-	.slave_configure	= csio_slave_configure,
+	.device_configure	= csio_device_configure,
 	.device_destroy		= csio_device_destroy,
 	.scan_finished		= csio_scan_finished,
 	.this_id		= -1,
@@ -2296,7 +2296,7 @@ struct scsi_host_template csio_fcoe_shost_vport_template = {
 	.eh_abort_handler	= csio_eh_abort_handler,
 	.eh_device_reset_handler = csio_eh_lun_reset_handler,
 	.device_alloc		= csio_device_alloc,
-	.slave_configure	= csio_slave_configure,
+	.device_configure	= csio_device_configure,
 	.device_destroy		= csio_device_destroy,
 	.scan_finished		= csio_scan_finished,
 	.this_id		= -1,

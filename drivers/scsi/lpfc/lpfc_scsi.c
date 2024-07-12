@@ -6333,7 +6333,7 @@ lpfc_device_alloc(struct scsi_device *sdev)
 }
 
 /**
- * lpfc_slave_configure - scsi_host_template slave_configure entry point
+ * lpfc_device_configure - scsi_host_template device_configure entry point
  * @sdev: Pointer to scsi_device.
  *
  * This routine configures following items
@@ -6344,7 +6344,7 @@ lpfc_device_alloc(struct scsi_device *sdev)
  *   0 - Success
  **/
 static int
-lpfc_slave_configure(struct scsi_device *sdev)
+lpfc_device_configure(struct scsi_device *sdev, struct queue_limits *lim)
 {
 	struct lpfc_vport *vport = (struct lpfc_vport *) sdev->host->hostdata;
 	struct lpfc_hba   *phba = vport->phba;
@@ -6728,7 +6728,13 @@ lpfc_no_command(struct Scsi_Host *shost, struct scsi_cmnd *cmnd)
 }
 
 static int
-lpfc_no_device(struct scsi_device *sdev)
+lpfc_alloc_no_device(struct scsi_device *sdev)
+{
+	return -ENODEV;
+}
+
+static int
+lpfc_config_no_device(struct scsi_device *sdev, struct queue_limits *lim)
 {
 	return -ENODEV;
 }
@@ -6739,8 +6745,8 @@ struct scsi_host_template lpfc_template_nvme = {
 	.proc_name		= LPFC_DRIVER_NAME,
 	.info			= lpfc_info,
 	.queuecommand		= lpfc_no_command,
-	.device_alloc		= lpfc_no_device,
-	.slave_configure	= lpfc_no_device,
+	.device_alloc		= lpfc_alloc_no_device,
+	.device_configure	= lpfc_config_no_device,
 	.scan_finished		= lpfc_scan_finished,
 	.this_id		= -1,
 	.sg_tablesize		= 1,
@@ -6764,7 +6770,7 @@ struct scsi_host_template lpfc_template = {
 	.eh_target_reset_handler = lpfc_target_reset_handler,
 	.eh_host_reset_handler  = lpfc_host_reset_handler,
 	.device_alloc		= lpfc_device_alloc,
-	.slave_configure	= lpfc_slave_configure,
+	.device_configure	= lpfc_device_configure,
 	.device_destroy		= lpfc_device_destroy,
 	.scan_finished		= lpfc_scan_finished,
 	.this_id		= -1,
@@ -6791,7 +6797,7 @@ struct scsi_host_template lpfc_vport_template = {
 	.eh_bus_reset_handler	= NULL,
 	.eh_host_reset_handler	= NULL,
 	.device_alloc		= lpfc_device_alloc,
-	.slave_configure	= lpfc_slave_configure,
+	.device_configure	= lpfc_device_configure,
 	.device_destroy		= lpfc_device_destroy,
 	.scan_finished		= lpfc_scan_finished,
 	.this_id		= -1,

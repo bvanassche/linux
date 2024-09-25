@@ -30,9 +30,7 @@
 
 #include <asm/mach/map.h>
 #include <asm/mach/arch.h>
-#include <asm/mach/time.h>
-
-extern void rpc_init_irq(void);
+#include <mach/time.h>
 
 unsigned int vram_size;
 unsigned int memc_ctrl_reg;
@@ -210,8 +208,6 @@ static void rpc_restart(enum reboot_mode mode, const char *cmd)
 	 */
 	soft_restart(0);
 }
-
-void ioc_timer_init(void);
 
 MACHINE_START(RISCPC, "Acorn-RiscPC")
 	/* Maintainer: Russell King */

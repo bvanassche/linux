@@ -18,8 +18,7 @@
 
 #include <mach/hardware.h>
 #include <asm/hardware/ioc.h>
-
-#include <asm/mach/time.h>
+#include <mach/time.h>
 
 #define RPC_CLOCK_FREQ 2000000
 #define RPC_LATCH DIV_ROUND_CLOSEST(RPC_CLOCK_FREQ, HZ)

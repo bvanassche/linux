@@ -240,4 +240,7 @@ static inline int sni_eisa_root_init(void)
 extern void (*sni_hwint)(void);
 extern irqreturn_t sni_isa_irq_handler(int dummy, void *p);
 
+void sni_machine_restart(char *command);
+void sni_machine_power_off(void);
+
 #endif /* __ASM_SNI_H */

@@ -165,7 +165,7 @@ static void enable_pcit_irq(struct irq_data *d)
 	*(volatile u32 *)SNI_PCIT_INT_REG |= mask;
 }
 
-void disable_pcit_irq(struct irq_data *d)
+static void disable_pcit_irq(struct irq_data *d)
 {
 	u32 mask = 1 << (d->irq - SNI_PCIT_INT_START + 24);
 

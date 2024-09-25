@@ -461,35 +461,6 @@ static struct irq_chip ecard_chip = {
 	.irq_unmask	= ecard_irq_unmask,
 };
 
-void ecard_enablefiq(unsigned int fiqnr)
-{
-	ecard_t *ec = slot_to_ecard(fiqnr);
-
-	if (ec) {
-		if (!ec->ops)
-			ec->ops = &ecard_default_ops;
-
-		if (ec->claimed && ec->ops->fiqenable)
-			ec->ops->fiqenable(ec, fiqnr);
-		else
-			printk(KERN_ERR "ecard: rejecting request to "
-				"enable FIQs for %d\n", fiqnr);
-	}
-}
-
-void ecard_disablefiq(unsigned int fiqnr)
-{
-	ecard_t *ec = slot_to_ecard(fiqnr);
-
-	if (ec) {
-		if (!ec->ops)
-			ec->ops = &ecard_default_ops;
-
-		if (ec->ops->fiqdisable)
-			ec->ops->fiqdisable(ec, fiqnr);
-	}
-}
-
 static void ecard_dump_irq_state(void)
 {
 	ecard_t *ec;

@@ -70,7 +70,7 @@ static struct clocksource ioctime_clocksource = {
 	.rating = 100,
 };
 
-void __init ioctime_init(void)
+static void __init ioctime_init(void)
 {
 	ioc_writeb(RPC_LATCH & 255, IOC_T0LTCHL);
 	ioc_writeb(RPC_LATCH >> 8, IOC_T0LTCHH);

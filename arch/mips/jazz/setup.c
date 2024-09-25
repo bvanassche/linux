@@ -18,6 +18,7 @@
 #include <linux/dma-mapping.h>
 #include <linux/pgtable.h>
 
+#include <asm/bootinfo.h>
 #include <asm/jazz.h>
 #include <asm/jazzdma.h>
 #include <asm/reboot.h>

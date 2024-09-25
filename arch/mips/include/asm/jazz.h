@@ -307,4 +307,6 @@ static inline void r4030_write_reg32(unsigned long addr, unsigned val)
 
 #define JAZZ_EISA_BASE	0xe3000000
 
+void jazz_machine_restart(char *command);
+
 #endif /* __ASM_JAZZ_H */

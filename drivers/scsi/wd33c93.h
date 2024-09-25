@@ -337,5 +337,6 @@ void wd33c93_intr (struct Scsi_Host *instance);
 int wd33c93_show_info(struct seq_file *, struct Scsi_Host *);
 int wd33c93_write_info(struct Scsi_Host *, char *, int);
 int wd33c93_host_reset (struct scsi_cmnd *);
+void sgiwd93_reset(unsigned long base);
 
 #endif /* WD33C93_H */

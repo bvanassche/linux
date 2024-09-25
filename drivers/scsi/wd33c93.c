@@ -1452,7 +1452,7 @@ reset_wd33c93(struct Scsi_Host *instance)
 #ifdef CONFIG_SGI_IP22
 	{
 		int busycount = 0;
-		extern void sgiwd93_reset(unsigned long);
+
 		/* wait 'til the chip gets some time for us */
 		while ((read_aux_stat(regs) & ASR_BSY) && busycount++ < 100)
 			udelay (10);

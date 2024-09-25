@@ -471,15 +471,6 @@ void __init ip22_be_init(void)
 	mips_set_be_handler(ip28_be_handler);
 }
 
-int ip28_show_be_info(struct seq_file *m)
-{
-	seq_printf(m, "IP28 be fixups\t\t: %u\n", count_be_is_fixup);
-	seq_printf(m, "IP28 be interrupts\t: %u\n", count_be_interrupt);
-	seq_printf(m, "IP28 be handler\t\t: %u\n", count_be_handler);
-
-	return 0;
-}
-
 static int __init debug_be_setup(char *str)
 {
 	debug_be_interrupt++;

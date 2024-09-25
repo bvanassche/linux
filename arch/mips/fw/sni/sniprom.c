@@ -77,16 +77,6 @@ char *prom_getenv(char *s)
 	return _prom_getenv(s);
 }
 
-void *prom_get_hwconf(void)
-{
-	u32 hwconf = _prom_get_hwconf();
-
-	if (hwconf == 0xffffffff)
-		return NULL;
-
-	return (void *)CKSEG1ADDR(hwconf);
-}
-
 /*
  * /proc/cpuinfo system type
  *

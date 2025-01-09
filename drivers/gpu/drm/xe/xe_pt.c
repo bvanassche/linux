@@ -1518,6 +1518,7 @@ static int op_check_svm_userptr(struct xe_vm *vm, struct xe_vma_op *op,
 }
 
 static int xe_pt_svm_userptr_pre_commit(struct xe_migrate_pt_update *pt_update)
+	__cond_acquires(0, &pt_update->vops->vm->svm.gpusvm.notifier_lock)
 {
 	struct xe_vm *vm = pt_update->vops->vm;
 	struct xe_vma_ops *vops = pt_update->vops;
@@ -2542,6 +2543,7 @@ static struct xe_dep_scheduler *to_dep_scheduler(struct xe_exec_queue *q,
  */
 struct dma_fence *
 xe_pt_update_ops_run(struct xe_tile *tile, struct xe_vma_ops *vops)
+	__no_context_analysis
 {
 	struct xe_vm *vm = vops->vm;
 	struct xe_vm_pgtable_update_ops *pt_update_ops =

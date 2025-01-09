@@ -122,16 +122,19 @@ static inline void xfs_dqfunlock(struct xfs_dquot *dqp)
 }
 
 static inline int xfs_dqlock_nowait(struct xfs_dquot *dqp)
+	TRY_ACQUIRE(0, dqp->q_qlock)
 {
 	return mutex_trylock(&dqp->q_qlock);
 }
 
 static inline void xfs_dqlock(struct xfs_dquot *dqp)
+	ACQUIRE(dqp->q_qlock)
 {
 	mutex_lock(&dqp->q_qlock);
 }
 
 static inline void xfs_dqunlock(struct xfs_dquot *dqp)
+	RELEASE(dqp->q_qlock)
 {
 	mutex_unlock(&dqp->q_qlock);
 }
@@ -235,8 +238,11 @@ int		xfs_qm_dqget_uncached(struct xfs_mount *mp,
 				struct xfs_dquot **dqpp);
 void		xfs_qm_dqput(struct xfs_dquot *dqp);
 
-void		xfs_dqlock2(struct xfs_dquot *, struct xfs_dquot *);
-void		xfs_dqlockn(struct xfs_dqtrx *q);
+void		xfs_dqlock2(struct xfs_dquot *d1, struct xfs_dquot *d2)
+	ACQUIRE(d1->q_qlock)
+	ACQUIRE(d2->q_qlock);
+void		xfs_dqlockn(struct xfs_dqtrx *q)
+	ACQUIRE(q[0].qt_dquot->q_qlock);
 
 void		xfs_dquot_set_prealloc_limits(struct xfs_dquot *);
 

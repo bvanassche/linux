@@ -322,6 +322,7 @@ static int rxrpc_send_data(struct rxrpc_sock *rx,
 			   struct msghdr *msg, size_t len,
 			   rxrpc_notify_end_tx_t notify_end_tx,
 			   bool *_dropped_lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct rxrpc_txbuf *txb;
 	struct sock *sk = &rx->sk;
@@ -658,6 +659,7 @@ rxrpc_new_client_call_for_sendmsg(struct rxrpc_sock *rx, struct msghdr *msg,
  */
 int rxrpc_do_sendmsg(struct rxrpc_sock *rx, struct msghdr *msg, size_t len)
 	__releases(&rx->sk.sk_lock.slock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct rxrpc_call *call;
 	bool dropped_lock = false;
@@ -798,6 +800,7 @@ error_release_sock:
 int rxrpc_kernel_send_data(struct socket *sock, struct rxrpc_call *call,
 			   struct msghdr *msg, size_t len,
 			   rxrpc_notify_end_tx_t notify_end_tx)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	bool dropped_lock = false;
 	int ret;

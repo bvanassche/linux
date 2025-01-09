@@ -56,6 +56,7 @@ nouveau_abi16(struct drm_file *file_priv)
 
 struct nouveau_abi16 *
 nouveau_abi16_get(struct drm_file *file_priv)
+	NO_THREAD_SAFETY_ANALYSIS /* returns a pointer */
 {
 	struct nouveau_cli *cli = nouveau_cli(file_priv);
 	mutex_lock(&cli->mutex);
@@ -67,6 +68,7 @@ nouveau_abi16_get(struct drm_file *file_priv)
 
 int
 nouveau_abi16_put(struct nouveau_abi16 *abi16, int ret)
+	NO_THREAD_SAFETY_ANALYSIS /* to match the previous function */
 {
 	struct nouveau_cli *cli = abi16->cli;
 	mutex_unlock(&cli->mutex);

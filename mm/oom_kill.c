@@ -820,6 +820,7 @@ void oom_killer_enable(void)
  * disabled.
  */
 bool oom_killer_disable(signed long timeout)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	signed long ret;
 

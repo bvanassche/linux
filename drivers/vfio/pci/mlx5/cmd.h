@@ -226,7 +226,8 @@ mlx5vf_get_data_buffer(struct mlx5_vf_migration_file *migf,
 void mlx5vf_put_data_buffer(struct mlx5_vhca_data_buffer *buf);
 struct page *mlx5vf_get_migration_page(struct mlx5_vhca_data_buffer *buf,
 				       unsigned long offset);
-void mlx5vf_state_mutex_unlock(struct mlx5vf_pci_core_device *mvdev);
+void mlx5vf_state_mutex_unlock(struct mlx5vf_pci_core_device *mvdev)
+	RELEASE(mvdev->state_mutex);
 void mlx5vf_disable_fds(struct mlx5vf_pci_core_device *mvdev,
 			enum mlx5_vf_migf_state *last_save_state);
 void mlx5vf_mig_file_cleanup_cb(struct work_struct *_work);

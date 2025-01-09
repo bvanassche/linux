@@ -1480,6 +1480,7 @@ static void setup_split_accounting(struct clone_info *ci, unsigned int len)
 static void alloc_multiple_bios(struct bio_list *blist, struct clone_info *ci,
 				struct dm_target *ti, unsigned int num_bios,
 				unsigned *len)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct bio *bio;
 	int try;
@@ -2519,11 +2520,13 @@ int dm_create(int minor, struct mapped_device **result)
  * All are required to hold md->type_lock.
  */
 void dm_lock_md_type(struct mapped_device *md)
+	ACQUIRE(md->type_lock)
 {
 	mutex_lock(&md->type_lock);
 }
 
 void dm_unlock_md_type(struct mapped_device *md)
+	RELEASE(md->type_lock)
 {
 	mutex_unlock(&md->type_lock);
 }
@@ -3192,6 +3195,7 @@ EXPORT_SYMBOL_GPL(dm_internal_resume);
  */
 
 void dm_internal_suspend_fast(struct mapped_device *md)
+	ACQUIRE(md->suspend_lock)
 {
 	mutex_lock(&md->suspend_lock);
 	if (dm_suspended_md(md) || dm_suspended_internally_md(md))
@@ -3205,6 +3209,7 @@ void dm_internal_suspend_fast(struct mapped_device *md)
 EXPORT_SYMBOL_GPL(dm_internal_suspend_fast);
 
 void dm_internal_resume_fast(struct mapped_device *md)
+	RELEASE(md->suspend_lock)
 {
 	if (dm_suspended_md(md) || dm_suspended_internally_md(md))
 		goto done;

@@ -44,6 +44,7 @@ static int encx24j600_cmdn(struct encx24j600_context *ctx, u8 opcode,
 }
 
 static void regmap_lock_mutex(void *context)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct encx24j600_context *ctx = context;
 
@@ -51,6 +52,7 @@ static void regmap_lock_mutex(void *context)
 }
 
 static void regmap_unlock_mutex(void *context)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct encx24j600_context *ctx = context;
 

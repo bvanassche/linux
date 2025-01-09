@@ -12,17 +12,20 @@ struct seqmutex {
 #define seqmutex_init(_lock)	mutex_init(&(_lock)->lock)
 
 static inline bool seqmutex_trylock(struct seqmutex *lock)
+	TRY_ACQUIRE(1, lock->lock)
 {
 	return mutex_trylock(&lock->lock);
 }
 
 static inline void seqmutex_lock(struct seqmutex *lock)
+	ACQUIRE(lock->lock)
 {
 	mutex_lock(&lock->lock);
 	lock->seq++;
 }
 
 static inline u32 seqmutex_unlock(struct seqmutex *lock)
+	RELEASE(lock->lock)
 {
 	u32 seq = lock->seq;
 	mutex_unlock(&lock->lock);
@@ -30,6 +33,7 @@ static inline u32 seqmutex_unlock(struct seqmutex *lock)
 }
 
 static inline bool seqmutex_relock(struct seqmutex *lock, u32 seq)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (lock->seq != seq || !mutex_trylock(&lock->lock))
 		return false;

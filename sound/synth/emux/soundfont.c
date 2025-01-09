@@ -65,6 +65,7 @@ static void snd_sf_clear(struct snd_sf_list *sflist);
  */
 static void
 lock_preset(struct snd_sf_list *sflist)
+	ACQUIRE(sflist->presets_mutex)
 {
 	unsigned long flags;
 	mutex_lock(&sflist->presets_mutex);
@@ -79,6 +80,7 @@ lock_preset(struct snd_sf_list *sflist)
  */
 static void
 unlock_preset(struct snd_sf_list *sflist)
+	RELEASE(sflist->presets_mutex)
 {
 	unsigned long flags;
 	spin_lock_irqsave(&sflist->lock, flags);

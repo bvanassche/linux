@@ -153,6 +153,7 @@ out_unlock:
 
 static void
 mlx5_ct_fs_hmfs_matcher_put(struct mlx5_ct_fs *fs, struct mlx5_ct_fs_hmfs_matcher *hmfs_matcher)
+	NO_THREAD_SAFETY_ANALYSIS /* needed because of a clang bug? */
 {
 	struct mlx5_ct_fs_hmfs *fs_hmfs = mlx5_ct_fs_priv(fs);
 

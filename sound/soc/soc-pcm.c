@@ -371,6 +371,7 @@ static void dpcm_set_be_update_state(struct snd_soc_pcm_runtime *be,
  */
 void snd_soc_runtime_action(struct snd_soc_pcm_runtime *rtd,
 			    int stream, int action)
+	REQUIRES(rtd->card->pcm_mutex)
 {
 	struct snd_soc_component *component;
 	struct snd_soc_dai *dai;
@@ -418,6 +419,7 @@ bool snd_soc_runtime_ignore_pmdown_time(struct snd_soc_pcm_runtime *rtd)
 /* DPCM stream event, send event to FE and all active BEs. */
 int dpcm_dapm_stream_event(struct snd_soc_pcm_runtime *fe, int dir,
 	int event)
+	REQUIRES(fe->card->pcm_mutex)
 {
 	struct snd_soc_dpcm *dpcm;
 
@@ -772,6 +774,7 @@ static int soc_pcm_components_close(struct snd_pcm_substream *substream,
 
 static int soc_pcm_clean(struct snd_soc_pcm_runtime *rtd,
 			 struct snd_pcm_substream *substream, int rollback)
+	REQUIRES(rtd->card->pcm_mutex)
 {
 	struct snd_soc_component *component;
 	struct snd_soc_dai *dai;
@@ -812,6 +815,7 @@ static int soc_pcm_clean(struct snd_soc_pcm_runtime *rtd,
  */
 static int __soc_pcm_close(struct snd_soc_pcm_runtime *rtd,
 			   struct snd_pcm_substream *substream)
+	REQUIRES(rtd->card->pcm_mutex)
 {
 	return soc_pcm_clean(rtd, substream, 0);
 }
@@ -872,6 +876,7 @@ config_err:
  */
 static int __soc_pcm_open(struct snd_soc_pcm_runtime *rtd,
 			  struct snd_pcm_substream *substream)
+	REQUIRES(rtd->card->pcm_mutex)
 {
 	struct snd_soc_component *component;
 	struct snd_soc_dai *dai;
@@ -951,6 +956,7 @@ static int soc_pcm_open(struct snd_pcm_substream *substream)
  */
 static int __soc_pcm_prepare(struct snd_soc_pcm_runtime *rtd,
 			     struct snd_pcm_substream *substream)
+	REQUIRES(rtd->card->pcm_mutex)
 {
 	struct snd_soc_dai *dai;
 	int i, ret = 0;
@@ -1026,6 +1032,7 @@ static void soc_pcm_codec_params_fixup(struct snd_pcm_hw_params *params,
 
 static int soc_pcm_hw_clean(struct snd_soc_pcm_runtime *rtd,
 			    struct snd_pcm_substream *substream, int rollback)
+	REQUIRES(rtd->card->pcm_mutex)
 {
 	struct snd_soc_dai *dai;
 	int i;
@@ -1065,6 +1072,7 @@ static int soc_pcm_hw_clean(struct snd_soc_pcm_runtime *rtd,
  */
 static int __soc_pcm_hw_free(struct snd_soc_pcm_runtime *rtd,
 			     struct snd_pcm_substream *substream)
+	REQUIRES(rtd->card->pcm_mutex)
 {
 	return soc_pcm_hw_clean(rtd, substream, 0);
 }
@@ -1089,6 +1097,7 @@ static int soc_pcm_hw_free(struct snd_pcm_substream *substream)
 static int __soc_pcm_hw_params(struct snd_soc_pcm_runtime *rtd,
 			       struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params)
+	REQUIRES(rtd->card->pcm_mutex)
 {
 	struct snd_soc_dai *cpu_dai;
 	struct snd_soc_dai *codec_dai;
@@ -1317,6 +1326,7 @@ static snd_pcm_uframes_t soc_pcm_pointer(struct snd_pcm_substream *substream)
 /* connect a FE and BE */
 static int dpcm_be_connect(struct snd_soc_pcm_runtime *fe,
 		struct snd_soc_pcm_runtime *be, int stream)
+	REQUIRES(fe->card->pcm_mutex)
 {
 	struct snd_pcm_substream *fe_substream;
 	struct snd_pcm_substream *be_substream;
@@ -1396,6 +1406,7 @@ static void dpcm_be_reparent(struct snd_soc_pcm_runtime *fe,
 
 /* disconnect a BE and FE */
 void dpcm_be_disconnect(struct snd_soc_pcm_runtime *fe, int stream)
+	REQUIRES(fe->card->pcm_mutex)
 {
 	struct snd_soc_dpcm *dpcm, *d;
 	struct snd_pcm_substream *substream = snd_soc_dpcm_get_substream(fe, stream);
@@ -1579,6 +1590,7 @@ static int dpcm_prune_paths(struct snd_soc_pcm_runtime *fe, int stream,
 
 static int dpcm_add_paths(struct snd_soc_pcm_runtime *fe, int stream,
 	struct snd_soc_dapm_widget_list **list_)
+	REQUIRES(fe->card->pcm_mutex)
 {
 	struct snd_soc_card *card = fe->card;
 	struct snd_soc_dapm_widget_list *list = *list_;
@@ -1649,6 +1661,7 @@ static int dpcm_add_paths(struct snd_soc_pcm_runtime *fe, int stream,
  */
 int dpcm_process_paths(struct snd_soc_pcm_runtime *fe,
 	int stream, struct snd_soc_dapm_widget_list **list, int new)
+	REQUIRES(fe->card->pcm_mutex)
 {
 	if (new)
 		return dpcm_add_paths(fe, stream, list);
@@ -1666,6 +1679,7 @@ void dpcm_clear_pending_state(struct snd_soc_pcm_runtime *fe, int stream)
 
 void dpcm_be_dai_stop(struct snd_soc_pcm_runtime *fe, int stream,
 		      int do_hw_free, struct snd_soc_dpcm *last)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_soc_dpcm *dpcm;
 
@@ -1709,6 +1723,7 @@ void dpcm_be_dai_stop(struct snd_soc_pcm_runtime *fe, int stream,
 }
 
 int dpcm_be_dai_startup(struct snd_soc_pcm_runtime *fe, int stream)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_pcm_substream *fe_substream = snd_soc_dpcm_get_substream(fe, stream);
 	struct snd_soc_pcm_runtime *be;
@@ -1982,6 +1997,7 @@ error:
 }
 
 static int dpcm_fe_dai_startup(struct snd_pcm_substream *fe_substream)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_soc_pcm_runtime *fe = snd_soc_substream_to_rtd(fe_substream);
 	int stream = fe_substream->stream, ret = 0;
@@ -2019,6 +2035,7 @@ be_err:
 }
 
 static int dpcm_fe_dai_shutdown(struct snd_pcm_substream *substream)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_soc_pcm_runtime *fe = snd_soc_substream_to_rtd(substream);
 	int stream = substream->stream;
@@ -2044,6 +2061,7 @@ static int dpcm_fe_dai_shutdown(struct snd_pcm_substream *substream)
 }
 
 void dpcm_be_dai_hw_free(struct snd_soc_pcm_runtime *fe, int stream)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_soc_dpcm *dpcm;
 
@@ -2109,6 +2127,7 @@ static int dpcm_fe_dai_hw_free(struct snd_pcm_substream *substream)
 }
 
 int dpcm_be_dai_hw_params(struct snd_soc_pcm_runtime *fe, int stream)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_soc_pcm_runtime *be;
 	struct snd_pcm_substream *be_substream;
@@ -2518,6 +2537,7 @@ static int dpcm_fe_dai_trigger(struct snd_pcm_substream *substream, int cmd)
 }
 
 int dpcm_be_dai_prepare(struct snd_soc_pcm_runtime *fe, int stream)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_soc_dpcm *dpcm;
 	int ret = 0;
@@ -2607,6 +2627,7 @@ out:
 }
 
 static int dpcm_run_update_shutdown(struct snd_soc_pcm_runtime *fe, int stream)
+	REQUIRES(fe->card->pcm_mutex)
 {
 	int err;
 
@@ -2626,6 +2647,7 @@ static int dpcm_run_update_shutdown(struct snd_soc_pcm_runtime *fe, int stream)
 }
 
 static int dpcm_run_update_startup(struct snd_soc_pcm_runtime *fe, int stream)
+	REQUIRES(fe->card->pcm_mutex)
 {
 	struct snd_soc_dpcm *dpcm;
 	int ret = 0;
@@ -2699,6 +2721,7 @@ disconnect:
 }
 
 static int soc_dpcm_fe_runtime_update(struct snd_soc_pcm_runtime *fe, int new)
+	REQUIRES(fe->card->pcm_mutex)
 {
 	struct snd_soc_dapm_widget_list *list;
 	int stream;
@@ -2761,6 +2784,7 @@ static int soc_dpcm_fe_runtime_update(struct snd_soc_pcm_runtime *fe, int new)
  * any DAI links.
  */
 int snd_soc_dpcm_runtime_update(struct snd_soc_card *card)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_soc_pcm_runtime *fe;
 	int ret = 0;
@@ -2787,6 +2811,7 @@ out:
 EXPORT_SYMBOL_GPL(snd_soc_dpcm_runtime_update);
 
 static void dpcm_fe_dai_cleanup(struct snd_pcm_substream *fe_substream)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_soc_pcm_runtime *fe = snd_soc_substream_to_rtd(fe_substream);
 	struct snd_soc_dpcm *dpcm;

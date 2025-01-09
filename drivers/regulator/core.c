@@ -6324,6 +6324,7 @@ static int regulator_summary_lock_all(struct ww_acquire_ctx *ww_ctx,
 }
 
 static void regulator_summary_lock(struct ww_acquire_ctx *ww_ctx)
+	ACQUIRE(regulator_list_mutex)
 {
 	struct regulator_dev *new_contended_rdev = NULL;
 	struct regulator_dev *old_contended_rdev = NULL;
@@ -6354,6 +6355,7 @@ static void regulator_summary_lock(struct ww_acquire_ctx *ww_ctx)
 }
 
 static void regulator_summary_unlock(struct ww_acquire_ctx *ww_ctx)
+	RELEASE(regulator_list_mutex)
 {
 	class_for_each_device(&regulator_class, NULL, NULL,
 			      regulator_summary_unlock_one);

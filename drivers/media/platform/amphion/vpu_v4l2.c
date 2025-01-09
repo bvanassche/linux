@@ -25,11 +25,13 @@
 #include "vpu_helpers.h"
 
 void vpu_inst_lock(struct vpu_inst *inst)
+	ACQUIRE(inst->lock)
 {
 	mutex_lock(&inst->lock);
 }
 
 void vpu_inst_unlock(struct vpu_inst *inst)
+	RELEASE(inst->lock)
 {
 	mutex_unlock(&inst->lock);
 }
@@ -580,6 +582,7 @@ void vpu_vb2_buffers_return(struct vpu_inst *inst, unsigned int type, enum vb2_b
 }
 
 static int vpu_vb2_start_streaming(struct vb2_queue *q, unsigned int count)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct vpu_inst *inst = vb2_get_drv_priv(q);
 	struct vpu_format *fmt = vpu_get_format(inst, q->type);

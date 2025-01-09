@@ -100,6 +100,7 @@ static int mgag200_ddc_algo_bit_data_getscl(void *data)
 }
 
 static int mgag200_ddc_algo_bit_data_pre_xfer(struct i2c_adapter *adapter)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct mgag200_ddc *ddc = i2c_get_adapdata(adapter);
 	struct mga_device *mdev = ddc->mdev;
@@ -114,6 +115,7 @@ static int mgag200_ddc_algo_bit_data_pre_xfer(struct i2c_adapter *adapter)
 }
 
 static void mgag200_ddc_algo_bit_data_post_xfer(struct i2c_adapter *adapter)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct mgag200_ddc *ddc = i2c_get_adapdata(adapter);
 	struct mga_device *mdev = ddc->mdev;

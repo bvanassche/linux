@@ -127,6 +127,7 @@ nvkm_i2c_bus_fini(struct nvkm_i2c_bus *bus)
 
 void
 nvkm_i2c_bus_release(struct nvkm_i2c_bus *bus)
+	RELEASE(bus->mutex)
 {
 	struct nvkm_i2c_pad *pad = bus->pad;
 	BUS_TRACE(bus, "release");
@@ -136,6 +137,7 @@ nvkm_i2c_bus_release(struct nvkm_i2c_bus *bus)
 
 int
 nvkm_i2c_bus_acquire(struct nvkm_i2c_bus *bus)
+	TRY_ACQUIRE(0, bus->mutex)
 {
 	struct nvkm_i2c_pad *pad = bus->pad;
 	int ret;

@@ -869,6 +869,7 @@ int snd_compr_stop_error(struct snd_compr_stream *stream,
 EXPORT_SYMBOL_GPL(snd_compr_stop_error);
 
 static int snd_compress_wait_for_drain(struct snd_compr_stream *stream)
+	REQUIRES(stream->device->lock)
 {
 	int ret;
 
@@ -904,6 +905,7 @@ static int snd_compress_wait_for_drain(struct snd_compr_stream *stream)
 }
 
 static int snd_compr_drain(struct snd_compr_stream *stream)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int retval;
 
@@ -956,6 +958,7 @@ static int snd_compr_next_track(struct snd_compr_stream *stream)
 }
 
 static int snd_compr_partial_drain(struct snd_compr_stream *stream)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int retval;
 

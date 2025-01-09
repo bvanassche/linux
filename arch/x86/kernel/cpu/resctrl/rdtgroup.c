@@ -2470,6 +2470,7 @@ static void rdtgroup_kn_put(struct rdtgroup *rdtgrp, struct kernfs_node *kn)
 }
 
 struct rdtgroup *rdtgroup_kn_lock_live(struct kernfs_node *kn)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct rdtgroup *rdtgrp = kernfs_to_rdtgroup(kn);
 
@@ -2489,6 +2490,7 @@ struct rdtgroup *rdtgroup_kn_lock_live(struct kernfs_node *kn)
 }
 
 void rdtgroup_kn_unlock(struct kernfs_node *kn)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct rdtgroup *rdtgrp = kernfs_to_rdtgroup(kn);
 
@@ -3457,6 +3459,7 @@ static void mkdir_rdt_prepare_rmid_free(struct rdtgroup *rgrp)
 static int mkdir_rdt_prepare(struct kernfs_node *parent_kn,
 			     const char *name, umode_t mode,
 			     enum rdt_group_type rtype, struct rdtgroup **r)
+	TRY_ACQUIRE(0, rdtgroup)
 {
 	struct rdtgroup *prdtgrp, *rdtgrp;
 	unsigned long files = 0;

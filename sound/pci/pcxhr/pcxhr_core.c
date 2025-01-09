@@ -1147,6 +1147,7 @@ static u_int64_t pcxhr_stream_read_position(struct pcxhr_mgr *mgr,
 static void pcxhr_update_timer_pos(struct pcxhr_mgr *mgr,
 				   struct pcxhr_stream *stream,
 				   int samples_to_add)
+	REQUIRES(mgr->lock)
 {
 	if (stream->substream &&
 	    (stream->status == PCXHR_STREAM_STATUS_RUNNING)) {

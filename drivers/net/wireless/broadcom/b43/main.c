@@ -4322,6 +4322,7 @@ out_unlock:
  * Returns the current dev. This might be different from the passed in dev,
  * because the core might be gone away while we unlocked the mutex. */
 static struct b43_wldev * b43_wireless_core_stop(struct b43_wldev *dev)
+	NO_THREAD_SAFETY_ANALYSIS /* REQUIRES(dev->wl->mutex) */
 {
 	struct b43_wl *wl;
 	struct b43_wldev *orig_dev;

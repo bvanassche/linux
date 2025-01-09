@@ -116,6 +116,7 @@ static struct l2cap_chan *__l2cap_get_chan_by_scid(struct l2cap_conn *conn,
  */
 static struct l2cap_chan *l2cap_get_chan_by_scid(struct l2cap_conn *conn,
 						 u16 cid)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct l2cap_chan *c;
 
@@ -135,6 +136,7 @@ static struct l2cap_chan *l2cap_get_chan_by_scid(struct l2cap_conn *conn,
  */
 static struct l2cap_chan *l2cap_get_chan_by_dcid(struct l2cap_conn *conn,
 						 u16 cid)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct l2cap_chan *c;
 
@@ -3933,6 +3935,7 @@ static inline int l2cap_command_rej(struct l2cap_conn *conn,
 
 static void l2cap_connect(struct l2cap_conn *conn, struct l2cap_cmd_hdr *cmd,
 			  u8 *data, u8 rsp_code)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct l2cap_conn_req *req = (struct l2cap_conn_req *) data;
 	struct l2cap_conn_rsp rsp;
@@ -4191,6 +4194,7 @@ static void cmd_reject_invalid_cid(struct l2cap_conn *conn, u8 ident,
 static inline int l2cap_config_req(struct l2cap_conn *conn,
 				   struct l2cap_cmd_hdr *cmd, u16 cmd_len,
 				   u8 *data)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct l2cap_conf_req *req = (struct l2cap_conf_req *) data;
 	u16 dcid, flags;
@@ -4300,6 +4304,7 @@ unlock:
 static inline int l2cap_config_rsp(struct l2cap_conn *conn,
 				   struct l2cap_cmd_hdr *cmd, u16 cmd_len,
 				   u8 *data)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct l2cap_conf_rsp *rsp = (struct l2cap_conf_rsp *)data;
 	u16 scid, flags, result;
@@ -4407,6 +4412,7 @@ done:
 static inline int l2cap_disconnect_req(struct l2cap_conn *conn,
 				       struct l2cap_cmd_hdr *cmd, u16 cmd_len,
 				       u8 *data)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct l2cap_disconn_req *req = (struct l2cap_disconn_req *) data;
 	struct l2cap_disconn_rsp rsp;
@@ -4446,6 +4452,7 @@ static inline int l2cap_disconnect_req(struct l2cap_conn *conn,
 static inline int l2cap_disconnect_rsp(struct l2cap_conn *conn,
 				       struct l2cap_cmd_hdr *cmd, u16 cmd_len,
 				       u8 *data)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct l2cap_disconn_rsp *rsp = (struct l2cap_disconn_rsp *) data;
 	u16 dcid, scid;
@@ -4920,6 +4927,7 @@ response:
 static inline int l2cap_le_credits(struct l2cap_conn *conn,
 				   struct l2cap_cmd_hdr *cmd, u16 cmd_len,
 				   u8 *data)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct l2cap_le_credits *pkt;
 	struct l2cap_chan *chan;
@@ -6634,6 +6642,7 @@ failed:
 
 static void l2cap_data_channel(struct l2cap_conn *conn, u16 cid,
 			       struct sk_buff *skb)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct l2cap_chan *chan;
 

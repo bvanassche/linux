@@ -2335,6 +2335,7 @@ static void ef4_unregister_netdev(struct ef4_nic *efx)
 /* Tears down the entire software state and most of the hardware state
  * before reset.  */
 void ef4_reset_down(struct ef4_nic *efx, enum reset_type method)
+	ACQUIRE(&efx->mac_lock)
 {
 	EF4_ASSERT_RESET_SERIALISED(efx);
 
@@ -2354,6 +2355,7 @@ void ef4_reset_down(struct ef4_nic *efx, enum reset_type method)
  * driver should be disabled. If ok is false, then the rx and tx
  * engines are not restarted, pending a RESET_DISABLE. */
 int ef4_reset_up(struct ef4_nic *efx, enum reset_type method, bool ok)
+	RELEASE(&efx->mac_lock)
 {
 	int rc;
 

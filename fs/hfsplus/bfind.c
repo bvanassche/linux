@@ -13,6 +13,7 @@
 #include "hfsplus_fs.h"
 
 int hfs_find_init(struct hfs_btree *tree, struct hfs_find_data *fd)
+	TRY_ACQUIRE(0, tree->tree_lock)
 {
 	void *ptr;
 
@@ -31,6 +32,7 @@ int hfs_find_init(struct hfs_btree *tree, struct hfs_find_data *fd)
 }
 
 void hfs_find_exit(struct hfs_find_data *fd)
+	RELEASE(fd->tree->tree_lock)
 {
 	hfs_bnode_put(fd->bnode);
 	kfree(fd->search_key);

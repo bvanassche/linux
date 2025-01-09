@@ -616,6 +616,7 @@ static void io_cq_unlock_post(struct io_ring_ctx *ctx)
 }
 
 static void __io_cqring_overflow_flush(struct io_ring_ctx *ctx, bool dying)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	size_t cqe_size = sizeof(struct io_uring_cqe);
 
@@ -1022,6 +1023,7 @@ static inline struct io_kiocb *io_req_find_next(struct io_kiocb *req)
 }
 
 static void ctx_flush_and_put(struct io_ring_ctx *ctx, struct io_tw_state *ts)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (!ctx)
 		return;
@@ -1041,6 +1043,7 @@ static void ctx_flush_and_put(struct io_ring_ctx *ctx, struct io_tw_state *ts)
 struct llist_node *io_handle_tw_list(struct llist_node *node,
 				     unsigned int *count,
 				     unsigned int max_entries)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct io_ring_ctx *ctx = NULL;
 	struct io_tw_state ts = { };
@@ -1509,6 +1512,7 @@ static __cold void io_iopoll_try_reap_events(struct io_ring_ctx *ctx)
 }
 
 static int io_iopoll_check(struct io_ring_ctx *ctx, long min)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	unsigned int nr_events = 0;
 	unsigned long check_cq;
@@ -1594,6 +1598,7 @@ void io_req_task_complete(struct io_kiocb *req, struct io_tw_state *ts)
  * accessing the kiocb cookie.
  */
 static void io_iopoll_req_issued(struct io_kiocb *req, unsigned int issue_flags)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct io_ring_ctx *ctx = req->ctx;
 	const bool needs_lock = issue_flags & IO_URING_F_UNLOCKED;

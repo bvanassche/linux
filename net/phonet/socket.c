@@ -721,6 +721,7 @@ static struct sock **pn_res_get_next(struct seq_file *seq, struct sock **sk)
 
 static void *pn_res_seq_start(struct seq_file *seq, loff_t *pos)
 	__acquires(resource_mutex)
+	ACQUIRE(resource_mutex)
 {
 	mutex_lock(&resource_mutex);
 	return *pos ? pn_res_get_idx(seq, *pos - 1) : SEQ_START_TOKEN;
@@ -740,6 +741,7 @@ static void *pn_res_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 
 static void pn_res_seq_stop(struct seq_file *seq, void *v)
 	__releases(resource_mutex)
+	RELEASE(resource_mutex)
 {
 	mutex_unlock(&resource_mutex);
 }

@@ -131,6 +131,8 @@ endif
 
 obj-$(CONFIG_DEBUG_INFO_REDUCED) += debug_info.o
 CFLAGS_debug_info.o += $(call cc-option, -femit-struct-debug-detailed=any)
+CFLAGS_locking-selftest.o += -Wno-thread-safety-analysis
+CFLAGS_test_lockup.o += -Wno-thread-safety-analysis
 
 obj-y += math/ crypto/
 

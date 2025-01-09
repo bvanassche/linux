@@ -5175,11 +5175,13 @@ static struct pool_workqueue *alloc_unbound_pwq(struct workqueue_struct *wq,
 }
 
 static void apply_wqattrs_lock(void)
+	ACQUIRE(wq_pool_mutex)
 {
 	mutex_lock(&wq_pool_mutex);
 }
 
 static void apply_wqattrs_unlock(void)
+	RELEASE(wq_pool_mutex)
 {
 	mutex_unlock(&wq_pool_mutex);
 }

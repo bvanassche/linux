@@ -343,6 +343,7 @@ static int efx_mcdi_filter_pri(struct efx_mcdi_filter_table *table,
 static s32 efx_mcdi_filter_insert_locked(struct efx_nic *efx,
 					 struct efx_filter_spec *spec,
 					 bool replace_equal)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	DECLARE_BITMAP(mc_rem_map, EFX_EF10_FILTER_SEARCH_LIMIT);
 	struct efx_rss_context_priv *ctx = NULL;

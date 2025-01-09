@@ -433,6 +433,7 @@ static void sc16is7xx_power(struct uart_port *port, int on)
  * context.
  */
 static void sc16is7xx_efr_lock(struct uart_port *port)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct sc16is7xx_one *one = to_sc16is7xx_one(port, port);
 
@@ -449,6 +450,7 @@ static void sc16is7xx_efr_lock(struct uart_port *port)
 }
 
 static void sc16is7xx_efr_unlock(struct uart_port *port)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct sc16is7xx_one *one = to_sc16is7xx_one(port, port);
 

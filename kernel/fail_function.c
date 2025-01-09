@@ -181,12 +181,14 @@ static int fei_kprobe_handler(struct kprobe *kp, struct pt_regs *regs)
 NOKPROBE_SYMBOL(fei_kprobe_handler)
 
 static void *fei_seq_start(struct seq_file *m, loff_t *pos)
+	ACQUIRE(fei_lock)
 {
 	mutex_lock(&fei_lock);
 	return seq_list_start(&fei_attr_list, *pos);
 }
 
 static void fei_seq_stop(struct seq_file *m, void *v)
+	RELEASE(fei_lock)
 {
 	mutex_unlock(&fei_lock);
 }

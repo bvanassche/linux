@@ -248,12 +248,14 @@ static void pvr2_context_reset_input_limits(struct pvr2_context *mp)
 
 
 static void pvr2_context_enter(struct pvr2_context *mp)
+	ACQUIRE(mp->mutex)
 {
 	mutex_lock(&mp->mutex);
 }
 
 
 static void pvr2_context_exit(struct pvr2_context *mp)
+	RELEASE(mp->mutex)
 {
 	int destroy_flag = 0;
 	if (!(mp->mc_first || !mp->disconnect_flag)) {

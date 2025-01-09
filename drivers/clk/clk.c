@@ -143,6 +143,7 @@ static void clk_pm_runtime_put(struct clk_core *core)
  * Return: 0 on success, negative errno otherwise.
  */
 static int clk_pm_runtime_get_all(void)
+	TRY_ACQUIRE(0, clk_rpm_list_lock)
 {
 	int ret;
 	struct clk_core *core, *failed;
@@ -189,6 +190,7 @@ err:
  * the 'clk_rpm_list_lock'.
  */
 static void clk_pm_runtime_put_all(void)
+	RELEASE(clk_rpm_list_lock)
 {
 	struct clk_core *core;
 
@@ -212,6 +214,7 @@ static void clk_pm_runtime_init(struct clk_core *core)
 
 /***           locking             ***/
 static void clk_prepare_lock(void)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (!mutex_trylock(&prepare_lock)) {
 		if (prepare_owner == current) {
@@ -227,6 +230,7 @@ static void clk_prepare_lock(void)
 }
 
 static void clk_prepare_unlock(void)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	WARN_ON_ONCE(prepare_owner != current);
 	WARN_ON_ONCE(prepare_refcnt == 0);

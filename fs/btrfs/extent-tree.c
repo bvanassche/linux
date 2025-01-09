@@ -1860,6 +1860,7 @@ u64 btrfs_cleanup_ref_head_accounting(struct btrfs_fs_info *fs_info,
 static int cleanup_ref_head(struct btrfs_trans_handle *trans,
 			    struct btrfs_delayed_ref_head *head,
 			    u64 *bytes_released)
+	NO_THREAD_SAFETY_ANALYSIS /* too complex for clang */
 {
 
 	struct btrfs_fs_info *fs_info = trans->fs_info;

@@ -608,6 +608,7 @@ static void qp_cleanup_queue_mutex(struct vmci_queue *produce_q,
  * be passed in to this routine.  Either will work just fine.
  */
 static void qp_acquire_queue_mutex(struct vmci_queue *queue)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (queue->kernel_if->host)
 		mutex_lock(queue->kernel_if->mutex);
@@ -619,6 +620,7 @@ static void qp_acquire_queue_mutex(struct vmci_queue *queue)
  * be passed in to this routine.  Either will work just fine.
  */
 static void qp_release_queue_mutex(struct vmci_queue *queue)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	if (queue->kernel_if->host)
 		mutex_unlock(queue->kernel_if->mutex);

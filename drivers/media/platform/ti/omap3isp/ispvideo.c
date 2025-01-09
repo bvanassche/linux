@@ -481,6 +481,7 @@ static int isp_video_start_streaming(struct vb2_queue *queue,
 }
 
 static void omap3isp_wait_prepare(struct vb2_queue *vq)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct isp_video_fh *vfh = vb2_get_drv_priv(vq);
 	struct isp_video *video = vfh->video;
@@ -489,6 +490,7 @@ static void omap3isp_wait_prepare(struct vb2_queue *vq)
 }
 
 static void omap3isp_wait_finish(struct vb2_queue *vq)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct isp_video_fh *vfh = vb2_get_drv_priv(vq);
 	struct isp_video *video = vfh->video;

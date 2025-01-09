@@ -29,6 +29,7 @@ enum {
 
 void io_sq_thread_unpark(struct io_sq_data *sqd)
 	__releases(&sqd->lock)
+	RELEASE(sqd->lock)
 {
 	WARN_ON_ONCE(sqd->thread == current);
 
@@ -45,6 +46,7 @@ void io_sq_thread_unpark(struct io_sq_data *sqd)
 
 void io_sq_thread_park(struct io_sq_data *sqd)
 	__acquires(&sqd->lock)
+	ACQUIRE(sqd->lock)
 {
 	WARN_ON_ONCE(data_race(sqd->thread) == current);
 
@@ -199,6 +201,7 @@ static int __io_sq_thread(struct io_ring_ctx *ctx, bool cap_entries)
 }
 
 static bool io_sqd_handle_event(struct io_sq_data *sqd)
+	REQUIRES(sqd->lock)
 {
 	bool did_sig = false;
 	struct ksignal ksig;

@@ -723,6 +723,7 @@ int vfio_device_set_group(struct vfio_device *device,
 }
 
 void vfio_device_remove_group(struct vfio_device *device)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct vfio_group *group = device->group;
 	struct iommu_group *iommu_group;

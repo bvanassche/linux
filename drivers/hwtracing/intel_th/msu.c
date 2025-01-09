@@ -1598,6 +1598,7 @@ static void msc_mmap_open(struct vm_area_struct *vma)
 }
 
 static void msc_mmap_close(struct vm_area_struct *vma)
+	NO_THREAD_SAFETY_ANALYSIS /* needed because of a clang bug? */
 {
 	struct msc_iter *iter = vma->vm_file->private_data;
 	struct msc *msc = iter->msc;

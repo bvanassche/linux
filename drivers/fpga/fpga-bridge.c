@@ -57,6 +57,7 @@ EXPORT_SYMBOL_GPL(fpga_bridge_disable);
 
 static struct fpga_bridge *__fpga_bridge_get(struct device *bridge_dev,
 					     struct fpga_image_info *info)
+	NO_THREAD_SAFETY_ANALYSIS /* TRY_ACQUIRE() does not support ERR_PTR() */
 {
 	struct fpga_bridge *bridge;
 
@@ -145,6 +146,7 @@ EXPORT_SYMBOL_GPL(fpga_bridge_get);
  * @bridge: FPGA bridge
  */
 void fpga_bridge_put(struct fpga_bridge *bridge)
+	NO_THREAD_SAFETY_ANALYSIS /* matches fpga_bridge_get() */
 {
 	dev_dbg(&bridge->dev, "put\n");
 
@@ -211,6 +213,7 @@ EXPORT_SYMBOL_GPL(fpga_bridges_disable);
  * If list is empty, do nothing.
  */
 void fpga_bridges_put(struct list_head *bridge_list)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex operation inside a loop */
 {
 	struct fpga_bridge *bridge, *next;
 	unsigned long flags;

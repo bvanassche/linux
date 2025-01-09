@@ -212,6 +212,7 @@ static void release_existing_page_budget(struct ubifs_info *c)
 
 static int write_begin_slow(struct address_space *mapping,
 			    loff_t pos, unsigned len, struct folio **foliop)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct inode *inode = mapping->host;
 	struct ubifs_info *c = inode->i_sb->s_fs_info;
@@ -318,6 +319,7 @@ static int write_begin_slow(struct address_space *mapping,
  */
 static int allocate_budget(struct ubifs_info *c, struct folio *folio,
 			   struct ubifs_inode *ui, int appending)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ubifs_budget_req req = { .fast = 1 };
 
@@ -415,6 +417,7 @@ static int allocate_budget(struct ubifs_info *c, struct folio *folio,
 static int ubifs_write_begin(struct file *file, struct address_space *mapping,
 			     loff_t pos, unsigned len,
 			     struct folio **foliop, void **fsdata)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct inode *inode = mapping->host;
 	struct ubifs_info *c = inode->i_sb->s_fs_info;
@@ -508,6 +511,7 @@ static int ubifs_write_begin(struct file *file, struct address_space *mapping,
  */
 static void cancel_budget(struct ubifs_info *c, struct folio *folio,
 			  struct ubifs_inode *ui, int appending)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (appending) {
 		if (!ui->dirty)
@@ -525,6 +529,7 @@ static void cancel_budget(struct ubifs_info *c, struct folio *folio,
 static int ubifs_write_end(struct file *file, struct address_space *mapping,
 			   loff_t pos, unsigned len, unsigned copied,
 			   struct folio *folio, void *fsdata)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct inode *inode = mapping->host;
 	struct ubifs_inode *ui = ubifs_inode(inode);
@@ -820,6 +825,7 @@ out_bu_off:
  * Returns: %1 if a bulk-read is done and %0 otherwise.
  */
 static int ubifs_bulk_read(struct folio *folio)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct inode *inode = folio->mapping->host;
 	struct ubifs_info *c = inode->i_sb->s_fs_info;

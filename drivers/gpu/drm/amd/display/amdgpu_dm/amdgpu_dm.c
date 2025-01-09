@@ -3101,6 +3101,7 @@ static void hpd_rx_irq_work_suspend(struct amdgpu_display_manager *dm)
 }
 
 static int dm_suspend(struct amdgpu_ip_block *ip_block)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct amdgpu_device *adev = ip_block->adev;
 	struct amdgpu_display_manager *dm = &adev->dm;
@@ -3292,6 +3293,7 @@ cleanup:
 }
 
 static int dm_resume(struct amdgpu_ip_block *ip_block)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct amdgpu_device *adev = ip_block->adev;
 	struct drm_device *ddev = adev_to_drm(adev);

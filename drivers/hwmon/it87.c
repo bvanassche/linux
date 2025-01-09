@@ -846,6 +846,7 @@ static void it87_update_pwm_ctrl(struct it87_data *data, int nr)
 }
 
 static int it87_lock(struct it87_data *data)
+	TRY_ACQUIRE(0, data->update_lock)
 {
 	int err;
 
@@ -857,6 +858,7 @@ static int it87_lock(struct it87_data *data)
 }
 
 static void it87_unlock(struct it87_data *data)
+	RELEASE(data->update_lock)
 {
 	smbus_enable(data);
 	mutex_unlock(&data->update_lock);

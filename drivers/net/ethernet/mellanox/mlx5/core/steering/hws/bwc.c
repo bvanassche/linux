@@ -23,6 +23,7 @@ hws_bwc_get_queue_lock(struct mlx5hws_context *ctx, u16 idx)
 }
 
 static void hws_bwc_lock_all_queues(struct mlx5hws_context *ctx)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	u16 bwc_queues = mlx5hws_bwc_queues(ctx);
 	struct mutex *queue_lock; /* Protect the queue */
@@ -35,6 +36,7 @@ static void hws_bwc_lock_all_queues(struct mlx5hws_context *ctx)
 }
 
 static void hws_bwc_unlock_all_queues(struct mlx5hws_context *ctx)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	u16 bwc_queues = mlx5hws_bwc_queues(ctx);
 	struct mutex *queue_lock; /* Protect the queue */

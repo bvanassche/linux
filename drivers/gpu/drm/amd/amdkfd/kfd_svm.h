@@ -141,12 +141,14 @@ struct svm_range {
 };
 
 static inline void svm_range_lock(struct svm_range *prange)
+	ACQUIRE(prange->lock)
 {
 	mutex_lock(&prange->lock);
 	prange->saved_flags = memalloc_noreclaim_save();
 
 }
 static inline void svm_range_unlock(struct svm_range *prange)
+	RELEASE(prange->lock)
 {
 	memalloc_noreclaim_restore(prange->saved_flags);
 	mutex_unlock(&prange->lock);

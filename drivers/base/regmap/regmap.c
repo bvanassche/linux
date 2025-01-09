@@ -440,12 +440,14 @@ static void regmap_lock_unlock_none(void *__map)
 }
 
 static void regmap_lock_mutex(void *__map)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct regmap *map = __map;
 	mutex_lock(&map->mutex);
 }
 
 static void regmap_unlock_mutex(void *__map)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct regmap *map = __map;
 	mutex_unlock(&map->mutex);

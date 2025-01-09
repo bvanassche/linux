@@ -228,6 +228,7 @@ static int tps6586x_remove_subdevs(struct tps6586x *tps6586x)
 }
 
 static void tps6586x_irq_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct tps6586x *tps6586x = irq_data_get_irq_chip_data(data);
 
@@ -256,6 +257,7 @@ static void tps6586x_irq_disable(struct irq_data *irq_data)
 }
 
 static void tps6586x_irq_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct tps6586x *tps6586x = irq_data_get_irq_chip_data(data);
 	int i;

@@ -531,6 +531,7 @@ static struct ip_vs_app *ip_vs_app_idx(struct netns_ipvs *ipvs, loff_t pos)
 }
 
 static void *ip_vs_app_seq_start(struct seq_file *seq, loff_t *pos)
+	ACQUIRE(__ip_vs_app_mutex)
 {
 	struct net *net = seq_file_net(seq);
 	struct netns_ipvs *ipvs = net_ipvs(net);
@@ -568,6 +569,7 @@ static void *ip_vs_app_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void ip_vs_app_seq_stop(struct seq_file *seq, void *v)
+	RELEASE(__ip_vs_app_mutex)
 {
 	mutex_unlock(&__ip_vs_app_mutex);
 }

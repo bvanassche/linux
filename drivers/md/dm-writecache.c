@@ -241,11 +241,13 @@ DECLARE_DM_KCOPYD_THROTTLE_WITH_MODULE_PARM(dm_writecache_throttle,
 					    "A percentage of time allocated for data copying");
 
 static void wc_lock(struct dm_writecache *wc)
+	ACQUIRE(wc->lock)
 {
 	mutex_lock(&wc->lock);
 }
 
 static void wc_unlock(struct dm_writecache *wc)
+	RELEASE(wc->lock)
 {
 	mutex_unlock(&wc->lock);
 }
@@ -757,6 +759,7 @@ static void writecache_free_entry(struct dm_writecache *wc, struct wc_entry *e)
 }
 
 static void writecache_wait_on_freelist(struct dm_writecache *wc)
+	REQUIRES(wc->lock)
 {
 	DEFINE_WAIT(wait);
 
@@ -914,6 +917,7 @@ static void writecache_discard(struct dm_writecache *wc, sector_t start, sector_
 }
 
 static bool writecache_wait_for_writeback(struct dm_writecache *wc)
+	REQUIRES(wc->lock)
 {
 	if (wc->writeback_size) {
 		writecache_wait_on_freelist(wc);
@@ -1434,6 +1438,7 @@ static void writecache_bio_copy_ssd(struct dm_writecache *wc, struct bio *bio,
 }
 
 static enum wc_map_op writecache_map_write(struct dm_writecache *wc, struct bio *bio)
+	REQUIRES(wc->lock)
 {
 	struct wc_entry *e;
 
@@ -1680,6 +1685,7 @@ static void writecache_copy_endio(int read_err, unsigned long write_err, void *p
 }
 
 static void __writecache_endio_pmem(struct dm_writecache *wc, struct list_head *list)
+	REQUIRES(wc->lock)
 {
 	unsigned int i;
 	struct writeback_struct *wb;

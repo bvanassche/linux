@@ -83,6 +83,7 @@ bool radeon_ddc_probe(struct radeon_connector *radeon_connector, bool use_aux)
 /* bit banging i2c */
 
 static int pre_xfer(struct i2c_adapter *i2c_adap)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct radeon_i2c_chan *i2c = i2c_get_adapdata(i2c_adap);
 	struct radeon_device *rdev = i2c->dev->dev_private;
@@ -153,6 +154,7 @@ static int pre_xfer(struct i2c_adapter *i2c_adap)
 }
 
 static void post_xfer(struct i2c_adapter *i2c_adap)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct radeon_i2c_chan *i2c = i2c_get_adapdata(i2c_adap);
 	struct radeon_device *rdev = i2c->dev->dev_private;

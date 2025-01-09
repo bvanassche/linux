@@ -528,6 +528,7 @@ static int mcp23s08_irq_set_type(struct irq_data *data, unsigned int type)
 }
 
 static void mcp23s08_irq_bus_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(data);
 	struct mcp23s08 *mcp = gpiochip_get_data(gc);
@@ -537,6 +538,7 @@ static void mcp23s08_irq_bus_lock(struct irq_data *data)
 }
 
 static void mcp23s08_irq_bus_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(data);
 	struct mcp23s08 *mcp = gpiochip_get_data(gc);

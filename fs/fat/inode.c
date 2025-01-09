@@ -577,12 +577,14 @@ int fat_fill_inode(struct inode *inode, struct msdos_dir_entry *de)
 }
 
 static inline void fat_lock_build_inode(struct msdos_sb_info *sbi)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (sbi->options.nfs == FAT_NFS_NOSTALE_RO)
 		mutex_lock(&sbi->nfs_build_inode_lock);
 }
 
 static inline void fat_unlock_build_inode(struct msdos_sb_info *sbi)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (sbi->options.nfs == FAT_NFS_NOSTALE_RO)
 		mutex_unlock(&sbi->nfs_build_inode_lock);

@@ -46,6 +46,7 @@ void iwl_mvm_te_clear_data(struct iwl_mvm *mvm,
 }
 
 static void iwl_mvm_cleanup_roc(struct iwl_mvm *mvm)
+	RELEASE(mvm->mutex)
 {
 	struct ieee80211_vif *bss_vif = iwl_mvm_get_bss_vif(mvm);
 	struct ieee80211_vif *vif = mvm->p2p_device_vif;
@@ -131,6 +132,7 @@ static void iwl_mvm_cleanup_roc(struct iwl_mvm *mvm)
 }
 
 void iwl_mvm_roc_done_wk(struct work_struct *wk)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct iwl_mvm *mvm = container_of(wk, struct iwl_mvm, roc_done_wk);
 

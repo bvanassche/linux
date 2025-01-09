@@ -940,6 +940,7 @@ cifs_enable_signing(struct TCP_Server_Info *server, bool mnt_sign_required)
 
 static noinline_for_stack void
 clean_demultiplex_info(struct TCP_Server_Info *server)
+	REQUIRES(server->_srv_mutex)
 {
 	int length;
 
@@ -1137,9 +1138,9 @@ smb2_add_credits_from_hdr(char *buffer, struct TCP_Server_Info *server)
 	}
 }
 
-
 static int
 cifs_demultiplex_thread(void *p)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int i, num_mids, length;
 	struct TCP_Server_Info *server = p;

@@ -1082,12 +1082,14 @@ static int add_dport(struct cxl_port *port, struct cxl_dport *dport)
  * port lock in that case.
  */
 static void cond_cxl_root_lock(struct cxl_port *port)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (is_cxl_root(port))
 		device_lock(&port->dev);
 }
 
 static void cond_cxl_root_unlock(struct cxl_port *port)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (is_cxl_root(port))
 		device_unlock(&port->dev);

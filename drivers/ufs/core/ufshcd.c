@@ -1361,6 +1361,7 @@ static int ufshcd_scale_gear(struct ufs_hba *hba, bool scale_up)
  * Return: 0 upon success; -EBUSY upon timeout.
  */
 static int ufshcd_clock_scaling_prepare(struct ufs_hba *hba, u64 timeout_us)
+	TRY_ACQUIRE(0, hba->wb_mutex)
 {
 	int ret = 0;
 	/*
@@ -1388,6 +1389,7 @@ out:
 }
 
 static void ufshcd_clock_scaling_unprepare(struct ufs_hba *hba, int err, bool scale_up)
+	RELEASE(hba->wb_mutex)
 {
 	up_write(&hba->clk_scaling_lock);
 
@@ -3224,6 +3226,7 @@ retry:
 }
 
 static void ufshcd_dev_man_lock(struct ufs_hba *hba)
+	ACQUIRE(hba->dev_cmd.lock)
 {
 	ufshcd_hold(hba);
 	mutex_lock(&hba->dev_cmd.lock);
@@ -3231,6 +3234,7 @@ static void ufshcd_dev_man_lock(struct ufs_hba *hba)
 }
 
 static void ufshcd_dev_man_unlock(struct ufs_hba *hba)
+	RELEASE(hba->dev_cmd.lock)
 {
 	up_read(&hba->clk_scaling_lock);
 	mutex_unlock(&hba->dev_cmd.lock);

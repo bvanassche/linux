@@ -51,6 +51,7 @@
  * See also tty_buffer_unlock_exclusive().
  */
 void tty_buffer_lock_exclusive(struct tty_port *port)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct tty_bufhead *buf = &port->buf;
 
@@ -68,6 +69,7 @@ EXPORT_SYMBOL_GPL(tty_buffer_lock_exclusive);
  * See also tty_buffer_lock_exclusive().
  */
 void tty_buffer_unlock_exclusive(struct tty_port *port)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct tty_bufhead *buf = &port->buf;
 	bool restart = buf->head->commit != buf->head->read;

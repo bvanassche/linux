@@ -234,6 +234,7 @@ struct vpd_sequence {
  */
 static void vpd_sequence_begin(struct vpd_sequence *seq,
 			       const struct papr_location_code *loc_code)
+	ACQUIRE(rtas_ibm_get_vpd_lock)
 {
 	/*
 	 * Use a static data structure for the location code passed to
@@ -266,6 +267,7 @@ static void vpd_sequence_begin(struct vpd_sequence *seq,
  * Releases resources obtained by vpd_sequence_begin().
  */
 static void vpd_sequence_end(struct vpd_sequence *seq)
+	RELEASE(rtas_ibm_get_vpd_lock)
 {
 	rtas_work_area_free(seq->params.work_area);
 	mutex_unlock(&rtas_ibm_get_vpd_lock);

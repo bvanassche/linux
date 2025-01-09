@@ -346,6 +346,7 @@ int msi_setup_device_data(struct device *dev)
  * @dev:	Device to operate on
  */
 void msi_lock_descs(struct device *dev)
+	ACQUIRE(dev->msi.data->mutex)
 {
 	mutex_lock(&dev->msi.data->mutex);
 }
@@ -356,6 +357,7 @@ EXPORT_SYMBOL_GPL(msi_lock_descs);
  * @dev:	Device to operate on
  */
 void msi_unlock_descs(struct device *dev)
+	RELEASE(dev->msi.data->mutex)
 {
 	/* Invalidate the index which was cached by the iterator */
 	dev->msi.data->__iter_idx = MSI_XA_MAX_INDEX;

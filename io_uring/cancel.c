@@ -255,6 +255,7 @@ static int __io_sync_cancel(struct io_uring_task *tctx,
 
 int io_sync_cancel(struct io_ring_ctx *ctx, void __user *arg)
 	__must_hold(&ctx->uring_lock)
+	REQUIRES(ctx->uring_lock)
 {
 	struct io_cancel_data cd = {
 		.ctx	= ctx,

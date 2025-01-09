@@ -749,6 +749,7 @@ static int stv090x_write_reg(struct stv090x_state *state, unsigned int reg, u8 d
 }
 
 static inline void stv090x_tuner_i2c_lock(struct stv090x_state *state)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (state->config->tuner_i2c_lock)
 		state->config->tuner_i2c_lock(&state->frontend, 1);
@@ -757,6 +758,7 @@ static inline void stv090x_tuner_i2c_lock(struct stv090x_state *state)
 }
 
 static inline void stv090x_tuner_i2c_unlock(struct stv090x_state *state)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (state->config->tuner_i2c_lock)
 		state->config->tuner_i2c_lock(&state->frontend, 0);

@@ -533,6 +533,7 @@ EXPORT_SYMBOL_GPL(ts2020_attach);
  * serialize whole open / I2C-operation / close sequence at the same.
  */
 static void ts2020_regmap_lock(void *__dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct ts2020_priv *dev = __dev;
 
@@ -542,6 +543,7 @@ static void ts2020_regmap_lock(void *__dev)
 }
 
 static void ts2020_regmap_unlock(void *__dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct ts2020_priv *dev = __dev;
 

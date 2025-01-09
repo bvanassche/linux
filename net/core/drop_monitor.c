@@ -1642,6 +1642,7 @@ static const struct genl_small_ops dropmon_ops[] = {
 
 static int net_dm_nl_pre_doit(const struct genl_split_ops *ops,
 			      struct sk_buff *skb, struct genl_info *info)
+	ACQUIRE(net_dm_mutex)
 {
 	mutex_lock(&net_dm_mutex);
 
@@ -1650,6 +1651,7 @@ static int net_dm_nl_pre_doit(const struct genl_split_ops *ops,
 
 static void net_dm_nl_post_doit(const struct genl_split_ops *ops,
 				struct sk_buff *skb, struct genl_info *info)
+	RELEASE(net_dm_mutex)
 {
 	mutex_unlock(&net_dm_mutex);
 }

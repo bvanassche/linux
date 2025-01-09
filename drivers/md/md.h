@@ -668,6 +668,7 @@ static inline bool reshape_interrupted(struct mddev *mddev)
 }
 
 static inline int __must_check mddev_lock(struct mddev *mddev)
+	TRY_ACQUIRE(0, mddev->reconfig_mutex)
 {
 	return mutex_lock_interruptible(&mddev->reconfig_mutex);
 }
@@ -676,15 +677,18 @@ static inline int __must_check mddev_lock(struct mddev *mddev)
  * failure due to interrupts is not acceptable.
  */
 static inline void mddev_lock_nointr(struct mddev *mddev)
+	ACQUIRE(mddev->reconfig_mutex)
 {
 	mutex_lock(&mddev->reconfig_mutex);
 }
 
 static inline int mddev_trylock(struct mddev *mddev)
+	TRY_ACQUIRE(1, mddev->reconfig_mutex)
 {
 	return mutex_trylock(&mddev->reconfig_mutex);
 }
-extern void mddev_unlock(struct mddev *mddev);
+
+void mddev_unlock(struct mddev *mddev) RELEASE(mddev->reconfig_mutex);
 
 static inline void md_sync_acct(struct block_device *bdev, unsigned long nr_sectors)
 {
@@ -949,6 +953,7 @@ static inline void mddev_check_write_zeroes(struct mddev *mddev, struct bio *bio
 }
 
 static inline int mddev_suspend_and_lock(struct mddev *mddev)
+	TRY_ACQUIRE(0, mddev->reconfig_mutex)
 {
 	int ret;
 
@@ -964,12 +969,14 @@ static inline int mddev_suspend_and_lock(struct mddev *mddev)
 }
 
 static inline void mddev_suspend_and_lock_nointr(struct mddev *mddev)
+	ACQUIRE(mddev->reconfig_mutex)
 {
 	mddev_suspend(mddev, false);
 	mutex_lock(&mddev->reconfig_mutex);
 }
 
 static inline void mddev_unlock_and_resume(struct mddev *mddev)
+	RELEASE(mddev->reconfig_mutex)
 {
 	mddev_unlock(mddev);
 	mddev_resume(mddev);

@@ -177,6 +177,7 @@ static struct fasync_struct *async_queue=NULL;
  */
 static inline int
 mptctl_syscall_down(MPT_ADAPTER *ioc, int nonblock)
+	TRY_ACQUIRE(0, ioc->ioctl_cmds.mutex)
 {
 	int rc = 0;
 
@@ -670,7 +671,8 @@ __mptctl_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	/* All of these commands require an interrupt or
 	 * are unknown/illegal.
 	 */
-	if ((ret = mptctl_syscall_down(iocp, nonblock)) != 0)
+	ret = mptctl_syscall_down(iocp, nonblock);
+	if (ret != 0)
 		return ret;
 
 	if (cmd == MPTFWDOWNLOAD)
@@ -1727,6 +1729,7 @@ mptctl_mpt_command (MPT_ADAPTER *ioc, unsigned long arg)
  */
 static int
 mptctl_do_mpt_command (MPT_ADAPTER *ioc, struct mpt_ioctl_command karg, void __user *mfPtr)
+	NO_THREAD_SAFETY_ANALYSIS /* this function needs further inspection */
 {
 	MPT_FRAME_HDR	*mf = NULL;
 	MPIHeader_t	*hdr;
@@ -2732,7 +2735,8 @@ compat_mptfwxfer_ioctl(struct file *filp, unsigned int cmd,
 		return -ENODEV;
 	}
 
-	if ((ret = mptctl_syscall_down(iocp, nonblock)) != 0)
+	ret = mptctl_syscall_down(iocp, nonblock);
+	if (ret != 0)
 		return ret;
 
 	dctlprintk(iocp, printk(MYIOC_s_DEBUG_FMT "compat_mptfwxfer_ioctl() called\n",
@@ -2772,7 +2776,8 @@ compat_mpt_command(struct file *filp, unsigned int cmd,
 		return -ENODEV;
 	}
 
-	if ((ret = mptctl_syscall_down(iocp, nonblock)) != 0)
+	ret = mptctl_syscall_down(iocp, nonblock);
+	if (ret != 0)
 		return ret;
 
 	dctlprintk(iocp, printk(MYIOC_s_DEBUG_FMT "compat_mpt_command() called\n",

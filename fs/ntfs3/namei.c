@@ -125,6 +125,7 @@ static int ntfs_mknod(struct mnt_idmap *idmap, struct inode *dir,
  * ntfs_link - inode_operations::link
  */
 static int ntfs_link(struct dentry *ode, struct inode *dir, struct dentry *de)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int err;
 	struct inode *inode = d_inode(ode);
@@ -234,6 +235,7 @@ static int ntfs_rmdir(struct inode *dir, struct dentry *dentry)
 static int ntfs_rename(struct mnt_idmap *idmap, struct inode *dir,
 		       struct dentry *dentry, struct inode *new_dir,
 		       struct dentry *new_dentry, u32 flags)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int err;
 	struct super_block *sb = dir->i_sb;

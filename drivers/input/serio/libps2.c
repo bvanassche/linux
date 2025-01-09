@@ -125,6 +125,7 @@ EXPORT_SYMBOL(ps2_sendbyte);
  * ps2_end_command() should be called.
  */
 void ps2_begin_command(struct ps2dev *ps2dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct mutex *m = ps2dev->serio->ps2_cmd_mutex ?: &ps2dev->cmd_mutex;
 
@@ -137,6 +138,7 @@ EXPORT_SYMBOL(ps2_begin_command);
  * @ps2dev: a PS/2 device executing the command
  */
 void ps2_end_command(struct ps2dev *ps2dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct mutex *m = ps2dev->serio->ps2_cmd_mutex ?: &ps2dev->cmd_mutex;
 

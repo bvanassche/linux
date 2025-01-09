@@ -802,6 +802,7 @@ int isapnp_present(void)
 }
 
 int isapnp_cfg_begin(int csn, int logdev)
+	TRY_ACQUIRE(0, isapnp_cfg_mutex)
 {
 	if (csn < 1 || csn > isapnp_csn_count || logdev > 10)
 		return -EINVAL;
@@ -829,6 +830,7 @@ int isapnp_cfg_begin(int csn, int logdev)
 }
 
 int isapnp_cfg_end(void)
+	RELEASE(isapnp_cfg_mutex)
 {
 	isapnp_wait();
 	mutex_unlock(&isapnp_cfg_mutex);

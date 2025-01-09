@@ -1884,6 +1884,7 @@ err:
 
 /* We assume to be passed big endian arguments */
 SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	const struct rtas_function *func;
 	struct pin_cookie cookie;

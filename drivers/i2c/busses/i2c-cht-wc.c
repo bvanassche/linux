@@ -219,6 +219,7 @@ static const struct i2c_lock_operations cht_wc_i2c_adap_lock_ops = {
 
 /**** irqchip for the client connected to the extchgr i2c adapter ****/
 static void cht_wc_i2c_irq_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct cht_wc_i2c_adap *adap = irq_data_get_irq_chip_data(data);
 
@@ -226,6 +227,7 @@ static void cht_wc_i2c_irq_lock(struct irq_data *data)
 }
 
 static void cht_wc_i2c_irq_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct cht_wc_i2c_adap *adap = irq_data_get_irq_chip_data(data);
 	int ret;

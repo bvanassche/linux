@@ -156,6 +156,7 @@ static int sq905_ack_frame(struct gspca_dev *gspca_dev)
  */
 static int
 sq905_read_data(struct gspca_dev *gspca_dev, u8 *data, int size, int need_lock)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int ret;
 	int act_len = 0;
@@ -300,6 +301,7 @@ static int sd_config(struct gspca_dev *gspca_dev,
 /* called on streamoff with alt==0 and on disconnect */
 /* the usb_lock is held at entry - restore on exit */
 static void sd_stop0(struct gspca_dev *gspca_dev)
+	REQUIRES(gspca_dev->usb_lock)
 {
 	struct sd *dev = (struct sd *) gspca_dev;
 

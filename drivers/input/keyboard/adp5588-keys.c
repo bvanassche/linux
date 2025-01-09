@@ -342,6 +342,7 @@ static int adp5588_build_gpiomap(struct adp5588_kpad *kpad)
 }
 
 static void adp5588_irq_bus_lock(struct irq_data *d)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct adp5588_kpad *kpad = gpiochip_get_data(gc);
@@ -350,6 +351,7 @@ static void adp5588_irq_bus_lock(struct irq_data *d)
 }
 
 static void adp5588_irq_bus_sync_unlock(struct irq_data *d)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct adp5588_kpad *kpad = gpiochip_get_data(gc);

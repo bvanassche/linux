@@ -207,6 +207,8 @@ EXPORT_SYMBOL_GPL(nand_deselect_target);
  * Release chip lock and wake up anyone waiting on the device.
  */
 static void nand_release_device(struct nand_chip *chip)
+	RELEASE(chip->controller->lock)
+	RELEASE(chip->lock)
 {
 	/* Release the controller and the chip */
 	mutex_unlock(&chip->controller->lock);
@@ -336,6 +338,8 @@ static int nand_isbad_bbm(struct nand_chip *chip, loff_t ofs)
  * Lock the device and its controller for exclusive access
  */
 static void nand_get_device(struct nand_chip *chip)
+	ACQUIRE(chip->lock)
+	ACQUIRE(chip->controller->lock)
 {
 	/* Wait until the device is resumed. */
 	while (1) {

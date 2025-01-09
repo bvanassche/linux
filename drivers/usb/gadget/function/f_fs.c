@@ -64,7 +64,8 @@ static void ffs_data_closed(struct ffs_data *ffs);
 
 /* Called with ffs->mutex held; take over ownership of data. */
 static int __must_check
-__ffs_data_got_descs(struct ffs_data *ffs, char *data, size_t len);
+__ffs_data_got_descs(struct ffs_data *ffs, char *data, size_t len)
+	REQUIRES(ffs->mutex);
 static int __must_check
 __ffs_data_got_strings(struct ffs_data *ffs, char *data, size_t len);
 
@@ -293,7 +294,8 @@ static void ffs_closed(struct ffs_data *ffs);
 /* Misc helper functions ****************************************************/
 
 static int ffs_mutex_lock(struct mutex *mutex, unsigned nonblock)
-	__attribute__((warn_unused_result, nonnull));
+	__attribute__((warn_unused_result, nonnull))
+	TRY_ACQUIRE(0, *mutex);
 static char *ffs_prepare_buffer(const char __user *buf, size_t len)
 	__attribute__((warn_unused_result, nonnull));
 
@@ -375,7 +377,7 @@ static ssize_t ffs_ep0_write(struct file *file, const char __user *buf,
 
 	/* Acquire mutex */
 	ret = ffs_mutex_lock(&ffs->mutex, file->f_flags & O_NONBLOCK);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	/* Check state */
@@ -505,6 +507,7 @@ done_spin:
 static ssize_t __ffs_ep0_read_events(struct ffs_data *ffs, char __user *buf,
 				     size_t n)
 	__releases(&ffs->ev.waitq.lock)
+	RELEASE(ffs->mutex)
 {
 	/*
 	 * n cannot be bigger than ffs->ev.count, which cannot be bigger than
@@ -550,7 +553,7 @@ static ssize_t ffs_ep0_read(struct file *file, char __user *buf,
 
 	/* Acquire mutex */
 	ret = ffs_mutex_lock(&ffs->mutex, file->f_flags & O_NONBLOCK);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	/* Check state */
@@ -687,7 +690,7 @@ static __poll_t ffs_ep0_poll(struct file *file, poll_table *wait)
 	poll_wait(file, &ffs->ev.waitq, wait);
 
 	ret = ffs_mutex_lock(&ffs->mutex, file->f_flags & O_NONBLOCK);
-	if (ret < 0)
+	if (ret)
 		return mask;
 
 	switch (ffs->state) {
@@ -3487,6 +3490,7 @@ static int __ffs_func_bind_do_os_desc(enum ffs_os_desc_type type,
 
 static inline struct f_fs_opts *ffs_do_functionfs_bind(struct usb_function *f,
 						struct usb_configuration *c)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct ffs_function *func = ffs_func_from_usb(f);
 	struct f_fs_opts *ffs_opts =

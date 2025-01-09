@@ -865,6 +865,7 @@ static struct w1_therm_family_converter *device_family(struct w1_slave *sl)
  * Return: true is mutex is acquired and lock, false otherwise
  */
 static inline bool bus_mutex_lock(struct mutex *lock)
+	TRY_ACQUIRE(true, *lock)
 {
 	int max_trying = W1_THERM_MAX_TRY;
 
@@ -1111,6 +1112,7 @@ static int w1_poll_completion(struct w1_master *dev_master, int tout_ms)
 }
 
 static int convert_t(struct w1_slave *sl, struct therm_info *info)
+	NO_THREAD_SAFETY_ANALYSIS /* because of a clang bug */
 {
 	struct w1_master *dev_master = sl->master;
 	int max_trying = W1_THERM_MAX_TRY;
@@ -1210,6 +1212,7 @@ error:
 }
 
 static int conv_time_measure(struct w1_slave *sl, int *conv_time)
+	NO_THREAD_SAFETY_ANALYSIS /* because of a clang bug */
 {
 	struct therm_info inf,
 		*info = &inf;
@@ -1280,6 +1283,7 @@ error:
 }
 
 static int read_scratchpad(struct w1_slave *sl, struct therm_info *info)
+	NO_THREAD_SAFETY_ANALYSIS /* because of a clang bug */
 {
 	struct w1_master *dev_master = sl->master;
 	int max_trying = W1_THERM_MAX_TRY;
@@ -1334,6 +1338,7 @@ error:
 }
 
 static int write_scratchpad(struct w1_slave *sl, const u8 *data, u8 nb_bytes)
+	NO_THREAD_SAFETY_ANALYSIS /* because of a clang bug */
 {
 	struct w1_master *dev_master = sl->master;
 	int max_trying = W1_THERM_MAX_TRY;
@@ -1367,6 +1372,7 @@ error:
 }
 
 static int copy_scratchpad(struct w1_slave *sl)
+	NO_THREAD_SAFETY_ANALYSIS /* because of a clang bug */
 {
 	struct w1_master *dev_master = sl->master;
 	int max_trying = W1_THERM_MAX_TRY;
@@ -1421,6 +1427,7 @@ error:
 }
 
 static int recall_eeprom(struct w1_slave *sl)
+	NO_THREAD_SAFETY_ANALYSIS /* because of a clang bug */
 {
 	struct w1_master *dev_master = sl->master;
 	int max_trying = W1_THERM_MAX_TRY;
@@ -1456,6 +1463,7 @@ error:
 }
 
 static int read_powermode(struct w1_slave *sl)
+	NO_THREAD_SAFETY_ANALYSIS /* because of a clang bug */
 {
 	struct w1_master *dev_master = sl->master;
 	int max_trying = W1_THERM_MAX_TRY;
@@ -1494,6 +1502,7 @@ error:
 }
 
 static int trigger_bulk_read(struct w1_master *dev_master)
+	NO_THREAD_SAFETY_ANALYSIS /* because of a clang bug */
 {
 	struct w1_slave *sl = NULL; /* used to iterate through slaves */
 	int max_trying = W1_THERM_MAX_TRY;

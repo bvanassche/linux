@@ -434,6 +434,7 @@ out_unlock:
  */
 void intel_gvt_reset_vgpu_locked(struct intel_vgpu *vgpu, bool dmlr,
 				 intel_engine_mask_t engine_mask)
+	REQUIRES(vgpu->vgpu_lock)
 {
 	struct intel_gvt *gvt = vgpu->gvt;
 	struct intel_gvt_workload_scheduler *scheduler = &gvt->scheduler;

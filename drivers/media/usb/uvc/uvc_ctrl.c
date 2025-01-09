@@ -1930,6 +1930,7 @@ static int uvc_ctrl_find_ctrl_idx(struct uvc_entity *entity,
 
 int __uvc_ctrl_commit(struct uvc_fh *handle, int rollback,
 		      struct v4l2_ext_controls *ctrls)
+	NO_THREAD_SAFETY_ANALYSIS /* RELEASE(handle->chain->ctrl_mutex) */
 {
 	struct uvc_video_chain *chain = handle->chain;
 	struct uvc_control *err_ctrl;

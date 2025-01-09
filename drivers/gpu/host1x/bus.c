@@ -884,6 +884,7 @@ EXPORT_SYMBOL(host1x_client_resume);
 struct host1x_bo_mapping *host1x_bo_pin(struct device *dev, struct host1x_bo *bo,
 					enum dma_data_direction dir,
 					struct host1x_bo_cache *cache)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct host1x_bo_mapping *mapping;
 
@@ -943,6 +944,7 @@ static void __host1x_bo_unpin(struct kref *ref)
 }
 
 void host1x_bo_unpin(struct host1x_bo_mapping *mapping)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct host1x_bo_cache *cache = mapping->cache;
 

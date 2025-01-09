@@ -422,6 +422,7 @@ int x86_reserve_hardware(void)
 }
 
 void x86_release_hardware(void)
+	NO_THREAD_SAFETY_ANALYSIS /* needed because of a clang bug? */
 {
 	if (atomic_dec_and_mutex_lock(&pmc_refcount, &pmc_reserve_mutex)) {
 		release_pmc_hardware();

@@ -1127,6 +1127,7 @@ LEAVE_UPDATE:
 }
 
 static int abituguru3_suspend(struct device *dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct abituguru3_data *data = dev_get_drvdata(dev);
 	/*
@@ -1138,6 +1139,7 @@ static int abituguru3_suspend(struct device *dev)
 }
 
 static int abituguru3_resume(struct device *dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct abituguru3_data *data = dev_get_drvdata(dev);
 	mutex_unlock(&data->update_lock);

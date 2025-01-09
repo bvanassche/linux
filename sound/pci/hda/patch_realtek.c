@@ -143,6 +143,7 @@ struct alc_spec {
  */
 
 static void coef_mutex_lock(struct hda_codec *codec)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct alc_spec *spec = codec->spec;
 
@@ -151,6 +152,7 @@ static void coef_mutex_lock(struct hda_codec *codec)
 }
 
 static void coef_mutex_unlock(struct hda_codec *codec)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct alc_spec *spec = codec->spec;
 

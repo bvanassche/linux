@@ -781,6 +781,7 @@ static u32 __rds_find_ifindex(struct net *net, const struct in6_addr *addr)
 
 int rds_ib_cm_handle_connect(struct rdma_cm_id *cm_id,
 			     struct rdma_cm_event *event, bool isv6)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	__be64 lguid = cm_id->route.path_rec->sgid.global.interface_id;
 	__be64 fguid = cm_id->route.path_rec->dgid.global.interface_id;

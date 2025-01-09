@@ -143,6 +143,7 @@ struct nct7904_data {
 
 /* Access functions */
 static int nct7904_bank_lock(struct nct7904_data *data, unsigned int bank)
+	ACQUIRE(data->bank_lock)
 {
 	int ret;
 
@@ -158,6 +159,7 @@ static int nct7904_bank_lock(struct nct7904_data *data, unsigned int bank)
 }
 
 static inline void nct7904_bank_release(struct nct7904_data *data)
+	RELEASE(data->bank_lock)
 {
 	mutex_unlock(&data->bank_lock);
 }

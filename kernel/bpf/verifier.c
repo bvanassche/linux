@@ -23037,6 +23037,7 @@ static int process_fd_array(struct bpf_verifier_env *env, union bpf_attr *attr, 
 }
 
 int bpf_check(struct bpf_prog **prog, union bpf_attr *attr, bpfptr_t uattr, __u32 uattr_size)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	u64 start_time = ktime_get_ns();
 	struct bpf_verifier_env *env;

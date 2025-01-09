@@ -262,6 +262,7 @@ static void do_io_probe(struct pcmcia_socket *s, unsigned int base,
  */
 static int readable(struct pcmcia_socket *s, struct resource *res,
 		    unsigned int *count)
+	REQUIRES(s->ops_mutex)
 {
 	int ret = -EINVAL;
 

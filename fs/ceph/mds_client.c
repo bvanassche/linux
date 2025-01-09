@@ -5006,6 +5006,7 @@ fail_nopagelist:
 static void check_new_map(struct ceph_mds_client *mdsc,
 			  struct ceph_mdsmap *newmap,
 			  struct ceph_mdsmap *oldmap)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int i, j, err;
 	int oldstate, newstate;

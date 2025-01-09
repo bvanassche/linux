@@ -66,6 +66,7 @@ int snd_i2c_device_create(struct snd_i2c_bus *bus, const char *name,
 int snd_i2c_device_free(struct snd_i2c_device *device);
 
 static inline void snd_i2c_lock(struct snd_i2c_bus *bus)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (bus->master)
 		mutex_lock(&bus->master->lock_mutex);
@@ -74,6 +75,7 @@ static inline void snd_i2c_lock(struct snd_i2c_bus *bus)
 }
 
 static inline void snd_i2c_unlock(struct snd_i2c_bus *bus)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (bus->master)
 		mutex_unlock(&bus->master->lock_mutex);

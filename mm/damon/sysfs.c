@@ -1182,6 +1182,7 @@ static int damon_sysfs_add_targets(struct damon_ctx *ctx,
 }
 
 static void damon_sysfs_before_terminate(struct damon_ctx *ctx)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct damon_target *t, *next;
 
@@ -1318,6 +1319,7 @@ static int damon_sysfs_upd_schemes_effective_quotas(void *data)
  */
 static int damon_sysfs_cmd_request_callback(struct damon_ctx *c, bool active,
 		bool after_aggregation)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct damon_sysfs_kdamond *kdamond;
 	int err = 0;
@@ -1501,6 +1503,7 @@ static int damon_sysfs_update_schemes_tried_regions(
  */
 static int damon_sysfs_handle_cmd(enum damon_sysfs_cmd cmd,
 		struct damon_sysfs_kdamond *kdamond)
+	REQUIRES(damon_sysfs_lock)
 {
 	bool need_wait = true;
 

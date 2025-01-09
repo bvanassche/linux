@@ -1241,6 +1241,7 @@ static int dlfb_realloc_framebuffer(struct dlfb_data *dlfb, struct fb_info *info
 static int dlfb_setup_modes(struct dlfb_data *dlfb,
 			   struct fb_info *info,
 			   char *default_edid, size_t default_edid_size)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	char *edid;
 	int i, result = 0, tries = 3;

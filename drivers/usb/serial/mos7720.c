@@ -269,6 +269,7 @@ static void destroy_mos_parport(struct kref *kref)
  * our release function can return.
  */
 static int parport_prologue(struct parport *pp)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct mos7715_parport *mos_parport;
 
@@ -304,6 +305,7 @@ static int parport_prologue(struct parport *pp)
  * synchronous messages to the device.
  */
 static inline void parport_epilogue(struct parport *pp)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct mos7715_parport *mos_parport = pp->private_data;
 	mutex_unlock(&mos_parport->serial->disc_mutex);

@@ -45,6 +45,8 @@ xqcheck_commit_dquot(
 	struct xqcheck		*xqc,
 	xfs_dqtype_t		dqtype,
 	struct xfs_dquot	*dq)
+	REQUIRES(dq->q_qlock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xqcheck_dquot	xcdq;
 	struct xfarray		*counts = xqcheck_counters_for(xqc, dqtype);
@@ -140,6 +142,7 @@ STATIC int
 xqcheck_commit_dqtype(
 	struct xqcheck		*xqc,
 	unsigned int		dqtype)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xchk_dqiter	cursor = { };
 	struct xqcheck_dquot	xcdq;

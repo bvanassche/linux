@@ -862,6 +862,7 @@ xrep_rtrmapbt_live_update(
 	struct notifier_block		*nb,
 	unsigned long			action,
 	void				*data)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xfs_rmap_update_params	*p = data;
 	struct xrep_rtrmap		*rr;

@@ -143,6 +143,7 @@ int radeon_ring_alloc(struct radeon_device *rdev, struct radeon_ring *ring, unsi
  * Returns 0 on success, error on failure.
  */
 int radeon_ring_lock(struct radeon_device *rdev, struct radeon_ring *ring, unsigned ndw)
+	TRY_ACQUIRE(0, rdev->ring_lock)
 {
 	int r;
 
@@ -199,6 +200,7 @@ void radeon_ring_commit(struct radeon_device *rdev, struct radeon_ring *ring,
  */
 void radeon_ring_unlock_commit(struct radeon_device *rdev, struct radeon_ring *ring,
 			       bool hdp_flush)
+	RELEASE(rdev->ring_lock)
 {
 	radeon_ring_commit(rdev, ring, hdp_flush);
 	mutex_unlock(&rdev->ring_lock);
@@ -225,6 +227,7 @@ void radeon_ring_undo(struct radeon_ring *ring)
  * Call radeon_ring_undo() then unlock the ring (all asics).
  */
 void radeon_ring_unlock_undo(struct radeon_device *rdev, struct radeon_ring *ring)
+	RELEASE(rdev->ring_lock)
 {
 	radeon_ring_undo(ring);
 	mutex_unlock(&rdev->ring_lock);

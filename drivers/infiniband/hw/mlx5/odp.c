@@ -682,6 +682,7 @@ void mlx5_ib_free_odp_mr(struct mlx5_ib_mr *mr)
 static int pagefault_real_mr(struct mlx5_ib_mr *mr, struct ib_umem_odp *odp,
 			     u64 user_va, size_t bcnt, u32 *bytes_mapped,
 			     u32 flags)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	int page_shift, ret, np;
 	bool downgrade = flags & MLX5_PF_FLAGS_DOWNGRADE;

@@ -162,6 +162,7 @@ int iscsit_get_tpg(
 }
 
 void iscsit_put_tpg(struct iscsi_portal_group *tpg)
+	RELEASE(tpg->tpg_access_lock)
 {
 	mutex_unlock(&tpg->tpg_access_lock);
 }

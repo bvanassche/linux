@@ -671,12 +671,14 @@ static inline int ksz_prmw32(struct ksz_device *dev, int port, int offset,
 }
 
 static inline void ksz_regmap_lock(void *__mtx)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct mutex *mtx = __mtx;
 	mutex_lock(mtx);
 }
 
 static inline void ksz_regmap_unlock(void *__mtx)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct mutex *mtx = __mtx;
 	mutex_unlock(mtx);

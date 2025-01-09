@@ -1014,6 +1014,7 @@ static int decode_message(struct qaic_device *qdev, struct manage_msg *user_msg,
 
 static void *msg_xfer(struct qaic_device *qdev, struct wrapper_list *wrappers, u32 seq_num,
 		      bool ignore_signal)
+	RELEASE(qdev->cntl_mutex)
 {
 	struct xfer_queue_elem elem;
 	struct wire_msg *out_buf;

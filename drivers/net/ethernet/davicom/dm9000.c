@@ -319,6 +319,7 @@ dm9000_phy_read(struct net_device *dev, int phy_reg_unused, int reg)
 static void
 dm9000_phy_write(struct net_device *dev,
 		 int phyaddr_unused, int reg, int value)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct board_info *db = netdev_priv(dev);
 	unsigned long flags;

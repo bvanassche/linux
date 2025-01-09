@@ -572,6 +572,7 @@ int ib_security_modify_qp(struct ib_qp *qp,
 			  struct ib_qp_attr *qp_attr,
 			  int qp_attr_mask,
 			  struct ib_udata *udata)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int ret = 0;
 	struct ib_ports_pkeys *tmp_pps;

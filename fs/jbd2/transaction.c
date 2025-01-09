@@ -861,6 +861,7 @@ void jbd2_journal_wait_updates(journal_t *journal)
  * The journal lock should not be held on entry.
  */
 void jbd2_journal_lock_updates(journal_t *journal)
+	ACQUIRE(journal->j_barrier)
 {
 	jbd2_might_wait_for_commit(journal);
 
@@ -898,6 +899,7 @@ void jbd2_journal_lock_updates(journal_t *journal)
  * Should be called without the journal lock held.
  */
 void jbd2_journal_unlock_updates (journal_t *journal)
+	RELEASE(journal->j_barrier)
 {
 	J_ASSERT(journal->j_barrier_count != 0);
 

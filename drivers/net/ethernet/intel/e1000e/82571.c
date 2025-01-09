@@ -559,6 +559,7 @@ static DEFINE_MUTEX(swflag_mutex);
  *
  **/
 static s32 e1000_get_hw_semaphore_82574(struct e1000_hw *hw)
+	TRY_ACQUIRE(0, swflag_mutex)
 {
 	s32 ret_val;
 
@@ -577,6 +578,7 @@ static s32 e1000_get_hw_semaphore_82574(struct e1000_hw *hw)
  *
  **/
 static void e1000_put_hw_semaphore_82574(struct e1000_hw *hw)
+	RELEASE(swflag_mutex)
 {
 	e1000_put_hw_semaphore_82573(hw);
 	mutex_unlock(&swflag_mutex);
@@ -940,6 +942,7 @@ static s32 e1000_set_d0_lplu_state_82571(struct e1000_hw *hw, bool active)
  *  This resets the hardware into a known state.
  **/
 static s32 e1000_reset_hw_82571(struct e1000_hw *hw)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	u32 ctrl, ctrl_ext, eecd, tctl;
 	s32 ret_val;

@@ -773,7 +773,7 @@ int pse_ethtool_get_status(struct pse_control *psec,
 
 	pcdev = psec->pcdev;
 	ops = pcdev->ops;
-	mutex_lock(&pcdev->lock);
+	mutex_lock(&psec->pcdev->lock);
 	ret = ops->pi_get_admin_state(pcdev, psec->id, &admin_state);
 	if (ret)
 		goto out;

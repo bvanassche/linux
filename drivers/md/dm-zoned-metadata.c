@@ -354,11 +354,13 @@ bool dmz_dev_is_dying(struct dmz_metadata *zmd)
  * The map lock also protects all the zone lists.
  */
 void dmz_lock_map(struct dmz_metadata *zmd)
+	ACQUIRE(zmd->map_lock)
 {
 	mutex_lock(&zmd->map_lock);
 }
 
 void dmz_unlock_map(struct dmz_metadata *zmd)
+	RELEASE(zmd->map_lock)
 {
 	mutex_unlock(&zmd->map_lock);
 }
@@ -386,11 +388,13 @@ void dmz_unlock_metadata(struct dmz_metadata *zmd)
  * while flush is being executed.
  */
 void dmz_lock_flush(struct dmz_metadata *zmd)
+	ACQUIRE(zmd->mblk_flush_lock)
 {
 	mutex_lock(&zmd->mblk_flush_lock);
 }
 
 void dmz_unlock_flush(struct dmz_metadata *zmd)
+	RELEASE(zmd->mblk_flush_lock)
 {
 	mutex_unlock(&zmd->mblk_flush_lock);
 }
@@ -1875,6 +1879,7 @@ static void dmz_lru_zone(struct dmz_metadata *zmd, struct dm_zone *zone)
  * Wait for any zone to be freed.
  */
 static void dmz_wait_for_free_zones(struct dmz_metadata *zmd)
+	REQUIRES(zmd->map_lock)
 {
 	DEFINE_WAIT(wait);
 
@@ -1920,6 +1925,7 @@ void dmz_unlock_zone_reclaim(struct dm_zone *zone)
  * Wait for a zone reclaim to complete.
  */
 static void dmz_wait_for_reclaim(struct dmz_metadata *zmd, struct dm_zone *zone)
+	REQUIRES(zmd->map_lock)
 {
 	dmz_unlock_map(zmd);
 	dmz_unlock_metadata(zmd);

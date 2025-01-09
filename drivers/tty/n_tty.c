@@ -2156,6 +2156,7 @@ static int job_control(struct tty_struct *tty, struct file *file)
  */
 static ssize_t n_tty_read(struct tty_struct *tty, struct file *file, u8 *kbuf,
 			  size_t nr, void **cookie, unsigned long offset)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct n_tty_data *ldata = tty->disc_data;
 	u8 *kb = kbuf;

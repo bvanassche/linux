@@ -778,6 +778,7 @@ static int raw_to_mcelsius_v3(struct mtk_thermal *mt, int sensno, s32 raw)
  * PTPCORESEL register to access it.
  */
 static void mtk_thermal_get_bank(struct mtk_thermal_bank *bank)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct mtk_thermal *mt = bank->mt;
 	u32 val;
@@ -799,6 +800,7 @@ static void mtk_thermal_get_bank(struct mtk_thermal_bank *bank)
  * release a bank previously taken with mtk_thermal_get_bank,
  */
 static void mtk_thermal_put_bank(struct mtk_thermal_bank *bank)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	struct mtk_thermal *mt = bank->mt;
 

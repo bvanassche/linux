@@ -324,6 +324,7 @@ struct rxrpc_call *rxrpc_new_client_call(struct rxrpc_sock *rx,
 					 unsigned int debug_id)
 	__releases(&rx->sk.sk_lock.slock)
 	__acquires(&call->user_mutex)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct rxrpc_call *call, *xcall;
 	struct rxrpc_net *rxnet;

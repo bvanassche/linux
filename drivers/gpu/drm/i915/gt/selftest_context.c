@@ -13,6 +13,7 @@
 #include "selftests/mock_drm.h"
 
 static int request_sync(struct i915_request *rq)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct intel_timeline *tl = i915_request_timeline(rq);
 	long timeout;

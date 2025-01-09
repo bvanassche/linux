@@ -410,6 +410,7 @@ out:
 /* Allocation */
 
 long bch_bucket_alloc(struct cache *ca, unsigned int reserve, bool wait)
+	REQUIRES(ca->set->bucket_lock)
 {
 	DEFINE_WAIT(w);
 	struct bucket *b;
@@ -507,6 +508,7 @@ void bch_bucket_free(struct cache_set *c, struct bkey *k)
 
 int __bch_bucket_alloc_set(struct cache_set *c, unsigned int reserve,
 			   struct bkey *k, bool wait)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct cache *ca;
 	long b;

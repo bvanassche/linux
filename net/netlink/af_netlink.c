@@ -2239,6 +2239,7 @@ static int netlink_dump_done(struct netlink_sock *nlk, struct sk_buff *skb,
 }
 
 static int netlink_dump(struct sock *sk, bool lock_taken)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct netlink_sock *nlk = nlk_sk(sk);
 	struct netlink_ext_ack extack = {};
@@ -2369,6 +2370,7 @@ errout_skb:
 int __netlink_dump_start(struct sock *ssk, struct sk_buff *skb,
 			 const struct nlmsghdr *nlh,
 			 struct netlink_dump_control *control)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct netlink_callback *cb;
 	struct netlink_sock *nlk;

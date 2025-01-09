@@ -424,6 +424,7 @@ static struct xt_hashlimit_htable *htable_find_get(struct net *net,
 }
 
 static void htable_put(struct xt_hashlimit_htable *hinfo)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	if (refcount_dec_and_mutex_lock(&hinfo->use, &hashlimit_mutex)) {
 		hlist_del(&hinfo->node);

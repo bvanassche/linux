@@ -576,6 +576,7 @@ void qxl_surface_evict(struct qxl_device *qdev, struct qxl_bo *surf, bool do_upd
 }
 
 static int qxl_reap_surf(struct qxl_device *qdev, struct qxl_bo *surf, bool stall)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	long ret;
 

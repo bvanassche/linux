@@ -104,6 +104,7 @@ static void _stop_streaming(struct vb2_queue *vq)
 }
 
 static void _dmxdev_lock(struct vb2_queue *vq)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct dvb_vb2_ctx *ctx = vb2_get_drv_priv(vq);
 
@@ -112,6 +113,7 @@ static void _dmxdev_lock(struct vb2_queue *vq)
 }
 
 static void _dmxdev_unlock(struct vb2_queue *vq)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct dvb_vb2_ctx *ctx = vb2_get_drv_priv(vq);
 

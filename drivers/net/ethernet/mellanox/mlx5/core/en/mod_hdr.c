@@ -139,6 +139,7 @@ attach_header_err:
 void mlx5e_mod_hdr_detach(struct mlx5_core_dev *mdev,
 			  struct mod_hdr_tbl *tbl,
 			  struct mlx5e_mod_hdr_handle *mh)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	if (!refcount_dec_and_mutex_lock(&mh->refcnt, &tbl->lock))
 		return;

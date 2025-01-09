@@ -1068,6 +1068,7 @@ static void cci_pmu_put_hw(struct cci_pmu *cci_pmu)
 }
 
 static void hw_perf_event_destroy(struct perf_event *event)
+	NO_THREAD_SAFETY_ANALYSIS /* needed because of a clang bug? */
 {
 	struct cci_pmu *cci_pmu = to_cci_pmu(event->pmu);
 	atomic_t *active_events = &cci_pmu->active_events;

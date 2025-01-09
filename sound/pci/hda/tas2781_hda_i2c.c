@@ -654,6 +654,7 @@ static void tas2781_hda_remove_controls(struct tas2781_hda *tas_hda)
 }
 
 static void tasdev_fw_ready(const struct firmware *fmw, void *context)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct tasdevice_priv *tas_priv = context;
 	struct tas2781_hda *tas_hda = dev_get_drvdata(tas_priv->dev);

@@ -50,23 +50,27 @@ static DEFINE_MUTEX(acpi_hp_context_lock);
 static u64 spcr_uart_addr;
 
 void acpi_scan_lock_acquire(void)
+	ACQUIRE(acpi_scan_lock)
 {
 	mutex_lock(&acpi_scan_lock);
 }
 EXPORT_SYMBOL_GPL(acpi_scan_lock_acquire);
 
 void acpi_scan_lock_release(void)
+	RELEASE(acpi_scan_lock)
 {
 	mutex_unlock(&acpi_scan_lock);
 }
 EXPORT_SYMBOL_GPL(acpi_scan_lock_release);
 
 void acpi_lock_hp_context(void)
+	ACQUIRE(acpi_hp_context_lock)
 {
 	mutex_lock(&acpi_hp_context_lock);
 }
 
 void acpi_unlock_hp_context(void)
+	RELEASE(acpi_hp_context_lock)
 {
 	mutex_unlock(&acpi_hp_context_lock);
 }
@@ -1867,6 +1871,7 @@ static void acpi_scan_init_status(struct acpi_device *adev)
 
 static int acpi_add_single_object(struct acpi_device **child,
 				  acpi_handle handle, int type, bool dep_init)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct acpi_device *device;
 	bool release_dep_lock = false;

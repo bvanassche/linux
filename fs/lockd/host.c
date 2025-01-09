@@ -288,6 +288,7 @@ out:
  *
  */
 void nlmclnt_release_host(struct nlm_host *host)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	if (host == NULL)
 		return;

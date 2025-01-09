@@ -360,6 +360,7 @@ static void max732x_irq_unmask(struct irq_data *d)
 }
 
 static void max732x_irq_bus_lock(struct irq_data *d)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct max732x_chip *chip = gpiochip_get_data(gc);
@@ -369,6 +370,7 @@ static void max732x_irq_bus_lock(struct irq_data *d)
 }
 
 static void max732x_irq_bus_sync_unlock(struct irq_data *d)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct max732x_chip *chip = gpiochip_get_data(gc);

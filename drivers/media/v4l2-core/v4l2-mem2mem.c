@@ -1624,6 +1624,7 @@ int v4l2_m2m_fop_mmap(struct file *file, struct vm_area_struct *vma)
 EXPORT_SYMBOL_GPL(v4l2_m2m_fop_mmap);
 
 __poll_t v4l2_m2m_fop_poll(struct file *file, poll_table *wait)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct v4l2_fh *fh = file->private_data;
 	struct v4l2_m2m_ctx *m2m_ctx = fh->m2m_ctx;

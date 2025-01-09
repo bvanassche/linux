@@ -31,36 +31,42 @@ atomic_t genl_sk_destructing_cnt = ATOMIC_INIT(0);
 DECLARE_WAIT_QUEUE_HEAD(genl_sk_destructing_waitq);
 
 void genl_lock(void)
+	ACQUIRE(genl_mutex)
 {
 	mutex_lock(&genl_mutex);
 }
 EXPORT_SYMBOL(genl_lock);
 
 void genl_unlock(void)
+	RELEASE(genl_mutex)
 {
 	mutex_unlock(&genl_mutex);
 }
 EXPORT_SYMBOL(genl_unlock);
 
 static void genl_lock_all(void)
+	ACQUIRE(genl_mutex)
 {
 	down_write(&cb_lock);
 	genl_lock();
 }
 
 static void genl_unlock_all(void)
+	RELEASE(genl_mutex)
 {
 	genl_unlock();
 	up_write(&cb_lock);
 }
 
 static void genl_op_lock(const struct genl_family *family)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (!family->parallel_ops)
 		genl_lock();
 }
 
 static void genl_op_unlock(const struct genl_family *family)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (!family->parallel_ops)
 		genl_unlock();
@@ -1427,6 +1433,7 @@ static const struct nla_policy ctrl_policy_family[] = {
 };
 
 static int ctrl_getfamily(struct sk_buff *skb, struct genl_info *info)
+	REQUIRES(genl_mutex)
 {
 	struct sk_buff *msg;
 	const struct genl_family *res = NULL;

@@ -58,6 +58,7 @@ static void __vlv_punit_put(struct drm_i915_private *i915)
 }
 
 void vlv_iosf_sb_get(struct drm_i915_private *i915, unsigned long ports)
+	ACQUIRE(i915->vlv_iosf_sb.lock)
 {
 	if (ports & BIT(VLV_IOSF_SB_PUNIT))
 		__vlv_punit_get(i915);
@@ -66,6 +67,7 @@ void vlv_iosf_sb_get(struct drm_i915_private *i915, unsigned long ports)
 }
 
 void vlv_iosf_sb_put(struct drm_i915_private *i915, unsigned long ports)
+	RELEASE(i915->vlv_iosf_sb.lock)
 {
 	mutex_unlock(&i915->vlv_iosf_sb.lock);
 

@@ -756,6 +756,7 @@ static int rtsx_usb_reset_resume(struct usb_interface *intf)
 
 
 static int rtsx_usb_pre_reset(struct usb_interface *intf)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct rtsx_ucr *ucr = (struct rtsx_ucr *)usb_get_intfdata(intf);
 
@@ -764,6 +765,7 @@ static int rtsx_usb_pre_reset(struct usb_interface *intf)
 }
 
 static int rtsx_usb_post_reset(struct usb_interface *intf)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct rtsx_ucr *ucr = (struct rtsx_ucr *)usb_get_intfdata(intf);
 

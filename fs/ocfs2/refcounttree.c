@@ -169,6 +169,7 @@ __releases(&rf->rf_lock)
 }
 
 static void ocfs2_refcount_cache_io_lock(struct ocfs2_caching_info *ci)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ocfs2_refcount_tree *rf = cache_info_to_refcount(ci);
 
@@ -176,6 +177,7 @@ static void ocfs2_refcount_cache_io_lock(struct ocfs2_caching_info *ci)
 }
 
 static void ocfs2_refcount_cache_io_unlock(struct ocfs2_caching_info *ci)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ocfs2_refcount_tree *rf = cache_info_to_refcount(ci);
 

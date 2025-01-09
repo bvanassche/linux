@@ -96,6 +96,7 @@ struct rds_tcp_connection *rds_tcp_accept_one_path(struct rds_connection *conn)
 }
 
 int rds_tcp_accept_one(struct socket *sock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct socket *new_sock = NULL;
 	struct rds_connection *conn;

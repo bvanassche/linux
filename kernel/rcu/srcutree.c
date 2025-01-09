@@ -872,6 +872,7 @@ static void srcu_schedule_cbs_snp(struct srcu_struct *ssp, struct srcu_node *snp
  * array to have a finite number of elements.
  */
 static void srcu_gp_end(struct srcu_struct *ssp)
+	RELEASE(ssp->srcu_sup->srcu_gp_mutex)
 {
 	unsigned long cbdelay = 1;
 	bool cbs;
@@ -902,7 +903,7 @@ static void srcu_gp_end(struct srcu_struct *ssp)
 	if (ULONG_CMP_LT(sup->srcu_gp_seq_needed_exp, gpseq))
 		WRITE_ONCE(sup->srcu_gp_seq_needed_exp, gpseq);
 	spin_unlock_irq_rcu_node(sup);
-	mutex_unlock(&sup->srcu_gp_mutex);
+	mutex_unlock(&ssp->srcu_sup->srcu_gp_mutex);
 	/* A new grace period can start at this point.  But only one. */
 
 	/* Initiate callback invocation as needed. */
@@ -1685,6 +1686,7 @@ EXPORT_SYMBOL_GPL(srcu_batches_completed);
  * completed in that state.
  */
 static void srcu_advance_state(struct srcu_struct *ssp)
+	NO_THREAD_SAFETY_ANALYSIS /* too complex for clang */
 {
 	int idx;
 

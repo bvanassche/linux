@@ -1452,6 +1452,7 @@ static int wil_wait_for_fw_ready(struct wil6210_priv *wil)
 }
 
 void wil_abort_scan(struct wil6210_vif *vif, bool sync)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct wil6210_priv *wil = vif_to_wil(vif);
 	int rc;

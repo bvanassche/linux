@@ -47,6 +47,7 @@
 #define MC13XXX_ADC2		45
 
 void mc13xxx_lock(struct mc13xxx *mc13xxx)
+	ACQUIRE(mc13xxx->lock)
 {
 	if (!mutex_trylock(&mc13xxx->lock)) {
 		dev_dbg(mc13xxx->dev, "wait for %s from %ps\n",
@@ -60,6 +61,7 @@ void mc13xxx_lock(struct mc13xxx *mc13xxx)
 EXPORT_SYMBOL(mc13xxx_lock);
 
 void mc13xxx_unlock(struct mc13xxx *mc13xxx)
+	RELEASE(mc13xxx->lock)
 {
 	dev_dbg(mc13xxx->dev, "%s from %ps\n",
 			__func__, __builtin_return_address(0));

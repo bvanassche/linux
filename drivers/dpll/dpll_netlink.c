@@ -1575,6 +1575,7 @@ int dpll_nl_device_get_dumpit(struct sk_buff *skb, struct netlink_callback *cb)
 
 int dpll_pre_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
 		  struct genl_info *info)
+	TRY_ACQUIRE(0, dpll_lock)
 {
 	u32 id;
 
@@ -1596,6 +1597,7 @@ unlock:
 
 void dpll_post_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
 		    struct genl_info *info)
+	RELEASE(dpll_lock)
 {
 	mutex_unlock(&dpll_lock);
 }
@@ -1603,6 +1605,7 @@ void dpll_post_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
 int
 dpll_lock_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
 	       struct genl_info *info)
+	ACQUIRE(dpll_lock)
 {
 	mutex_lock(&dpll_lock);
 
@@ -1612,12 +1615,14 @@ dpll_lock_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
 void
 dpll_unlock_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
 		 struct genl_info *info)
+	RELEASE(dpll_lock)
 {
 	mutex_unlock(&dpll_lock);
 }
 
 int dpll_pin_pre_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
 		      struct genl_info *info)
+	TRY_ACQUIRE(0, dpll_lock)
 {
 	int ret;
 
@@ -1644,6 +1649,7 @@ unlock_dev:
 
 void dpll_pin_post_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
 			struct genl_info *info)
+	RELEASE(dpll_lock)
 {
 	mutex_unlock(&dpll_lock);
 }

@@ -404,8 +404,8 @@ static void wcd_mbhc_report_plug_insertion(struct wcd_mbhc *mbhc,
 
 static void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 				 enum snd_jack_types jack_type)
+	REQUIRES(mbhc->lock)
 {
-
 	WARN_ON(!mutex_is_locked(&mbhc->lock));
 
 	if (!insertion) /* Report removal */
@@ -417,6 +417,7 @@ static void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 
 static void wcd_cancel_hs_detect_plug(struct wcd_mbhc *mbhc,
 				      struct work_struct *work)
+	REQUIRES(mbhc->lock)
 {
 	mbhc->hs_detect_work_stop = true;
 	mutex_unlock(&mbhc->lock);
@@ -425,6 +426,7 @@ static void wcd_cancel_hs_detect_plug(struct wcd_mbhc *mbhc,
 }
 
 static void wcd_mbhc_cancel_pending_work(struct wcd_mbhc *mbhc)
+	REQUIRES(mbhc->lock)
 {
 	/* cancel pending button press */
 	wcd_cancel_btn_work(mbhc);
@@ -433,6 +435,7 @@ static void wcd_mbhc_cancel_pending_work(struct wcd_mbhc *mbhc)
 }
 
 static void wcd_mbhc_elec_hs_report_unplug(struct wcd_mbhc *mbhc)
+	REQUIRES(mbhc->lock)
 {
 	wcd_mbhc_cancel_pending_work(mbhc);
 	/* Report extension cable */
@@ -486,6 +489,7 @@ static void wcd_mbhc_find_plug_and_report(struct wcd_mbhc *mbhc,
 
 static void wcd_schedule_hs_detect_plug(struct wcd_mbhc *mbhc,
 					    struct work_struct *work)
+	REQUIRES(mbhc->lock)
 {
 	WARN_ON(!mutex_is_locked(&mbhc->lock));
 	mbhc->hs_detect_work_stop = false;
@@ -493,6 +497,7 @@ static void wcd_schedule_hs_detect_plug(struct wcd_mbhc *mbhc,
 }
 
 static void wcd_mbhc_adc_detect_plug_type(struct wcd_mbhc *mbhc)
+	REQUIRES(mbhc->lock)
 {
 	struct snd_soc_component *component = mbhc->component;
 

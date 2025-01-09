@@ -1088,6 +1088,7 @@ out:
  * with other threads updating log tail.
  */
 void jbd2_update_log_tail(journal_t *journal, tid_t tid, unsigned long block)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_lock_io(&journal->j_checkpoint_mutex);
 	if (tid_gt(tid, journal->j_tail_sequence))
@@ -1696,6 +1697,7 @@ journal_t *jbd2_journal_init_inode(struct inode *inode)
  */
 
 static int journal_reset(journal_t *journal)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	journal_superblock_t *sb = journal->j_superblock;
 	unsigned long long first, last;
@@ -2110,6 +2112,7 @@ int jbd2_journal_load(journal_t *journal)
  * Return <0 if we couldn't clean up the journal.
  */
 int jbd2_journal_destroy(journal_t *journal)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int err = 0;
 
@@ -2396,6 +2399,7 @@ EXPORT_SYMBOL(jbd2_journal_clear_features);
  *	JBD2_JOURNAL_FLUSH_ZEROOUT: issues zeroouts for the journal blocks
  */
 int jbd2_journal_flush(journal_t *journal, unsigned int flags)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int err = 0;
 	transaction_t *transaction = NULL;
@@ -2479,6 +2483,7 @@ out:
  */
 
 int jbd2_journal_wipe(journal_t *journal, int write)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int err;
 

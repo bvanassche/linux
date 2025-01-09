@@ -203,6 +203,7 @@ static int xb_read(void *data, unsigned int len)
 }
 
 static int process_msg(void)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	static struct {
 		struct xsd_sockmsg msg;

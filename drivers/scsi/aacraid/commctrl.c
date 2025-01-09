@@ -1043,6 +1043,7 @@ struct aac_reset_iop {
 };
 
 static int aac_send_reset_adapter(struct aac_dev *dev, void __user *arg)
+	REQUIRES(dev->ioctl_mutex)
 {
 	struct aac_reset_iop reset;
 	int retval;

@@ -1109,6 +1109,7 @@ static long subdev_do_ioctl(struct file *file, unsigned int cmd, void *arg,
 }
 
 static long subdev_do_ioctl_lock(struct file *file, unsigned int cmd, void *arg)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct video_device *vdev = video_devdata(file);
 	struct mutex *lock = vdev->lock;

@@ -75,6 +75,7 @@ static int ewx_i2c_getdata(struct snd_i2c_bus *bus, int ack)
 }
 
 static void ewx_i2c_start(struct snd_i2c_bus *bus)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_ice1712 *ice = bus->private_data;
 	unsigned char mask;
@@ -94,6 +95,7 @@ static void ewx_i2c_start(struct snd_i2c_bus *bus)
 }
 
 static void ewx_i2c_stop(struct snd_i2c_bus *bus)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_ice1712 *ice = bus->private_data;
 	snd_ice1712_restore_gpio_status(ice);
@@ -156,6 +158,7 @@ static int snd_ice1712_ews88mt_chip_select(struct snd_ice1712 *ice, int chip_mas
 
 /* start callback for EWS88MT, needs to select a certain chip mask */
 static void ews88mt_ak4524_lock(struct snd_akm4xxx *ak, int chip)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_ice1712 *ice = ak->private_data[0];
 	unsigned char tmp;
@@ -173,6 +176,7 @@ static void ews88mt_ak4524_lock(struct snd_akm4xxx *ak, int chip)
 
 /* stop callback for EWS88MT, needs to deselect chip mask */
 static void ews88mt_ak4524_unlock(struct snd_akm4xxx *ak, int chip)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_ice1712 *ice = ak->private_data[0];
 	snd_ice1712_restore_gpio_status(ice);
@@ -182,6 +186,7 @@ static void ews88mt_ak4524_unlock(struct snd_akm4xxx *ak, int chip)
 
 /* start callback for EWX24/96 */
 static void ewx2496_ak4524_lock(struct snd_akm4xxx *ak, int chip)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_ice1712 *ice = ak->private_data[0];
 	unsigned char tmp;
@@ -197,6 +202,7 @@ static void ewx2496_ak4524_lock(struct snd_akm4xxx *ak, int chip)
 
 /* start callback for DMX 6fire */
 static void dmx6fire_ak4524_lock(struct snd_akm4xxx *ak, int chip)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_ak4xxx_private *priv = (void *)ak->private_value[0];
 	struct snd_ice1712 *ice = ak->private_data[0];

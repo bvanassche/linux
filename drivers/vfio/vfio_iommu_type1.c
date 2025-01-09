@@ -1237,6 +1237,7 @@ static int verify_bitmap_size(uint64_t npages, uint64_t bitmap_size)
  */
 static void vfio_notify_dma_unmap(struct vfio_iommu *iommu,
 				  struct vfio_dma *dma)
+	REQUIRES(iommu->lock)
 {
 	struct vfio_device *device;
 

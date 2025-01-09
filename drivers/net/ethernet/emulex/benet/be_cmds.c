@@ -864,6 +864,7 @@ static bool use_mcc(struct be_adapter *adapter)
 
 /* Must be used only in process context */
 static int be_cmd_lock(struct be_adapter *adapter)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (use_mcc(adapter)) {
 		spin_lock_bh(&adapter->mcc_lock);
@@ -875,6 +876,7 @@ static int be_cmd_lock(struct be_adapter *adapter)
 
 /* Must be used only in process context */
 static void be_cmd_unlock(struct be_adapter *adapter)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	if (use_mcc(adapter))
 		return spin_unlock_bh(&adapter->mcc_lock);

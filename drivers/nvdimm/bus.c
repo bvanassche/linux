@@ -933,6 +933,7 @@ u32 nd_cmd_out_size(struct nvdimm *nvdimm, int cmd,
 EXPORT_SYMBOL_GPL(nd_cmd_out_size);
 
 void wait_nvdimm_bus_probe_idle(struct device *dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct nvdimm_bus *nvdimm_bus = walk_to_nvdimm_bus(dev);
 

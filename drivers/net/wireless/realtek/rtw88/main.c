@@ -1531,6 +1531,7 @@ void rtw_power_off(struct rtw_dev *rtwdev)
 EXPORT_SYMBOL(rtw_power_off);
 
 void rtw_core_stop(struct rtw_dev *rtwdev)
+	REQUIRES(rtwdev->mutex)
 {
 	struct rtw_coex *coex = &rtwdev->coex;
 

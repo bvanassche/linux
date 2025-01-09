@@ -456,12 +456,14 @@ void dlm_recoverd_stop(struct dlm_ls *ls)
 }
 
 void dlm_recoverd_suspend(struct dlm_ls *ls)
+	ACQUIRE(ls->ls_recoverd_active)
 {
 	wake_up(&ls->ls_wait_general);
 	mutex_lock(&ls->ls_recoverd_active);
 }
 
 void dlm_recoverd_resume(struct dlm_ls *ls)
+	RELEASE(ls->ls_recoverd_active)
 {
 	mutex_unlock(&ls->ls_recoverd_active);
 }

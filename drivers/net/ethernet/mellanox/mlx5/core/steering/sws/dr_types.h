@@ -1185,22 +1185,28 @@ struct mlx5dr_icm_chunk {
 };
 
 static inline void mlx5dr_domain_nic_lock(struct mlx5dr_domain_rx_tx *nic_dmn)
+	ACQUIRE(nic_dmn->mutex)
 {
 	mutex_lock(&nic_dmn->mutex);
 }
 
 static inline void mlx5dr_domain_nic_unlock(struct mlx5dr_domain_rx_tx *nic_dmn)
+	RELEASE(nic_dmn->mutex)
 {
 	mutex_unlock(&nic_dmn->mutex);
 }
 
 static inline void mlx5dr_domain_lock(struct mlx5dr_domain *dmn)
+	ACQUIRE(dmn->info.rx.mutex)
+	ACQUIRE(dmn->info.tx.mutex)
 {
 	mlx5dr_domain_nic_lock(&dmn->info.rx);
 	mlx5dr_domain_nic_lock(&dmn->info.tx);
 }
 
 static inline void mlx5dr_domain_unlock(struct mlx5dr_domain *dmn)
+	RELEASE(dmn->info.rx.mutex)
+	RELEASE(dmn->info.tx.mutex)
 {
 	mlx5dr_domain_nic_unlock(&dmn->info.tx);
 	mlx5dr_domain_nic_unlock(&dmn->info.rx);

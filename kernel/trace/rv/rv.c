@@ -386,6 +386,7 @@ static int monitors_show(struct seq_file *m, void *p)
  * operation.
  */
 static void monitors_stop(struct seq_file *m, void *p)
+	RELEASE(rv_interface_lock)
 {
 	mutex_unlock(&rv_interface_lock);
 }
@@ -394,6 +395,7 @@ static void monitors_stop(struct seq_file *m, void *p)
  * Available monitor seq functions.
  */
 static void *available_monitors_start(struct seq_file *m, loff_t *pos)
+	ACQUIRE(rv_interface_lock)
 {
 	mutex_lock(&rv_interface_lock);
 	return seq_list_start(&rv_monitors_list, *pos);
@@ -422,6 +424,7 @@ static void *enabled_monitors_next(struct seq_file *m, void *p, loff_t *pos)
 }
 
 static void *enabled_monitors_start(struct seq_file *m, loff_t *pos)
+	ACQUIRE(rv_interface_lock)
 {
 	struct rv_monitor_def *m_def;
 	loff_t l;

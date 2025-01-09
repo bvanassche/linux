@@ -209,6 +209,7 @@ static void j1939_can_rx_unregister(struct j1939_priv *priv)
 
 static void __j1939_rx_release(struct kref *kref)
 	__releases(&j1939_netdev_lock)
+	RELEASE(j1939_netdev_lock)
 {
 	struct j1939_priv *priv = container_of(kref, struct j1939_priv,
 					       rx_kref);
@@ -228,6 +229,7 @@ static inline struct j1939_priv *j1939_ndev_to_priv(struct net_device *ndev)
 }
 
 static struct j1939_priv *j1939_priv_get_by_ndev_locked(struct net_device *ndev)
+	REQUIRES(j1939_netdev_lock)
 {
 	struct j1939_priv *priv;
 

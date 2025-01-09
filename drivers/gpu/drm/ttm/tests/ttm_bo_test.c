@@ -137,6 +137,7 @@ static void ttm_bo_reserve_double_resv(struct kunit *test)
  * propagates that error.
  */
 static void ttm_bo_reserve_deadlock(struct kunit *test)
+	NO_THREAD_SAFETY_ANALYSIS /* intentional lock/unlock mismatch */
 {
 	struct ttm_buffer_object *bo1, *bo2;
 	struct ww_acquire_ctx ctx1, ctx2;

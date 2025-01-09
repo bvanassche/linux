@@ -263,6 +263,7 @@ static int mxl111sf_power_ctrl(struct dvb_usb_device *d, int onoff)
 #endif
 
 static int mxl111sf_adap_fe_init(struct dvb_frontend *fe)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct dvb_usb_device *d = fe_to_d(fe);
 	struct mxl111sf_state *state = fe_to_priv(fe);
@@ -320,6 +321,7 @@ fail:
 }
 
 static int mxl111sf_adap_fe_sleep(struct dvb_frontend *fe)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct mxl111sf_state *state = fe_to_priv(fe);
 	struct mxl111sf_adap_state *adap_state = &state->adap_state[fe->id];

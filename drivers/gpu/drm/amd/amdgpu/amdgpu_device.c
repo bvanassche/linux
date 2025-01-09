@@ -5861,6 +5861,7 @@ static int amdgpu_device_health_check(struct list_head *device_list_handle)
 int amdgpu_device_gpu_recover(struct amdgpu_device *adev,
 			      struct amdgpu_job *job,
 			      struct amdgpu_reset_context *reset_context)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct list_head device_list, *device_list_handle =  NULL;
 	bool job_signaled = false;

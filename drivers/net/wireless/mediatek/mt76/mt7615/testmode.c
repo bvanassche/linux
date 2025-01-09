@@ -131,6 +131,7 @@ mt7615_tm_reg_backup_restore(struct mt7615_phy *phy)
 
 static void
 mt7615_tm_init(struct mt7615_phy *phy)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct mt7615_dev *dev = phy->dev;
 	unsigned int total_flags = ~0;

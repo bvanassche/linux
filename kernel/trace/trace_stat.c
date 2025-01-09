@@ -166,6 +166,7 @@ exit_free_rbtree:
 
 
 static void *stat_seq_start(struct seq_file *s, loff_t *pos)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct stat_session *session = s->private;
 	struct rb_node *node;
@@ -203,6 +204,7 @@ static void *stat_seq_next(struct seq_file *s, void *p, loff_t *pos)
 }
 
 static void stat_seq_stop(struct seq_file *s, void *p)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct stat_session *session = s->private;
 	mutex_unlock(&session->stat_mutex);

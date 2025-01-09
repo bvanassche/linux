@@ -91,6 +91,7 @@ static inline void napi_show_fdinfo(struct io_ring_ctx *ctx,
  * anything else to get an extra reference.
  */
 __cold void io_uring_show_fdinfo(struct seq_file *m, struct file *file)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct io_ring_ctx *ctx = file->private_data;
 	struct io_overflow_cqe *ocqe;

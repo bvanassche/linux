@@ -1053,6 +1053,7 @@ static void futex_cleanup(struct task_struct *tsk)
  * block forever, but there is nothing which can be done about that.
  */
 void futex_exit_recursive(struct task_struct *tsk)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	/* If the state is FUTEX_STATE_EXITING then futex_exit_mutex is held */
 	if (tsk->futex_state == FUTEX_STATE_EXITING)
@@ -1061,6 +1062,7 @@ void futex_exit_recursive(struct task_struct *tsk)
 }
 
 static void futex_cleanup_begin(struct task_struct *tsk)
+	ACQUIRE(tsk->futex_exit_mutex)
 {
 	/*
 	 * Prevent various race issues against a concurrent incoming waiter
@@ -1087,6 +1089,7 @@ static void futex_cleanup_begin(struct task_struct *tsk)
 }
 
 static void futex_cleanup_end(struct task_struct *tsk, int state)
+	RELEASE(tsk->futex_exit_mutex)
 {
 	/*
 	 * Lockless store. The only side effect is that an observer might

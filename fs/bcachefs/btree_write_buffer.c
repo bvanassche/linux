@@ -522,6 +522,7 @@ out:
 }
 
 static int fetch_wb_keys_from_journal(struct bch_fs *c, u64 max_seq)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct journal *j = &c->journal;
 	struct journal_buf *buf;
@@ -721,6 +722,7 @@ int bch2_accounting_key_to_wb_slowpath(struct bch_fs *c, enum btree_id btree,
 int bch2_journal_key_to_wb_slowpath(struct bch_fs *c,
 			     struct journal_keys_to_wb *dst,
 			     enum btree_id btree, struct bkey_i *k)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct btree_write_buffer *wb = &c->btree_write_buffer;
 	int ret;
@@ -757,6 +759,7 @@ retry:
 }
 
 void bch2_journal_keys_to_write_buffer_start(struct bch_fs *c, struct journal_keys_to_wb *dst, u64 seq)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct btree_write_buffer *wb = &c->btree_write_buffer;
 
@@ -793,6 +796,7 @@ void bch2_journal_keys_to_write_buffer_start(struct bch_fs *c, struct journal_ke
 }
 
 int bch2_journal_keys_to_write_buffer_end(struct bch_fs *c, struct journal_keys_to_wb *dst)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct btree_write_buffer *wb = &c->btree_write_buffer;
 	unsigned live_accounting_keys = 0;

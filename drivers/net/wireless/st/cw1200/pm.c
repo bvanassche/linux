@@ -155,6 +155,7 @@ int cw1200_can_suspend(struct cw1200_common *priv)
 EXPORT_SYMBOL_GPL(cw1200_can_suspend);
 
 int cw1200_wow_suspend(struct ieee80211_hw *hw, struct cfg80211_wowlan *wowlan)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct cw1200_common *priv = hw->priv;
 	struct cw1200_pm_state *pm_state = &priv->pm_state;
@@ -300,6 +301,7 @@ revert1:
 }
 
 int cw1200_wow_resume(struct ieee80211_hw *hw)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct cw1200_common *priv = hw->priv;
 	struct cw1200_pm_state *pm_state = &priv->pm_state;

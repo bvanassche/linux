@@ -461,6 +461,7 @@ void sched_core_get(void)
 }
 
 static void __sched_core_put(struct work_struct *work)
+	NO_THREAD_SAFETY_ANALYSIS /* needed because of a clang bug? */
 {
 	if (atomic_dec_and_mutex_lock(&sched_core_count, &sched_core_mutex)) {
 		__sched_core_disable();

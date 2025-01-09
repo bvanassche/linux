@@ -448,6 +448,7 @@ EXPORT_SYMBOL(drm_master_put);
 
 /* Used by drm_client and drm_fb_helper */
 bool drm_master_internal_acquire(struct drm_device *dev)
+	TRY_ACQUIRE(true, dev->master_mutex)
 {
 	mutex_lock(&dev->master_mutex);
 	if (dev->master) {
@@ -461,6 +462,7 @@ EXPORT_SYMBOL(drm_master_internal_acquire);
 
 /* Used by drm_client and drm_fb_helper */
 void drm_master_internal_release(struct drm_device *dev)
+	RELEASE(dev->master_mutex)
 {
 	mutex_unlock(&dev->master_mutex);
 }

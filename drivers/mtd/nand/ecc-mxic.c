@@ -667,6 +667,7 @@ static int mxic_ecc_finish_io_req_external(struct nand_device *nand,
 /* Pipelined ECC engine helpers */
 static int mxic_ecc_prepare_io_req_pipelined(struct nand_device *nand,
 					     struct nand_page_io_req *req)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct mxic_ecc_engine *mxic = nand_to_mxic(nand);
 	struct mxic_ecc_ctx *ctx = nand_to_ecc_ctx(nand);
@@ -699,6 +700,7 @@ static int mxic_ecc_prepare_io_req_pipelined(struct nand_device *nand,
 
 static int mxic_ecc_finish_io_req_pipelined(struct nand_device *nand,
 					    struct nand_page_io_req *req)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct mxic_ecc_engine *mxic = nand_to_mxic(nand);
 	struct mxic_ecc_ctx *ctx = nand_to_ecc_ctx(nand);

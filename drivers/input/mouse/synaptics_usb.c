@@ -499,6 +499,7 @@ static int synusb_resume(struct usb_interface *intf)
 }
 
 static int synusb_pre_reset(struct usb_interface *intf)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct synusb *synusb = usb_get_intfdata(intf);
 
@@ -509,6 +510,7 @@ static int synusb_pre_reset(struct usb_interface *intf)
 }
 
 static int synusb_post_reset(struct usb_interface *intf)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct synusb *synusb = usb_get_intfdata(intf);
 	int retval = 0;

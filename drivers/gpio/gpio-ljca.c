@@ -357,6 +357,7 @@ static int ljca_irq_set_type(struct irq_data *irqd, unsigned int type)
 }
 
 static void ljca_irq_bus_lock(struct irq_data *irqd)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
 	struct ljca_gpio_dev *ljca_gpio = gpiochip_get_data(gc);
@@ -365,6 +366,7 @@ static void ljca_irq_bus_lock(struct irq_data *irqd)
 }
 
 static void ljca_irq_bus_unlock(struct irq_data *irqd)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
 	struct ljca_gpio_dev *ljca_gpio = gpiochip_get_data(gc);

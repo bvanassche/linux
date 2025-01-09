@@ -408,6 +408,7 @@ static int ath6kl_sdio_alloc_prep_scat_req(struct ath6kl_sdio *ar_sdio,
 
 static int ath6kl_sdio_read_write_sync(struct ath6kl *ar, u32 addr, u8 *buf,
 				       u32 len, u32 request)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct ath6kl_sdio *ar_sdio = ath6kl_sdio_priv(ar);
 	u8  *tbuf = NULL;

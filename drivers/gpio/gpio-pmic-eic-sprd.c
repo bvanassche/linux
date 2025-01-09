@@ -199,6 +199,7 @@ static int sprd_pmic_eic_irq_set_type(struct irq_data *data,
 }
 
 static void sprd_pmic_eic_bus_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct gpio_chip *chip = irq_data_get_irq_chip_data(data);
 	struct sprd_pmic_eic *pmic_eic = gpiochip_get_data(chip);
@@ -207,6 +208,7 @@ static void sprd_pmic_eic_bus_lock(struct irq_data *data)
 }
 
 static void sprd_pmic_eic_bus_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct gpio_chip *chip = irq_data_get_irq_chip_data(data);
 	struct sprd_pmic_eic *pmic_eic = gpiochip_get_data(chip);

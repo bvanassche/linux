@@ -421,6 +421,7 @@ int jffs2_do_remount_fs(struct super_block *sb, struct fs_context *fc)
 /* jffs2_new_inode: allocate a new inode and inocache, add it to the hash,
    fill in the raw_inode while you're at it. */
 struct inode *jffs2_new_inode (struct inode *dir_i, umode_t mode, struct jffs2_raw_inode *ri)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct inode *inode;
 	struct super_block *sb = dir_i->i_sb;

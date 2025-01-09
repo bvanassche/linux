@@ -2702,11 +2702,13 @@ void netif_queue_set_napi(struct net_device *dev, unsigned int queue_index,
 			  struct napi_struct *napi);
 
 static inline void netdev_lock(struct net_device *dev)
+	ACQUIRE(dev->lock)
 {
 	mutex_lock(&dev->lock);
 }
 
 static inline void netdev_unlock(struct net_device *dev)
+	RELEASE(dev->lock)
 {
 	mutex_unlock(&dev->lock);
 }

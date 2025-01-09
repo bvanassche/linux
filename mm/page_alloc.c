@@ -2443,6 +2443,7 @@ void drain_local_pages(struct zone *zone)
  * optimizing racy check.
  */
 static void __drain_all_pages(struct zone *zone, bool force_all_cpus)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int cpu;
 
@@ -3574,6 +3575,7 @@ __alloc_pages_cpuset_fallback(gfp_t gfp_mask, unsigned int order,
 static inline struct page *
 __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
 	const struct alloc_context *ac, unsigned long *did_some_progress)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct oom_control oc = {
 		.zonelist = ac->zonelist,
@@ -6690,6 +6692,7 @@ EXPORT_SYMBOL(free_contig_range);
  * Must be paired with a call to zone_pcp_enable().
  */
 void zone_pcp_disable(struct zone *zone)
+	ACQUIRE(pcp_batch_high_lock)
 {
 	mutex_lock(&pcp_batch_high_lock);
 	__zone_set_pageset_high_and_batch(zone, 0, 0, 1);
@@ -6697,6 +6700,7 @@ void zone_pcp_disable(struct zone *zone)
 }
 
 void zone_pcp_enable(struct zone *zone)
+	RELEASE(pcp_batch_high_lock)
 {
 	__zone_set_pageset_high_and_batch(zone, zone->pageset_high_min,
 		zone->pageset_high_max, zone->pageset_batch);

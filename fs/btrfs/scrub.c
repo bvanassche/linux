@@ -289,6 +289,7 @@ static void wait_scrub_stripe_io(struct scrub_stripe *stripe)
 static void scrub_put_ctx(struct scrub_ctx *sctx);
 
 static void __scrub_blocked_if_needed(struct btrfs_fs_info *fs_info)
+	REQUIRES(fs_info->scrub_lock)
 {
 	while (atomic_read(&fs_info->scrub_pause_req)) {
 		mutex_unlock(&fs_info->scrub_lock);
@@ -2858,6 +2859,7 @@ static noinline_for_stack int scrub_supers(struct scrub_ctx *sctx,
 }
 
 static void scrub_workers_put(struct btrfs_fs_info *fs_info)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	if (refcount_dec_and_mutex_lock(&fs_info->scrub_workers_refcnt,
 					&fs_info->scrub_lock)) {

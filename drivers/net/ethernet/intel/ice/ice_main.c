@@ -9338,6 +9338,7 @@ static LIST_HEAD(ice_block_cb_list);
 static int
 ice_setup_tc(struct net_device *netdev, enum tc_setup_type type,
 	     void *type_data)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct ice_netdev_priv *np = netdev_priv(netdev);
 	struct ice_pf *pf = np->vsi->back;

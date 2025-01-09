@@ -38,6 +38,7 @@
 
 /* bit banging i2c */
 static int amdgpu_i2c_pre_xfer(struct i2c_adapter *i2c_adap)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct amdgpu_i2c_chan *i2c = i2c_get_adapdata(i2c_adap);
 	struct amdgpu_device *adev = drm_to_adev(i2c->dev);
@@ -80,6 +81,7 @@ static int amdgpu_i2c_pre_xfer(struct i2c_adapter *i2c_adap)
 }
 
 static void amdgpu_i2c_post_xfer(struct i2c_adapter *i2c_adap)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct amdgpu_i2c_chan *i2c = i2c_get_adapdata(i2c_adap);
 	struct amdgpu_device *adev = drm_to_adev(i2c->dev);

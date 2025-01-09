@@ -432,6 +432,7 @@ static void vbg_pci_remove(struct pci_dev *pci)
 }
 
 struct vbg_dev *vbg_get_gdev(void)
+	NO_THREAD_SAFETY_ANALYSIS /* TRY_ACQUIRE() does not support pointers */
 {
 	mutex_lock(&vbg_gdev_mutex);
 
@@ -449,6 +450,7 @@ struct vbg_dev *vbg_get_gdev(void)
 EXPORT_SYMBOL(vbg_get_gdev);
 
 void vbg_put_gdev(struct vbg_dev *gdev)
+	NO_THREAD_SAFETY_ANALYSIS /* see also vbg_get_gdev() */
 {
 	WARN_ON(gdev != vbg_gdev);
 	mutex_unlock(&vbg_gdev_mutex);

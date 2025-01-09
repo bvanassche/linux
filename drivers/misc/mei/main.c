@@ -506,6 +506,7 @@ static int mei_ioctl_connect_vtag(struct file *file,
 				  const uuid_le *in_client_uuid,
 				  struct mei_client *client,
 				  u8 vtag)
+	NO_THREAD_SAFETY_ANALYSIS /* REQUIRES(dev->device_lock) */
 {
 	struct mei_device *dev;
 	struct mei_cl *cl;

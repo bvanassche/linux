@@ -539,6 +539,7 @@ static int search_page(struct cached_page *page, const struct volume *volume,
 }
 
 static int process_entry(struct volume *volume, struct queued_read *entry)
+	REQUIRES(volume->read_threads_mutex)
 {
 	u32 page_number = entry->physical_page;
 	struct uds_request *request;

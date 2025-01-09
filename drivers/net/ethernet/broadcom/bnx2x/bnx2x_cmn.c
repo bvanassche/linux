@@ -1166,6 +1166,7 @@ static irqreturn_t bnx2x_msix_fp_int(int irq, void *fp_cookie)
 
 /* HW Lock for shared dual port PHYs */
 void bnx2x_acquire_phy_lock(struct bnx2x *bp)
+	ACQUIRE(bp->port.phy_mutex)
 {
 	mutex_lock(&bp->port.phy_mutex);
 
@@ -1173,6 +1174,7 @@ void bnx2x_acquire_phy_lock(struct bnx2x *bp)
 }
 
 void bnx2x_release_phy_lock(struct bnx2x *bp)
+	RELEASE(bp->port.phy_mutex)
 {
 	bnx2x_release_hw_lock(bp, HW_LOCK_RESOURCE_MDIO);
 

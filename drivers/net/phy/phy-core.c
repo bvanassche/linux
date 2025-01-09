@@ -1023,6 +1023,7 @@ static int __phy_write_page(struct phy_device *phydev, int page)
  * after this, irrespective of success or failure of this call.
  */
 int phy_save_page(struct phy_device *phydev)
+	ACQUIRE(phydev->mdio.bus->mdio_lock)
 {
 	phy_lock_mdio_bus(phydev);
 	return __phy_read_page(phydev);
@@ -1041,6 +1042,7 @@ EXPORT_SYMBOL_GPL(phy_save_page);
  * of success or failure of this call.
  */
 int phy_select_page(struct phy_device *phydev, int page)
+	ACQUIRE(phydev->mdio.bus->mdio_lock)
 {
 	int ret, oldpage;
 
@@ -1075,6 +1077,7 @@ EXPORT_SYMBOL_GPL(phy_select_page);
  *   @ret.
  */
 int phy_restore_page(struct phy_device *phydev, int oldpage, int ret)
+	RELEASE(phydev->mdio.bus->mdio_lock)
 {
 	int r;
 

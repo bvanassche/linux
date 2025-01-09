@@ -204,6 +204,7 @@ intel_wakeref_might_put(struct intel_wakeref *wf)
 static inline void
 intel_wakeref_lock(struct intel_wakeref *wf)
 	__acquires(wf->mutex)
+	ACQUIRE(wf->mutex)
 {
 	mutex_lock(&wf->mutex);
 }
@@ -217,6 +218,7 @@ intel_wakeref_lock(struct intel_wakeref *wf)
 static inline void
 intel_wakeref_unlock(struct intel_wakeref *wf)
 	__releases(wf->mutex)
+	RELEASE(wf->mutex)
 {
 	mutex_unlock(&wf->mutex);
 }

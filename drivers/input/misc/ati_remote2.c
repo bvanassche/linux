@@ -943,6 +943,7 @@ static int ati_remote2_reset_resume(struct usb_interface *interface)
 }
 
 static int ati_remote2_pre_reset(struct usb_interface *interface)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct ati_remote2 *ar2;
 	struct usb_host_interface *alt = interface->cur_altsetting;
@@ -963,6 +964,7 @@ static int ati_remote2_pre_reset(struct usb_interface *interface)
 }
 
 static int ati_remote2_post_reset(struct usb_interface *interface)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	struct ati_remote2 *ar2;
 	struct usb_host_interface *alt = interface->cur_altsetting;

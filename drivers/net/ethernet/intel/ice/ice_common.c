@@ -1717,6 +1717,7 @@ ice_sq_send_cmd_retry(struct ice_hw *hw, struct ice_ctl_q_info *cq,
 int
 ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf,
 		u16 buf_size, struct ice_sq_cd *cd)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct ice_aqc_req_res *cmd = &desc->params.res_owner;
 	bool lock_acquired = false;

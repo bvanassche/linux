@@ -71,6 +71,7 @@ static DEFINE_MUTEX(once_mutex);
 
 bool __do_once_sleepable_start(bool *done)
 	__acquires(once_mutex)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_lock(&once_mutex);
 	if (*done) {
@@ -90,6 +91,7 @@ EXPORT_SYMBOL(__do_once_sleepable_start);
 void __do_once_sleepable_done(bool *done, struct static_key_true *once_key,
 			 struct module *mod)
 	__releases(once_mutex)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	*done = true;
 	mutex_unlock(&once_mutex);

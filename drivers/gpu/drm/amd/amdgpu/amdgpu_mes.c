@@ -566,6 +566,7 @@ clean_up:
 static void amdgpu_mes_queue_init_mqd(struct amdgpu_device *adev,
 				     struct amdgpu_mes_queue *q,
 				     struct amdgpu_mes_queue_properties *p)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct amdgpu_mqd *mqd_mgr = &adev->mqds[p->queue_type];
 	struct amdgpu_mqd_prop mqd_prop = {0};

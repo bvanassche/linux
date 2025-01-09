@@ -320,6 +320,7 @@ EXPORT_SYMBOL_GPL(nf_log_buf_close);
 
 #ifdef CONFIG_PROC_FS
 static void *seq_start(struct seq_file *seq, loff_t *pos)
+	ACQUIRE(nf_log_mutex)
 {
 	struct net *net = seq_file_net(seq);
 
@@ -344,6 +345,7 @@ static void *seq_next(struct seq_file *s, void *v, loff_t *pos)
 }
 
 static void seq_stop(struct seq_file *s, void *v)
+	RELEASE(nf_log_mutex)
 {
 	mutex_unlock(&nf_log_mutex);
 }

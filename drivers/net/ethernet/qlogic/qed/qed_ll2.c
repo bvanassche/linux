@@ -252,6 +252,7 @@ static struct qed_ll2_info *__qed_ll2_handle_sanity(struct qed_hwfn *p_hwfn,
 						    u8 connection_handle,
 						    bool b_lock,
 						    bool b_only_active)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct qed_ll2_info *p_ll2_conn, *p_ret = NULL;
 

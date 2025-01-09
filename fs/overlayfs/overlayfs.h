@@ -641,16 +641,19 @@ static inline unsigned int ovl_xino_bits(struct ovl_fs *ofs)
 }
 
 static inline void ovl_inode_lock(struct inode *inode)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_lock(&OVL_I(inode)->lock);
 }
 
 static inline int ovl_inode_lock_interruptible(struct inode *inode)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	return mutex_lock_interruptible(&OVL_I(inode)->lock);
 }
 
 static inline void ovl_inode_unlock(struct inode *inode)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_unlock(&OVL_I(inode)->lock);
 }

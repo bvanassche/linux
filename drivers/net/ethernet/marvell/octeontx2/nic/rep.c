@@ -33,6 +33,7 @@ static int rvu_rep_notify_pfvf(struct otx2_nic *priv, u16 event,
 			       struct rep_event *data);
 
 static int rvu_rep_mcam_flow_init(struct rep_dev *rep)
+	NO_THREAD_SAFETY_ANALYSIS /* is there a locking bug in this function? */
 {
 	struct npc_mcam_alloc_entry_req *req;
 	struct npc_mcam_alloc_entry_rsp *rsp;

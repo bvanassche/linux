@@ -117,6 +117,7 @@ EXPORT_SYMBOL_GPL(scp_memcpy_aligned);
  * Note: This should not be used by drivers other than mtk_scp.
  */
 void scp_ipi_lock(struct mtk_scp *scp, u32 id)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex array */
 {
 	if (WARN_ON(id >= SCP_IPI_MAX))
 		return;
@@ -133,6 +134,7 @@ EXPORT_SYMBOL_GPL(scp_ipi_lock);
  * Note: This should not be used by drivers other than mtk_scp.
  */
 void scp_ipi_unlock(struct mtk_scp *scp, u32 id)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex array */
 {
 	if (WARN_ON(id >= SCP_IPI_MAX))
 		return;

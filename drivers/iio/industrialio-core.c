@@ -2154,6 +2154,7 @@ EXPORT_SYMBOL_GPL(__devm_iio_device_register);
  * Returns: 0 on success, -EBUSY on failure.
  */
 int iio_device_claim_direct_mode(struct iio_dev *indio_dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct iio_dev_opaque *iio_dev_opaque = to_iio_dev_opaque(indio_dev);
 
@@ -2177,6 +2178,7 @@ EXPORT_SYMBOL_GPL(iio_device_claim_direct_mode);
  * Use with iio_device_claim_direct_mode()
  */
 void iio_device_release_direct_mode(struct iio_dev *indio_dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	mutex_unlock(&to_iio_dev_opaque(indio_dev)->mlock);
 }
@@ -2194,6 +2196,7 @@ EXPORT_SYMBOL_GPL(iio_device_release_direct_mode);
  * Returns: 0 on success, -EBUSY on failure.
  */
 int iio_device_claim_buffer_mode(struct iio_dev *indio_dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct iio_dev_opaque *iio_dev_opaque = to_iio_dev_opaque(indio_dev);
 
@@ -2217,6 +2220,7 @@ EXPORT_SYMBOL_GPL(iio_device_claim_buffer_mode);
  * Use with iio_device_claim_buffer_mode().
  */
 void iio_device_release_buffer_mode(struct iio_dev *indio_dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	mutex_unlock(&to_iio_dev_opaque(indio_dev)->mlock);
 }

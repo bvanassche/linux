@@ -1534,6 +1534,7 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void *t_start(struct seq_file *m, loff_t *pos)
+	ACQUIRE(event_mutex)
 {
 	struct trace_event_file *file;
 	struct trace_array *tr = m->private;
@@ -1602,6 +1603,7 @@ s_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void *s_start(struct seq_file *m, loff_t *pos)
+	NO_THREAD_SAFETY_ANALYSIS /* TRY_ACQUIRE() does not support pointers */
 {
 	struct trace_array *tr = m->private;
 	struct set_event_iter *iter;
@@ -1637,6 +1639,7 @@ static int t_show(struct seq_file *m, void *v)
 }
 
 static void t_stop(struct seq_file *m, void *p)
+	RELEASE(event_mutex)
 {
 	mutex_unlock(&event_mutex);
 }
@@ -1675,6 +1678,7 @@ static int s_show(struct seq_file *m, void *v)
 #endif
 
 static void s_stop(struct seq_file *m, void *v)
+	RELEASE(event_mutex)
 {
 	kfree(v);
 	t_stop(m, NULL);
@@ -1708,6 +1712,7 @@ np_next(struct seq_file *m, void *v, loff_t *pos)
 
 static void *__start(struct seq_file *m, loff_t *pos, int type)
 	__acquires(RCU)
+	ACQUIRE(event_mutex)
 {
 	struct trace_pid_list *pid_list;
 	struct trace_array *tr = m->private;
@@ -1734,18 +1739,21 @@ static void *__start(struct seq_file *m, loff_t *pos, int type)
 
 static void *p_start(struct seq_file *m, loff_t *pos)
 	__acquires(RCU)
+	ACQUIRE(event_mutex)
 {
 	return __start(m, pos, TRACE_PIDS);
 }
 
 static void *np_start(struct seq_file *m, loff_t *pos)
 	__acquires(RCU)
+	ACQUIRE(event_mutex)
 {
 	return __start(m, pos, TRACE_NO_PIDS);
 }
 
 static void p_stop(struct seq_file *m, void *p)
 	__releases(RCU)
+	RELEASE(event_mutex)
 {
 	rcu_read_unlock_sched();
 	mutex_unlock(&event_mutex);
@@ -2001,6 +2009,7 @@ static int f_show(struct seq_file *m, void *v)
 }
 
 static void *f_start(struct seq_file *m, loff_t *pos)
+	ACQUIRE(event_mutex)
 {
 	struct trace_event_file *file;
 	void *p = (void *)FORMAT_HEADER;
@@ -2019,6 +2028,7 @@ static void *f_start(struct seq_file *m, loff_t *pos)
 }
 
 static void f_stop(struct seq_file *m, void *p)
+	RELEASE(event_mutex)
 {
 	mutex_unlock(&event_mutex);
 }

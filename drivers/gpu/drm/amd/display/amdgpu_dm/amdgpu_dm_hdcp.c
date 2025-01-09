@@ -150,6 +150,7 @@ static void process_output(struct hdcp_workqueue *hdcp_work)
 }
 
 static void link_lock(struct hdcp_workqueue *work, bool lock)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int i = 0;
 

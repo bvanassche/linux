@@ -24,12 +24,14 @@ extern int ivtv_alsa_debug;
  * need to be serialized.  Use the same lock we use for v4l2 file ops.
  */
 static inline void snd_ivtv_lock(struct snd_ivtv_card *itvsc)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct ivtv *itv = to_ivtv(itvsc->v4l2_dev);
 	mutex_lock(&itv->serialize_lock);
 }
 
 static inline void snd_ivtv_unlock(struct snd_ivtv_card *itvsc)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct ivtv *itv = to_ivtv(itvsc->v4l2_dev);
 	mutex_unlock(&itv->serialize_lock);

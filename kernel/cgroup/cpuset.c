@@ -232,11 +232,13 @@ static struct cpuset top_cpuset = {
 static DEFINE_MUTEX(cpuset_mutex);
 
 void cpuset_lock(void)
+	ACQUIRE(cpuset_mutex)
 {
 	mutex_lock(&cpuset_mutex);
 }
 
 void cpuset_unlock(void)
+	RELEASE(cpuset_mutex)
 {
 	mutex_unlock(&cpuset_mutex);
 }

@@ -44,12 +44,14 @@ static DEFINE_MUTEX(hnae3_common_lock);
 static DEFINE_MUTEX(hnae3_unload_lock);
 
 void hnae3_acquire_unload_lock(void)
+	ACQUIRE(hnae3_unload_lock)
 {
 	mutex_lock(&hnae3_unload_lock);
 }
 EXPORT_SYMBOL(hnae3_acquire_unload_lock);
 
 void hnae3_release_unload_lock(void)
+	RELEASE(hnae3_unload_lock)
 {
 	mutex_unlock(&hnae3_unload_lock);
 }

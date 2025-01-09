@@ -136,6 +136,7 @@ static int aldebaran_mode2_reset(struct amdgpu_device *adev)
 static int
 aldebaran_mode2_perform_reset(struct amdgpu_reset_control *reset_ctl,
 			      struct amdgpu_reset_context *reset_context)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex operation inside a loop */
 {
 	struct amdgpu_device *adev = (struct amdgpu_device *)reset_ctl->handle;
 	struct list_head *reset_device_list = reset_context->reset_device_list;

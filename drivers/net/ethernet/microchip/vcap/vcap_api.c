@@ -937,6 +937,7 @@ static bool vcap_rule_exists(struct vcap_control *vctrl, u32 id)
 /* Find a rule with a provided rule id return a locked vcap */
 static struct vcap_rule_internal *
 vcap_get_locked_rule(struct vcap_control *vctrl, u32 id)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct vcap_rule_internal *ri;
 	struct vcap_admin *admin;
@@ -2432,6 +2433,7 @@ out:
 }
 
 struct vcap_rule *vcap_get_rule(struct vcap_control *vctrl, u32 id)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct vcap_rule_internal *elem;
 	struct vcap_rule *rule;
@@ -2453,6 +2455,7 @@ EXPORT_SYMBOL_GPL(vcap_get_rule);
 
 /* Update existing rule */
 int vcap_mod_rule(struct vcap_rule *rule)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct vcap_rule_internal *ri = to_intrule(rule);
 	struct vcap_counter ctr;
@@ -2535,6 +2538,7 @@ static int vcap_fill_rule_gap(struct vcap_rule_internal *ri)
 
 /* Delete rule in a VCAP instance */
 int vcap_del_rule(struct vcap_control *vctrl, struct net_device *ndev, u32 id)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct vcap_rule_internal *ri, *elem;
 	struct vcap_admin *admin;

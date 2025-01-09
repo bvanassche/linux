@@ -830,6 +830,7 @@ void bch2_trans_unlock_write(struct btree_trans *trans)
 
 int __bch2_trans_mutex_lock(struct btree_trans *trans,
 			    struct mutex *lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int ret = drop_locks_do(trans, (mutex_lock(lock), 0));
 

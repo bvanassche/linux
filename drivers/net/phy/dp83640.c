@@ -1031,6 +1031,7 @@ static int choose_this_phy(struct dp83640_clock *clock,
 }
 
 static struct dp83640_clock *dp83640_clock_get(struct dp83640_clock *clock)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (clock)
 		mutex_lock(&clock->clock_lock);
@@ -1079,6 +1080,7 @@ out:
 }
 
 static void dp83640_clock_put(struct dp83640_clock *clock)
+	NO_THREAD_SAFETY_ANALYSIS /* to match dp83640_clock_get() */
 {
 	mutex_unlock(&clock->clock_lock);
 }

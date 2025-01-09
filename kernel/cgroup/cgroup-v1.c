@@ -391,6 +391,7 @@ static int pidlist_array_load(struct cgroup *cgrp, enum cgroup_filetype type,
  */
 
 static void *cgroup_pidlist_start(struct seq_file *s, loff_t *pos)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	/*
 	 * Initially we receive a position value that corresponds to
@@ -452,6 +453,7 @@ static void *cgroup_pidlist_start(struct seq_file *s, loff_t *pos)
 }
 
 static void cgroup_pidlist_stop(struct seq_file *s, void *v)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct kernfs_open_file *of = s->private;
 	struct cgroup_file_ctx *ctx = of->priv;
@@ -1078,6 +1080,7 @@ static int check_cgroupfs_options(struct fs_context *fc)
 }
 
 int cgroup1_reconfigure(struct fs_context *fc)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct cgroup_fs_context *ctx = cgroup_fc2context(fc);
 	struct kernfs_root *kf_root = kernfs_root_from_sb(fc->root->d_sb);
@@ -1242,6 +1245,7 @@ static int cgroup1_root_to_use(struct fs_context *fc)
 }
 
 int cgroup1_get_tree(struct fs_context *fc)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct cgroup_fs_context *ctx = cgroup_fc2context(fc);
 	int ret;

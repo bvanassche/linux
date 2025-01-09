@@ -490,6 +490,7 @@ static void mlx5e_decap_dealloc(struct mlx5e_priv *priv,
 }
 
 void mlx5e_encap_put(struct mlx5e_priv *priv, struct mlx5e_encap_entry *e)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct mlx5_eswitch *esw = priv->mdev->priv.eswitch;
 
@@ -516,6 +517,7 @@ static void mlx5e_encap_put_locked(struct mlx5e_priv *priv, struct mlx5e_encap_e
 }
 
 static void mlx5e_decap_put(struct mlx5e_priv *priv, struct mlx5e_decap_entry *d)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct mlx5_eswitch *esw = priv->mdev->priv.eswitch;
 
@@ -1139,6 +1141,7 @@ static void mlx5e_route_dealloc(struct mlx5e_priv *priv,
 }
 
 static void mlx5e_route_put(struct mlx5e_priv *priv, struct mlx5e_route_entry *r)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct mlx5_eswitch *esw = priv->mdev->priv.eswitch;
 

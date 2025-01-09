@@ -966,6 +966,7 @@ void bch2_journal_block(struct journal *j)
 
 static struct journal_buf *__bch2_next_write_buffer_flush_journal_buf(struct journal *j,
 						u64 max_seq, bool *blocked)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct journal_buf *ret = NULL;
 
@@ -1023,6 +1024,7 @@ struct journal_buf *bch2_next_write_buffer_flush_journal_buf(struct journal *j,
 
 static int bch2_set_nr_journal_buckets_iter(struct bch_dev *ca, unsigned nr,
 					    bool new_fs, struct closure *cl)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct bch_fs *c = ca->fs;
 	struct journal_device *ja = &ca->journal;

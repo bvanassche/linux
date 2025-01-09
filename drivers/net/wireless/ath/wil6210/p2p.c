@@ -336,6 +336,8 @@ out:
 }
 
 void wil_p2p_stop_radio_operations(struct wil6210_priv *wil)
+	REQUIRES(wil->mutex)
+	REQUIRES(wil->vif_mutex)
 {
 	struct wil6210_vif *vif = ndev_to_vif(wil->main_ndev);
 	struct wil_p2p_info *p2p = &vif->p2p;

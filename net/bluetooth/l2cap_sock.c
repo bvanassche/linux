@@ -1298,6 +1298,7 @@ static int __l2cap_wait_ack(struct sock *sk, struct l2cap_chan *chan)
 }
 
 static int l2cap_sock_shutdown(struct socket *sock, int how)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct sock *sk = sock->sk;
 	struct l2cap_chan *chan;
@@ -1626,6 +1627,7 @@ static void l2cap_sock_state_change_cb(struct l2cap_chan *chan, int state,
 static struct sk_buff *l2cap_sock_alloc_skb_cb(struct l2cap_chan *chan,
 					       unsigned long hdr_len,
 					       unsigned long len, int nb)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct sock *sk = chan->data;
 	struct sk_buff *skb;

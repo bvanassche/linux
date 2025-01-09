@@ -36,6 +36,7 @@
 static DEFINE_MUTEX(adlink_mpg24_i2c_mutex);
 
 static inline void adlink_mpg24_i2c_lock(struct go7007 *go)
+	ACQUIRE(adlink_mpg24_i2c_mutex)
 {
 	/* Bridge the I2C port on this GO7007 to the shared bus */
 	mutex_lock(&adlink_mpg24_i2c_mutex);
@@ -43,6 +44,7 @@ static inline void adlink_mpg24_i2c_lock(struct go7007 *go)
 }
 
 static inline void adlink_mpg24_i2c_unlock(struct go7007 *go)
+	RELEASE(adlink_mpg24_i2c_mutex)
 {
 	/* Isolate the I2C port on this GO7007 from the shared bus */
 	go7007_write_addr(go, 0x3c82, 0x0000);
@@ -51,6 +53,7 @@ static inline void adlink_mpg24_i2c_unlock(struct go7007 *go)
 
 static int go7007_i2c_xfer(struct go7007 *go, u16 addr, int read,
 		u16 command, int flags, u8 *data)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int i, ret = -EIO;
 	u16 val;

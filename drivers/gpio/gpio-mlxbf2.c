@@ -128,6 +128,7 @@ exit:
  * mode. If the lock_active bit is already set, return an error.
  */
 static int mlxbf2_gpio_lock_acquire(struct mlxbf2_gpio_context *gs)
+	TRY_ACQUIRE(0, yu_arm_gpio_lock_param.lock)
 {
 	u32 arm_gpio_lock_val;
 
@@ -156,6 +157,7 @@ static int mlxbf2_gpio_lock_acquire(struct mlxbf2_gpio_context *gs)
 static void mlxbf2_gpio_lock_release(struct mlxbf2_gpio_context *gs)
 	__releases(&gs->gc.bgpio_lock)
 	__releases(yu_arm_gpio_lock_param.lock)
+	RELEASE(yu_arm_gpio_lock_param.lock)
 {
 	writel(YU_ARM_GPIO_LOCK_RELEASE, yu_arm_gpio_lock_param.io);
 	raw_spin_unlock(&gs->gc.bgpio_lock);

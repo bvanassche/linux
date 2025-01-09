@@ -831,6 +831,7 @@ static int wait_for_rtrs_connection(struct rnbd_clt_session *sess)
 static void wait_for_rtrs_disconnection(struct rnbd_clt_session *sess)
 	__releases(&sess_lock)
 	__acquires(&sess_lock)
+	REQUIRES(sess_lock)
 {
 	DEFINE_WAIT(wait);
 
@@ -853,6 +854,7 @@ static void wait_for_rtrs_disconnection(struct rnbd_clt_session *sess)
 static struct rnbd_clt_session *__find_and_get_sess(const char *sessname)
 	__releases(&sess_lock)
 	__acquires(&sess_lock)
+	REQUIRES(sess_lock)
 {
 	struct rnbd_clt_session *sess, *sn;
 	int err;

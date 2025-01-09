@@ -1419,6 +1419,7 @@ static void nbd_clear_sock(struct nbd_device *nbd)
 }
 
 static void nbd_config_put(struct nbd_device *nbd)
+	NO_THREAD_SAFETY_ANALYSIS /* because of a clang bug */
 {
 	if (refcount_dec_and_mutex_lock(&nbd->config_refs,
 					&nbd->config_lock)) {
@@ -1520,6 +1521,7 @@ static int nbd_start_device(struct nbd_device *nbd)
 }
 
 static int nbd_start_device_ioctl(struct nbd_device *nbd)
+	REQUIRES(nbd->config_lock)
 {
 	struct nbd_config *config = nbd->config;
 	int ret;
@@ -1571,6 +1573,7 @@ static void nbd_set_cmd_timeout(struct nbd_device *nbd, u64 timeout)
 /* Must be called with config_lock held */
 static int __nbd_ioctl(struct block_device *bdev, struct nbd_device *nbd,
 		       unsigned int cmd, unsigned long arg)
+	REQUIRES(nbd->config_lock)
 {
 	struct nbd_config *config = nbd->config;
 	loff_t bytesize;

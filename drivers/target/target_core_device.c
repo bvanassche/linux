@@ -844,6 +844,7 @@ struct devices_idr_iter {
 
 static int target_devices_idr_iter(int id, void *p, void *data)
 	 __must_hold(&device_mutex)
+	REQUIRES(device_mutex)
 {
 	struct devices_idr_iter *iter = data;
 	struct se_device *dev = p;

@@ -96,6 +96,7 @@ static void ubifs_add_auth_dirt(struct ubifs_info *c, int lnum)
  * be done, and other negative error codes in case of other failures.
  */
 static int reserve_space(struct ubifs_info *c, int jhead, int len)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int err = 0, err1, retries = 0, avail, lnum, offs, squeeze;
 	struct ubifs_wbuf *wbuf = &c->jheads[jhead].wbuf;
@@ -520,6 +521,7 @@ out_wake_up:
  * 'make_reservation()' invocation.
  */
 static inline void release_head(struct ubifs_info *c, int jhead)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_unlock(&c->jheads[jhead].wbuf.io_mutex);
 }
@@ -853,6 +855,7 @@ out_ro:
  */
 int ubifs_jnl_write_data(struct ubifs_info *c, const struct inode *inode,
 			 const union ubifs_key *key, const void *buf, int len)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ubifs_data_node *data;
 	int err, lnum, offs, compr_type, out_len, compr_len, auth_len;

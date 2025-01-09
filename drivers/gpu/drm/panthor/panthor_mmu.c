@@ -813,6 +813,7 @@ out_dev_exit:
  * and other AS updates).
  */
 void panthor_vm_idle(struct panthor_vm *vm)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct panthor_device *ptdev = vm->ptdev;
 

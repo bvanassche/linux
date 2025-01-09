@@ -3130,6 +3130,7 @@ bool ni_is_dirty(struct inode *inode)
  */
 static bool ni_update_parent(struct ntfs_inode *ni, struct NTFS_DUP_INFO *dup,
 			     int sync)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ATTRIB *attr;
 	struct mft_inode *mi;
@@ -3242,7 +3243,8 @@ static bool ni_update_parent(struct ntfs_inode *ni, struct NTFS_DUP_INFO *dup,
 /*
  * ni_write_inode - Write MFT base record and all subrecords to disk.
  */
-int ni_write_inode(struct inode *inode, int sync, const char *hint)
+int ni_write_inode(struct inode *inode, int sync,
+		   const char *hint) NO_THREAD_SAFETY_ANALYSIS
 {
 	int err = 0, err2;
 	struct ntfs_inode *ni = ntfs_i(inode);

@@ -106,6 +106,7 @@ void bch2_bio_free_pages_pool(struct bch_fs *c, struct bio *bio)
 }
 
 static struct page *__bio_alloc_page_pool(struct bch_fs *c, bool *using_mempool)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct page *page;
 
@@ -127,6 +128,7 @@ pool_alloc:
 
 void bch2_bio_alloc_pages_pool(struct bch_fs *c, struct bio *bio,
 			       size_t size)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	bool using_mempool = false;
 
@@ -1425,6 +1427,7 @@ err_bucket_stale:
 }
 
 static void __bch2_write(struct bch_write_op *op)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct bch_fs *c = op->c;
 	struct write_point *wp = NULL;

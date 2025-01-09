@@ -603,11 +603,13 @@ static ssize_t param_attr_store(const struct module_attribute *mattr,
 
 #ifdef CONFIG_SYSFS
 void kernel_param_lock(struct module *mod)
+	ACQUIRE(KPARAM_MUTEX(mod))
 {
 	mutex_lock(KPARAM_MUTEX(mod));
 }
 
 void kernel_param_unlock(struct module *mod)
+	RELEASE(KPARAM_MUTEX(mod))
 {
 	mutex_unlock(KPARAM_MUTEX(mod));
 }

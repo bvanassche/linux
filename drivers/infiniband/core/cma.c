@@ -1921,6 +1921,7 @@ static void cma_cancel_route(struct rdma_id_private *id_priv)
 }
 
 static void _cma_cancel_listens(struct rdma_id_private *id_priv)
+	REQUIRES(lock)
 {
 	struct rdma_id_private *dev_id_priv;
 
@@ -2084,6 +2085,7 @@ static void _destroy_id(struct rdma_id_private *id_priv,
  */
 static void destroy_id_handler_unlock(struct rdma_id_private *id_priv)
 	__releases(&idprv->handler_mutex)
+	RELEASE(id_priv->handler_mutex)
 {
 	enum rdma_cm_state state;
 	unsigned long flags;
@@ -2106,6 +2108,7 @@ static void destroy_id_handler_unlock(struct rdma_id_private *id_priv)
 }
 
 void rdma_destroy_id(struct rdma_cm_id *id)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct rdma_id_private *id_priv =
 		container_of(id, struct rdma_id_private, id);
@@ -4708,6 +4711,7 @@ int rdma_accept_ece(struct rdma_cm_id *id, struct rdma_conn_param *conn_param,
 EXPORT_SYMBOL(rdma_accept_ece);
 
 void rdma_lock_handler(struct rdma_cm_id *id)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct rdma_id_private *id_priv =
 		container_of(id, struct rdma_id_private, id);
@@ -4717,6 +4721,7 @@ void rdma_lock_handler(struct rdma_cm_id *id)
 EXPORT_SYMBOL(rdma_lock_handler);
 
 void rdma_unlock_handler(struct rdma_cm_id *id)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct rdma_id_private *id_priv =
 		container_of(id, struct rdma_id_private, id);

@@ -36,6 +36,7 @@ static struct ecryptfs_msg_ctx *ecryptfs_msg_ctx_arr;
  * held.
  */
 static int ecryptfs_acquire_free_msg_ctx(struct ecryptfs_msg_ctx **msg_ctx)
+	TRY_ACQUIRE(0, (*msg_ctx)->mux)
 {
 	struct list_head *p;
 	int rc;

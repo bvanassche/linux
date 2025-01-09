@@ -1031,6 +1031,7 @@ out:
  */
 int comedi_auto_config(struct device *hardware_device,
 		       struct comedi_driver *driver, unsigned long context)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct comedi_device *dev;
 	int ret;

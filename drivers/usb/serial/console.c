@@ -53,6 +53,7 @@ static const struct tty_operations usb_console_fake_tty_ops = {
  * of "ttyS".
  */
 static int usb_console_setup(struct console *co, char *options)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional release */
 {
 	struct usbcons_info *info = &usbcons_info;
 	int baud = 9600;

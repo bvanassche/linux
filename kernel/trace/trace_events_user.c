@@ -260,6 +260,7 @@ out:
 }
 
 static void user_event_put(struct user_event *user, bool locked)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	bool delete;
 

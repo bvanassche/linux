@@ -709,6 +709,7 @@ static int __w1_attach_slave_device(struct w1_slave *sl)
 }
 
 int w1_attach_slave_device(struct w1_master *dev, struct w1_reg_num *rn)
+	REQUIRES(dev->mutex)
 {
 	struct w1_slave *sl;
 	struct w1_family *f;
@@ -939,6 +940,7 @@ static int w1_addr_crc_is_valid(struct w1_master *dev, u64 rn)
 }
 
 void w1_slave_found(struct w1_master *dev, u64 rn)
+	REQUIRES(dev->mutex)
 {
 	struct w1_slave *sl;
 	struct w1_reg_num *tmp;
@@ -1125,6 +1127,7 @@ static void w1_search_process(struct w1_master *dev, u8 search_type)
  * Return: 1 if there were commands to executed 0 otherwise
  */
 int w1_process_callbacks(struct w1_master *dev)
+	REQUIRES(dev->list_mutex)
 {
 	int ret = 0;
 	struct w1_async_cmd *async_cmd, *async_n;

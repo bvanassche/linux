@@ -290,6 +290,7 @@ static bool sync_exp_work_done(unsigned long s)
  * expedited grace period.
  */
 static bool exp_funnel_lock(unsigned long s)
+	TRY_ACQUIRE(false, rcu_state.exp_mutex)
 {
 	struct rcu_data *rdp = per_cpu_ptr(&rcu_data, raw_smp_processor_id());
 	struct rcu_node *rnp = rdp->mynode;

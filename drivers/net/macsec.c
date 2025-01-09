@@ -1664,6 +1664,7 @@ static const struct nla_policy macsec_genl_offload_policy[NUM_MACSEC_OFFLOAD_ATT
 /* Offloads an operation to a device driver */
 static int macsec_offload(int (* const func)(struct macsec_context *),
 			  struct macsec_context *ctx)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int ret;
 

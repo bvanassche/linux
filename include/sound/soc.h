@@ -1506,41 +1506,49 @@ enum snd_soc_dapm_subclass {
 };
 
 static inline void _snd_soc_dapm_mutex_lock_root_c(struct snd_soc_card *card)
+	ACQUIRE(card->dapm_mutex)
 {
 	mutex_lock_nested(&card->dapm_mutex, SND_SOC_DAPM_CLASS_ROOT);
 }
 
 static inline void _snd_soc_dapm_mutex_lock_c(struct snd_soc_card *card)
+	ACQUIRE(card->dapm_mutex)
 {
 	mutex_lock_nested(&card->dapm_mutex, SND_SOC_DAPM_CLASS_RUNTIME);
 }
 
 static inline void _snd_soc_dapm_mutex_unlock_c(struct snd_soc_card *card)
+	RELEASE(card->dapm_mutex)
 {
 	mutex_unlock(&card->dapm_mutex);
 }
 
 static inline void _snd_soc_dapm_mutex_assert_held_c(struct snd_soc_card *card)
+	REQUIRES(card->dapm_mutex)
 {
 	lockdep_assert_held(&card->dapm_mutex);
 }
 
 static inline void _snd_soc_dapm_mutex_lock_root_d(struct snd_soc_dapm_context *dapm)
+	ACQUIRE(dapm->card->dapm_mutex)
 {
 	_snd_soc_dapm_mutex_lock_root_c(dapm->card);
 }
 
 static inline void _snd_soc_dapm_mutex_lock_d(struct snd_soc_dapm_context *dapm)
+	ACQUIRE(dapm->card->dapm_mutex)
 {
 	_snd_soc_dapm_mutex_lock_c(dapm->card);
 }
 
 static inline void _snd_soc_dapm_mutex_unlock_d(struct snd_soc_dapm_context *dapm)
+	RELEASE(dapm->card->dapm_mutex)
 {
 	_snd_soc_dapm_mutex_unlock_c(dapm->card);
 }
 
 static inline void _snd_soc_dapm_mutex_assert_held_d(struct snd_soc_dapm_context *dapm)
+	REQUIRES(dapm->card->dapm_mutex)
 {
 	_snd_soc_dapm_mutex_assert_held_c(dapm->card);
 }
@@ -1562,31 +1570,37 @@ static inline void _snd_soc_dapm_mutex_assert_held_d(struct snd_soc_dapm_context
  *	PCM helper functions
  */
 static inline void _snd_soc_dpcm_mutex_lock_c(struct snd_soc_card *card)
+	ACQUIRE(card->pcm_mutex)
 {
 	mutex_lock_nested(&card->pcm_mutex, card->pcm_subclass);
 }
 
 static inline void _snd_soc_dpcm_mutex_unlock_c(struct snd_soc_card *card)
+	RELEASE(card->pcm_mutex)
 {
 	mutex_unlock(&card->pcm_mutex);
 }
 
 static inline void _snd_soc_dpcm_mutex_assert_held_c(struct snd_soc_card *card)
+	REQUIRES(card->pcm_mutex)
 {
 	lockdep_assert_held(&card->pcm_mutex);
 }
 
 static inline void _snd_soc_dpcm_mutex_lock_r(struct snd_soc_pcm_runtime *rtd)
+	ACQUIRE(rtd->card->pcm_mutex)
 {
 	_snd_soc_dpcm_mutex_lock_c(rtd->card);
 }
 
 static inline void _snd_soc_dpcm_mutex_unlock_r(struct snd_soc_pcm_runtime *rtd)
+	RELEASE(rtd->card->pcm_mutex)
 {
 	_snd_soc_dpcm_mutex_unlock_c(rtd->card);
 }
 
 static inline void _snd_soc_dpcm_mutex_assert_held_r(struct snd_soc_pcm_runtime *rtd)
+	REQUIRES(rtd->card->pcm_mutex)
 {
 	_snd_soc_dpcm_mutex_assert_held_c(rtd->card);
 }

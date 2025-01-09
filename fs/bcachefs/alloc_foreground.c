@@ -37,6 +37,7 @@
 
 static void bch2_trans_mutex_lock_norelock(struct btree_trans *trans,
 					   struct mutex *lock)
+	ACQUIRE(*lock)
 {
 	if (!mutex_trylock(lock)) {
 		bch2_trans_unlock(trans);
@@ -1213,6 +1214,7 @@ static bool try_decrease_writepoints(struct btree_trans *trans, unsigned old_nr)
 
 static struct write_point *writepoint_find(struct btree_trans *trans,
 					   unsigned long write_point)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct bch_fs *c = trans->c;
 	struct write_point *wp, *oldest;
@@ -1306,6 +1308,7 @@ int bch2_alloc_sectors_start_trans(struct btree_trans *trans,
 			     enum bch_write_flags flags,
 			     struct closure *cl,
 			     struct write_point **wp_ret)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct bch_fs *c = trans->c;
 	struct write_point *wp;
@@ -1459,6 +1462,7 @@ void bch2_alloc_sectors_append_ptrs(struct bch_fs *c, struct write_point *wp,
  * as allocated out of @ob
  */
 void bch2_alloc_sectors_done(struct bch_fs *c, struct write_point *wp)
+	RELEASE(wp->lock)
 {
 	bch2_alloc_sectors_done_inlined(c, wp);
 }

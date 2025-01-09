@@ -2949,6 +2949,7 @@ struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)
  * remember to update this too...
  */
 static int __d_unalias(struct dentry *dentry, struct dentry *alias)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct mutex *m1 = NULL;
 	struct rw_semaphore *m2 = NULL;

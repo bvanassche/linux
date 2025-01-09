@@ -2637,6 +2637,7 @@ static void igmp6_join_group(struct ifmcaddr6 *ma)
 
 static int ip6_mc_leave_src(struct sock *sk, struct ipv6_mc_socklist *iml,
 			    struct inet6_dev *idev)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ip6_sf_socklist *psl;
 	int err;

@@ -929,6 +929,7 @@ static void remove_compat_control_link(struct drm_device *dev)
  * 0 on success, negative error code on failure.
  */
 int drm_dev_register(struct drm_device *dev, unsigned long flags)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	const struct drm_driver *driver = dev->driver;
 	int ret;

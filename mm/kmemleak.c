@@ -1910,6 +1910,7 @@ static void stop_scan_thread(void)
  * a memory scanning when the pos argument points to the first position.
  */
 static void *kmemleak_seq_start(struct seq_file *seq, loff_t *pos)
+	TRY_ACQUIRE(0, scan_mutex)
 {
 	struct kmemleak_object *object;
 	loff_t n = *pos;
@@ -1958,6 +1959,7 @@ static void *kmemleak_seq_next(struct seq_file *seq, void *v, loff_t *pos)
  * Decrement the use_count of the last object required, if any.
  */
 static void kmemleak_seq_stop(struct seq_file *seq, void *v)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (!IS_ERR(v)) {
 		/*

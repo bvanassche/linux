@@ -23,12 +23,14 @@ extern int cx18_alsa_debug;
  * need to be serialized.  Use the same lock we use for v4l2 file ops.
  */
 static inline void snd_cx18_lock(struct snd_cx18_card *cxsc)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct cx18 *cx = to_cx18(cxsc->v4l2_dev);
 	mutex_lock(&cx->serialize_lock);
 }
 
 static inline void snd_cx18_unlock(struct snd_cx18_card *cxsc)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct cx18 *cx = to_cx18(cxsc->v4l2_dev);
 	mutex_unlock(&cx->serialize_lock);

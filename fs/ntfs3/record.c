@@ -113,6 +113,7 @@ int mi_init(struct mft_inode *mi, struct ntfs_sb_info *sbi, CLST rno)
  * mi_read - Read MFT data.
  */
 int mi_read(struct mft_inode *mi, bool is_mft)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int err;
 	struct MFT_REC *rec = mi->mrec;

@@ -264,6 +264,7 @@ static int io_ring_add_registered_fd(struct io_uring_task *tctx, int fd,
  */
 int io_ringfd_register(struct io_ring_ctx *ctx, void __user *__arg,
 		       unsigned nr_args)
+	REQUIRES(ctx->uring_lock)
 {
 	struct io_uring_rsrc_update __user *arg = __arg;
 	struct io_uring_rsrc_update reg;

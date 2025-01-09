@@ -154,6 +154,7 @@ static bool check_user_trigger(struct trace_event_file *file)
 }
 
 static void *trigger_start(struct seq_file *m, loff_t *pos)
+	ACQUIRE(event_mutex)
 {
 	struct trace_event_file *event_file;
 
@@ -170,6 +171,7 @@ static void *trigger_start(struct seq_file *m, loff_t *pos)
 }
 
 static void trigger_stop(struct seq_file *m, void *t)
+	RELEASE(event_mutex)
 {
 	mutex_unlock(&event_mutex);
 }

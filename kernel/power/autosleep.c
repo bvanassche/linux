@@ -77,11 +77,13 @@ suspend_state_t pm_autosleep_state(void)
 }
 
 int pm_autosleep_lock(void)
+	TRY_ACQUIRE(0, autosleep_lock)
 {
 	return mutex_lock_interruptible(&autosleep_lock);
 }
 
 void pm_autosleep_unlock(void)
+	RELEASE(autosleep_lock)
 {
 	mutex_unlock(&autosleep_lock);
 }

@@ -515,6 +515,7 @@ STATIC int
 xchk_dirpath_walk_upwards(
 	struct xchk_dirtree	*dl,
 	struct xchk_dirpath	*path)
+	REQUIRES(dl->lock)
 {
 	struct xfs_scrub	*sc = dl->sc;
 	bool			is_metadir;
@@ -786,6 +787,7 @@ xchk_dirtree_load_path(
 int
 xchk_dirtree_find_paths_to_root(
 	struct xchk_dirtree	*dl)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xfs_scrub	*sc = dl->sc;
 	struct xchk_dirpath	*path;

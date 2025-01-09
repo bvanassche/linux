@@ -445,6 +445,7 @@ int softing_enable_irq(struct softing *card, int enable)
 }
 
 static void softing_card_shutdown(struct softing *card)
+	NO_THREAD_SAFETY_ANALYSIS /* please fix locking in this function */
 {
 	int fw_up = 0;
 

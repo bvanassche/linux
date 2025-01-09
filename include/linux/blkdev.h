@@ -947,15 +947,19 @@ static inline unsigned int blk_boundary_sectors_left(sector_t offset,
  */
 static inline struct queue_limits
 queue_limits_start_update(struct request_queue *q)
+	ACQUIRE(q->limits_lock)
 {
 	mutex_lock(&q->limits_lock);
 	return q->limits;
 }
 int queue_limits_commit_update_frozen(struct request_queue *q,
-		struct queue_limits *lim);
+		struct queue_limits *lim)
+	RELEASE(q->limits_lock);
 int queue_limits_commit_update(struct request_queue *q,
-		struct queue_limits *lim);
-int queue_limits_set(struct request_queue *q, struct queue_limits *lim);
+		struct queue_limits *lim)
+	RELEASE(q->limits_lock);
+int queue_limits_set(struct request_queue *q, struct queue_limits *lim)
+	EXCLUDES(q->limits_lock);
 int blk_validate_limits(struct queue_limits *lim);
 
 /**
@@ -967,6 +971,7 @@ int blk_validate_limits(struct queue_limits *lim);
  * starting update.
  */
 static inline void queue_limits_cancel_update(struct request_queue *q)
+	RELEASE(q->limits_lock)
 {
 	mutex_unlock(&q->limits_lock);
 }

@@ -165,6 +165,7 @@ void host1x_memory_context_get(struct host1x_memory_context *cd)
 EXPORT_SYMBOL_GPL(host1x_memory_context_get);
 
 void host1x_memory_context_put(struct host1x_memory_context *cd)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct host1x_memory_context_list *cdl = &cd->host->context_list;
 

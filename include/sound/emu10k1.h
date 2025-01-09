@@ -1842,8 +1842,16 @@ unsigned int snd_emu10k1_ptr20_read(struct snd_emu10k1 * emu, unsigned int reg, 
 void snd_emu10k1_ptr20_write(struct snd_emu10k1 *emu, unsigned int reg, unsigned int chn, unsigned int data);
 int snd_emu10k1_spi_write(struct snd_emu10k1 * emu, unsigned int data);
 int snd_emu10k1_i2c_write(struct snd_emu10k1 *emu, u32 reg, u32 value);
-static inline void snd_emu1010_fpga_lock(struct snd_emu10k1 *emu) { mutex_lock(&emu->emu1010.lock); };
-static inline void snd_emu1010_fpga_unlock(struct snd_emu10k1 *emu) { mutex_unlock(&emu->emu1010.lock); };
+static inline void snd_emu1010_fpga_lock(struct snd_emu10k1 *emu)
+	ACQUIRE(emu->emu1010.lock)
+{
+	mutex_lock(&emu->emu1010.lock);
+}
+static inline void snd_emu1010_fpga_unlock(struct snd_emu10k1 *emu)
+	RELEASE(emu->emu1010.lock)
+{
+	mutex_unlock(&emu->emu1010.lock);
+}
 void snd_emu1010_fpga_write_lock(struct snd_emu10k1 *emu, u32 reg, u32 value);
 void snd_emu1010_fpga_write(struct snd_emu10k1 *emu, u32 reg, u32 value);
 void snd_emu1010_fpga_read(struct snd_emu10k1 *emu, u32 reg, u32 *value);

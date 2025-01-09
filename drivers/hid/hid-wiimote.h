@@ -319,11 +319,13 @@ static inline void wiimote_cmd_abort(struct wiimote_data *wdata)
 }
 
 static inline int wiimote_cmd_acquire(struct wiimote_data *wdata)
+	TRY_ACQUIRE(0, wdata->state.sync)
 {
 	return mutex_lock_interruptible(&wdata->state.sync) ? -ERESTARTSYS : 0;
 }
 
 static inline void wiimote_cmd_acquire_noint(struct wiimote_data *wdata)
+	ACQUIRE(wdata->state.sync)
 {
 	mutex_lock(&wdata->state.sync);
 }
@@ -338,6 +340,7 @@ static inline void wiimote_cmd_set(struct wiimote_data *wdata, int cmd,
 }
 
 static inline void wiimote_cmd_release(struct wiimote_data *wdata)
+	RELEASE(wdata->state.sync)
 {
 	mutex_unlock(&wdata->state.sync);
 }

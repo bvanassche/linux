@@ -14,6 +14,7 @@
 /* IPC set()/get() for kcontrols. */
 static int sof_ipc3_set_get_kcontrol_data(struct snd_sof_control *scontrol,
 					  bool set, bool lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scontrol->scomp);
 	struct sof_ipc_ctrl_data *cdata = scontrol->ipc_control_data;

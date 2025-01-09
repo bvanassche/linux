@@ -1759,6 +1759,7 @@ int v4l2_subdev_s_stream_helper(struct v4l2_subdev *sd, int enable);
  * The state must be unlocked with v4l2_subdev_unlock_state() after use.
  */
 static inline void v4l2_subdev_lock_state(struct v4l2_subdev_state *state)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_lock(state->lock);
 }
@@ -1770,6 +1771,7 @@ static inline void v4l2_subdev_lock_state(struct v4l2_subdev_state *state)
  * Unlocks the given subdev state.
  */
 static inline void v4l2_subdev_unlock_state(struct v4l2_subdev_state *state)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_unlock(state->lock);
 }
@@ -1790,6 +1792,7 @@ static inline void v4l2_subdev_unlock_state(struct v4l2_subdev_state *state)
  */
 static inline void v4l2_subdev_lock_states(struct v4l2_subdev_state *state1,
 					   struct v4l2_subdev_state *state2)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_lock(state1->lock);
 	if (state1->lock != state2->lock)
@@ -1808,6 +1811,7 @@ static inline void v4l2_subdev_lock_states(struct v4l2_subdev_state *state1,
  */
 static inline void v4l2_subdev_unlock_states(struct v4l2_subdev_state *state1,
 					     struct v4l2_subdev_state *state2)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_unlock(state1->lock);
 	if (state1->lock != state2->lock)
@@ -1867,6 +1871,7 @@ v4l2_subdev_get_locked_active_state(struct v4l2_subdev *sd)
  */
 static inline struct v4l2_subdev_state *
 v4l2_subdev_lock_and_get_active_state(struct v4l2_subdev *sd)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (sd->active_state)
 		v4l2_subdev_lock_state(sd->active_state);

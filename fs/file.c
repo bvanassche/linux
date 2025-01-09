@@ -1183,6 +1183,7 @@ static inline bool file_needs_f_pos_lock(struct file *file)
 }
 
 struct fd fdget_pos(unsigned int fd)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct fd f = fdget(fd);
 	struct file *file = fd_file(f);
@@ -1195,6 +1196,7 @@ struct fd fdget_pos(unsigned int fd)
 }
 
 void __f_unlock_pos(struct file *f)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_unlock(&f->f_pos_lock);
 }

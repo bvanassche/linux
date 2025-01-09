@@ -48,21 +48,25 @@ prestera_counter_is_ready(struct prestera_counter_block *block, u32 id)
 }
 
 static void prestera_counter_lock(struct prestera_counter *counter)
+	ACQUIRE(counter->mtx)
 {
 	mutex_lock(&counter->mtx);
 }
 
 static void prestera_counter_unlock(struct prestera_counter *counter)
+	RELEASE(counter->mtx)
 {
 	mutex_unlock(&counter->mtx);
 }
 
 static void prestera_counter_block_lock(struct prestera_counter_block *block)
+	ACQUIRE(block->mtx)
 {
 	mutex_lock(&block->mtx);
 }
 
 static void prestera_counter_block_unlock(struct prestera_counter_block *block)
+	RELEASE(block->mtx)
 {
 	mutex_unlock(&block->mtx);
 }

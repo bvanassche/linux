@@ -20,11 +20,13 @@ struct mlx5_qos_domain {
 };
 
 static void esw_qos_lock(struct mlx5_eswitch *esw)
+	ACQUIRE(esw->qos.domain->lock)
 {
 	mutex_lock(&esw->qos.domain->lock);
 }
 
 static void esw_qos_unlock(struct mlx5_eswitch *esw)
+	RELEASE(esw->qos.domain->lock)
 {
 	mutex_unlock(&esw->qos.domain->lock);
 }

@@ -216,6 +216,7 @@ int amdgpu_xcp_restore_partition_mode(struct amdgpu_xcp_mgr *xcp_mgr)
 }
 
 int amdgpu_xcp_query_partition_mode(struct amdgpu_xcp_mgr *xcp_mgr, u32 flags)
+	NO_THREAD_SAFETY_ANALYSIS /* conditinal locking */
 {
 	int mode;
 

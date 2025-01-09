@@ -816,6 +816,7 @@ static int choose_rate(struct snd_pcm_substream *substream,
 
 /* parameter locking: returns immediately if tried during streaming */
 static int lock_params(struct snd_pcm_runtime *runtime)
+	TRY_ACQUIRE(0, runtime->oss.params_lock)
 {
 	if (mutex_lock_interruptible(&runtime->oss.params_lock))
 		return -ERESTARTSYS;
@@ -827,6 +828,7 @@ static int lock_params(struct snd_pcm_runtime *runtime)
 }
 
 static void unlock_params(struct snd_pcm_runtime *runtime)
+	RELEASE(runtime->oss.params_lock)
 {
 	mutex_unlock(&runtime->oss.params_lock);
 }
@@ -1222,6 +1224,7 @@ static int snd_pcm_oss_capture_position_fixup(struct snd_pcm_substream *substrea
 }
 
 snd_pcm_sframes_t snd_pcm_oss_write3(struct snd_pcm_substream *substream, const char *ptr, snd_pcm_uframes_t frames, int in_kernel)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	int ret;
@@ -1253,6 +1256,7 @@ snd_pcm_sframes_t snd_pcm_oss_write3(struct snd_pcm_substream *substream, const 
 }
 
 snd_pcm_sframes_t snd_pcm_oss_read3(struct snd_pcm_substream *substream, char *ptr, snd_pcm_uframes_t frames, int in_kernel)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	snd_pcm_sframes_t delay;
@@ -1743,6 +1747,7 @@ unlock:
 }
 
 static int snd_pcm_oss_set_rate(struct snd_pcm_oss_file *pcm_oss_file, int rate)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int idx;
 
@@ -1782,6 +1787,7 @@ static int snd_pcm_oss_get_rate(struct snd_pcm_oss_file *pcm_oss_file)
 }
 
 static int snd_pcm_oss_set_channels(struct snd_pcm_oss_file *pcm_oss_file, unsigned int channels)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int idx;
 	if (channels < 1)
@@ -1875,6 +1881,7 @@ static int snd_pcm_oss_get_formats(struct snd_pcm_oss_file *pcm_oss_file)
 }
 
 static int snd_pcm_oss_set_format(struct snd_pcm_oss_file *pcm_oss_file, int format)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int formats, idx;
 	int err;
@@ -1937,6 +1944,7 @@ static int snd_pcm_oss_set_subdivide1(struct snd_pcm_substream *substream, int s
 }
 
 static int snd_pcm_oss_set_subdivide(struct snd_pcm_oss_file *pcm_oss_file, int subdivide)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int err = -EINVAL, idx;
 
@@ -1980,6 +1988,7 @@ static int snd_pcm_oss_set_fragment1(struct snd_pcm_substream *substream, unsign
 }
 
 static int snd_pcm_oss_set_fragment(struct snd_pcm_oss_file *pcm_oss_file, unsigned int val)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int err = -EINVAL, idx;
 

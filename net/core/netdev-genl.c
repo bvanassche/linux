@@ -214,6 +214,7 @@ nla_put_failure:
 }
 
 int netdev_nl_napi_get_doit(struct sk_buff *skb, struct genl_info *info)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct napi_struct *napi;
 	struct sk_buff *rsp;
@@ -285,6 +286,7 @@ netdev_nl_napi_dump_one(struct net_device *netdev, struct sk_buff *rsp,
 }
 
 int netdev_nl_napi_get_dumpit(struct sk_buff *skb, struct netlink_callback *cb)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct netdev_nl_dump_ctx *ctx = netdev_dump_ctx(cb);
 	const struct genl_info *info = genl_info_dump(cb);
@@ -342,6 +344,7 @@ netdev_nl_napi_set_config(struct napi_struct *napi, struct genl_info *info)
 }
 
 int netdev_nl_napi_set_doit(struct sk_buff *skb, struct genl_info *info)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct napi_struct *napi;
 	unsigned int napi_id;
@@ -443,6 +446,7 @@ netdev_nl_queue_fill(struct sk_buff *rsp, struct net_device *netdev, u32 q_idx,
 }
 
 int netdev_nl_queue_get_doit(struct sk_buff *skb, struct genl_info *info)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	u32 q_id, q_type, ifindex;
 	struct net_device *netdev;
@@ -511,6 +515,7 @@ netdev_nl_queue_dump_one(struct net_device *netdev, struct sk_buff *rsp,
 }
 
 int netdev_nl_queue_get_dumpit(struct sk_buff *skb, struct netlink_callback *cb)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct netdev_nl_dump_ctx *ctx = netdev_dump_ctx(cb);
 	const struct genl_info *info = genl_info_dump(cb);

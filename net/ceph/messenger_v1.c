@@ -742,6 +742,7 @@ static int process_banner(struct ceph_connection *con)
 }
 
 static int process_connect(struct ceph_connection *con)
+	REQUIRES(con->mutex)
 {
 	u64 sup_feat = from_msgr(con->msgr)->supported_features;
 	u64 req_feat = from_msgr(con->msgr)->required_features;
@@ -1324,6 +1325,7 @@ static int read_keepalive_ack(struct ceph_connection *con)
  * Read what we can from the socket.
  */
 int ceph_con_v1_try_read(struct ceph_connection *con)
+	REQUIRES(con->mutex)
 {
 	int ret = -1;
 

@@ -135,6 +135,7 @@ static inline int gameport_pin_driver(struct gameport *gameport)
 }
 
 static inline void gameport_unpin_driver(struct gameport *gameport)
+	RELEASE(gameport->drv_mutex)
 {
 	mutex_unlock(&gameport->drv_mutex);
 }

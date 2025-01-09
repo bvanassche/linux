@@ -70,6 +70,7 @@ static void ast_ddc_algo_bit_data_setscl(void *data, int state)
 }
 
 static int ast_ddc_algo_bit_data_pre_xfer(struct i2c_adapter *adapter)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct ast_ddc *ddc = i2c_get_adapdata(adapter);
 	struct ast_device *ast = ddc->ast;
@@ -84,6 +85,7 @@ static int ast_ddc_algo_bit_data_pre_xfer(struct i2c_adapter *adapter)
 }
 
 static void ast_ddc_algo_bit_data_post_xfer(struct i2c_adapter *adapter)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct ast_ddc *ddc = i2c_get_adapdata(adapter);
 	struct ast_device *ast = ddc->ast;

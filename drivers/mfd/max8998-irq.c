@@ -98,6 +98,7 @@ irq_to_max8998_irq(struct max8998_dev *max8998, struct irq_data *data)
 }
 
 static void max8998_irq_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct max8998_dev *max8998 = irq_data_get_irq_chip_data(data);
 
@@ -105,6 +106,7 @@ static void max8998_irq_lock(struct irq_data *data)
 }
 
 static void max8998_irq_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct max8998_dev *max8998 = irq_data_get_irq_chip_data(data);
 	int i;

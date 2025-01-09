@@ -138,6 +138,7 @@ static const struct rc5t583_irq_data rc5t583_irqs[RC5T583_MAX_IRQS] = {
 };
 
 static void rc5t583_irq_lock(struct irq_data *irq_data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct rc5t583 *rc5t583 = irq_data_get_irq_chip_data(irq_data);
 	mutex_lock(&rc5t583->irq_lock);
@@ -196,6 +197,7 @@ static int rc5t583_irq_set_type(struct irq_data *irq_data, unsigned int type)
 }
 
 static void rc5t583_irq_sync_unlock(struct irq_data *irq_data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct rc5t583 *rc5t583 = irq_data_get_irq_chip_data(irq_data);
 	int i;

@@ -491,6 +491,7 @@ int mlx5r_umr_rereg_pd_access(struct mlx5_ib_mr *mr, struct ib_pd *pd,
  * allocation failure is not allowed, so try smaller sizes.
  */
 static void *mlx5r_umr_alloc_xlt(size_t *nents, size_t ent_size, gfp_t gfp_mask)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking + returns a pointer */
 {
 	const size_t xlt_chunk_align = MLX5_UMR_FLEX_ALIGNMENT / ent_size;
 	size_t size;
@@ -539,6 +540,7 @@ static void *mlx5r_umr_alloc_xlt(size_t *nents, size_t ent_size, gfp_t gfp_mask)
 }
 
 static void mlx5r_umr_free_xlt(void *xlt, size_t length)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	if (xlt == xlt_emergency_page) {
 		mutex_unlock(&xlt_emergency_page_mutex);

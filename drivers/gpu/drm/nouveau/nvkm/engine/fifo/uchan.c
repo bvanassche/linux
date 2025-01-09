@@ -73,6 +73,7 @@ struct nvkm_uobj {
 
 static int
 nvkm_uchan_object_fini_1(struct nvkm_oproxy *oproxy, bool suspend)
+	NO_THREAD_SAFETY_ANALYSIS /* needed because of a clang bug? */
 {
 	struct nvkm_uobj *uobj = container_of(oproxy, typeof(*uobj), oproxy);
 	struct nvkm_chan *chan = uobj->chan;

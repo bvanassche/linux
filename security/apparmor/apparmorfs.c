@@ -2084,6 +2084,7 @@ fail2:
  * NOTE: will not unlock root->lock
  */
 static struct aa_ns *__next_ns(struct aa_ns *root, struct aa_ns *ns)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct aa_ns *parent, *next;
 
@@ -2205,6 +2206,7 @@ static struct aa_profile *next_profile(struct aa_ns *root,
  * acquires first ns->lock
  */
 static void *p_start(struct seq_file *f, loff_t *pos)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct aa_profile *profile = NULL;
 	struct aa_ns *root = aa_get_current_ns();
@@ -2249,6 +2251,7 @@ static void *p_next(struct seq_file *f, void *p, loff_t *pos)
  * Release all locking done by p_start/p_next on namespace tree
  */
 static void p_stop(struct seq_file *f, void *p)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct aa_profile *profile = p;
 	struct aa_ns *root = f->private, *ns;

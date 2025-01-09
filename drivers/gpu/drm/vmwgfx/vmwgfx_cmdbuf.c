@@ -204,6 +204,7 @@ static int vmw_cmdbuf_preempt(struct vmw_cmdbuf_man *man, u32 context);
  * @interruptible: Whether to wait interruptible when locking.
  */
 static int vmw_cmdbuf_cur_lock(struct vmw_cmdbuf_man *man, bool interruptible)
+	TRY_ACQUIRE(0, &man->cur_mutex)
 {
 	if (interruptible) {
 		if (mutex_lock_interruptible(&man->cur_mutex))
@@ -221,6 +222,7 @@ static int vmw_cmdbuf_cur_lock(struct vmw_cmdbuf_man *man, bool interruptible)
  * @man: The range manager.
  */
 static void vmw_cmdbuf_cur_unlock(struct vmw_cmdbuf_man *man)
+	RELEASE(&man->cur_mutex)
 {
 	mutex_unlock(&man->cur_mutex);
 }
@@ -999,6 +1001,7 @@ static void *vmw_cmdbuf_reserve_cur(struct vmw_cmdbuf_man *man,
 				    size_t size,
 				    int ctx_id,
 				    bool interruptible)
+	NO_THREAD_SAFETY_ANALYSIS /* returns a pointer */
 {
 	struct vmw_cmdbuf_header *cur;
 	void *ret;
@@ -1043,6 +1046,7 @@ static void *vmw_cmdbuf_reserve_cur(struct vmw_cmdbuf_man *man,
  */
 static void vmw_cmdbuf_commit_cur(struct vmw_cmdbuf_man *man,
 				  size_t size, bool flush)
+	RELEASE(man->cur_mutex)
 {
 	struct vmw_cmdbuf_header *cur = man->cur;
 
@@ -1100,6 +1104,7 @@ void *vmw_cmdbuf_reserve(struct vmw_cmdbuf_man *man, size_t size,
  */
 void vmw_cmdbuf_commit(struct vmw_cmdbuf_man *man, size_t size,
 		       struct vmw_cmdbuf_header *header, bool flush)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	if (!header) {
 		vmw_cmdbuf_commit_cur(man, size, flush);

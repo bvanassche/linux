@@ -1240,6 +1240,7 @@ int __key_link_lock(struct key *keyring,
 		    const struct keyring_index_key *index_key)
 	__acquires(&keyring->sem)
 	__acquires(&keyring_serialise_link_lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (keyring->type != &key_type_keyring)
 		return -ENOTDIR;
@@ -1263,6 +1264,7 @@ int __key_move_lock(struct key *l_keyring, struct key *u_keyring,
 	__acquires(&l_keyring->sem)
 	__acquires(&u_keyring->sem)
 	__acquires(&keyring_serialise_link_lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (l_keyring->type != &key_type_keyring ||
 	    u_keyring->type != &key_type_keyring)
@@ -1387,6 +1389,7 @@ void __key_link_end(struct key *keyring,
 		    struct assoc_array_edit *edit)
 	__releases(&keyring->sem)
 	__releases(&keyring_serialise_link_lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	BUG_ON(index_key->type == NULL);
 	kenter("%d,%s,", keyring->serial, index_key->type->name);

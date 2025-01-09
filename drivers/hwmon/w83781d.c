@@ -1082,6 +1082,7 @@ w83781d_create_files(struct device *dev, int kind, int is_isa)
 /* Return 0 if detection is successful, -ENODEV otherwise */
 static int
 w83781d_detect(struct i2c_client *client, struct i2c_board_info *info)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int val1, val2;
 	struct w83781d_data *isa = w83781d_data_if_isa();

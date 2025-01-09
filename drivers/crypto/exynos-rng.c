@@ -170,6 +170,7 @@ static int exynos_rng_get_random(struct exynos_rng_dev *rng,
 
 /* Re-seed itself from time to time */
 static void exynos_rng_reseed(struct exynos_rng_dev *rng)
+	REQUIRES(rng->lock)
 {
 	unsigned long next_seeding = rng->last_seeding + \
 				     msecs_to_jiffies(EXYNOS_RNG_RESEED_TIME);

@@ -772,7 +772,8 @@ extern struct usb_device *usb_hub_find_child(struct usb_device *hdev,
 #define usb_lock_device_interruptible(udev)	device_lock_interruptible(&(udev)->dev)
 #define usb_trylock_device(udev)		device_trylock(&(udev)->dev)
 extern int usb_lock_device_for_reset(struct usb_device *udev,
-				     const struct usb_interface *iface);
+				     const struct usb_interface *iface)
+	TRY_ACQUIRE(0, udev->dev.mutex);
 
 /* USB port reset for device reinitialization */
 extern int usb_reset_device(struct usb_device *dev);

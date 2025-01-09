@@ -49,6 +49,7 @@ static inline void __buffer_unlink(struct journal_head *jh)
 void __jbd2_log_wait_for_space(journal_t *journal)
 __acquires(&journal->j_state_lock)
 __releases(&journal->j_state_lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int nblocks, space_left;
 	/* assert_spin_locked(&journal->j_state_lock); */
@@ -152,6 +153,7 @@ __flush_batch(journal_t *journal, int *batch_count)
  * Called with j_checkpoint_mutex held.
  */
 int jbd2_log_do_checkpoint(journal_t *journal)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct journal_head	*jh;
 	struct buffer_head	*bh;

@@ -162,6 +162,7 @@ static int jffs2_readdir(struct file *file, struct dir_context *ctx)
 
 static int jffs2_create(struct mnt_idmap *idmap, struct inode *dir_i,
 			struct dentry *dentry, umode_t mode, bool excl)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct jffs2_raw_inode *ri;
 	struct jffs2_inode_info *f, *dir_f;
@@ -284,6 +285,7 @@ static int jffs2_link (struct dentry *old_dentry, struct inode *dir_i, struct de
 
 static int jffs2_symlink (struct mnt_idmap *idmap, struct inode *dir_i,
 			  struct dentry *dentry, const char *target)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct jffs2_inode_info *f, *dir_f;
 	struct jffs2_sb_info *c;
@@ -448,6 +450,7 @@ static int jffs2_symlink (struct mnt_idmap *idmap, struct inode *dir_i,
 
 static int jffs2_mkdir (struct mnt_idmap *idmap, struct inode *dir_i,
 		        struct dentry *dentry, umode_t mode)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct jffs2_inode_info *f, *dir_f;
 	struct jffs2_sb_info *c;
@@ -622,6 +625,7 @@ static int jffs2_rmdir (struct inode *dir_i, struct dentry *dentry)
 
 static int jffs2_mknod (struct mnt_idmap *idmap, struct inode *dir_i,
 		        struct dentry *dentry, umode_t mode, dev_t rdev)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct jffs2_inode_info *f, *dir_f;
 	struct jffs2_sb_info *c;

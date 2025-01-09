@@ -217,6 +217,7 @@ static struct rockchip_pmu *dmc_pmu;
  * Caller must unblock PMU transitions via rockchip_pmu_unblock().
  */
 int rockchip_pmu_block(void)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct rockchip_pmu *pmu;
 	struct generic_pm_domain *genpd;
@@ -280,6 +281,7 @@ EXPORT_SYMBOL_GPL(rockchip_pmu_block);
 
 /* Unblock PMU transitions. */
 void rockchip_pmu_unblock(void)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct rockchip_pmu *pmu;
 	struct generic_pm_domain *genpd;

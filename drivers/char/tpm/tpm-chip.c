@@ -155,6 +155,7 @@ EXPORT_SYMBOL_GPL(tpm_chip_stop);
  * Returns -ERRNO if the chip could not be got.
  */
 int tpm_try_get_ops(struct tpm_chip *chip)
+	TRY_ACQUIRE(0, chip->tpm_mutex)
 {
 	int rc = -EIO;
 
@@ -190,6 +191,7 @@ EXPORT_SYMBOL_GPL(tpm_try_get_ops);
  * be kfree'd.
  */
 void tpm_put_ops(struct tpm_chip *chip)
+	RELEASE(chip->tpm_mutex)
 {
 	tpm_chip_stop(chip);
 	mutex_unlock(&chip->tpm_mutex);
@@ -241,6 +243,7 @@ EXPORT_SYMBOL_GPL(tpm_default_chip);
  * %NULL if the chip is not available.
  */
 struct tpm_chip *tpm_find_get_ops(struct tpm_chip *chip)
+	TRY_ACQUIRE(true, chip->tpm_mutex)
 {
 	int rc;
 

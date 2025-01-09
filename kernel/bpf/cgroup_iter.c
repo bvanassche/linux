@@ -55,6 +55,7 @@ struct cgroup_iter_priv {
 };
 
 static void *cgroup_iter_seq_start(struct seq_file *seq, loff_t *pos)
+	ACQUIRE(cgroup_mutex)
 {
 	struct cgroup_iter_priv *p = seq->private;
 
@@ -86,6 +87,7 @@ static int __cgroup_iter_seq_show(struct seq_file *seq,
 				  struct cgroup_subsys_state *css, int in_stop);
 
 static void cgroup_iter_seq_stop(struct seq_file *seq, void *v)
+	RELEASE(cgroup_mutex)
 {
 	struct cgroup_iter_priv *p = seq->private;
 

@@ -70,6 +70,7 @@ static bool regmap_irq_can_bulk_read_status(struct regmap_irq_chip_data *data)
 }
 
 static void regmap_irq_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct regmap_irq_chip_data *d = irq_data_get_irq_chip_data(data);
 
@@ -77,6 +78,7 @@ static void regmap_irq_lock(struct irq_data *data)
 }
 
 static void regmap_irq_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct regmap_irq_chip_data *d = irq_data_get_irq_chip_data(data);
 	struct regmap *map = d->map;

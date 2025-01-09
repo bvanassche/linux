@@ -809,6 +809,7 @@ torture_print_module_parms(void)
  * the test is currently runnable.  If there is no such flag, pass in NULL.
  */
 bool torture_init_begin(char *ttype, int v)
+	TRY_ACQUIRE(true, fullstop_mutex)
 {
 	mutex_lock(&fullstop_mutex);
 	if (torture_type != NULL) {
@@ -830,6 +831,7 @@ EXPORT_SYMBOL_GPL(torture_init_begin);
  * Tell the torture module that initialization is complete.
  */
 void torture_init_end(void)
+	RELEASE(fullstop_mutex)
 {
 	mutex_unlock(&fullstop_mutex);
 	register_reboot_notifier(&torture_shutdown_nb);

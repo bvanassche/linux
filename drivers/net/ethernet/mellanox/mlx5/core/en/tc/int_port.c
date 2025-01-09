@@ -294,6 +294,7 @@ done:
 void
 mlx5e_tc_int_port_put(struct mlx5e_tc_int_port_priv *priv,
 		      struct mlx5e_tc_int_port *int_port)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	if (!refcount_dec_and_mutex_lock(&int_port->refcnt, &priv->int_ports_lock))
 		return;

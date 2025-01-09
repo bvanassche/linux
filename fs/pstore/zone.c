@@ -1297,6 +1297,7 @@ free_out:
  * Return: 0 on success, others on failure.
  */
 int register_pstore_zone(struct pstore_zone_info *info)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int err = -EINVAL;
 	struct psz_context *cxt = &pstore_zone_cxt;

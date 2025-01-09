@@ -277,11 +277,13 @@ static const struct fatent_operations fat32_ops = {
 };
 
 static inline void lock_fat(struct msdos_sb_info *sbi)
+	ACQUIRE(sbi->fat_lock)
 {
 	mutex_lock(&sbi->fat_lock);
 }
 
 static inline void unlock_fat(struct msdos_sb_info *sbi)
+	RELEASE(sbi->fat_lock)
 {
 	mutex_unlock(&sbi->fat_lock);
 }

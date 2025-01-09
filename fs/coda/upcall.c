@@ -650,6 +650,7 @@ static void coda_unblock_signals(sigset_t *old)
 
 static inline void coda_waitfor_upcall(struct venus_comm *vcp,
 				       struct upc_req *req)
+	REQUIRES(vcp->vc_mutex)
 {
 	DECLARE_WAITQUEUE(wait, current);
 	unsigned long timeout = jiffies + coda_timeout * HZ;

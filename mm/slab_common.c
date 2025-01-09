@@ -1091,6 +1091,7 @@ static void print_slabinfo_header(struct seq_file *m)
 }
 
 static void *slab_start(struct seq_file *m, loff_t *pos)
+	ACQUIRE(slab_mutex)
 {
 	mutex_lock(&slab_mutex);
 	return seq_list_start(&slab_caches, *pos);
@@ -1102,6 +1103,7 @@ static void *slab_next(struct seq_file *m, void *p, loff_t *pos)
 }
 
 static void slab_stop(struct seq_file *m, void *p)
+	RELEASE(slab_mutex)
 {
 	mutex_unlock(&slab_mutex);
 }

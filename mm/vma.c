@@ -2051,6 +2051,7 @@ static void vm_lock_mapping(struct mm_struct *mm, struct address_space *mapping)
  * mm_take_all_locks() can fail if it's interrupted by signals.
  */
 int mm_take_all_locks(struct mm_struct *mm)
+	ACQUIRE(mm_all_locks_mutex)
 {
 	struct vm_area_struct *vma;
 	struct anon_vma_chain *avc;
@@ -2147,6 +2148,7 @@ static void vm_unlock_mapping(struct address_space *mapping)
  * mm_drop_all_locks() returns.
  */
 void mm_drop_all_locks(struct mm_struct *mm)
+	RELEASE(mm_all_locks_mutex)
 {
 	struct vm_area_struct *vma;
 	struct anon_vma_chain *avc;

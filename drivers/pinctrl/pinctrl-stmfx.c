@@ -480,6 +480,7 @@ static int stmfx_pinctrl_irq_set_type(struct irq_data *data, unsigned int type)
 }
 
 static void stmfx_pinctrl_irq_bus_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct gpio_chip *gpio_chip = irq_data_get_irq_chip_data(data);
 	struct stmfx_pinctrl *pctl = gpiochip_get_data(gpio_chip);
@@ -488,6 +489,7 @@ static void stmfx_pinctrl_irq_bus_lock(struct irq_data *data)
 }
 
 static void stmfx_pinctrl_irq_bus_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct gpio_chip *gpio_chip = irq_data_get_irq_chip_data(data);
 	struct stmfx_pinctrl *pctl = gpiochip_get_data(gpio_chip);

@@ -167,6 +167,7 @@ out_unlock:
 
 static void
 mlx5_ct_fs_smfs_matcher_put(struct mlx5_ct_fs *fs, struct mlx5_ct_fs_smfs_matcher *smfs_matcher)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct mlx5_ct_fs_smfs *fs_smfs = mlx5_ct_fs_priv(fs);
 

@@ -364,6 +364,7 @@ static inline bool btrfs_can_zone_reset(struct btrfs_device *device,
 }
 
 static inline void btrfs_zoned_meta_io_lock(struct btrfs_fs_info *fs_info)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (!btrfs_is_zoned(fs_info))
 		return;
@@ -371,6 +372,7 @@ static inline void btrfs_zoned_meta_io_lock(struct btrfs_fs_info *fs_info)
 }
 
 static inline void btrfs_zoned_meta_io_unlock(struct btrfs_fs_info *fs_info)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (!btrfs_is_zoned(fs_info))
 		return;
@@ -391,6 +393,7 @@ static inline void btrfs_clear_treelog_bg(struct btrfs_block_group *bg)
 }
 
 static inline void btrfs_zoned_data_reloc_lock(struct btrfs_inode *inode)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct btrfs_root *root = inode->root;
 
@@ -399,6 +402,7 @@ static inline void btrfs_zoned_data_reloc_lock(struct btrfs_inode *inode)
 }
 
 static inline void btrfs_zoned_data_reloc_unlock(struct btrfs_inode *inode)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct btrfs_root *root = inode->root;
 

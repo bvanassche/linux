@@ -225,6 +225,7 @@ struct mei_cl *mei_hbm_cl_find_by_cmd(struct mei_device *dev, void *buf)
  * Return: 0 on success and < 0 on failure
  */
 int mei_hbm_start_wait(struct mei_device *dev)
+	REQUIRES(dev->device_lock)
 {
 	int ret;
 

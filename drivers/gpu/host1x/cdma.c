@@ -184,6 +184,7 @@ static u32 host1x_pushbuffer_space(struct push_buffer *pb)
  */
 unsigned int host1x_cdma_wait_locked(struct host1x_cdma *cdma,
 				     enum cdma_event event)
+	REQUIRES(cdma->lock)
 {
 	for (;;) {
 		struct push_buffer *pb = &cdma->push_buffer;
@@ -235,6 +236,7 @@ unsigned int host1x_cdma_wait_locked(struct host1x_cdma *cdma,
 static int host1x_cdma_wait_pushbuffer_space(struct host1x *host1x,
 					     struct host1x_cdma *cdma,
 					     unsigned int needed)
+	REQUIRES(cdma->lock)
 {
 	while (true) {
 		struct push_buffer *pb = &cdma->push_buffer;
@@ -546,6 +548,7 @@ int host1x_cdma_deinit(struct host1x_cdma *cdma)
  * Begin a cdma submit
  */
 int host1x_cdma_begin(struct host1x_cdma *cdma, struct host1x_job *job)
+	TRY_ACQUIRE(0, cdma->lock)
 {
 	struct host1x *host1x = cdma_to_host1x(cdma);
 
@@ -590,6 +593,7 @@ int host1x_cdma_begin(struct host1x_cdma *cdma, struct host1x_job *job)
  * Blocks as necessary if the push buffer is full.
  */
 void host1x_cdma_push(struct host1x_cdma *cdma, u32 op1, u32 op2)
+	REQUIRES(cdma->lock)
 {
 	struct host1x *host1x = cdma_to_host1x(cdma);
 	struct push_buffer *pb = &cdma->push_buffer;
@@ -621,6 +625,7 @@ void host1x_cdma_push(struct host1x_cdma *cdma, u32 op1, u32 op2)
  */
 void host1x_cdma_push_wide(struct host1x_cdma *cdma, u32 op1, u32 op2,
 			   u32 op3, u32 op4)
+	REQUIRES(cdma->lock)
 {
 	struct host1x_channel *channel = cdma_to_channel(cdma);
 	struct host1x *host1x = cdma_to_host1x(cdma);
@@ -664,6 +669,7 @@ void host1x_cdma_push_wide(struct host1x_cdma *cdma, u32 op1, u32 op2,
  */
 void host1x_cdma_end(struct host1x_cdma *cdma,
 		     struct host1x_job *job)
+	RELEASE(cdma->lock)
 {
 	struct host1x *host1x = cdma_to_host1x(cdma);
 	bool idle = list_empty(&cdma->sync_queue);

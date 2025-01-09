@@ -103,6 +103,7 @@ static inline bool devl_is_registered(struct devlink *devlink)
 }
 
 static inline void devl_dev_lock(struct devlink *devlink, bool dev_lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (dev_lock)
 		device_lock(devlink->dev);
@@ -110,6 +111,7 @@ static inline void devl_dev_lock(struct devlink *devlink, bool dev_lock)
 }
 
 static inline void devl_dev_unlock(struct devlink *devlink, bool dev_lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	devl_unlock(devlink);
 	if (dev_lock)

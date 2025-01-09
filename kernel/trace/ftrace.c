@@ -4147,6 +4147,7 @@ static void reset_iter_read(struct ftrace_iterator *iter)
 }
 
 static void *t_start(struct seq_file *m, loff_t *pos)
+	ACQUIRE(ftrace_lock)
 {
 	struct ftrace_iterator *iter = m->private;
 	void *p = NULL;
@@ -4202,6 +4203,7 @@ static void *t_start(struct seq_file *m, loff_t *pos)
 }
 
 static void t_stop(struct seq_file *m, void *p)
+	RELEASE(ftrace_lock)
 {
 	mutex_unlock(&ftrace_lock);
 }
@@ -6572,6 +6574,7 @@ g_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void *g_start(struct seq_file *m, loff_t *pos)
+	ACQUIRE(graph_lock)
 {
 	struct ftrace_graph_data *fgd = m->private;
 
@@ -6594,6 +6597,7 @@ static void *g_start(struct seq_file *m, loff_t *pos)
 }
 
 static void g_stop(struct seq_file *m, void *p)
+	RELEASE(graph_lock)
 {
 	mutex_unlock(&graph_lock);
 }
@@ -8123,6 +8127,7 @@ static void ftrace_pid_reset(struct trace_array *tr, int type)
 
 static void *fpid_start(struct seq_file *m, loff_t *pos)
 	__acquires(RCU)
+	ACQUIRE(ftrace_lock)
 {
 	struct trace_pid_list *pid_list;
 	struct trace_array *tr = m->private;
@@ -8152,6 +8157,7 @@ static void *fpid_next(struct seq_file *m, void *v, loff_t *pos)
 
 static void fpid_stop(struct seq_file *m, void *p)
 	__releases(RCU)
+	RELEASE(ftrace_lock)
 {
 	rcu_read_unlock_sched();
 	mutex_unlock(&ftrace_lock);
@@ -8176,6 +8182,7 @@ static const struct seq_operations ftrace_pid_sops = {
 
 static void *fnpid_start(struct seq_file *m, loff_t *pos)
 	__acquires(RCU)
+	ACQUIRE(ftrace_lock)
 {
 	struct trace_pid_list *pid_list;
 	struct trace_array *tr = m->private;

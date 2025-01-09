@@ -91,6 +91,7 @@ static void pmic_irq_disable(struct irq_data *data)
 }
 
 static void pmic_irq_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct mt6397_chip *chip = irq_data_get_irq_chip_data(data);
 
@@ -98,6 +99,7 @@ static void pmic_irq_lock(struct irq_data *data)
 }
 
 static void pmic_irq_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	unsigned int i, top_gp, gp_offset, en_reg, int_regs, shift;
 	struct mt6397_chip *chip = irq_data_get_irq_chip_data(data);

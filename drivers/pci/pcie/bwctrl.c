@@ -160,6 +160,7 @@ static int pcie_bwctrl_change_speed(struct pci_dev *port, u16 target_speed, bool
  */
 int pcie_set_target_speed(struct pci_dev *port, enum pci_bus_speed speed_req,
 			  bool use_lt)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct pci_bus *bus = port->subordinate;
 	u16 target_speed;

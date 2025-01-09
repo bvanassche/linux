@@ -49,12 +49,14 @@ enum hqd_dequeue_request_type {
 
 static void kgd_gfx_v9_lock_srbm(struct amdgpu_device *adev, uint32_t mec, uint32_t pipe,
 			uint32_t queue, uint32_t vmid, uint32_t inst)
+	ACQUIRE(adev->srbm_mutex)
 {
 	mutex_lock(&adev->srbm_mutex);
 	soc15_grbm_select(adev, mec, pipe, queue, vmid, GET_INST(GC, inst));
 }
 
 static void kgd_gfx_v9_unlock_srbm(struct amdgpu_device *adev, uint32_t inst)
+	RELEASE(adev->srbm_mutex)
 {
 	soc15_grbm_select(adev, 0, 0, 0, 0, GET_INST(GC, inst));
 	mutex_unlock(&adev->srbm_mutex);
@@ -62,6 +64,7 @@ static void kgd_gfx_v9_unlock_srbm(struct amdgpu_device *adev, uint32_t inst)
 
 void kgd_gfx_v9_acquire_queue(struct amdgpu_device *adev, uint32_t pipe_id,
 				uint32_t queue_id, uint32_t inst)
+	ACQUIRE(adev->srbm_mutex)
 {
 	uint32_t mec = (pipe_id / adev->gfx.mec.num_pipe_per_mec) + 1;
 	uint32_t pipe = (pipe_id % adev->gfx.mec.num_pipe_per_mec);
@@ -79,6 +82,7 @@ uint64_t kgd_gfx_v9_get_queue_mask(struct amdgpu_device *adev,
 }
 
 void kgd_gfx_v9_release_queue(struct amdgpu_device *adev, uint32_t inst)
+	RELEASE(adev->srbm_mutex)
 {
 	kgd_gfx_v9_unlock_srbm(adev, inst);
 }
@@ -925,6 +929,8 @@ void kgd_gfx_v9_set_vm_context_page_table_base(struct amdgpu_device *adev,
 }
 
 static void lock_spi_csq_mutexes(struct amdgpu_device *adev)
+	ACQUIRE(adev->srbm_mutex)
+	ACQUIRE(adev->grbm_idx_mutex)
 {
 	mutex_lock(&adev->srbm_mutex);
 	mutex_lock(&adev->grbm_idx_mutex);
@@ -932,6 +938,8 @@ static void lock_spi_csq_mutexes(struct amdgpu_device *adev)
 }
 
 static void unlock_spi_csq_mutexes(struct amdgpu_device *adev)
+	RELEASE(adev->grbm_idx_mutex)
+	RELEASE(adev->srbm_mutex)
 {
 	mutex_unlock(&adev->grbm_idx_mutex);
 	mutex_unlock(&adev->srbm_mutex);

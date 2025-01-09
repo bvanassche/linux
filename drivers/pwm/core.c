@@ -32,6 +32,7 @@ static DEFINE_MUTEX(pwm_lock);
 static DEFINE_IDR(pwm_chips);
 
 static void pwmchip_lock(struct pwm_chip *chip)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (chip->atomic)
 		spin_lock(&chip->atomic_lock);
@@ -40,6 +41,7 @@ static void pwmchip_lock(struct pwm_chip *chip)
 }
 
 static void pwmchip_unlock(struct pwm_chip *chip)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (chip->atomic)
 		spin_unlock(&chip->atomic_lock);
@@ -1385,6 +1387,7 @@ ATTRIBUTE_GROUPS(pwm_chip);
 static struct pwm_export *pwm_class_get_state(struct device *pwmchip_dev,
 					      struct pwm_device *pwm,
 					      struct pwm_state *state)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct device *pwm_dev;
 	struct pwm_export *export;
@@ -1408,6 +1411,7 @@ static struct pwm_export *pwm_class_get_state(struct device *pwmchip_dev,
 static int pwm_class_apply_state(struct pwm_export *export,
 				 struct pwm_device *pwm,
 				 struct pwm_state *state)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	int ret = pwm_apply_might_sleep(pwm, state);
 
@@ -1418,6 +1422,7 @@ static int pwm_class_apply_state(struct pwm_export *export,
 }
 
 static int pwm_class_resume_npwm(struct device *pwmchip_dev, unsigned int npwm)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct pwm_chip *chip = pwmchip_from_dev(pwmchip_dev);
 	unsigned int i;
@@ -1449,6 +1454,7 @@ static int pwm_class_resume_npwm(struct device *pwmchip_dev, unsigned int npwm)
 }
 
 static int pwm_class_suspend(struct device *pwmchip_dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct pwm_chip *chip = pwmchip_from_dev(pwmchip_dev);
 	unsigned int i;
@@ -2230,6 +2236,7 @@ static void pwm_dbg_show(struct pwm_chip *chip, struct seq_file *s)
 }
 
 static void *pwm_seq_start(struct seq_file *s, loff_t *pos)
+	ACQUIRE(pwm_lock)
 {
 	unsigned long id = *pos;
 	void *ret;
@@ -2255,6 +2262,7 @@ static void *pwm_seq_next(struct seq_file *s, void *v, loff_t *pos)
 }
 
 static void pwm_seq_stop(struct seq_file *s, void *v)
+	RELEASE(pwm_lock)
 {
 	mutex_unlock(&pwm_lock);
 }

@@ -68,6 +68,7 @@ static const struct class kfd_class = {
 };
 
 static inline struct kfd_process_device *kfd_lock_pdd_by_id(struct kfd_process *p, __u32 gpu_id)
+	NO_THREAD_SAFETY_ANALYSIS /* returns a pointer */
 {
 	struct kfd_process_device *pdd;
 
@@ -82,6 +83,7 @@ static inline struct kfd_process_device *kfd_lock_pdd_by_id(struct kfd_process *
 }
 
 static inline void kfd_unlock_pdd(struct kfd_process_device *pdd)
+	NO_THREAD_SAFETY_ANALYSIS /* to match the locking function */
 {
 	mutex_unlock(&pdd->process->mutex);
 }
@@ -2749,6 +2751,7 @@ static int kfd_ioctl_criu(struct file *filep, struct kfd_process *p, void *data)
 
 static int runtime_enable(struct kfd_process *p, uint64_t r_debug,
 			bool enable_ttmp_setup)
+	REQUIRES(p->mutex)
 {
 	int i = 0, ret = 0;
 
@@ -2817,6 +2820,7 @@ retry:
 }
 
 static int runtime_disable(struct kfd_process *p)
+	REQUIRES(p->mutex)
 {
 	int i = 0, ret;
 	bool was_enabled = p->runtime_info.runtime_state == DEBUG_RUNTIME_STATE_ENABLED;

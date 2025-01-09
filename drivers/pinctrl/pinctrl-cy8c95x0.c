@@ -971,6 +971,7 @@ static void cy8c95x0_irq_unmask(struct irq_data *d)
 }
 
 static void cy8c95x0_irq_bus_lock(struct irq_data *d)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct cy8c95x0_pinctrl *chip = gpiochip_get_data(gc);
@@ -979,6 +980,7 @@ static void cy8c95x0_irq_bus_lock(struct irq_data *d)
 }
 
 static void cy8c95x0_irq_bus_sync_unlock(struct irq_data *d)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct cy8c95x0_pinctrl *chip = gpiochip_get_data(gc);

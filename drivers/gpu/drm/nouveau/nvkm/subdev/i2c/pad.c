@@ -44,6 +44,7 @@ nvkm_i2c_pad_mode(struct nvkm_i2c_pad *pad, enum nvkm_i2c_pad_mode mode)
 
 void
 nvkm_i2c_pad_release(struct nvkm_i2c_pad *pad)
+	RELEASE(pad->mutex)
 {
 	PAD_TRACE(pad, "release");
 	if (pad->mode == NVKM_I2C_PAD_OFF)
@@ -53,6 +54,7 @@ nvkm_i2c_pad_release(struct nvkm_i2c_pad *pad)
 
 int
 nvkm_i2c_pad_acquire(struct nvkm_i2c_pad *pad, enum nvkm_i2c_pad_mode mode)
+	TRY_ACQUIRE(0, pad->mutex)
 {
 	PAD_TRACE(pad, "acquire");
 	mutex_lock(&pad->mutex);

@@ -70,6 +70,7 @@ nvkm_chan_cctx_bind(struct nvkm_chan *chan, struct nvkm_engn *engn, struct nvkm_
 
 void
 nvkm_chan_cctx_put(struct nvkm_chan *chan, struct nvkm_cctx **pcctx)
+	NO_THREAD_SAFETY_ANALYSIS /* needed because of a clang bug? */
 {
 	struct nvkm_cctx *cctx = *pcctx;
 
@@ -104,7 +105,7 @@ nvkm_chan_cctx_get(struct nvkm_chan *chan, struct nvkm_engn *engn, struct nvkm_c
 	if (cctx) {
 		refcount_inc(&cctx->refs);
 		*pcctx = cctx;
-		mutex_unlock(&chan->cgrp->mutex);
+		mutex_unlock(&cgrp->mutex);
 		return 0;
 	}
 

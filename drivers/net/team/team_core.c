@@ -2299,6 +2299,7 @@ err_msg_put:
  * Since dev gets held here, that ensures dev won't disappear in between.
  */
 static struct team *team_nl_team_get(struct genl_info *info)
+	NO_THREAD_SAFETY_ANALYSIS /* TRY_ACQUIRE() doesn't support pointers */
 {
 	struct net *net = genl_info_net(info);
 	int ifindex;
@@ -2321,6 +2322,7 @@ static struct team *team_nl_team_get(struct genl_info *info)
 }
 
 static void team_nl_team_put(struct team *team)
+	NO_THREAD_SAFETY_ANALYSIS /* to match the above function */
 {
 	mutex_unlock(&team->lock);
 	dev_put(team->dev);

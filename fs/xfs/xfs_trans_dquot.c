@@ -389,6 +389,7 @@ STATIC void
 xfs_trans_dqlockedjoin(
 	struct xfs_trans	*tp,
 	struct xfs_dqtrx	*q)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	unsigned int		i;
 	ASSERT(q[0].qt_dquot != NULL);
@@ -475,6 +476,7 @@ xfs_trans_apply_dquot_deltas_hook(
 void
 xfs_trans_apply_dquot_deltas(
 	struct xfs_trans	*tp)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int			i, j;
 	struct xfs_dquot	*dqp;
@@ -662,6 +664,7 @@ void
 xfs_trans_unreserve_and_mod_dquots(
 	struct xfs_trans	*tp,
 	bool			already_locked)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int			i, j;
 	struct xfs_dquot	*dqp;

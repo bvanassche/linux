@@ -358,6 +358,7 @@ fail:
  */
 int drm_mode_gamma_set_ioctl(struct drm_device *dev,
 			     void *data, struct drm_file *file_priv)
+	NO_THREAD_SAFETY_ANALYSIS /* DRM_MODESET_LOCK */
 {
 	struct drm_mode_crtc_lut *crtc_lut = data;
 	struct drm_crtc *crtc;

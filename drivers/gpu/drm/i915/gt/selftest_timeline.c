@@ -856,6 +856,7 @@ static int setup_watcher(struct hwsp_watcher *w, struct intel_gt *gt,
 }
 
 static void switch_tl_lock(struct i915_request *from, struct i915_request *to)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	/* some light mutex juggling required; think co-routines */
 

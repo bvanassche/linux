@@ -5832,6 +5832,7 @@ static void unmap_ref_private(struct mm_struct *mm, struct vm_area_struct *vma,
  */
 static vm_fault_t hugetlb_wp(struct folio *pagecache_folio,
 		       struct vm_fault *vmf)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct mm_struct *mm = vma->vm_mm;
@@ -6072,6 +6073,7 @@ int hugetlb_add_to_page_cache(struct folio *folio, struct address_space *mapping
 static inline vm_fault_t hugetlb_handle_userfault(struct vm_fault *vmf,
 						  struct address_space *mapping,
 						  unsigned long reason)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	u32 hash;
 
@@ -6105,6 +6107,7 @@ static bool hugetlb_pte_stable(struct hstate *h, struct mm_struct *mm, unsigned 
 
 static vm_fault_t hugetlb_no_page(struct address_space *mapping,
 			struct vm_fault *vmf)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct mm_struct *mm = vma->vm_mm;
@@ -6346,6 +6349,7 @@ u32 hugetlb_fault_mutex_hash(struct address_space *mapping, pgoff_t idx)
 
 vm_fault_t hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 			unsigned long address, unsigned int flags)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	vm_fault_t ret;
 	u32 hash;

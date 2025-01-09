@@ -145,6 +145,7 @@ static void hisi_spi_nor_init(struct hifmc_host *host)
 }
 
 static int hisi_spi_nor_prep(struct spi_nor *nor)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct hifmc_priv *priv = nor->priv;
 	struct hifmc_host *host = priv->host;
@@ -168,6 +169,7 @@ out:
 }
 
 static void hisi_spi_nor_unprep(struct spi_nor *nor)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct hifmc_priv *priv = nor->priv;
 	struct hifmc_host *host = priv->host;

@@ -240,6 +240,7 @@ static inline int ubifs_tnc_lookup(struct ubifs_info *c,
  * 'ubifs_release_lprops()'.
  */
 static inline void ubifs_get_lprops(struct ubifs_info *c)
+	ACQUIRE(c->lp_mutex)
 {
 	mutex_lock(&c->lp_mutex);
 }
@@ -252,6 +253,7 @@ static inline void ubifs_get_lprops(struct ubifs_info *c)
  * unlock lprops.
  */
 static inline void ubifs_release_lprops(struct ubifs_info *c)
+	RELEASE(c->lp_mutex)
 {
 	ubifs_assert(c, mutex_is_locked(&c->lp_mutex));
 	ubifs_assert(c, c->lst.empty_lebs >= 0 &&

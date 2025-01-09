@@ -2790,6 +2790,7 @@ out_free_resp:
 static bool iwl_mvm_query_wakeup_reasons(struct iwl_mvm *mvm,
 					 struct ieee80211_vif *vif,
 					 struct iwl_wowlan_status_data *status)
+	RELEASE(mvm->mutex)
 {
 	int i;
 	bool keep = false;
@@ -2983,6 +2984,7 @@ struct iwl_d3_data {
 static void iwl_mvm_query_netdetect_reasons(struct iwl_mvm *mvm,
 					    struct ieee80211_vif *vif,
 					    struct iwl_d3_data *d3_data)
+	RELEASE(mvm->mutex)
 {
 	struct cfg80211_wowlan_nd_info *net_detect = NULL;
 	struct cfg80211_wowlan_wakeup wakeup = {
@@ -3147,6 +3149,7 @@ static bool
 iwl_mvm_choose_query_wakeup_reasons(struct iwl_mvm *mvm,
 				    struct ieee80211_vif *vif,
 				    struct iwl_d3_data *d3_data)
+	RELEASE(mvm->mutex)
 {
 	lockdep_assert_held(&mvm->mutex);
 

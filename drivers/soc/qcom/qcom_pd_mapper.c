@@ -665,6 +665,7 @@ static int qcom_pdm_probe(struct auxiliary_device *auxdev,
 }
 
 static void qcom_pdm_remove(struct auxiliary_device *auxdev)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct qcom_pdm_data *data;
 

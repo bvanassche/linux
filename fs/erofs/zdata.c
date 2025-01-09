@@ -707,6 +707,7 @@ static bool z_erofs_get_pcluster(struct z_erofs_pcluster *pcl)
 }
 
 static int z_erofs_register_pcluster(struct z_erofs_frontend *fe)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct erofs_map_blocks *map = &fe->map;
 	struct super_block *sb = fe->inode->i_sb;
@@ -776,6 +777,7 @@ err_out:
 }
 
 static int z_erofs_pcluster_begin(struct z_erofs_frontend *fe)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct erofs_map_blocks *map = &fe->map;
 	struct super_block *sb = fe->inode->i_sb;
@@ -935,6 +937,7 @@ static void z_erofs_put_pcluster(struct erofs_sb_info *sbi,
 }
 
 static void z_erofs_pcluster_end(struct z_erofs_frontend *fe)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct z_erofs_pcluster *pcl = fe->pcl;
 

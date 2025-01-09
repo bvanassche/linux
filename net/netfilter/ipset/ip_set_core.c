@@ -72,12 +72,14 @@ MODULE_ALIAS_NFNL_SUBSYS(NFNL_SUBSYS_IPSET);
 
 static void
 ip_set_type_lock(void)
+	ACQUIRE(ip_set_type_mutex)
 {
 	mutex_lock(&ip_set_type_mutex);
 }
 
 static void
 ip_set_type_unlock(void)
+	RELEASE(ip_set_type_mutex)
 {
 	mutex_unlock(&ip_set_type_mutex);
 }

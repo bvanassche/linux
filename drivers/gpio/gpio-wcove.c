@@ -268,6 +268,7 @@ static int wcove_irq_type(struct irq_data *data, unsigned int type)
 }
 
 static void wcove_bus_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct gpio_chip *chip = irq_data_get_irq_chip_data(data);
 	struct wcove_gpio *wg = gpiochip_get_data(chip);
@@ -276,6 +277,7 @@ static void wcove_bus_lock(struct irq_data *data)
 }
 
 static void wcove_bus_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct gpio_chip *chip = irq_data_get_irq_chip_data(data);
 	struct wcove_gpio *wg = gpiochip_get_data(chip);

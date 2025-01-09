@@ -19,6 +19,7 @@
 #include <linux/mfd/mt6397/registers.h>
 
 static void mt6397_irq_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct mt6397_chip *mt6397 = irq_data_get_irq_chip_data(data);
 
@@ -26,6 +27,7 @@ static void mt6397_irq_lock(struct irq_data *data)
 }
 
 static void mt6397_irq_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct mt6397_chip *mt6397 = irq_data_get_irq_chip_data(data);
 

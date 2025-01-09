@@ -942,6 +942,7 @@ queue_message(struct vchiq_state *state, struct vchiq_service *service,
 	      ssize_t (*copy_callback)(void *context, void *dest,
 				       size_t offset, size_t maxsize),
 	      void *context, size_t size, int flags)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct vchiq_shared_state *local;
 	struct vchiq_service_quota *quota = NULL;

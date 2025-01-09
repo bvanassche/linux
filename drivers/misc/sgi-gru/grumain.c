@@ -762,6 +762,7 @@ static int is_gts_stealable(struct gru_thread_state *gts,
 
 static void gts_stolen(struct gru_thread_state *gts,
 		struct gru_blade_state *bs)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	if (is_kernel_context(gts)) {
 		up_write(&bs->bs_kgts_sema);

@@ -44,6 +44,7 @@ static irqreturn_t crystal_cove_charger_irq(int irq, void *data)
 }
 
 static void crystal_cove_charger_irq_bus_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct crystal_cove_charger_data *charger = irq_data_get_irq_chip_data(data);
 
@@ -51,6 +52,7 @@ static void crystal_cove_charger_irq_bus_lock(struct irq_data *data)
 }
 
 static void crystal_cove_charger_irq_bus_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct crystal_cove_charger_data *charger = irq_data_get_irq_chip_data(data);
 

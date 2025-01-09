@@ -5402,6 +5402,7 @@ static void rt5677_resume_irq_check(struct work_struct *work)
 }
 
 static void rt5677_irq_bus_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct rt5677_priv *rt5677 = irq_data_get_irq_chip_data(data);
 
@@ -5409,6 +5410,7 @@ static void rt5677_irq_bus_lock(struct irq_data *data)
 }
 
 static void rt5677_irq_bus_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct rt5677_priv *rt5677 = irq_data_get_irq_chip_data(data);
 

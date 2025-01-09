@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0
 # Makefile for staging directory
 
+KBUILD_CFLAGS += -Wno-thread-safety
+
 obj-y				+= media/
 obj-$(CONFIG_RTL8723BS)		+= rtl8723bs/
 obj-$(CONFIG_OCTEON_ETHERNET)	+= octeon/

@@ -381,6 +381,7 @@ static void kw_i2c_timeout(struct timer_list *t)
 }
 
 static int kw_i2c_open(struct pmac_i2c_bus *bus)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct pmac_i2c_host_kw *host = bus->hostdata;
 	mutex_lock(&host->mutex);
@@ -388,6 +389,7 @@ static int kw_i2c_open(struct pmac_i2c_bus *bus)
 }
 
 static void kw_i2c_close(struct pmac_i2c_bus *bus)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct pmac_i2c_host_kw *host = bus->hostdata;
 	mutex_unlock(&host->mutex);
@@ -1092,6 +1094,7 @@ EXPORT_SYMBOL_GPL(pmac_low_i2c_unlock);
 
 
 int pmac_i2c_open(struct pmac_i2c_bus *bus, int polled)
+	TRY_ACQUIRE(0, bus->mutex)
 {
 	int rc;
 
@@ -1109,6 +1112,7 @@ int pmac_i2c_open(struct pmac_i2c_bus *bus, int polled)
 EXPORT_SYMBOL_GPL(pmac_i2c_open);
 
 void pmac_i2c_close(struct pmac_i2c_bus *bus)
+	RELEASE(bus->mutex)
 {
 	WARN_ON(!bus->opened);
 	if (bus->close)
@@ -1232,6 +1236,7 @@ struct pmac_i2c_pf_inst
 };
 
 static void* pmac_i2c_do_begin(struct pmf_function *func, struct pmf_args *args)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct pmac_i2c_pf_inst *inst;
 	struct pmac_i2c_bus	*bus;
@@ -1265,6 +1270,7 @@ static void* pmac_i2c_do_begin(struct pmf_function *func, struct pmf_args *args)
 }
 
 static void pmac_i2c_do_end(struct pmf_function *func, void *instdata)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct pmac_i2c_pf_inst *inst = instdata;
 

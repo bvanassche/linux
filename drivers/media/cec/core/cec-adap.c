@@ -779,6 +779,7 @@ unlock:
  */
 int cec_transmit_msg_fh(struct cec_adapter *adap, struct cec_msg *msg,
 			struct cec_fh *fh, bool block)
+	REQUIRES(adap->lock)
 {
 	struct cec_data *data;
 	bool is_raw = msg_is_raw(msg);
@@ -1305,6 +1306,7 @@ EXPORT_SYMBOL_GPL(cec_received_msg_ts);
 static int cec_config_log_addr(struct cec_adapter *adap,
 			       unsigned int idx,
 			       unsigned int log_addr)
+	REQUIRES(adap->lock)
 {
 	struct cec_log_addrs *las = &adap->log_addrs;
 	struct cec_msg msg = { };
@@ -1607,6 +1609,7 @@ unconfigure:
  * This function is called with adap->lock held.
  */
 static void cec_claim_log_addrs(struct cec_adapter *adap, bool block)
+	REQUIRES(adap->lock)
 {
 	if (WARN_ON(adap->is_claiming_log_addrs ||
 		    adap->is_configuring || adap->is_configured))
@@ -1695,6 +1698,7 @@ int cec_adap_enable(struct cec_adapter *adap)
  * This function is called with adap->lock held.
  */
 void __cec_s_phys_addr(struct cec_adapter *adap, u16 phys_addr, bool block)
+	REQUIRES(adap->lock)
 {
 	bool becomes_invalid = phys_addr == CEC_PHYS_ADDR_INVALID;
 	bool is_invalid = adap->phys_addr == CEC_PHYS_ADDR_INVALID;
@@ -1783,6 +1787,7 @@ EXPORT_SYMBOL_GPL(cec_s_conn_info);
  */
 int __cec_s_log_addrs(struct cec_adapter *adap,
 		      struct cec_log_addrs *log_addrs, bool block)
+	REQUIRES(adap->lock)
 {
 	u16 type_mask = 0;
 	int err;

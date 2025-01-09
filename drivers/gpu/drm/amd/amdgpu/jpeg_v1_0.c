@@ -602,12 +602,13 @@ static void jpeg_v1_0_set_irq_funcs(struct amdgpu_device *adev)
 }
 
 static void jpeg_v1_0_ring_begin_use(struct amdgpu_ring *ring)
+	ACQUIRE(ring->adev->vcn.vcn1_jpeg1_workaround)
 {
 	struct	amdgpu_device *adev = ring->adev;
 	bool	set_clocks = !cancel_delayed_work_sync(&adev->vcn.idle_work);
 	int		cnt = 0;
 
-	mutex_lock(&adev->vcn.vcn1_jpeg1_workaround);
+	mutex_lock(&ring->adev->vcn.vcn1_jpeg1_workaround);
 
 	if (amdgpu_fence_wait_empty(&adev->vcn.inst->ring_dec))
 		DRM_ERROR("JPEG dec: vcn dec ring may not be empty\n");

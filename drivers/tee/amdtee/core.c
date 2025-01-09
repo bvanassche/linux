@@ -218,6 +218,7 @@ unlock:
 
 /* mutex must be held by caller */
 static void destroy_session(struct kref *ref)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct amdtee_session *sess = container_of(ref, struct amdtee_session,
 						   refcount);

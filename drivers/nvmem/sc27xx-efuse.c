@@ -81,6 +81,7 @@ static const struct sc27xx_efuse_variant_data sc2730_edata = {
  * the multiple subsystems.
  */
 static int sc27xx_efuse_lock(struct sc27xx_efuse *efuse)
+	TRY_ACQUIRE(0, efuse->mutex)
 {
 	int ret;
 
@@ -98,6 +99,7 @@ static int sc27xx_efuse_lock(struct sc27xx_efuse *efuse)
 }
 
 static void sc27xx_efuse_unlock(struct sc27xx_efuse *efuse)
+	RELEASE(efuse->mutex)
 {
 	hwspin_unlock_raw(efuse->hwlock);
 	mutex_unlock(&efuse->mutex);

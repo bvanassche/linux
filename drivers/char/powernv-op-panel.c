@@ -113,6 +113,7 @@ static ssize_t oppanel_write(struct file *filp, const char __user *userbuf,
 }
 
 static int oppanel_open(struct inode *inode, struct file *filp)
+	TRY_ACQUIRE(0, oppanel_mutex)
 {
 	if (!mutex_trylock(&oppanel_mutex)) {
 		pr_debug("Device Busy\n");
@@ -122,6 +123,7 @@ static int oppanel_open(struct inode *inode, struct file *filp)
 }
 
 static int oppanel_release(struct inode *inode, struct file *filp)
+	RELEASE(oppanel_mutex)
 {
 	mutex_unlock(&oppanel_mutex);
 	return 0;

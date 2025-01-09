@@ -794,6 +794,7 @@ static inline u16 idpf_get_max_tx_hdr_size(struct idpf_adapter *adapter)
  * destruction.
  */
 static inline void idpf_vport_ctrl_lock(struct net_device *netdev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct idpf_netdev_priv *np = netdev_priv(netdev);
 
@@ -805,6 +806,7 @@ static inline void idpf_vport_ctrl_lock(struct net_device *netdev)
  * @netdev: Network interface device structure
  */
 static inline void idpf_vport_ctrl_unlock(struct net_device *netdev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct idpf_netdev_priv *np = netdev_priv(netdev);
 

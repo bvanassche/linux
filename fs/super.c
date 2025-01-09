@@ -1372,6 +1372,7 @@ EXPORT_SYMBOL(sget_dev);
  */
 static struct super_block *bdev_super_lock(struct block_device *bdev, bool excl)
 	__releases(&bdev->bd_holder_lock)
+	RELEASE(bdev->bd_holder_lock)
 {
 	struct super_block *sb = bdev->bd_holder;
 	bool locked;
@@ -1407,6 +1408,7 @@ static struct super_block *bdev_super_lock(struct block_device *bdev, bool excl)
 }
 
 static void fs_bdev_mark_dead(struct block_device *bdev, bool surprise)
+	RELEASE(bdev->bd_holder_lock)
 {
 	struct super_block *sb;
 
@@ -1425,6 +1427,7 @@ static void fs_bdev_mark_dead(struct block_device *bdev, bool surprise)
 }
 
 static void fs_bdev_sync(struct block_device *bdev)
+	RELEASE(bdev->bd_holder_lock)
 {
 	struct super_block *sb;
 
@@ -1437,6 +1440,7 @@ static void fs_bdev_sync(struct block_device *bdev)
 }
 
 static struct super_block *get_bdev_super(struct block_device *bdev)
+	RELEASE(bdev->bd_holder_lock)
 {
 	bool active = false;
 	struct super_block *sb;
@@ -1467,6 +1471,7 @@ static struct super_block *get_bdev_super(struct block_device *bdev)
  *         failed a negative error code is returned.
  */
 static int fs_bdev_freeze(struct block_device *bdev)
+	RELEASE(bdev->bd_holder_lock)
 {
 	struct super_block *sb;
 	int error = 0;
@@ -1507,6 +1512,7 @@ static int fs_bdev_freeze(struct block_device *bdev)
  *         freeze or might be frozen from other block devices).
  */
 static int fs_bdev_thaw(struct block_device *bdev)
+	RELEASE(bdev->bd_holder_lock)
 {
 	struct super_block *sb;
 	int error;

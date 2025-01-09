@@ -691,6 +691,7 @@ EXPORT_SYMBOL(drm_crtc_check_viewport);
  */
 int drm_mode_setcrtc(struct drm_device *dev, void *data,
 		     struct drm_file *file_priv)
+	NO_THREAD_SAFETY_ANALYSIS /* DRM_MODESET_LOCK */
 {
 	struct drm_mode_config *config = &dev->mode_config;
 	struct drm_mode_crtc *crtc_req = data;

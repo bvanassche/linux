@@ -456,6 +456,7 @@ static int dm9051_mdio_write(struct mii_bus *bus, int addr, int regnum, u16 val)
 }
 
 static void dm9051_reg_lock_mutex(void *dbcontext)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct board_info *db = dbcontext;
 
@@ -463,6 +464,7 @@ static void dm9051_reg_lock_mutex(void *dbcontext)
 }
 
 static void dm9051_reg_unlock_mutex(void *dbcontext)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct board_info *db = dbcontext;
 

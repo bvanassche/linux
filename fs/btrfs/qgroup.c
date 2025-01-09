@@ -3315,6 +3315,7 @@ static int qgroup_snapshot_quick_inherit(struct btrfs_fs_info *fs_info,
 int btrfs_qgroup_inherit(struct btrfs_trans_handle *trans, u64 srcid,
 			 u64 objectid, u64 inode_rootid,
 			 struct btrfs_qgroup_inherit *inherit)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int ret = 0;
 	u64 *i_qgroups;

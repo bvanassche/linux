@@ -556,11 +556,13 @@ static int xgbe_phy_sfp_get_mux(struct xgbe_prv_data *pdata)
 }
 
 static void xgbe_phy_put_comm_ownership(struct xgbe_prv_data *pdata)
+	RELEASE(xgbe_phy_comm_lock)
 {
 	mutex_unlock(&xgbe_phy_comm_lock);
 }
 
 static int xgbe_phy_get_comm_ownership(struct xgbe_prv_data *pdata)
+	TRY_ACQUIRE(0, xgbe_phy_comm_lock)
 {
 	struct xgbe_phy_data *phy_data = pdata->phy_data;
 	unsigned long timeout;

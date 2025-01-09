@@ -825,6 +825,7 @@ static int cfi_intelext_partition_fixup(struct mtd_info *mtd,
  *  *********** CHIP ACCESS FUNCTIONS ***********
  */
 static int chip_ready (struct map_info *map, struct flchip *chip, unsigned long adr, int mode)
+	REQUIRES(chip->mutex)
 {
 	DECLARE_WAITQUEUE(wait, current);
 	struct cfi_private *cfi = map->fldrv_priv;
@@ -942,6 +943,7 @@ static int chip_ready (struct map_info *map, struct flchip *chip, unsigned long 
 }
 
 static int get_chip(struct map_info *map, struct flchip *chip, unsigned long adr, int mode)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int ret;
 	DECLARE_WAITQUEUE(wait, current);
@@ -1038,6 +1040,7 @@ static int get_chip(struct map_info *map, struct flchip *chip, unsigned long adr
 }
 
 static void put_chip(struct map_info *map, struct flchip *chip, unsigned long adr)
+	REQUIRES(chip->mutex)
 {
 	struct cfi_private *cfi = map->fldrv_priv;
 
@@ -1290,6 +1293,7 @@ static int inval_cache_and_wait_for_operation(
 		struct map_info *map, struct flchip *chip,
 		unsigned long cmd_adr, unsigned long inval_adr, int inval_len,
 		unsigned int chip_op_time, unsigned int chip_op_time_max)
+	REQUIRES(chip->mutex)
 {
 	struct cfi_private *cfi = map->fldrv_priv;
 	map_word status, status_OK = CMD(0x80);

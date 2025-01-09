@@ -3134,6 +3134,7 @@ void folio_migrate_ksm(struct folio *newfolio, struct folio *folio)
 
 #ifdef CONFIG_MEMORY_HOTREMOVE
 static void wait_while_offlining(void)
+	REQUIRES(ksm_thread_mutex)
 {
 	while (ksm_run & KSM_RUN_OFFLINE) {
 		mutex_unlock(&ksm_thread_mutex);

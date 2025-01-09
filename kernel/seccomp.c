@@ -1918,6 +1918,7 @@ static bool has_duplicate_listener(struct seccomp_filter *new_child)
  */
 static long seccomp_set_mode_filter(unsigned int flags,
 				    const char __user *filter)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	const unsigned long seccomp_mode = SECCOMP_MODE_FILTER;
 	struct seccomp_filter *prepared = NULL;

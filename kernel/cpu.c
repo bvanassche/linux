@@ -464,11 +464,13 @@ EXPORT_SYMBOL_GPL(cpuhp_tasks_frozen);
  * attempting to serialize the updates to cpu_online_mask & cpu_present_mask.
  */
 void cpu_maps_update_begin(void)
+	ACQUIRE(cpu_add_remove_lock)
 {
 	mutex_lock(&cpu_add_remove_lock);
 }
 
 void cpu_maps_update_done(void)
+	RELEASE(cpu_add_remove_lock)
 {
 	mutex_unlock(&cpu_add_remove_lock);
 }

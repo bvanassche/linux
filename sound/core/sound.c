@@ -117,6 +117,7 @@ EXPORT_SYMBOL(snd_lookup_minor_data);
 
 #ifdef CONFIG_MODULES
 static struct snd_minor *autoload_device(unsigned int minor)
+	REQUIRES(sound_mutex)
 {
 	int dev;
 	mutex_unlock(&sound_mutex); /* release lock temporarily */

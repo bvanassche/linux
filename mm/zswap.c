@@ -897,6 +897,7 @@ static int zswap_cpu_comp_dead(unsigned int cpu, struct hlist_node *node)
 }
 
 static struct crypto_acomp_ctx *acomp_ctx_get_cpu_lock(struct zswap_pool *pool)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of any argument */
 {
 	struct crypto_acomp_ctx *acomp_ctx;
 
@@ -917,6 +918,7 @@ static struct crypto_acomp_ctx *acomp_ctx_get_cpu_lock(struct zswap_pool *pool)
 }
 
 static void acomp_ctx_put_unlock(struct crypto_acomp_ctx *acomp_ctx)
+	NO_THREAD_SAFETY_ANALYSIS /* to match acomp_ctx_get_cpu_lock() */
 {
 	mutex_unlock(&acomp_ctx->mutex);
 }

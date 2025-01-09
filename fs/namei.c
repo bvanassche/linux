@@ -3177,6 +3177,7 @@ static inline int may_create(struct mnt_idmap *idmap,
 
 // p1 != p2, both are on the same filesystem, ->s_vfs_rename_mutex is held
 static struct dentry *lock_two_directories(struct dentry *p1, struct dentry *p2)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct dentry *p = p1, *q = p2, *r;
 
@@ -3212,6 +3213,7 @@ static struct dentry *lock_two_directories(struct dentry *p1, struct dentry *p2)
  * p1 and p2 should be directories on the same fs.
  */
 struct dentry *lock_rename(struct dentry *p1, struct dentry *p2)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (p1 == p2) {
 		inode_lock_nested(p1->d_inode, I_MUTEX_PARENT);
@@ -3227,6 +3229,7 @@ EXPORT_SYMBOL(lock_rename);
  * c1 and p2 should be on the same fs.
  */
 struct dentry *lock_rename_child(struct dentry *c1, struct dentry *p2)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (READ_ONCE(c1->d_parent) == p2) {
 		/*
@@ -3266,6 +3269,7 @@ struct dentry *lock_rename_child(struct dentry *c1, struct dentry *p2)
 EXPORT_SYMBOL(lock_rename_child);
 
 void unlock_rename(struct dentry *p1, struct dentry *p2)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	inode_unlock(p1->d_inode);
 	if (p1 != p2) {

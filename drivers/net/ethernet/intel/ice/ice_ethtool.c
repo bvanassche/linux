@@ -3911,6 +3911,7 @@ static int ice_vsi_set_dflt_rss_lut(struct ice_vsi *vsi, int req_rss_size)
  * @ch: ethtool channel data structure
  */
 static int ice_set_channels(struct net_device *dev, struct ethtool_channels *ch)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct ice_netdev_priv *np = netdev_priv(dev);
 	struct ice_vsi *vsi = np->vsi;

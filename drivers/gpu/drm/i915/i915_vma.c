@@ -2179,7 +2179,7 @@ int i915_vma_unbind(struct i915_vma *vma)
 		/* XXX not always required: nop_clear_range */
 		wakeref = intel_runtime_pm_get(&vm->i915->runtime_pm);
 
-	err = mutex_lock_interruptible_nested(&vma->vm->mutex, !wakeref);
+	err = mutex_lock_interruptible_nested(&vm->mutex, !wakeref);
 	if (err)
 		goto out_rpm;
 
@@ -2193,6 +2193,7 @@ out_rpm:
 }
 
 int i915_vma_unbind_async(struct i915_vma *vma, bool trylock_vm)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct drm_i915_gem_object *obj = vma->obj;
 	struct i915_address_space *vm = vma->vm;

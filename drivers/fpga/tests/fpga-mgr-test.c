@@ -211,6 +211,7 @@ static void fpga_mgr_test_get(struct kunit *test)
 }
 
 static void fpga_mgr_test_lock(struct kunit *test)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct mgr_ctx *ctx = test->priv;
 	int ret;

@@ -433,6 +433,7 @@ static const struct media_ioctl_info ioctl_info[] = {
 
 static long media_device_ioctl(struct file *filp, unsigned int cmd,
 			       unsigned long __arg)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct media_devnode *devnode = media_devnode_data(filp);
 	struct media_device *dev = devnode->media_dev;

@@ -475,6 +475,7 @@ static int __kx022a_turn_on_off(struct kx022a_data *data, bool on)
 }
 
 static int kx022a_turn_off_lock(struct kx022a_data *data)
+	TRY_ACQUIRE(0, data->mutex)
 {
 	int ret;
 
@@ -487,6 +488,7 @@ static int kx022a_turn_off_lock(struct kx022a_data *data)
 }
 
 static int kx022a_turn_on_unlock(struct kx022a_data *data)
+	RELEASE(data->mutex)
 {
 	int ret;
 
@@ -1302,6 +1304,7 @@ const struct kx022a_chip_info kx134acr_chip_info = {
 EXPORT_SYMBOL_NS_GPL(kx134acr_chip_info, "IIO_KX022A");
 
 int kx022a_probe_internal(struct device *dev, const struct kx022a_chip_info *chip_info)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	static const char * const regulator_names[] = {"io-vdd", "vdd"};
 	struct iio_trigger *indio_trig;

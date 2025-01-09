@@ -283,11 +283,13 @@ static struct vop2_win *to_vop2_win(struct drm_plane *p)
 }
 
 static void vop2_lock(struct vop2 *vop2)
+	ACQUIRE(vop2->vop2_lock)
 {
 	mutex_lock(&vop2->vop2_lock);
 }
 
 static void vop2_unlock(struct vop2 *vop2)
+	RELEASE(vop2->vop2_lock)
 {
 	mutex_unlock(&vop2->vop2_lock);
 }

@@ -1880,6 +1880,7 @@ static ssize_t psmouse_attr_show_protocol(struct psmouse *psmouse, void *data, c
 }
 
 static ssize_t psmouse_attr_set_protocol(struct psmouse *psmouse, void *data, const char *buf, size_t count)
+	REQUIRES(&psmouse_mutex)
 {
 	struct serio *serio = psmouse->ps2dev.serio;
 	struct psmouse *parent = NULL;

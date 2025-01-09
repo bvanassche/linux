@@ -1032,6 +1032,7 @@ int iwlagn_send_patterns(struct iwl_priv *priv,
 }
 
 int iwlagn_suspend(struct iwl_priv *priv, struct cfg80211_wowlan *wowlan)
+	REQUIRES(priv->mutex)
 {
 	struct iwlagn_wowlan_wakeup_filter_cmd wakeup_filter_cmd;
 	struct iwl_rxon_cmd rxon;

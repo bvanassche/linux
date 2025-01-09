@@ -2407,6 +2407,7 @@ static void unix_copy_addr(struct msghdr *msg, struct sock *sk)
 
 int __unix_dgram_recvmsg(struct sock *sk, struct msghdr *msg, size_t size,
 			 int flags)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct scm_cookie scm;
 	struct socket *sock = sk->sk_socket;

@@ -270,6 +270,7 @@ static int mailbox_chan_free(int id, void *p, void *data)
 
 static int mailbox_send_message(struct scmi_chan_info *cinfo,
 				struct scmi_xfer *xfer)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct scmi_mailbox *smbox = cinfo->transport_info;
 	int ret;
@@ -295,6 +296,7 @@ static int mailbox_send_message(struct scmi_chan_info *cinfo,
 
 static void mailbox_mark_txdone(struct scmi_chan_info *cinfo, int ret,
 				struct scmi_xfer *__unused)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct scmi_mailbox *smbox = cinfo->transport_info;
 

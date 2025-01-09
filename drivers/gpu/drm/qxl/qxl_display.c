@@ -165,6 +165,7 @@ static void qxl_update_offset_props(struct qxl_device *qdev)
 }
 
 void qxl_display_read_client_monitors_config(struct qxl_device *qdev)
+	NO_THREAD_SAFETY_ANALYSIS /* DRM_MODESET_LOCK */
 {
 	struct drm_device *dev = &qdev->ddev;
 	struct drm_modeset_acquire_ctx ctx;
@@ -408,6 +409,7 @@ static int qxl_framebuffer_surface_dirty(struct drm_framebuffer *fb,
 					 unsigned int flags, unsigned int color,
 					 struct drm_clip_rect *clips,
 					 unsigned int num_clips)
+	NO_THREAD_SAFETY_ANALYSIS /* DRM_MODESET_LOCK */
 {
 	/* TODO: vmwgfx where this was cribbed from had locking. Why? */
 	struct qxl_device *qdev = to_qxl(fb->dev);

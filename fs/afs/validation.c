@@ -389,6 +389,7 @@ static void afs_zap_data(struct afs_vnode *vnode)
  *   - dentry metadata changed (security changes)
  */
 int afs_validate(struct afs_vnode *vnode, struct key *key)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct afs_volume *volume = vnode->volume;
 	unsigned int cb_ro_snapshot, cb_scrub;

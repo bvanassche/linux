@@ -17,6 +17,7 @@
 #include <linux/io-64-nonatomic-lo-hi.h>
 
 static void amd_mp2_c2p_mutex_lock(struct amd_i2c_common *i2c_common)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct amd_mp2_dev *privdata = i2c_common->mp2_dev;
 
@@ -26,6 +27,7 @@ static void amd_mp2_c2p_mutex_lock(struct amd_i2c_common *i2c_common)
 }
 
 static void amd_mp2_c2p_mutex_unlock(struct amd_i2c_common *i2c_common)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct amd_mp2_dev *privdata = i2c_common->mp2_dev;
 

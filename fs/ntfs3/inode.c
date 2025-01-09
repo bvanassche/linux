@@ -1191,6 +1191,7 @@ int ntfs_create_inode(struct mnt_idmap *idmap, struct inode *dir,
 		      struct dentry *dentry, const struct cpu_str *uni,
 		      umode_t mode, dev_t dev, const char *symname, u32 size,
 		      struct ntfs_fnd *fnd)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int err;
 	struct super_block *sb = dir->i_sb;

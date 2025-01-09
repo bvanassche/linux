@@ -105,6 +105,7 @@ void intel_context_bind_parent_child(struct intel_context *parent,
  */
 static inline int intel_context_lock_pinned(struct intel_context *ce)
 	__acquires(ce->pin_mutex)
+	TRY_ACQUIRE(0, ce->pin_mutex)
 {
 	return mutex_lock_interruptible(&ce->pin_mutex);
 }
@@ -139,6 +140,7 @@ static inline void intel_context_cancel_request(struct intel_context *ce,
  */
 static inline void intel_context_unlock_pinned(struct intel_context *ce)
 	__releases(ce->pin_mutex)
+	RELEASE(ce->pin_mutex)
 {
 	mutex_unlock(&ce->pin_mutex);
 }
@@ -247,6 +249,7 @@ static inline void intel_context_put(struct intel_context *ce)
 static inline struct intel_timeline *__must_check
 intel_context_timeline_lock(struct intel_context *ce)
 	__acquires(&ce->timeline->mutex)
+	NO_THREAD_SAFETY_ANALYSIS /* returns a pointer */
 {
 	struct intel_timeline *tl = ce->timeline;
 	int err;
@@ -266,6 +269,7 @@ intel_context_timeline_lock(struct intel_context *ce)
 
 static inline void intel_context_timeline_unlock(struct intel_timeline *tl)
 	__releases(&tl->mutex)
+	NO_THREAD_SAFETY_ANALYSIS /* to match the corresponding lock function */
 {
 	mutex_unlock(&tl->mutex);
 }

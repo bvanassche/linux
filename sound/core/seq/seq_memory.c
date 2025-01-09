@@ -268,6 +268,7 @@ static int snd_seq_cell_alloc(struct snd_seq_pool *pool,
 			      struct snd_seq_event_cell **cellp,
 			      int nonblock, struct file *file,
 			      struct mutex *mutexp)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_seq_event_cell *cell;
 	unsigned long flags;

@@ -1084,6 +1084,7 @@ static int setplane_internal(struct drm_plane *plane,
 			     /* src_{x,y,w,h} values are 16.16 fixed point */
 			     uint32_t src_x, uint32_t src_y,
 			     uint32_t src_w, uint32_t src_h)
+	NO_THREAD_SAFETY_ANALYSIS /* DRM_MODESET_LOCK */
 {
 	struct drm_modeset_acquire_ctx ctx;
 	int ret;

@@ -596,6 +596,7 @@ static int rtw89_wow_get_aoac_rpt(struct rtw89_dev *rtwdev, bool rx_ready)
 
 static struct ieee80211_key_conf *rtw89_wow_gtk_rekey(struct rtw89_dev *rtwdev,
 						      u32 cipher, u8 keyidx, u8 *gtk)
+	REQUIRES(rtwdev->mutex)
 {
 	struct rtw89_vif_link *rtwvif_link = rtwdev->wow.rtwvif_link;
 	struct ieee80211_vif *wow_vif = rtwvif_link_to_vif(rtwvif_link);
@@ -636,6 +637,7 @@ static struct ieee80211_key_conf *rtw89_wow_gtk_rekey(struct rtw89_dev *rtwdev,
 }
 
 static void rtw89_wow_update_key_info(struct rtw89_dev *rtwdev, bool rx_ready)
+	REQUIRES(rtwdev->mutex)
 {
 	struct rtw89_vif_link *rtwvif_link = rtwdev->wow.rtwvif_link;
 	struct ieee80211_vif *wow_vif = rtwvif_link_to_vif(rtwvif_link);
@@ -1346,6 +1348,7 @@ static int rtw89_wow_enable_trx_post(struct rtw89_dev *rtwdev)
 }
 
 static int rtw89_wow_disable_trx_pre(struct rtw89_dev *rtwdev)
+	REQUIRES(rtwdev->mutex)
 {
 	int ret;
 
@@ -1673,6 +1676,7 @@ out:
 }
 
 static int rtw89_wow_disable(struct rtw89_dev *rtwdev)
+	REQUIRES(rtwdev->mutex)
 {
 	int ret;
 

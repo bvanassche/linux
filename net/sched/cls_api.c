@@ -1311,6 +1311,7 @@ static struct tcf_block *__tcf_block_find(struct net *net, struct Qdisc *q,
 
 static void __tcf_block_put(struct tcf_block *block, struct Qdisc *q,
 			    struct tcf_block_ext_info *ei, bool rtnl_held)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	if (refcount_dec_and_mutex_lock(&block->refcnt, &block->lock)) {
 		/* Flushing/putting all chains will cause the block to be

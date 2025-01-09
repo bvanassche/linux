@@ -1058,6 +1058,7 @@ static int mlx4_ib_SET_PORT(struct mlx4_ib_dev *dev, u32 port,
 
 static int mlx4_ib_modify_port(struct ib_device *ibdev, u32 port, int mask,
 			       struct ib_port_modify *props)
+	NO_THREAD_SAFETY_ANALYSIS /* alias analysis */
 {
 	struct mlx4_ib_dev *mdev = to_mdev(ibdev);
 	u8 is_eth = mdev->dev->caps.port_type[port] == MLX4_PORT_TYPE_ETH;
@@ -2274,6 +2275,7 @@ static void mlx4_ib_diag_cleanup(struct mlx4_ib_dev *ibdev)
 static void mlx4_ib_update_qps(struct mlx4_ib_dev *ibdev,
 			       struct net_device *dev,
 			       int port)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	u64 new_smac = 0;
 	u64 release_mac = MLX4_IB_INVALID_MAC;

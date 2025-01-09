@@ -2511,6 +2511,7 @@ static int tegra_pmc_irq_init(struct tegra_pmc *pmc)
 
 static int tegra_pmc_clk_notify_cb(struct notifier_block *nb,
 				   unsigned long action, void *ptr)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct tegra_pmc *pmc = container_of(nb, struct tegra_pmc, clk_nb);
 	struct clk_notifier_data *data = ptr;

@@ -1661,6 +1661,7 @@ __releases(&oi->ip_lock)
 }
 
 static void ocfs2_inode_cache_io_lock(struct ocfs2_caching_info *ci)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ocfs2_inode_info *oi = cache_info_to_inode(ci);
 
@@ -1668,6 +1669,7 @@ static void ocfs2_inode_cache_io_lock(struct ocfs2_caching_info *ci)
 }
 
 static void ocfs2_inode_cache_io_unlock(struct ocfs2_caching_info *ci)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ocfs2_inode_info *oi = cache_info_to_inode(ci);
 

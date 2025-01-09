@@ -149,6 +149,7 @@ out:
 
 static void __xen_pcibk_release_pci_dev(struct xen_pcibk_device *pdev,
 					struct pci_dev *dev, bool lock)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int slot;
 	struct vpci_dev_data *vpci_dev = pdev->pci_dev_data;

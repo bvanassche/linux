@@ -40,6 +40,7 @@ static int ftrace_poke_late = 0;
 
 void ftrace_arch_code_modify_prepare(void)
     __acquires(&text_mutex)
+	ACQUIRE(text_mutex)
 {
 	/*
 	 * Need to grab text_mutex to prevent a race from module loading
@@ -52,6 +53,7 @@ void ftrace_arch_code_modify_prepare(void)
 
 void ftrace_arch_code_modify_post_process(void)
     __releases(&text_mutex)
+	RELEASE(text_mutex)
 {
 	/*
 	 * ftrace_make_{call,nop}() may be called during

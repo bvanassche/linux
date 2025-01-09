@@ -101,6 +101,7 @@ static void misc_minor_free(int minor)
 
 #ifdef CONFIG_PROC_FS
 static void *misc_seq_start(struct seq_file *seq, loff_t *pos)
+	ACQUIRE(misc_mtx)
 {
 	mutex_lock(&misc_mtx);
 	return seq_list_start(&misc_list, *pos);
@@ -112,6 +113,7 @@ static void *misc_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void misc_seq_stop(struct seq_file *seq, void *v)
+	RELEASE(misc_mtx)
 {
 	mutex_unlock(&misc_mtx);
 }

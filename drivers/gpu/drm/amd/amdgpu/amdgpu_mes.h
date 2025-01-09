@@ -521,12 +521,14 @@ int amdgpu_mes_doorbell_process_slice(struct amdgpu_device *adev);
  * to prevent deadlocks when an MMU notifier runs in reclaim-FS context.
  */
 static inline void amdgpu_mes_lock(struct amdgpu_mes *mes)
+	ACQUIRE(mes->mutex_hidden)
 {
 	mutex_lock(&mes->mutex_hidden);
 	mes->saved_flags = memalloc_noreclaim_save();
 }
 
 static inline void amdgpu_mes_unlock(struct amdgpu_mes *mes)
+	RELEASE(mes->mutex_hidden)
 {
 	memalloc_noreclaim_restore(mes->saved_flags);
 	mutex_unlock(&mes->mutex_hidden);

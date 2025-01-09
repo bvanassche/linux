@@ -804,6 +804,7 @@ xfs_qm_dqget_cache_lookup(
 	struct xfs_quotainfo	*qi,
 	struct radix_tree_root	*tree,
 	xfs_dqid_t		id)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xfs_dquot	*dqp;
 
@@ -852,6 +853,7 @@ xfs_qm_dqget_cache_insert(
 	struct radix_tree_root	*tree,
 	xfs_dqid_t		id,
 	struct xfs_dquot	*dqp)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	unsigned int		nofs_flags;
 	int			error;
@@ -1000,6 +1002,7 @@ xfs_qm_dqget_inode(
 	xfs_dqtype_t		type,
 	bool			can_alloc,
 	struct xfs_dquot	**O_dqpp)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xfs_mount	*mp = ip->i_mount;
 	struct xfs_quotainfo	*qi = mp->m_quotainfo;
@@ -1118,6 +1121,7 @@ xfs_qm_dqget_next(
 void
 xfs_qm_dqput(
 	struct xfs_dquot	*dqp)
+	RELEASE(dqp->q_qlock)
 {
 	ASSERT(dqp->q_nrefs > 0);
 	ASSERT(XFS_DQ_IS_LOCKED(dqp));
@@ -1141,6 +1145,7 @@ xfs_qm_dqput(
 void
 xfs_qm_dqrele(
 	struct xfs_dquot	*dqp)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (!dqp)
 		return;
@@ -1484,6 +1489,7 @@ void
 xfs_dqlock2(
 	struct xfs_dquot	*d1,
 	struct xfs_dquot	*d2)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (d1 && d2) {
 		ASSERT(d1 != d2);
@@ -1519,6 +1525,7 @@ xfs_dqtrx_cmp(
 void
 xfs_dqlockn(
 	struct xfs_dqtrx	*q)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	unsigned int		i;
 

@@ -276,6 +276,7 @@ static int vmw_fifo_wait(struct vmw_private *dev_priv,
  */
 static void *vmw_local_fifo_reserve(struct vmw_private *dev_priv,
 				    uint32_t bytes)
+	NO_THREAD_SAFETY_ANALYSIS /* returns a pointer */
 {
 	struct vmw_fifo_state *fifo_state = dev_priv->fifo;
 	u32  *fifo_mem = dev_priv->fifo_mem;
@@ -425,6 +426,8 @@ static void vmw_fifo_slow_copy(struct vmw_fifo_state *fifo_state,
 }
 
 static void vmw_local_fifo_commit(struct vmw_private *dev_priv, uint32_t bytes)
+	RELEASE(dev_priv->fifo->fifo_mutex)
+	RELEASE(dev_priv->fifo->fifo_mutex)
 {
 	struct vmw_fifo_state *fifo_state = dev_priv->fifo;
 	uint32_t next_cmd = vmw_fifo_mem_read(dev_priv, SVGA_FIFO_NEXT_CMD);
@@ -466,10 +469,11 @@ static void vmw_local_fifo_commit(struct vmw_private *dev_priv, uint32_t bytes)
 	mb();
 	up_write(&fifo_state->rwsem);
 	vmw_fifo_ping_host(dev_priv, SVGA_SYNC_GENERIC);
-	mutex_unlock(&fifo_state->fifo_mutex);
+	mutex_unlock(&dev_priv->fifo->fifo_mutex);
 }
 
 void vmw_cmd_commit(struct vmw_private *dev_priv, uint32_t bytes)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (dev_priv->cman)
 		vmw_cmdbuf_commit(dev_priv->cman, bytes, NULL, false);
@@ -485,6 +489,7 @@ void vmw_cmd_commit(struct vmw_private *dev_priv, uint32_t bytes)
  * @bytes: Number of bytes to commit.
  */
 void vmw_cmd_commit_flush(struct vmw_private *dev_priv, uint32_t bytes)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (dev_priv->cman)
 		vmw_cmdbuf_commit(dev_priv->cman, bytes, NULL, true);

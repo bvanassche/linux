@@ -60,6 +60,7 @@ struct jffs2_full_dnode *jffs2_write_dnode(struct jffs2_sb_info *c, struct jffs2
 					   struct jffs2_raw_inode *ri, const unsigned char *data,
 					   uint32_t datalen, int alloc_mode)
 
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct jffs2_full_dnode *fn;
 	size_t retlen;
@@ -205,6 +206,7 @@ struct jffs2_full_dnode *jffs2_write_dnode(struct jffs2_sb_info *c, struct jffs2
 struct jffs2_full_dirent *jffs2_write_dirent(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 					     struct jffs2_raw_dirent *rd, const unsigned char *name,
 					     uint32_t namelen, int alloc_mode)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct jffs2_full_dirent *fd;
 	size_t retlen;

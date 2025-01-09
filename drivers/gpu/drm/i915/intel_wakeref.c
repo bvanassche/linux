@@ -51,6 +51,7 @@ unlock:
 }
 
 static void ____intel_wakeref_put_last(struct intel_wakeref *wf)
+	RELEASE(wf->mutex)
 {
 	intel_wakeref_t wakeref = NULL;
 
@@ -86,6 +87,7 @@ void __intel_wakeref_put_last(struct intel_wakeref *wf, unsigned long flags)
 }
 
 static void __intel_wakeref_put_work(struct work_struct *wrk)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct intel_wakeref *wf = container_of(wrk, typeof(*wf), work.work);
 

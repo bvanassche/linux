@@ -244,6 +244,7 @@ static u32 i2c_atr_functionality(struct i2c_adapter *adap)
 }
 
 static void i2c_atr_lock_bus(struct i2c_adapter *adapter, unsigned int flags)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct i2c_atr_chan *chan = adapter->algo_data;
 	struct i2c_atr *atr = chan->atr;
@@ -252,6 +253,7 @@ static void i2c_atr_lock_bus(struct i2c_adapter *adapter, unsigned int flags)
 }
 
 static int i2c_atr_trylock_bus(struct i2c_adapter *adapter, unsigned int flags)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct i2c_atr_chan *chan = adapter->algo_data;
 	struct i2c_atr *atr = chan->atr;
@@ -260,6 +262,7 @@ static int i2c_atr_trylock_bus(struct i2c_adapter *adapter, unsigned int flags)
 }
 
 static void i2c_atr_unlock_bus(struct i2c_adapter *adapter, unsigned int flags)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct i2c_atr_chan *chan = adapter->algo_data;
 	struct i2c_atr *atr = chan->atr;

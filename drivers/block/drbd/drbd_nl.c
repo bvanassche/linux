@@ -3432,6 +3432,7 @@ int drbd_adm_dump_connections_done(struct netlink_callback *cb)
 enum { SINGLE_RESOURCE, ITERATE_RESOURCES };
 
 int drbd_adm_dump_connections(struct sk_buff *skb, struct netlink_callback *cb)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct nlattr *resource_filter;
 	struct drbd_resource *resource = NULL, *next_resource;

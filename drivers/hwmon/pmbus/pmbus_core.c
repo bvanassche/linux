@@ -3840,6 +3840,7 @@ int pmbus_lock_interruptible(struct i2c_client *client)
 EXPORT_SYMBOL_NS_GPL(pmbus_lock_interruptible, "PMBUS");
 
 void pmbus_unlock(struct i2c_client *client)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct pmbus_data *data = i2c_get_clientdata(client);
 

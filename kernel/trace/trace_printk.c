@@ -160,11 +160,13 @@ find_next_mod_format(int start_index, void *v, const char **fmt, loff_t *pos)
 }
 
 static void format_mod_start(void)
+	ACQUIRE(btrace_mutex)
 {
 	mutex_lock(&btrace_mutex);
 }
 
 static void format_mod_stop(void)
+	RELEASE(btrace_mutex)
 {
 	mutex_unlock(&btrace_mutex);
 }
@@ -297,6 +299,9 @@ static const char **find_next(void *v, loff_t *pos)
 
 static void *
 t_start(struct seq_file *m, loff_t *pos)
+#ifdef CONFIG_MODULES
+	ACQUIRE(btrace_mutex)
+#endif
 {
 	format_mod_start();
 	return find_next(NULL, pos);
@@ -346,6 +351,9 @@ static int t_show(struct seq_file *m, void *v)
 }
 
 static void t_stop(struct seq_file *m, void *p)
+#ifdef CONFIG_MODULES
+	RELEASE(btrace_mutex)
+#endif
 {
 	format_mod_stop();
 }

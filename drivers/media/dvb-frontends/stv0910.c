@@ -1216,6 +1216,7 @@ static int probe(struct stv *state)
 }
 
 static int gate_ctrl(struct dvb_frontend *fe, int enable)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct stv *state = fe->demodulator_priv;
 	u8 i2crpt = state->i2crpt & ~0x86;

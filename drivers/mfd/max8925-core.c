@@ -527,6 +527,7 @@ static irqreturn_t max8925_tsc_irq(int irq, void *data)
 }
 
 static void max8925_irq_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct max8925_chip *chip = irq_data_get_irq_chip_data(data);
 
@@ -534,6 +535,7 @@ static void max8925_irq_lock(struct irq_data *data)
 }
 
 static void max8925_irq_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct max8925_chip *chip = irq_data_get_irq_chip_data(data);
 	struct max8925_irq_data *irq_data;

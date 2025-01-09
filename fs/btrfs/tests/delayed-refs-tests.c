@@ -42,6 +42,7 @@ static enum btrfs_ref_type ref_type_from_disk_ref_type(u8 type)
 
 static void delete_delayed_ref_head(struct btrfs_trans_handle *trans,
 				    struct btrfs_delayed_ref_head *head)
+	NO_THREAD_SAFETY_ANALYSIS /* callers too complex */
 {
 	struct btrfs_fs_info *fs_info = trans->fs_info;
 	struct btrfs_delayed_ref_root *delayed_refs =

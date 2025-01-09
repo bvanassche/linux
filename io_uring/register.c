@@ -202,6 +202,7 @@ static int io_register_enable_rings(struct io_ring_ctx *ctx)
 
 static __cold int __io_register_iowq_aff(struct io_ring_ctx *ctx,
 					 cpumask_var_t new_mask)
+	REQUIRES(ctx->uring_lock)
 {
 	int ret;
 
@@ -218,6 +219,7 @@ static __cold int __io_register_iowq_aff(struct io_ring_ctx *ctx,
 
 static __cold int io_register_iowq_aff(struct io_ring_ctx *ctx,
 				       void __user *arg, unsigned len)
+	REQUIRES(ctx->uring_lock)
 {
 	cpumask_var_t new_mask;
 	int ret;
@@ -249,6 +251,7 @@ static __cold int io_register_iowq_aff(struct io_ring_ctx *ctx,
 }
 
 static __cold int io_unregister_iowq_aff(struct io_ring_ctx *ctx)
+	REQUIRES(ctx->uring_lock)
 {
 	return __io_register_iowq_aff(ctx, NULL);
 }
@@ -256,6 +259,7 @@ static __cold int io_unregister_iowq_aff(struct io_ring_ctx *ctx)
 static __cold int io_register_iowq_max_workers(struct io_ring_ctx *ctx,
 					       void __user *arg)
 	__must_hold(&ctx->uring_lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct io_tctx_node *node;
 	struct io_uring_task *tctx = NULL;
@@ -395,6 +399,7 @@ static void io_register_free_rings(struct io_ring_ctx *ctx,
 			 IORING_SETUP_CQE32 | IORING_SETUP_NO_MMAP)
 
 static int io_register_resize_rings(struct io_ring_ctx *ctx, void __user *arg)
+	REQUIRES(ctx->uring_lock)
 {
 	struct io_uring_region_desc rd;
 	struct io_ring_ctx_rings o = { }, n = { }, *to_free = NULL;
@@ -629,6 +634,7 @@ static int __io_uring_register(struct io_ring_ctx *ctx, unsigned opcode,
 			       void __user *arg, unsigned nr_args)
 	__releases(ctx->uring_lock)
 	__acquires(ctx->uring_lock)
+	REQUIRES(ctx->uring_lock)
 {
 	int ret;
 

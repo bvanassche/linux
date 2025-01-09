@@ -1655,6 +1655,7 @@ struct opp_table *dev_pm_opp_get_opp_table(struct device *dev)
 EXPORT_SYMBOL_GPL(dev_pm_opp_get_opp_table);
 
 static void _opp_table_kref_release(struct kref *kref)
+	RELEASE(opp_table_lock)
 {
 	struct opp_table *opp_table = container_of(kref, struct opp_table, kref);
 	struct opp_device *opp_dev, *temp;
@@ -1712,6 +1713,7 @@ void _opp_free(struct dev_pm_opp *opp)
 }
 
 static void _opp_kref_release(struct kref *kref)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct dev_pm_opp *opp = container_of(kref, struct dev_pm_opp, kref);
 	struct opp_table *opp_table = opp->opp_table;

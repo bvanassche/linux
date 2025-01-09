@@ -296,6 +296,7 @@ out:
 int btrfs_truncate_free_space_cache(struct btrfs_trans_handle *trans,
 				    struct btrfs_block_group *block_group,
 				    struct inode *vfs_inode)
+	NO_THREAD_SAFETY_ANALYSIS /* too complex for clang */
 {
 	struct btrfs_truncate_control control = {
 		.inode = BTRFS_I(vfs_inode),

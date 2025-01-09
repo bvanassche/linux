@@ -1981,6 +1981,7 @@ err:
  * Do work that needs both RTNL and crit_lock.
  **/
 static void iavf_finish_config(struct work_struct *work)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	struct iavf_adapter *adapter;
 	bool netdev_released = false;

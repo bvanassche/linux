@@ -345,11 +345,13 @@ extern char *cifs_sanitize_prepath(char *prepath, gfp_t gfp);
 extern struct mutex cifs_mount_mutex;
 
 static inline void cifs_mount_lock(void)
+	ACQUIRE(cifs_mount_mutex)
 {
 	mutex_lock(&cifs_mount_mutex);
 }
 
 static inline void cifs_mount_unlock(void)
+	RELEASE(cifs_mount_mutex)
 {
 	mutex_unlock(&cifs_mount_mutex);
 }

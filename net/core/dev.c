@@ -797,6 +797,7 @@ netdev_napi_by_id(struct net *net, unsigned int napi_id)
  */
 struct napi_struct *
 netdev_napi_by_id_lock(struct net *net, unsigned int napi_id)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct napi_struct *napi;
 	struct net_device *dev;
@@ -1024,6 +1025,7 @@ struct net_device *dev_get_by_napi_id(unsigned int napi_id)
  * using a lockless lookup helper. Lock prevents the instance from going away.
  */
 struct net_device *__netdev_put_lock(struct net_device *dev)
+	NO_THREAD_SAFETY_ANALYSIS /* TRY_ACQUIRE() does not support pointers */
 {
 	netdev_lock(dev);
 	if (dev->reg_state > NETREG_REGISTERED) {
@@ -1060,6 +1062,7 @@ struct net_device *netdev_get_by_index_lock(struct net *net, int ifindex)
 struct net_device *
 netdev_xa_find_lock(struct net *net, struct net_device *dev,
 		    unsigned long *index)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (dev)
 		netdev_unlock(dev);
@@ -6186,6 +6189,7 @@ static struct flush_backlogs *flush_backlogs_fallback;
 static DEFINE_MUTEX(flush_backlogs_mutex);
 
 static void flush_all_backlogs(void)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct flush_backlogs *ptr = flush_backlogs_alloc();
 	unsigned int cpu;

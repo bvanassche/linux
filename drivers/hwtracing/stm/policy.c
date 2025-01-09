@@ -531,6 +531,7 @@ out:
 
 struct stp_policy_node *
 stp_policy_node_lookup(struct stm_device *stm, char *s)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking + returns a pointer */
 {
 	struct stp_policy_node *policy_node = NULL;
 
@@ -550,6 +551,7 @@ stp_policy_node_lookup(struct stm_device *stm, char *s)
 }
 
 void stp_policy_node_put(struct stp_policy_node *policy_node)
+	NO_THREAD_SAFETY_ANALYSIS /* to match the above function */
 {
 	lockdep_assert_held(&stp_policy_subsys.su_mutex);
 

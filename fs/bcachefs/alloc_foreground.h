@@ -87,6 +87,7 @@ static inline void bch2_open_buckets_put(struct bch_fs *c,
 }
 
 static inline void bch2_alloc_sectors_done_inlined(struct bch_fs *c, struct write_point *wp)
+	RELEASE(wp->lock)
 {
 	struct open_buckets ptrs = { .nr = 0 }, keep = { .nr = 0 };
 	struct open_bucket *ob;

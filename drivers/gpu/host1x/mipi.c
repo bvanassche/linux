@@ -294,6 +294,7 @@ int tegra_mipi_disable(struct tegra_mipi_device *dev)
 EXPORT_SYMBOL(tegra_mipi_disable);
 
 int tegra_mipi_finish_calibration(struct tegra_mipi_device *device)
+	RELEASE(device->mipi->lock)
 {
 	struct tegra_mipi *mipi = device->mipi;
 	void __iomem *status_reg = mipi->regs + (MIPI_CAL_STATUS << 2);
@@ -312,6 +313,7 @@ int tegra_mipi_finish_calibration(struct tegra_mipi_device *device)
 EXPORT_SYMBOL(tegra_mipi_finish_calibration);
 
 int tegra_mipi_start_calibration(struct tegra_mipi_device *device)
+	TRY_ACQUIRE(0, device->mipi->lock)
 {
 	const struct tegra_mipi_soc *soc = device->mipi->soc;
 	unsigned int i;

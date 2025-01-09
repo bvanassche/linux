@@ -191,6 +191,7 @@ int mac802154_del_seclevel(struct net_device *dev,
 }
 
 void mac802154_lock_table(struct net_device *dev)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ieee802154_sub_if_data *sdata = IEEE802154_DEV_TO_SUB_IF(dev);
 
@@ -210,6 +211,7 @@ void mac802154_get_table(struct net_device *dev,
 }
 
 void mac802154_unlock_table(struct net_device *dev)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ieee802154_sub_if_data *sdata = IEEE802154_DEV_TO_SUB_IF(dev);
 

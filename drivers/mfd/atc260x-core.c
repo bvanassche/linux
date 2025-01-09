@@ -24,6 +24,7 @@ struct atc260x_init_regs {
 };
 
 static void regmap_lock_mutex(void *__mutex)
+	NO_THREAD_SAFETY_ANALYSIS /* needs further inspection */
 {
 	struct mutex *mutex = __mutex;
 
@@ -45,6 +46,7 @@ static void regmap_lock_mutex(void *__mutex)
 }
 
 static void regmap_unlock_mutex(void *__mutex)
+	NO_THREAD_SAFETY_ANALYSIS /* to match the above function */
 {
 	struct mutex *mutex = __mutex;
 

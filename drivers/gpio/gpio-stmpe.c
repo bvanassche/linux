@@ -167,6 +167,7 @@ static int stmpe_gpio_irq_set_type(struct irq_data *d, unsigned int type)
 }
 
 static void stmpe_gpio_irq_lock(struct irq_data *d)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct stmpe_gpio *stmpe_gpio = gpiochip_get_data(gc);
@@ -175,6 +176,7 @@ static void stmpe_gpio_irq_lock(struct irq_data *d)
 }
 
 static void stmpe_gpio_irq_sync_unlock(struct irq_data *d)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct stmpe_gpio *stmpe_gpio = gpiochip_get_data(gc);

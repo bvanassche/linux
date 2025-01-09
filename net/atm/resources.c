@@ -402,12 +402,14 @@ done:
 
 #ifdef CONFIG_PROC_FS
 void *atm_dev_seq_start(struct seq_file *seq, loff_t *pos)
+	ACQUIRE(atm_dev_mutex)
 {
 	mutex_lock(&atm_dev_mutex);
 	return seq_list_start_head(&atm_devs, *pos);
 }
 
 void atm_dev_seq_stop(struct seq_file *seq, void *v)
+	RELEASE(atm_dev_mutex)
 {
 	mutex_unlock(&atm_dev_mutex);
 }

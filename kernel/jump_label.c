@@ -23,11 +23,13 @@
 static DEFINE_MUTEX(jump_label_mutex);
 
 void jump_label_lock(void)
+	ACQUIRE(jump_label_mutex)
 {
 	mutex_lock(&jump_label_mutex);
 }
 
 void jump_label_unlock(void)
+	RELEASE(jump_label_mutex)
 {
 	mutex_unlock(&jump_label_mutex);
 }

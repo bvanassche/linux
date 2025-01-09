@@ -20,6 +20,7 @@ LIST_HEAD(nvdimm_bus_list);
 DEFINE_MUTEX(nvdimm_bus_list_mutex);
 
 void nvdimm_bus_lock(struct device *dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct nvdimm_bus *nvdimm_bus = walk_to_nvdimm_bus(dev);
 
@@ -30,6 +31,7 @@ void nvdimm_bus_lock(struct device *dev)
 EXPORT_SYMBOL(nvdimm_bus_lock);
 
 void nvdimm_bus_unlock(struct device *dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct nvdimm_bus *nvdimm_bus = walk_to_nvdimm_bus(dev);
 

@@ -39,11 +39,13 @@
 static bool siox_is_registered;
 
 static void siox_master_lock(struct siox_master *smaster)
+	ACQUIRE(smaster->lock)
 {
 	mutex_lock(&smaster->lock);
 }
 
 static void siox_master_unlock(struct siox_master *smaster)
+	RELEASE(smaster->lock)
 {
 	mutex_unlock(&smaster->lock);
 }

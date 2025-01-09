@@ -232,11 +232,13 @@ void amdgpu_umsch_fwlog_init(struct amdgpu_umsch_mm *umsch_mm);
 	((umsch)->funcs->ring_fini ? (umsch)->funcs->ring_fini((umsch)) : 0)
 
 static inline void amdgpu_umsch_mm_lock(struct amdgpu_umsch_mm *umsch)
+	ACQUIRE(umsch->mutex_hidden)
 {
 	mutex_lock(&umsch->mutex_hidden);
 }
 
 static inline void amdgpu_umsch_mm_unlock(struct amdgpu_umsch_mm *umsch)
+	RELEASE(umsch->mutex_hidden)
 {
 	mutex_unlock(&umsch->mutex_hidden);
 }

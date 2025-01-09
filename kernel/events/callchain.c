@@ -143,6 +143,7 @@ exit:
 }
 
 void put_callchain_buffers(void)
+	NO_THREAD_SAFETY_ANALYSIS /* needed because of a clang bug? */
 {
 	if (atomic_dec_and_mutex_lock(&nr_callchain_events, &callchain_mutex)) {
 		release_callchain_buffers();

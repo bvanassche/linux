@@ -252,6 +252,7 @@ out:
  * time we get to start (pos = 1), we're done.
  */
 static void *help_start(struct seq_file *m, loff_t *pos)
+	ACQUIRE(orangefs_help_file_lock)
 {
 	void *payload = NULL;
 
@@ -274,6 +275,7 @@ static void *help_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void help_stop(struct seq_file *m, void *p)
+	RELEASE(orangefs_help_file_lock)
 {
 	gossip_debug(GOSSIP_DEBUGFS_DEBUG, "help_stop: start\n");
 	mutex_unlock(&orangefs_help_file_lock);

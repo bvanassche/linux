@@ -2776,6 +2776,7 @@ error:
 }
 
 int btrfs_init_new_device(struct btrfs_fs_info *fs_info, const char *device_path)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct btrfs_root *root = fs_info->dev_root;
 	struct btrfs_trans_handle *trans;
@@ -3324,6 +3325,7 @@ static int remove_chunk_item(struct btrfs_trans_handle *trans,
 }
 
 int btrfs_remove_chunk(struct btrfs_trans_handle *trans, u64 chunk_offset)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct btrfs_fs_info *fs_info = trans->fs_info;
 	struct btrfs_chunk_map *map;
@@ -3559,6 +3561,7 @@ int btrfs_relocate_chunk(struct btrfs_fs_info *fs_info, u64 chunk_offset)
 }
 
 static int btrfs_relocate_sys_chunks(struct btrfs_fs_info *fs_info)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct btrfs_root *chunk_root = fs_info->chunk_root;
 	struct btrfs_path *path;
@@ -4533,6 +4536,7 @@ out_overflow:
 int btrfs_balance(struct btrfs_fs_info *fs_info,
 		  struct btrfs_balance_control *bctl,
 		  struct btrfs_ioctl_balance_args *bargs)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	u64 meta_target, data_target;
 	u64 allowed;

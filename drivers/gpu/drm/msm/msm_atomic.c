@@ -41,6 +41,7 @@ static void vblank_put(struct msm_kms *kms, unsigned crtc_mask)
 }
 
 static void lock_crtcs(struct msm_kms *kms, unsigned int crtc_mask)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	int crtc_index;
 	struct drm_crtc *crtc;
@@ -52,6 +53,7 @@ static void lock_crtcs(struct msm_kms *kms, unsigned int crtc_mask)
 }
 
 static void unlock_crtcs(struct msm_kms *kms, unsigned int crtc_mask)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct drm_crtc *crtc;
 

@@ -1600,6 +1600,7 @@ int rvu_mbox_handler_npc_delete_flow(struct rvu *rvu,
 static int npc_update_dmac_value(struct rvu *rvu, int npcblkaddr,
 				 struct rvu_npc_mcam_rule *rule,
 				 struct rvu_pfvf *pfvf)
+	NO_THREAD_SAFETY_ANALYSIS /* REQUIRES(rvu->hw->mcam.lock) */
 {
 	struct npc_mcam_write_entry_req write_req = { 0 };
 	struct mcam_entry *entry = &write_req.entry_data;

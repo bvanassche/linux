@@ -515,6 +515,7 @@ __bch2_create(struct mnt_idmap *idmap,
 	      struct bch_inode_info *dir, struct dentry *dentry,
 	      umode_t mode, dev_t rdev, subvol_inum snapshot_src,
 	      unsigned flags)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct bch_fs *c = dir->v.i_sb->s_fs_info;
 	struct btree_trans *trans;
@@ -753,6 +754,7 @@ static int __bch2_link(struct bch_fs *c,
 
 static int bch2_link(struct dentry *old_dentry, struct inode *vdir,
 		     struct dentry *dentry)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct bch_fs *c = vdir->i_sb->s_fs_info;
 	struct bch_inode_info *dir = to_bch_ei(vdir);
@@ -774,6 +776,7 @@ static int bch2_link(struct dentry *old_dentry, struct inode *vdir,
 
 int __bch2_unlink(struct inode *vdir, struct dentry *dentry,
 		  bool deleting_snapshot)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct bch_fs *c = vdir->i_sb->s_fs_info;
 	struct bch_inode_info *dir = to_bch_ei(vdir);
@@ -868,6 +871,7 @@ static int bch2_rename2(struct mnt_idmap *idmap,
 			struct inode *src_vdir, struct dentry *src_dentry,
 			struct inode *dst_vdir, struct dentry *dst_dentry,
 			unsigned flags)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct bch_fs *c = src_vdir->i_sb->s_fs_info;
 	struct bch_inode_info *src_dir = to_bch_ei(src_vdir);

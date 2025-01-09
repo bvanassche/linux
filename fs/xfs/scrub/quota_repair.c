@@ -170,6 +170,8 @@ STATIC int
 xrep_quota_item(
 	struct xrep_quota_info	*rqi,
 	struct xfs_dquot	*dq)
+	REQUIRES(dq->q_qlock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xfs_scrub	*sc = rqi->sc;
 	struct xfs_mount	*mp = sc->mp;
@@ -504,6 +506,7 @@ STATIC int
 xrep_quota_problems(
 	struct xfs_scrub	*sc,
 	xfs_dqtype_t		dqtype)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xchk_dqiter	cursor = { };
 	struct xrep_quota_info	rqi = { .sc = sc };

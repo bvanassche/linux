@@ -141,11 +141,13 @@ static inline void qtnf_bus_data_rx_stop(struct qtnf_bus *bus)
 }
 
 static __always_inline void qtnf_bus_lock(struct qtnf_bus *bus)
+	ACQUIRE(bus->bus_lock)
 {
 	mutex_lock(&bus->bus_lock);
 }
 
 static __always_inline void qtnf_bus_unlock(struct qtnf_bus *bus)
+	RELEASE(bus->bus_lock)
 {
 	mutex_unlock(&bus->bus_lock);
 }

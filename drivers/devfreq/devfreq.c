@@ -290,6 +290,7 @@ static struct devfreq_governor *find_devfreq_governor(const char *name)
  * governor's pointer or an error pointer.
  */
 static struct devfreq_governor *try_then_request_governor(const char *name)
+	REQUIRES(devfreq_list_lock)
 {
 	struct devfreq_governor *governor;
 	int err = 0;

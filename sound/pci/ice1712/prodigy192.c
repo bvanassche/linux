@@ -474,6 +474,7 @@ static unsigned char read_data(struct snd_ice1712 *ice, unsigned int gpio,
  * 4wire ak4114 protocol - starting sequence
  */
 static unsigned int prodigy192_4wire_start(struct snd_ice1712 *ice)
+	ACQUIRE(ice->gpio_mutex)
 {
 	unsigned int tmp;
 
@@ -491,6 +492,7 @@ static unsigned int prodigy192_4wire_start(struct snd_ice1712 *ice)
  * 4wire ak4114 protocol - final sequence
  */
 static void prodigy192_4wire_finish(struct snd_ice1712 *ice, unsigned int tmp)
+	RELEASE(ice->gpio_mutex)
 {
 	tmp |= VT1724_PRODIGY192_CS; /* raise chip select */
 	snd_ice1712_gpio_write(ice, tmp);

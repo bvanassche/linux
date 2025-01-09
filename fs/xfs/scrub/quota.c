@@ -140,6 +140,7 @@ STATIC int
 xchk_quota_item(
 	struct xchk_quota_info	*sqi,
 	struct xfs_dquot	*dq)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xfs_scrub	*sc = sqi->sc;
 	struct xfs_mount	*mp = sc->mp;

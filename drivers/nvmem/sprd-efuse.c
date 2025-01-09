@@ -81,6 +81,7 @@ static const struct sprd_efuse_variant_data ums312_data = {
  * the multiple subsystems.
  */
 static int sprd_efuse_lock(struct sprd_efuse *efuse)
+	TRY_ACQUIRE(0, efuse->mutex)
 {
 	int ret;
 
@@ -98,6 +99,7 @@ static int sprd_efuse_lock(struct sprd_efuse *efuse)
 }
 
 static void sprd_efuse_unlock(struct sprd_efuse *efuse)
+	RELEASE(efuse->mutex)
 {
 	hwspin_unlock_raw(efuse->hwlock);
 	mutex_unlock(&efuse->mutex);

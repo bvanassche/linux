@@ -1244,6 +1244,7 @@ static void wdm_disconnect(struct usb_interface *intf)
 
 #ifdef CONFIG_PM
 static int wdm_suspend(struct usb_interface *intf, pm_message_t message)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct wdm_device *desc = wdm_find_device(intf);
 	int rv = 0;
@@ -1310,6 +1311,7 @@ static int wdm_resume(struct usb_interface *intf)
 #endif
 
 static int wdm_pre_reset(struct usb_interface *intf)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct wdm_device *desc = wdm_find_device(intf);
 
@@ -1335,6 +1337,7 @@ static int wdm_pre_reset(struct usb_interface *intf)
 }
 
 static int wdm_post_reset(struct usb_interface *intf)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct wdm_device *desc = wdm_find_device(intf);
 	int rv;

@@ -83,6 +83,7 @@ static void for_each_companion(struct pci_dev *pdev, struct usb_hcd *hcd,
  */
 static void ehci_pre_add(struct pci_dev *pdev, struct usb_hcd *hcd,
 		struct pci_dev *companion, struct usb_hcd *companion_hcd)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct usb_device *udev;
 
@@ -100,6 +101,7 @@ static void ehci_pre_add(struct pci_dev *pdev, struct usb_hcd *hcd,
  */
 static void ehci_post_add(struct pci_dev *pdev, struct usb_hcd *hcd,
 		struct pci_dev *companion, struct usb_hcd *companion_hcd)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	struct usb_device *udev;
 

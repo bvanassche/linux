@@ -346,6 +346,7 @@ static int ib_umem_odp_map_dma_single_page(
 int ib_umem_odp_map_dma_and_lock(struct ib_umem_odp *umem_odp, u64 user_virt,
 				 u64 bcnt, u64 access_mask, bool fault)
 			__acquires(&umem_odp->umem_mutex)
+	TRY_ACQUIRE(0, umem_odp->umem_mutex)
 {
 	struct task_struct *owning_process  = NULL;
 	struct mm_struct *owning_mm = umem_odp->umem.owning_mm;

@@ -47,6 +47,7 @@ static inline void print_unload_info(struct seq_file *m, struct module *mod)
 
 /* Called by the /proc file system to return a list of modules. */
 static void *m_start(struct seq_file *m, loff_t *pos)
+	ACQUIRE(module_mutex)
 {
 	mutex_lock(&module_mutex);
 	return seq_list_start(&modules, *pos);
@@ -58,6 +59,7 @@ static void *m_next(struct seq_file *m, void *p, loff_t *pos)
 }
 
 static void m_stop(struct seq_file *m, void *p)
+	RELEASE(module_mutex)
 {
 	mutex_unlock(&module_mutex);
 }

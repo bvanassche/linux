@@ -241,6 +241,7 @@ EXPORT_SYMBOL(sync_blockdev_range);
  * Return: On success zero is returned, negative error code on failure.
  */
 int bdev_freeze(struct block_device *bdev)
+	NO_THREAD_SAFETY_ANALYSIS /* too complex */
 {
 	int error = 0;
 
@@ -277,6 +278,7 @@ EXPORT_SYMBOL(bdev_freeze);
  * Return: On success zero is returned, negative error code on failure.
  */
 int bdev_thaw(struct block_device *bdev)
+	NO_THREAD_SAFETY_ANALYSIS /* too complex */
 {
 	int error = -EINVAL, nr_freeze;
 
@@ -1194,6 +1196,7 @@ EXPORT_SYMBOL(lookup_bdev);
  * the file system.  In addition we also invalidate the block device mapping.
  */
 void bdev_mark_dead(struct block_device *bdev, bool surprise)
+	NO_THREAD_SAFETY_ANALYSIS /* too complex */
 {
 	mutex_lock(&bdev->bd_holder_lock);
 	if (bdev->bd_holder_ops && bdev->bd_holder_ops->mark_dead)

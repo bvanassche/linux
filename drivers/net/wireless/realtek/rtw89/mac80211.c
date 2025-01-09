@@ -141,6 +141,7 @@ static int __rtw89_ops_add_iface_link(struct rtw89_dev *rtwdev,
 
 static void __rtw89_ops_remove_iface_link(struct rtw89_dev *rtwdev,
 					  struct rtw89_vif_link *rtwvif_link)
+	REQUIRES(rtwdev->mutex)
 {
 	mutex_unlock(&rtwdev->mutex);
 	cancel_work_sync(&rtwvif_link->update_beacon_work);
@@ -1517,6 +1518,7 @@ static bool rtw89_ops_can_activate_links(struct ieee80211_hw *hw,
 static void __rtw89_ops_clr_vif_links(struct rtw89_dev *rtwdev,
 				      struct rtw89_vif *rtwvif,
 				      unsigned long clr_links)
+	REQUIRES(rtwdev->mutex)
 {
 	struct rtw89_vif_link *rtwvif_link;
 	unsigned int link_id;

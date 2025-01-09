@@ -265,6 +265,7 @@ out:
 }
 
 static unsigned long int hva_hw_get_ip_version(struct hva_dev *hva)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlocking */
 {
 	struct device *dev = hva_to_dev(hva);
 	unsigned long int version;

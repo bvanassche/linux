@@ -180,6 +180,7 @@ static bool mlx4_need_mf_bond(struct mlx4_dev *dev)
 }
 
 int __mlx4_register_mac(struct mlx4_dev *dev, u8 port, u64 mac)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct mlx4_port_info *info = &mlx4_priv(dev)->port[port];
 	struct mlx4_mac_table *table = &info->mac_table;
@@ -377,6 +378,7 @@ int mlx4_get_base_qpn(struct mlx4_dev *dev, u8 port)
 EXPORT_SYMBOL_GPL(mlx4_get_base_qpn);
 
 void __mlx4_unregister_mac(struct mlx4_dev *dev, u8 port, u64 mac)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct mlx4_port_info *info;
 	struct mlx4_mac_table *table;
@@ -472,6 +474,7 @@ void mlx4_unregister_mac(struct mlx4_dev *dev, u8 port, u64 mac)
 EXPORT_SYMBOL_GPL(mlx4_unregister_mac);
 
 int __mlx4_replace_mac(struct mlx4_dev *dev, u8 port, int qpn, u64 new_mac)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct mlx4_port_info *info = &mlx4_priv(dev)->port[port];
 	struct mlx4_mac_table *table = &info->mac_table;
@@ -576,6 +579,7 @@ EXPORT_SYMBOL_GPL(mlx4_find_cached_vlan);
 
 int __mlx4_register_vlan(struct mlx4_dev *dev, u8 port, u16 vlan,
 				int *index)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct mlx4_vlan_table *table = &mlx4_priv(dev)->port[port].vlan_table;
 	int i, err = 0;
@@ -760,6 +764,7 @@ int mlx4_register_vlan(struct mlx4_dev *dev, u8 port, u16 vlan, int *index)
 EXPORT_SYMBOL_GPL(mlx4_register_vlan);
 
 void __mlx4_unregister_vlan(struct mlx4_dev *dev, u8 port, u16 vlan)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct mlx4_vlan_table *table = &mlx4_priv(dev)->port[port].vlan_table;
 	int index;

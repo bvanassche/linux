@@ -1503,6 +1503,7 @@ LEAVE_UPDATE:
 }
 
 static int abituguru_suspend(struct device *dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct abituguru_data *data = dev_get_drvdata(dev);
 	/*
@@ -1514,6 +1515,7 @@ static int abituguru_suspend(struct device *dev)
 }
 
 static int abituguru_resume(struct device *dev)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct abituguru_data *data = dev_get_drvdata(dev);
 	/* See if the uGuru is still ready */

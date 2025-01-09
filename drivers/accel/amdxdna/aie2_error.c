@@ -290,15 +290,16 @@ int aie2_error_async_events_send(struct amdxdna_dev_hdl *ndev)
 }
 
 void aie2_error_async_events_free(struct amdxdna_dev_hdl *ndev)
+	REQUIRES(ndev->xdna->dev_lock)
 {
 	struct amdxdna_dev *xdna = ndev->xdna;
 	struct async_events *events;
 
 	events = ndev->async_events;
 
-	mutex_unlock(&xdna->dev_lock);
+	mutex_unlock(&ndev->xdna->dev_lock);
 	destroy_workqueue(events->wq);
-	mutex_lock(&xdna->dev_lock);
+	mutex_lock(&ndev->xdna->dev_lock);
 
 	dma_free_noncoherent(xdna->ddev.dev, events->size, events->buf,
 			     events->addr, DMA_FROM_DEVICE);

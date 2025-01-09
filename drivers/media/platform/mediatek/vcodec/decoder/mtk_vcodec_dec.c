@@ -177,11 +177,13 @@ static int vidioc_decoder_cmd(struct file *file, void *priv, struct v4l2_decoder
 }
 
 void mtk_vdec_unlock(struct mtk_vcodec_dec_ctx *ctx)
+	RELEASE(ctx->dev->dec_mutex[ctx->hw_id])
 {
 	mutex_unlock(&ctx->dev->dec_mutex[ctx->hw_id]);
 }
 
 void mtk_vdec_lock(struct mtk_vcodec_dec_ctx *ctx)
+	ACQUIRE(ctx->dev->dec_mutex[ctx->hw_id])
 {
 	mutex_lock(&ctx->dev->dec_mutex[ctx->hw_id]);
 }

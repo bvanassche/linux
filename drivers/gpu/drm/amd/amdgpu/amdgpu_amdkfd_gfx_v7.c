@@ -47,6 +47,7 @@ enum {
 
 static void lock_srbm(struct amdgpu_device *adev, uint32_t mec, uint32_t pipe,
 			uint32_t queue, uint32_t vmid)
+	ACQUIRE(adev->srbm_mutex)
 {
 	uint32_t value = PIPEID(pipe) | MEID(mec) | VMID(vmid) | QUEUEID(queue);
 
@@ -55,6 +56,7 @@ static void lock_srbm(struct amdgpu_device *adev, uint32_t mec, uint32_t pipe,
 }
 
 static void unlock_srbm(struct amdgpu_device *adev)
+	RELEASE(adev->srbm_mutex)
 {
 	WREG32(mmSRBM_GFX_CNTL, 0);
 	mutex_unlock(&adev->srbm_mutex);
@@ -62,6 +64,7 @@ static void unlock_srbm(struct amdgpu_device *adev)
 
 static void acquire_queue(struct amdgpu_device *adev, uint32_t pipe_id,
 				uint32_t queue_id)
+	ACQUIRE(adev->srbm_mutex)
 {
 	uint32_t mec = (pipe_id / adev->gfx.mec.num_pipe_per_mec) + 1;
 	uint32_t pipe = (pipe_id % adev->gfx.mec.num_pipe_per_mec);
@@ -70,6 +73,7 @@ static void acquire_queue(struct amdgpu_device *adev, uint32_t pipe_id,
 }
 
 static void release_queue(struct amdgpu_device *adev)
+	RELEASE(adev->srbm_mutex)
 {
 	unlock_srbm(adev);
 }

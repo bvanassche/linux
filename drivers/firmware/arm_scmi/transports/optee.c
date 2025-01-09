@@ -455,6 +455,7 @@ static int scmi_optee_chan_free(int id, void *p, void *data)
 
 static int scmi_optee_send_message(struct scmi_chan_info *cinfo,
 				   struct scmi_xfer *xfer)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct scmi_optee_channel *channel = cinfo->transport_info;
 	int ret;
@@ -492,6 +493,7 @@ static void scmi_optee_fetch_response(struct scmi_chan_info *cinfo,
 
 static void scmi_optee_mark_txdone(struct scmi_chan_info *cinfo, int ret,
 				   struct scmi_xfer *__unused)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct scmi_optee_channel *channel = cinfo->transport_info;
 

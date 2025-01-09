@@ -98,6 +98,7 @@ static const struct max8997_irq_data max8997_irqs[] = {
 };
 
 static void max8997_irq_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct max8997_dev *max8997 = irq_data_get_irq_chip_data(data);
 
@@ -105,6 +106,7 @@ static void max8997_irq_lock(struct irq_data *data)
 }
 
 static void max8997_irq_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct max8997_dev *max8997 = irq_data_get_irq_chip_data(data);
 	int i;

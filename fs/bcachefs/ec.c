@@ -1790,6 +1790,7 @@ static struct ec_stripe_head *
 ec_new_stripe_head_alloc(struct bch_fs *c, unsigned disk_label,
 			 unsigned algo, unsigned redundancy,
 			 enum bch_watermark watermark)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ec_stripe_head *h;
 
@@ -1810,6 +1811,7 @@ ec_new_stripe_head_alloc(struct bch_fs *c, unsigned disk_label,
 }
 
 void bch2_ec_stripe_head_put(struct bch_fs *c, struct ec_stripe_head *h)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (h->s &&
 	    h->s->allocated &&
@@ -1826,6 +1828,7 @@ __bch2_ec_stripe_head_get(struct btree_trans *trans,
 			  unsigned algo,
 			  unsigned redundancy,
 			  enum bch_watermark watermark)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct bch_fs *c = trans->c;
 	struct ec_stripe_head *h;

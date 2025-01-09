@@ -417,6 +417,7 @@ static int blkdev_pr_clear(struct block_device *bdev, blk_mode_t mode,
 
 static int blkdev_flushbuf(struct block_device *bdev, unsigned cmd,
 		unsigned long arg)
+	TRY_ACQUIRE(0, bdev->bd_holder_lock)
 {
 	if (!capable(CAP_SYS_ADMIN))
 		return -EACCES;

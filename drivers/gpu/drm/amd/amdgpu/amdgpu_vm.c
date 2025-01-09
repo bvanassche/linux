@@ -2184,6 +2184,7 @@ void amdgpu_vm_bo_del(struct amdgpu_device *adev,
  * Check if it is possible to evict a VM.
  */
 bool amdgpu_vm_evictable(struct amdgpu_bo *bo)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct amdgpu_vm_bo_base *bo_base = bo->vm_bo;
 

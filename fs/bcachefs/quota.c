@@ -276,6 +276,7 @@ static int bch2_quota_check_limit(struct bch_fs *c,
 int bch2_quota_acct(struct bch_fs *c, struct bch_qid qid,
 		    enum quota_counters counter, s64 v,
 		    enum quota_acct_mode mode)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	unsigned qtypes = enabled_qtypes(c);
 	struct bch_memquota_type *q;
@@ -327,6 +328,7 @@ int bch2_quota_transfer(struct bch_fs *c, unsigned qtypes,
 			struct bch_qid dst,
 			struct bch_qid src, u64 space,
 			enum quota_acct_mode mode)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct bch_memquota_type *q;
 	struct bch_memquota *src_q[3], *dst_q[3];

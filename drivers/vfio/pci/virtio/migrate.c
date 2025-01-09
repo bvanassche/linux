@@ -253,6 +253,7 @@ static void virtiovf_disable_fds(struct virtiovf_pci_core_device *virtvdev)
  * handle a 'deferred_reset' if exists.
  */
 static void virtiovf_state_mutex_unlock(struct virtiovf_pci_core_device *virtvdev)
+	RELEASE(virtvdev->state_mutex)
 {
 again:
 	spin_lock(&virtvdev->reset_lock);

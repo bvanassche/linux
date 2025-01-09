@@ -184,6 +184,7 @@ nvkm_subdev_oneinit(struct nvkm_subdev *subdev)
 
 void
 nvkm_subdev_unref(struct nvkm_subdev *subdev)
+	NO_THREAD_SAFETY_ANALYSIS /* because of a clang bug */
 {
 	if (refcount_dec_and_mutex_lock(&subdev->use.refcount, &subdev->use.mutex)) {
 		nvkm_subdev_fini(subdev, false);

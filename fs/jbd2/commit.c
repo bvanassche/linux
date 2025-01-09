@@ -346,6 +346,7 @@ static void jbd2_block_tag_csum_set(journal_t *j, journal_block_tag_t *tag,
  * function is called by the journal thread to begin a complete commit.
  */
 void jbd2_journal_commit_transaction(journal_t *journal)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct transaction_stats_s stats;
 	transaction_t *commit_transaction;

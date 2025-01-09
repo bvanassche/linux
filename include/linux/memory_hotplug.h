@@ -178,11 +178,13 @@ void mem_hotplug_done(void);
 
 /* See kswapd_is_running() */
 static inline void pgdat_kswapd_lock(pg_data_t *pgdat)
+	ACQUIRE(pgdat->kswapd_lock)
 {
 	mutex_lock(&pgdat->kswapd_lock);
 }
 
 static inline void pgdat_kswapd_unlock(pg_data_t *pgdat)
+	RELEASE(pgdat->kswapd_lock)
 {
 	mutex_unlock(&pgdat->kswapd_lock);
 }

@@ -328,6 +328,7 @@ static inline struct wm831x_irq_data *irq_to_wm831x_irq(struct wm831x *wm831x,
 }
 
 static void wm831x_irq_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct wm831x *wm831x = irq_data_get_irq_chip_data(data);
 
@@ -335,6 +336,7 @@ static void wm831x_irq_lock(struct irq_data *data)
 }
 
 static void wm831x_irq_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct wm831x *wm831x = irq_data_get_irq_chip_data(data);
 	int i;

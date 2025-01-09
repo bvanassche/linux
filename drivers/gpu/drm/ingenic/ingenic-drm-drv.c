@@ -213,6 +213,7 @@ static inline dma_addr_t dma_hwdesc_addr(const struct ingenic_drm *priv,
 static int ingenic_drm_update_pixclk(struct notifier_block *nb,
 				     unsigned long action,
 				     void *data)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct ingenic_drm *priv = drm_nb_get_priv(nb);
 

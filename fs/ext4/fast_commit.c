@@ -418,6 +418,7 @@ struct __track_dentry_update_args {
 /* __track_fn for directory entry updates. Called with ei->i_fc_lock. */
 static int __track_dentry_update(handle_t *handle, struct inode *inode,
 				 void *arg, bool update)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ext4_fc_dentry_update *node;
 	struct ext4_inode_info *ei = EXT4_I(inode);

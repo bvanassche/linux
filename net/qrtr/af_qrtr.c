@@ -166,6 +166,7 @@ static void qrtr_port_put(struct qrtr_sock *ipc);
  * kref_put_mutex.  As such, the node mutex is expected to be locked on call.
  */
 static void __qrtr_node_release(struct kref *kref)
+	RELEASE(qrtr_node_lock)
 {
 	struct qrtr_node *node = container_of(kref, struct qrtr_node, ref);
 	struct radix_tree_iter iter;

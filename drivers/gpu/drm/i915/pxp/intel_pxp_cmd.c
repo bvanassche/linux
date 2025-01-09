@@ -81,6 +81,7 @@ static u32 *pxp_emit_wait(u32 *cs)
 #define WAIT_LEN 2
 
 static void pxp_request_commit(struct i915_request *rq)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct i915_sched_attr attr = { .priority = I915_PRIORITY_MAX };
 	struct intel_timeline * const tl = i915_request_timeline(rq);

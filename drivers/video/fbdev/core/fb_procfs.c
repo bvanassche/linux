@@ -7,6 +7,7 @@
 static struct proc_dir_entry *fb_proc_dir_entry;
 
 static void *fb_seq_start(struct seq_file *m, loff_t *pos)
+	ACQUIRE(registration_lock)
 {
 	mutex_lock(&registration_lock);
 
@@ -14,6 +15,7 @@ static void *fb_seq_start(struct seq_file *m, loff_t *pos)
 }
 
 static void fb_seq_stop(struct seq_file *m, void *v)
+	RELEASE(registration_lock)
 {
 	mutex_unlock(&registration_lock);
 }

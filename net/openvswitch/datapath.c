@@ -104,11 +104,13 @@ static void ovs_notify(struct genl_family *family,
 static DEFINE_MUTEX(ovs_mutex);
 
 void ovs_lock(void)
+	ACQUIRE(ovs_mutex)
 {
 	mutex_lock(&ovs_mutex);
 }
 
 void ovs_unlock(void)
+	RELEASE(ovs_mutex)
 {
 	mutex_unlock(&ovs_mutex);
 }

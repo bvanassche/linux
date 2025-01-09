@@ -698,6 +698,7 @@ out:
 }
 
 static int load_extent_tree_free(struct btrfs_caching_control *caching_ctl)
+	REQUIRES(caching_ctl->mutex)
 {
 	struct btrfs_block_group *block_group = caching_ctl->block_group;
 	struct btrfs_fs_info *fs_info = block_group->fs_info;
@@ -2928,6 +2929,7 @@ struct btrfs_block_group *btrfs_make_block_group(struct btrfs_trans_handle *tran
  */
 int btrfs_inc_block_group_ro(struct btrfs_block_group *cache,
 			     bool do_chunk_alloc)
+	NO_THREAD_SAFETY_ANALYSIS /* too complex for clang */
 {
 	struct btrfs_fs_info *fs_info = cache->fs_info;
 	struct btrfs_trans_handle *trans;

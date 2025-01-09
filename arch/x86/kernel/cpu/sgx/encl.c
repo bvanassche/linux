@@ -606,6 +606,7 @@ static int sgx_encl_debug_write(struct sgx_encl *encl, struct sgx_encl_page *pag
 static struct sgx_encl_page *sgx_encl_reserve_page(struct sgx_encl *encl,
 						   unsigned long addr,
 						   unsigned long vm_flags)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking + returns ERR_PTR() */
 {
 	struct sgx_encl_page *entry;
 
@@ -627,6 +628,7 @@ static struct sgx_encl_page *sgx_encl_reserve_page(struct sgx_encl *encl,
 
 static int sgx_vma_access(struct vm_area_struct *vma, unsigned long addr,
 			  void *buf, int len, int write)
+	NO_THREAD_SAFETY_ANALYSIS /* to match the lock function */
 {
 	struct sgx_encl *encl = vma->vm_private_data;
 	struct sgx_encl_page *entry = NULL;

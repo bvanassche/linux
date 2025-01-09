@@ -971,6 +971,7 @@ static void tcpm_ams_finish(struct tcpm_port *port)
 static int tcpm_pd_transmit(struct tcpm_port *port,
 			    enum tcpm_transmit_type tx_sop_type,
 			    const struct pd_message *msg)
+	REQUIRES(port->lock)
 {
 	unsigned long time_left;
 	int ret;
@@ -1248,6 +1249,7 @@ static u32 tcpm_forge_legacy_pdo(struct tcpm_port *port, u32 pdo, enum typec_rol
 }
 
 static int tcpm_pd_send_revision(struct tcpm_port *port)
+	REQUIRES(port->lock)
 {
 	struct pd_message msg;
 	u32 rmdo;
@@ -1266,6 +1268,7 @@ static int tcpm_pd_send_revision(struct tcpm_port *port)
 }
 
 static int tcpm_pd_send_source_caps(struct tcpm_port *port)
+	REQUIRES(port->lock)
 {
 	struct pd_message msg;
 	u32 pdo;
@@ -1303,6 +1306,7 @@ static int tcpm_pd_send_source_caps(struct tcpm_port *port)
 }
 
 static int tcpm_pd_send_sink_caps(struct tcpm_port *port)
+	REQUIRES(port->lock)
 {
 	struct pd_message msg;
 	u32 pdo;
@@ -1483,6 +1487,7 @@ static bool tcpm_ams_interruptible(struct tcpm_port *port)
 }
 
 static int tcpm_ams_start(struct tcpm_port *port, enum tcpm_ams ams)
+	REQUIRES(port->lock)
 {
 	int ret = 0;
 
@@ -1922,6 +1927,7 @@ static int tcpm_pd_svdm(struct tcpm_port *port, struct typec_altmode *adev,
 			enum adev_actions *adev_action,
 			enum tcpm_transmit_type rx_sop_type,
 			enum tcpm_transmit_type *response_tx_sop_type)
+	REQUIRES(port->lock)
 {
 	struct typec_port *typec = port->typec_port;
 	struct typec_altmode *pdev, *pdev_prime;
@@ -2287,6 +2293,7 @@ static void tcpm_pd_handle_msg(struct tcpm_port *port,
 static void tcpm_handle_vdm_request(struct tcpm_port *port,
 				    const __le32 *payload, int cnt,
 				    enum tcpm_transmit_type rx_sop_type)
+	REQUIRES(port->lock)
 {
 	enum adev_actions adev_action = ADEV_NONE;
 	struct typec_altmode *adev;
@@ -2485,6 +2492,7 @@ static unsigned int vdm_ready_timeout(u32 vdm_hdr)
 }
 
 static void vdm_run_state_machine(struct tcpm_port *port)
+	REQUIRES(port->lock)
 {
 	struct pd_message msg;
 	int i, res = 0;
@@ -2936,6 +2944,7 @@ static int tcpm_pd_send_control(struct tcpm_port *port,
 
 static void tcpm_handle_alert(struct tcpm_port *port, const __le32 *payload,
 			      int cnt)
+	REQUIRES(port->lock)
 {
 	u32 p0 = le32_to_cpu(payload[0]);
 	unsigned int type = usb_pd_ado_type(p0);
@@ -3103,6 +3112,7 @@ static int tcpm_register_sink_caps(struct tcpm_port *port)
 static void tcpm_pd_data_request(struct tcpm_port *port,
 				 const struct pd_message *msg,
 				 enum tcpm_transmit_type rx_sop_type)
+	REQUIRES(port->lock)
 {
 	enum pd_data_msg_type type = pd_header_type_le(msg->header);
 	unsigned int cnt = pd_header_cnt_le(msg->header);
@@ -3303,6 +3313,7 @@ static void tcpm_pps_complete(struct tcpm_port *port, int result)
 static void tcpm_pd_ctrl_request(struct tcpm_port *port,
 				 const struct pd_message *msg,
 				 enum tcpm_transmit_type rx_sop_type)
+	REQUIRES(port->lock)
 {
 	enum pd_ctrl_msg_type type = pd_header_type_le(msg->header);
 	enum tcpm_state next_state;
@@ -3744,6 +3755,7 @@ EXPORT_SYMBOL_GPL(tcpm_pd_receive);
 static int tcpm_pd_send_control(struct tcpm_port *port,
 				enum pd_ctrl_msg_type type,
 				enum tcpm_transmit_type tx_sop_type)
+	REQUIRES(port->lock)
 {
 	struct pd_message msg;
 
@@ -3784,6 +3796,7 @@ static int tcpm_pd_send_control(struct tcpm_port *port,
  * false otherwise.
  */
 static bool tcpm_send_queued_message(struct tcpm_port *port)
+	REQUIRES(port->lock)
 {
 	enum pd_msg_request queued_message;
 	int ret;
@@ -4134,6 +4147,7 @@ static int tcpm_pd_build_request(struct tcpm_port *port, u32 *rdo)
 }
 
 static int tcpm_pd_send_request(struct tcpm_port *port)
+	REQUIRES(port->lock)
 {
 	struct pd_message msg;
 	int ret;
@@ -4221,6 +4235,7 @@ static int tcpm_pd_build_pps_request(struct tcpm_port *port, u32 *rdo)
 }
 
 static int tcpm_pd_send_pps_request(struct tcpm_port *port)
+	REQUIRES(port->lock)
 {
 	struct pd_message msg;
 	int ret;
@@ -4666,6 +4681,7 @@ static void tcpm_set_initial_svdm_version(struct tcpm_port *port)
 }
 
 static void run_state_machine(struct tcpm_port *port)
+	REQUIRES(port->lock)
 {
 	int ret;
 	enum typec_pwr_opmode opmode;

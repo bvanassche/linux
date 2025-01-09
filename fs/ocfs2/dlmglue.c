@@ -696,6 +696,7 @@ static void ocfs2_nfs_sync_lock_init(struct ocfs2_super *osb)
 }
 
 void ocfs2_trim_fs_lock_res_init(struct ocfs2_super *osb)
+	ACQUIRE(osb->obs_trim_fs_mutex)
 {
 	struct ocfs2_lock_res *lockres = &osb->osb_trim_fs_lockres;
 
@@ -709,6 +710,7 @@ void ocfs2_trim_fs_lock_res_init(struct ocfs2_super *osb)
 }
 
 void ocfs2_trim_fs_lock_res_uninit(struct ocfs2_super *osb)
+	RELEASE(osb->obs_trim_fs_mutex)
 {
 	struct ocfs2_lock_res *lockres = &osb->osb_trim_fs_lockres;
 

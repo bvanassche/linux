@@ -1040,6 +1040,7 @@ static void ksz_ptp_irq_unmask(struct irq_data *d)
 }
 
 static void ksz_ptp_irq_bus_lock(struct irq_data *d)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct ksz_irq *kirq  = irq_data_get_irq_chip_data(d);
 
@@ -1047,6 +1048,7 @@ static void ksz_ptp_irq_bus_lock(struct irq_data *d)
 }
 
 static void ksz_ptp_irq_bus_sync_unlock(struct irq_data *d)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct ksz_irq *kirq  = irq_data_get_irq_chip_data(d);
 	struct ksz_device *dev = kirq->dev;

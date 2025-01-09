@@ -29,6 +29,7 @@ static void cdx_msi_write_msg(struct irq_data *irq_data, struct msi_msg *msg)
 }
 
 static void cdx_msi_write_irq_lock(struct irq_data *irq_data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct msi_desc *msi_desc = irq_data_get_msi_desc(irq_data);
 	struct cdx_device *cdx_dev = to_cdx_device(msi_desc->dev);
@@ -37,6 +38,7 @@ static void cdx_msi_write_irq_lock(struct irq_data *irq_data)
 }
 
 static void cdx_msi_write_irq_unlock(struct irq_data *irq_data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct msi_desc *msi_desc = irq_data_get_msi_desc(irq_data);
 	struct cdx_device *cdx_dev = to_cdx_device(msi_desc->dev);

@@ -1553,6 +1553,7 @@ static int check_memory_region_flags(struct kvm *kvm,
 }
 
 static void kvm_swap_active_memslots(struct kvm *kvm, int as_id)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct kvm_memslots *slots = kvm_get_inactive_memslots(kvm, as_id);
 
@@ -1738,6 +1739,7 @@ static void kvm_copy_memslot(struct kvm_memory_slot *dest,
 static void kvm_invalidate_memslot(struct kvm *kvm,
 				   struct kvm_memory_slot *old,
 				   struct kvm_memory_slot *invalid_slot)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	/*
 	 * Mark the current slot INVALID.  As with all memslot modifications,
@@ -1827,6 +1829,7 @@ static int kvm_set_memslot(struct kvm *kvm,
 			   struct kvm_memory_slot *old,
 			   struct kvm_memory_slot *new,
 			   enum kvm_mr_change change)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct kvm_memory_slot *invalid_slot;
 	int r;

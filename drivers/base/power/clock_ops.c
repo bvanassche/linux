@@ -51,6 +51,7 @@ struct pm_clock_entry {
  */
 static void pm_clk_list_lock(struct pm_subsys_data *psd)
 	__acquires(&psd->lock)
+	ACQUIRE(psd->clock_mutex)
 {
 	mutex_lock(&psd->clock_mutex);
 	spin_lock_irq(&psd->lock);
@@ -63,6 +64,7 @@ static void pm_clk_list_lock(struct pm_subsys_data *psd)
  */
 static void pm_clk_list_unlock(struct pm_subsys_data *psd)
 	__releases(&psd->lock)
+	RELEASE(psd->clock_mutex)
 {
 	spin_unlock_irq(&psd->lock);
 	mutex_unlock(&psd->clock_mutex);
@@ -86,6 +88,7 @@ static void pm_clk_list_unlock(struct pm_subsys_data *psd)
 static int pm_clk_op_lock(struct pm_subsys_data *psd, unsigned long *flags,
 			  const char *fn)
 	/* sparse annotations don't work here as exit state isn't static */
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	bool atomic_context = in_atomic() || irqs_disabled();
 
@@ -129,6 +132,7 @@ try_again:
  */
 static void pm_clk_op_unlock(struct pm_subsys_data *psd, unsigned long *flags)
 	/* sparse annotations don't work here as entry state isn't static */
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (psd->clock_op_might_sleep) {
 		mutex_unlock(&psd->clock_mutex);

@@ -65,12 +65,14 @@ static void *shared_buffer;
 static DEFINE_MUTEX(shared_buffer_mutex);
 
 static void vdpasim_blk_buffer_lock(struct vdpasim_blk *blk)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (blk->shared_backend)
 		mutex_lock(&shared_buffer_mutex);
 }
 
 static void vdpasim_blk_buffer_unlock(struct vdpasim_blk *blk)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (blk->shared_backend)
 		mutex_unlock(&shared_buffer_mutex);

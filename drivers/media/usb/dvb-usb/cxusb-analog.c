@@ -896,6 +896,7 @@ ret_retbufs:
 }
 
 static void cxusb_medion_v_stop_streaming(struct vb2_queue *q)
+	NO_THREAD_SAFETY_ANALYSIS /* requires alias analysis */
 {
 	struct dvb_usb_device *dvbdev = vb2_get_drv_priv(q);
 	struct cxusb_medion_dev *cxdev = dvbdev->priv;

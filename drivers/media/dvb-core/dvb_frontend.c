@@ -2761,6 +2761,7 @@ static __poll_t dvb_frontend_poll(struct file *file, struct poll_table_struct *w
 }
 
 static int dvb_frontend_open(struct inode *inode, struct file *file)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct dvb_device *dvbdev = file->private_data;
 	struct dvb_frontend *fe = dvbdev->priv;

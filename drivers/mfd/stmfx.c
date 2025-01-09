@@ -164,6 +164,7 @@ int stmfx_function_disable(struct stmfx *stmfx, u32 func)
 EXPORT_SYMBOL_GPL(stmfx_function_disable);
 
 static void stmfx_irq_bus_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct stmfx *stmfx = irq_data_get_irq_chip_data(data);
 
@@ -171,6 +172,7 @@ static void stmfx_irq_bus_lock(struct irq_data *data)
 }
 
 static void stmfx_irq_bus_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct stmfx *stmfx = irq_data_get_irq_chip_data(data);
 

@@ -361,12 +361,14 @@ static inline time32_t local_get_seconds(struct super_block *s)
  * review and HPFS is not performance-sensitive anyway.
  */
 static inline void hpfs_lock(struct super_block *s)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct hpfs_sb_info *sbi = hpfs_sb(s);
 	mutex_lock(&sbi->hpfs_mutex);
 }
 
 static inline void hpfs_unlock(struct super_block *s)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct hpfs_sb_info *sbi = hpfs_sb(s);
 	mutex_unlock(&sbi->hpfs_mutex);

@@ -491,6 +491,7 @@ void cpuidle_uninstall_idle_handler(void)
  * cpuidle_pause_and_lock - temporarily disables CPUIDLE
  */
 void cpuidle_pause_and_lock(void)
+	ACQUIRE(cpuidle_lock)
 {
 	mutex_lock(&cpuidle_lock);
 	cpuidle_uninstall_idle_handler();
@@ -502,6 +503,7 @@ EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
  * cpuidle_resume_and_unlock - resumes CPUIDLE operation
  */
 void cpuidle_resume_and_unlock(void)
+	RELEASE(cpuidle_lock)
 {
 	cpuidle_install_idle_handler();
 	mutex_unlock(&cpuidle_lock);

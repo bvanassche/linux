@@ -86,6 +86,7 @@ static void set_tx_flow_on(struct caifsock *cf_sk)
 }
 
 static void caif_read_lock(struct sock *sk)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct caifsock *cf_sk;
 	cf_sk = container_of(sk, struct caifsock, sk);
@@ -93,6 +94,7 @@ static void caif_read_lock(struct sock *sk)
 }
 
 static void caif_read_unlock(struct sock *sk)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct caifsock *cf_sk;
 	cf_sk = container_of(sk, struct caifsock, sk);

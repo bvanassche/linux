@@ -301,6 +301,7 @@ struct mtk_ecc *of_mtk_ecc_get(struct device_node *of_node)
 EXPORT_SYMBOL(of_mtk_ecc_get);
 
 int mtk_ecc_enable(struct mtk_ecc *ecc, struct mtk_ecc_config *config)
+	TRY_ACQUIRE(0, ecc->lock)
 {
 	enum mtk_ecc_operation op = config->op;
 	u16 reg_val;
@@ -345,6 +346,7 @@ int mtk_ecc_enable(struct mtk_ecc *ecc, struct mtk_ecc_config *config)
 EXPORT_SYMBOL(mtk_ecc_enable);
 
 void mtk_ecc_disable(struct mtk_ecc *ecc)
+	RELEASE(ecc->lock)
 {
 	enum mtk_ecc_operation op = ECC_ENCODE;
 

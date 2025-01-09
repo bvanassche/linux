@@ -4582,6 +4582,7 @@ int rtw89_core_start(struct rtw89_dev *rtwdev)
 }
 
 void rtw89_core_stop(struct rtw89_dev *rtwdev)
+	REQUIRES(rtwdev->mutex)
 {
 	struct rtw89_btc *btc = &rtwdev->btc;
 

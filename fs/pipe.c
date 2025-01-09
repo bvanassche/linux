@@ -87,6 +87,7 @@ static int pipe_lock_cmp_fn(const struct lockdep_map *a,
 #endif
 
 void pipe_lock(struct pipe_inode_info *pipe)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (pipe->files)
 		mutex_lock(&pipe->mutex);
@@ -94,6 +95,7 @@ void pipe_lock(struct pipe_inode_info *pipe)
 EXPORT_SYMBOL(pipe_lock);
 
 void pipe_unlock(struct pipe_inode_info *pipe)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (pipe->files)
 		mutex_unlock(&pipe->mutex);

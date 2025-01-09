@@ -197,6 +197,7 @@ static ssize_t match_busid_store(struct device_driver *dev, const char *buf,
 static DRIVER_ATTR_RW(match_busid);
 
 static int do_rebind(char *busid, struct bus_id_priv *busid_priv)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int ret = 0;
 

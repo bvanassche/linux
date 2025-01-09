@@ -599,6 +599,7 @@ static int usbtmc_ioctl_get_srq_stb(struct usbtmc_file_data *file_data,
 
 static int usbtmc488_ioctl_wait_srq(struct usbtmc_file_data *file_data,
 				    __u32 __user *arg)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct usbtmc_device_data *data = file_data->data;
 	struct device *dev = &data->intf->dev;
@@ -2548,6 +2549,7 @@ static int usbtmc_resume(struct usb_interface *intf)
 }
 
 static int usbtmc_pre_reset(struct usb_interface *intf)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct usbtmc_device_data *data  = usb_get_intfdata(intf);
 	struct list_head *elem;
@@ -2570,6 +2572,7 @@ static int usbtmc_pre_reset(struct usb_interface *intf)
 }
 
 static int usbtmc_post_reset(struct usb_interface *intf)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct usbtmc_device_data *data  = usb_get_intfdata(intf);
 

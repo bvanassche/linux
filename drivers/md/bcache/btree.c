@@ -1362,6 +1362,7 @@ static int bch_btree_insert_node(struct btree *b, struct btree_op *op,
 
 static int btree_gc_coalesce(struct btree *b, struct btree_op *op,
 			     struct gc_stat *gc, struct gc_merge_info *r)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	unsigned int i, nodes = 0, keys = 0, blocks;
 	struct btree *new_nodes[GC_MERGE_NODES];

@@ -274,12 +274,14 @@ struct fsnotify_group {
  * evictable marks of the same group that is allocating a new mark.
  */
 static inline void fsnotify_group_lock(struct fsnotify_group *group)
+	ACQUIRE(group->mark_mutex)
 {
 	mutex_lock(&group->mark_mutex);
 	group->owner_flags = memalloc_nofs_save();
 }
 
 static inline void fsnotify_group_unlock(struct fsnotify_group *group)
+	RELEASE(group->mark_mutex)
 {
 	memalloc_nofs_restore(group->owner_flags);
 	mutex_unlock(&group->mark_mutex);

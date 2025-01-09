@@ -5040,6 +5040,7 @@ nfsd4_verify_open_stid(struct nfs4_stid *s)
 /* Lock the stateid st_mutex, and deal with races with CLOSE */
 static __be32
 nfsd4_lock_ol_stateid(struct nfs4_ol_stateid *stp)
+	TRY_ACQUIRE(nfs_ok, stp->st_mutex)
 {
 	__be32 ret;
 
@@ -5114,6 +5115,7 @@ retry:
 
 static struct nfs4_ol_stateid *
 init_open_stateid(struct nfs4_file *fp, struct nfsd4_open *open)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 
 	struct nfs4_openowner *oo = open->op_openowner;
@@ -6267,6 +6269,7 @@ static bool open_xor_delegation(struct nfsd4_open *open)
  */
 __be32
 nfsd4_process_open2(struct svc_rqst *rqstp, struct svc_fh *current_fh, struct nfsd4_open *open)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct nfsd4_compoundres *resp = rqstp->rq_resp;
 	struct nfs4_client *cl = open->op_openowner->oo_owner.so_client;
@@ -7411,6 +7414,7 @@ setlkflg (int type)
 }
 
 static __be32 nfs4_seqid_op_checks(struct nfsd4_compound_state *cstate, stateid_t *stateid, u32 seqid, struct nfs4_ol_stateid *stp)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct svc_fh *current_fh = &cstate->current_fh;
 	struct nfs4_stateowner *sop = stp->st_stateowner;
@@ -7479,6 +7483,7 @@ retry:
 
 static __be32 nfs4_preprocess_confirmed_seqid_op(struct nfsd4_compound_state *cstate, u32 seqid,
 						 stateid_t *stateid, struct nfs4_ol_stateid **stpp, struct nfsd_net *nn)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	__be32 status;
 	struct nfs4_openowner *oo;
@@ -7501,6 +7506,7 @@ static __be32 nfs4_preprocess_confirmed_seqid_op(struct nfsd4_compound_state *cs
 __be32
 nfsd4_open_confirm(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 		   union nfsd4_op_u *u)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct nfsd4_open_confirm *oc = &u->open_confirm;
 	__be32 status;
@@ -7568,6 +7574,7 @@ static inline void nfs4_stateid_downgrade(struct nfs4_ol_stateid *stp, u32 to_ac
 __be32
 nfsd4_open_downgrade(struct svc_rqst *rqstp,
 		     struct nfsd4_compound_state *cstate, union nfsd4_op_u *u)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct nfsd4_open_downgrade *od = &u->open_downgrade;
 	__be32 status;
@@ -7640,6 +7647,7 @@ static bool nfsd4_close_open_stateid(struct nfs4_ol_stateid *s)
 __be32
 nfsd4_close(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 		union nfsd4_op_u *u)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct nfsd4_close *close = &u->close;
 	__be32 status;
@@ -7961,6 +7969,7 @@ static struct nfs4_ol_stateid *
 init_lock_stateid(struct nfs4_ol_stateid *stp, struct nfs4_lockowner *lo,
 		  struct nfs4_file *fp, struct inode *inode,
 		  struct nfs4_ol_stateid *open_stp)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct nfs4_client *clp = lo->lo_owner.so_client;
 	struct nfs4_ol_stateid *retstp;
@@ -8103,6 +8112,7 @@ out:
 __be32
 nfsd4_lock(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 	   union nfsd4_op_u *u)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct nfsd4_lock *lock = &u->lock;
 	struct nfs4_openowner *open_sop = NULL;
@@ -8446,6 +8456,7 @@ void nfsd4_lockt_release(union nfsd4_op_u *u)
 __be32
 nfsd4_locku(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 	    union nfsd4_op_u *u)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct nfsd4_locku *locku = &u->locku;
 	struct nfs4_ol_stateid *stp;

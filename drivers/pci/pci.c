@@ -5117,6 +5117,7 @@ static int cxl_reset_bus_function(struct pci_dev *dev, bool probe)
 }
 
 void pci_dev_lock(struct pci_dev *dev)
+	ACQUIRE(dev->dev.mutex)
 {
 	/* block PM suspend, driver probe, etc. */
 	device_lock(&dev->dev);
@@ -5126,6 +5127,7 @@ EXPORT_SYMBOL_GPL(pci_dev_lock);
 
 /* Return 1 on successful lock, 0 on contention */
 int pci_dev_trylock(struct pci_dev *dev)
+	TRY_ACQUIRE(1, dev->dev.mutex)
 {
 	if (device_trylock(&dev->dev)) {
 		if (pci_cfg_access_trylock(dev))
@@ -5138,6 +5140,7 @@ int pci_dev_trylock(struct pci_dev *dev)
 EXPORT_SYMBOL_GPL(pci_dev_trylock);
 
 void pci_dev_unlock(struct pci_dev *dev)
+	RELEASE(dev->dev.mutex)
 {
 	pci_cfg_access_unlock(dev);
 	device_unlock(&dev->dev);
@@ -5306,6 +5309,7 @@ void pci_init_reset_methods(struct pci_dev *dev)
  * device doesn't support resetting a single function.
  */
 int pci_reset_function(struct pci_dev *dev)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct pci_dev *bridge;
 	int rc;
@@ -5415,6 +5419,7 @@ static bool pci_bus_resettable(struct pci_bus *bus)
 
 /* Lock devices from the top of the tree down */
 static void pci_bus_lock(struct pci_bus *bus)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct pci_dev *dev;
 
@@ -5429,6 +5434,7 @@ static void pci_bus_lock(struct pci_bus *bus)
 
 /* Unlock devices from the bottom of the tree up */
 static void pci_bus_unlock(struct pci_bus *bus)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	struct pci_dev *dev;
 
@@ -5443,6 +5449,7 @@ static void pci_bus_unlock(struct pci_bus *bus)
 
 /* Return 1 on successful lock, 0 on contention */
 static int pci_bus_trylock(struct pci_bus *bus)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct pci_dev *dev;
 
@@ -5491,6 +5498,7 @@ static bool pci_slot_resettable(struct pci_slot *slot)
 
 /* Lock devices from the top of the tree down */
 static void pci_slot_lock(struct pci_slot *slot)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct pci_dev *dev;
 
@@ -5506,6 +5514,7 @@ static void pci_slot_lock(struct pci_slot *slot)
 
 /* Unlock devices from the bottom of the tree up */
 static void pci_slot_unlock(struct pci_slot *slot)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	struct pci_dev *dev;
 
@@ -5520,6 +5529,7 @@ static void pci_slot_unlock(struct pci_slot *slot)
 
 /* Return 1 on successful lock, 0 on contention */
 static int pci_slot_trylock(struct pci_slot *slot)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct pci_dev *dev;
 

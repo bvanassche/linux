@@ -101,6 +101,7 @@ struct ubifs_compressor *ubifs_compressors[UBIFS_COMPR_TYPES_CNT];
  */
 void ubifs_compress(const struct ubifs_info *c, const void *in_buf,
 		    int in_len, void *out_buf, int *out_len, int *compr_type)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int err;
 	struct ubifs_compressor *compr = ubifs_compressors[*compr_type];
@@ -154,6 +155,7 @@ no_compr:
  */
 int ubifs_decompress(const struct ubifs_info *c, const void *in_buf,
 		     int in_len, void *out_buf, int *out_len, int compr_type)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int err;
 	struct ubifs_compressor *compr;

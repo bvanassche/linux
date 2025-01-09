@@ -123,6 +123,7 @@ static void da9150_fg_write_attr(struct da9150_fg *fg, u8 code, u8 size,
 
 /* Trigger QIF Sync to update QIF readable data */
 static void da9150_fg_read_sync_start(struct da9150_fg *fg)
+	ACQUIRE(fg->io_lock)
 {
 	int i = 0;
 	u32 res = 0;
@@ -155,6 +156,7 @@ static void da9150_fg_read_sync_start(struct da9150_fg *fg)
  * attributes required have been accessed.
  */
 static inline void da9150_fg_read_sync_end(struct da9150_fg *fg)
+	RELEASE(fg->io_lock)
 {
 	mutex_unlock(&fg->io_lock);
 }

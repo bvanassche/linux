@@ -823,6 +823,7 @@ static int usbduxsigma_ao_inttrig(struct comedi_device *dev,
 static int usbduxsigma_ao_cmdtest(struct comedi_device *dev,
 				  struct comedi_subdevice *s,
 				  struct comedi_cmd *cmd)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct usbduxsigma_private *devpriv = dev->private;
 	unsigned int tmp;

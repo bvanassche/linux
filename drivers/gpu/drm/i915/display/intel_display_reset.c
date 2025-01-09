@@ -20,6 +20,7 @@ static bool gpu_reset_clobbers_display(struct drm_i915_private *dev_priv)
 }
 
 void intel_display_reset_prepare(struct drm_i915_private *dev_priv)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct drm_modeset_acquire_ctx *ctx = &dev_priv->display.restore.reset_ctx;
 	struct drm_atomic_state *state;
@@ -82,6 +83,7 @@ void intel_display_reset_prepare(struct drm_i915_private *dev_priv)
 }
 
 void intel_display_reset_finish(struct drm_i915_private *i915)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct intel_display *display = &i915->display;
 	struct drm_modeset_acquire_ctx *ctx = &display->restore.reset_ctx;

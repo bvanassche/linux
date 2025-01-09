@@ -156,11 +156,13 @@ static int gb_lights_color_set(struct gb_channel *channel, u32 color);
 static int gb_lights_fade_set(struct gb_channel *channel);
 
 static void led_lock(struct led_classdev *cdev)
+	ACQUIRE(cdev->led_access)
 {
 	mutex_lock(&cdev->led_access);
 }
 
 static void led_unlock(struct led_classdev *cdev)
+	RELEASE(cdev->led_access)
 {
 	mutex_unlock(&cdev->led_access);
 }

@@ -1867,11 +1867,12 @@ static void vcn_v1_0_idle_work_handler(struct work_struct *work)
 }
 
 static void vcn_v1_0_ring_begin_use(struct amdgpu_ring *ring)
+	ACQUIRE(ring->adev->vcn.vcn1_jpeg1_workaround)
 {
 	struct	amdgpu_device *adev = ring->adev;
 	bool set_clocks = !cancel_delayed_work_sync(&adev->vcn.idle_work);
 
-	mutex_lock(&adev->vcn.vcn1_jpeg1_workaround);
+	mutex_lock(&ring->adev->vcn.vcn1_jpeg1_workaround);
 
 	if (amdgpu_fence_wait_empty(ring->adev->jpeg.inst->ring_dec))
 		DRM_ERROR("VCN dec: jpeg dec ring may not be empty\n");
@@ -1920,6 +1921,7 @@ void vcn_v1_0_set_pg_for_begin_use(struct amdgpu_ring *ring, bool set_clocks)
 }
 
 void vcn_v1_0_ring_end_use(struct amdgpu_ring *ring)
+	RELEASE(ring->adev->vcn.vcn1_jpeg1_workaround)
 {
 	schedule_delayed_work(&ring->adev->vcn.idle_work, VCN_IDLE_TIMEOUT);
 	mutex_unlock(&ring->adev->vcn.vcn1_jpeg1_workaround);

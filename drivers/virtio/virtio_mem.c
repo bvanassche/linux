@@ -787,6 +787,7 @@ static int virtio_mem_sbm_offline_and_remove_mb(struct virtio_mem *vm,
  */
 static int virtio_mem_sbm_try_remove_unplugged_mb(struct virtio_mem *vm,
 						  unsigned long mb_id)
+	REQUIRES(vm->hotplug_mutex)
 {
 	int rc;
 
@@ -989,6 +990,7 @@ static void virtio_mem_bbm_notify_cancel_offline(struct virtio_mem *vm,
  */
 static int virtio_mem_memory_notifier_cb(struct notifier_block *nb,
 					 unsigned long action, void *arg)
+	NO_THREAD_SAFETY_ANALYSIS /* too complex for clang */
 {
 	struct virtio_mem *vm = container_of(nb, struct virtio_mem,
 					     memory_notifier);
@@ -1938,6 +1940,7 @@ static int virtio_mem_plug_request(struct virtio_mem *vm, uint64_t diff)
 static int virtio_mem_sbm_unplug_any_sb_offline(struct virtio_mem *vm,
 						unsigned long mb_id,
 						uint64_t *nb_sb)
+	REQUIRES(vm->hotplug_mutex)
 {
 	int rc;
 
@@ -2024,6 +2027,7 @@ static int virtio_mem_sbm_unplug_sb_online(struct virtio_mem *vm,
 static int virtio_mem_sbm_unplug_any_sb_online(struct virtio_mem *vm,
 					       unsigned long mb_id,
 					       uint64_t *nb_sb)
+	REQUIRES(vm->hotplug_mutex)
 {
 	int rc, sb_id;
 
@@ -2079,6 +2083,7 @@ unplugged:
 static int virtio_mem_sbm_unplug_any_sb(struct virtio_mem *vm,
 					unsigned long mb_id,
 					uint64_t *nb_sb)
+	REQUIRES(vm->hotplug_mutex)
 {
 	const int old_state = virtio_mem_sbm_get_mb_state(vm, mb_id);
 

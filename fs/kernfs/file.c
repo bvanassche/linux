@@ -48,6 +48,7 @@ static inline struct mutex *kernfs_open_file_mutex_ptr(struct kernfs_node *kn)
 }
 
 static inline struct mutex *kernfs_open_file_mutex_lock(struct kernfs_node *kn)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct mutex *lock;
 
@@ -143,6 +144,7 @@ static void kernfs_seq_stop_active(struct seq_file *sf, void *v)
 }
 
 static void *kernfs_seq_start(struct seq_file *sf, loff_t *ppos)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct kernfs_open_file *of = sf->private;
 	const struct kernfs_ops *ops;
@@ -188,6 +190,7 @@ static void *kernfs_seq_next(struct seq_file *sf, void *v, loff_t *ppos)
 }
 
 static void kernfs_seq_stop(struct seq_file *sf, void *v)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct kernfs_open_file *of = sf->private;
 
@@ -219,6 +222,7 @@ static const struct seq_operations kernfs_seq_ops = {
  * bin files.
  */
 static ssize_t kernfs_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct kernfs_open_file *of = kernfs_of(iocb->ki_filp);
 	ssize_t len = min_t(size_t, iov_iter_count(iter), PAGE_SIZE);
@@ -291,6 +295,7 @@ static ssize_t kernfs_fop_read_iter(struct kiocb *iocb, struct iov_iter *iter)
  * back.
  */
 static ssize_t kernfs_fop_write_iter(struct kiocb *iocb, struct iov_iter *iter)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct kernfs_open_file *of = kernfs_of(iocb->ki_filp);
 	ssize_t len = iov_iter_count(iter);
@@ -513,6 +518,7 @@ out_unlock:
  */
 static int kernfs_get_open_node(struct kernfs_node *kn,
 				struct kernfs_open_file *of)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct kernfs_open_node *on;
 	struct mutex *mutex;
@@ -558,6 +564,7 @@ static int kernfs_get_open_node(struct kernfs_node *kn,
 static void kernfs_unlink_open_file(struct kernfs_node *kn,
 				    struct kernfs_open_file *of,
 				    bool open_failed)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct kernfs_open_node *on;
 	struct mutex *mutex;
@@ -750,6 +757,7 @@ static void kernfs_release_file(struct kernfs_node *kn,
 }
 
 static int kernfs_fop_release(struct inode *inode, struct file *filp)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct kernfs_node *kn = inode->i_private;
 	struct kernfs_open_file *of = kernfs_of(filp);
@@ -790,6 +798,7 @@ bool kernfs_should_drain_open_files(struct kernfs_node *kn)
 }
 
 void kernfs_drain_open_files(struct kernfs_node *kn)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct kernfs_open_node *on;
 	struct kernfs_open_file *of;

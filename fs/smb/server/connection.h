@@ -166,8 +166,10 @@ void ksmbd_conn_init_server_callbacks(struct ksmbd_conn_ops *ops);
 int ksmbd_conn_handler_loop(void *p);
 int ksmbd_conn_transport_init(void);
 void ksmbd_conn_transport_destroy(void);
-void ksmbd_conn_lock(struct ksmbd_conn *conn);
-void ksmbd_conn_unlock(struct ksmbd_conn *conn);
+void ksmbd_conn_lock(struct ksmbd_conn *conn)
+	ACQUIRE(conn->srv_mutex);
+void ksmbd_conn_unlock(struct ksmbd_conn *conn)
+	RELEASE(conn->srv_mutex);
 
 /*
  * WARNING

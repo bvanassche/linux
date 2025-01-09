@@ -494,6 +494,7 @@ static int snd_ac97_put_enum_double(struct snd_kcontrol *kcontrol,
 
 /* save/restore ac97 v2.3 paging */
 static int snd_ac97_page_save(struct snd_ac97 *ac97, int reg, struct snd_kcontrol *kcontrol)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int page_save = -1;
 	if ((kcontrol->private_value & (1<<25)) &&
@@ -508,6 +509,7 @@ static int snd_ac97_page_save(struct snd_ac97 *ac97, int reg, struct snd_kcontro
 }
 
 static void snd_ac97_page_restore(struct snd_ac97 *ac97, int page_save)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (page_save >= 0) {
 		snd_ac97_update_bits(ac97, AC97_INT_PAGING, AC97_PAGE_MASK, page_save);

@@ -8461,6 +8461,7 @@ static void hclge_reset_umv_space(struct hclge_dev *hdev)
 }
 
 static bool hclge_is_umv_space_full(struct hclge_vport *vport, bool need_lock)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct hclge_dev *hdev = vport->back;
 	bool is_full;

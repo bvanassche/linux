@@ -305,6 +305,7 @@ EXPORT_SYMBOL_GPL(usb_stor_reset_resume);
  */
 
 int usb_stor_pre_reset(struct usb_interface *iface)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct us_data *us = usb_get_intfdata(iface);
 
@@ -315,6 +316,7 @@ int usb_stor_pre_reset(struct usb_interface *iface)
 EXPORT_SYMBOL_GPL(usb_stor_pre_reset);
 
 int usb_stor_post_reset(struct usb_interface *iface)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct us_data *us = usb_get_intfdata(iface);
 

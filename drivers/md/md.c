@@ -446,6 +446,7 @@ static void md_submit_bio(struct bio *bio)
  * have been submitted are completely handled.
  */
 int mddev_suspend(struct mddev *mddev, bool interruptible)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	int err = 0;
 
@@ -3561,6 +3562,7 @@ rdev_attr_show(struct kobject *kobj, struct attribute *attr, char *page)
 static ssize_t
 rdev_attr_store(struct kobject *kobj, struct attribute *attr,
 	      const char *page, size_t length)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct rdev_sysfs_entry *entry = container_of(attr, struct rdev_sysfs_entry, attr);
 	struct md_rdev *rdev = container_of(kobj, struct md_rdev, kobj);
@@ -4877,6 +4879,7 @@ action_show(struct mddev *mddev, char *page)
  *		function return.
  */
 static void stop_sync_thread(struct mddev *mddev, bool locked)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int sync_seq = atomic_read(&mddev->sync_seq);
 
@@ -4907,6 +4910,7 @@ static void stop_sync_thread(struct mddev *mddev, bool locked)
 }
 
 void md_idle_sync_thread(struct mddev *mddev)
+	REQUIRES(mddev->reconfig_mutex)
 {
 	lockdep_assert_held(&mddev->reconfig_mutex);
 
@@ -4916,6 +4920,7 @@ void md_idle_sync_thread(struct mddev *mddev)
 EXPORT_SYMBOL_GPL(md_idle_sync_thread);
 
 void md_frozen_sync_thread(struct mddev *mddev)
+	REQUIRES(mddev->reconfig_mutex)
 {
 	lockdep_assert_held(&mddev->reconfig_mutex);
 
@@ -4925,6 +4930,7 @@ void md_frozen_sync_thread(struct mddev *mddev)
 EXPORT_SYMBOL_GPL(md_frozen_sync_thread);
 
 void md_unfrozen_sync_thread(struct mddev *mddev)
+	REQUIRES(mddev->reconfig_mutex)
 {
 	lockdep_assert_held(&mddev->reconfig_mutex);
 
@@ -6490,6 +6496,7 @@ EXPORT_SYMBOL_GPL(md_stop);
 
 /* ensure 'mddev->pers' exist before calling md_set_readonly() */
 static int md_set_readonly(struct mddev *mddev)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int err = 0;
 	int did_freeze = 0;
@@ -7685,6 +7692,7 @@ static int __md_set_array_info(struct mddev *mddev, void __user *argp)
 
 static int md_ioctl(struct block_device *bdev, blk_mode_t mode,
 			unsigned int cmd, unsigned long arg)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	int err = 0;
 	void __user *argp = (void __user *)arg;

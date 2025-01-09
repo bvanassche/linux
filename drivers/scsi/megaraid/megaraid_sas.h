@@ -2696,7 +2696,8 @@ __le16 get_updated_dev_handle(struct megasas_instance *instance,
 			      struct MR_DRV_RAID_MAP_ALL *drv_map);
 void mr_update_load_balance_params(struct MR_DRV_RAID_MAP_ALL *map,
 	struct LD_LOAD_BALANCE_INFO *lbInfo);
-int megasas_get_ctrl_info(struct megasas_instance *instance);
+int megasas_get_ctrl_info(struct megasas_instance *instance)
+	REQUIRES(instance->reset_mutex);
 /* PD sequence */
 int
 megasas_sync_pd_seq_num(struct megasas_instance *instance, bool pend);

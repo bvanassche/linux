@@ -921,6 +921,7 @@ int drbd_connected(struct drbd_peer_device *peer_device)
  *  -2 We do not have a network config...
  */
 static int conn_connect(struct drbd_connection *connection)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct drbd_socket sock, msock;
 	struct drbd_peer_device *peer_device;

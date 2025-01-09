@@ -241,6 +241,7 @@ static void pcf857x_irq_disable(struct irq_data *data)
 }
 
 static void pcf857x_irq_bus_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct pcf857x *gpio = irq_data_get_irq_chip_data(data);
 
@@ -248,6 +249,7 @@ static void pcf857x_irq_bus_lock(struct irq_data *data)
 }
 
 static void pcf857x_irq_bus_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct pcf857x *gpio = irq_data_get_irq_chip_data(data);
 

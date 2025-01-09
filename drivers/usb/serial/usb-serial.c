@@ -59,6 +59,7 @@ static LIST_HEAD(usb_serial_driver_list);
  * and its refcount incremented.  Otherwise return NULL.
  */
 struct usb_serial_port *usb_serial_port_get_by_minor(unsigned minor)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct usb_serial *serial;
 	struct usb_serial_port *port;
@@ -212,6 +213,7 @@ void usb_serial_put(struct usb_serial *serial)
  * in serial_cleanup().
  */
 static int serial_install(struct tty_driver *driver, struct tty_struct *tty)
+	NO_THREAD_SAFETY_ANALYSIS /* see also usb_serial_port_get_by_minor() */
 {
 	int idx = tty->index;
 	struct usb_serial *serial;
@@ -544,6 +546,7 @@ static int serial_break(struct tty_struct *tty, int break_state)
 }
 
 static int serial_proc_show(struct seq_file *m, void *v)
+	NO_THREAD_SAFETY_ANALYSIS /* see also usb_serial_port_get_by_minor() */
 {
 	struct usb_serial *serial;
 	struct usb_serial_port *port;

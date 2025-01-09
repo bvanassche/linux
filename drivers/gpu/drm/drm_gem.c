@@ -383,6 +383,7 @@ int
 drm_gem_handle_create_tail(struct drm_file *file_priv,
 			   struct drm_gem_object *obj,
 			   u32 *handlep)
+	RELEASE(obj->dev->object_name_lock)
 {
 	struct drm_device *dev = obj->dev;
 	u32 handle;
@@ -404,7 +405,7 @@ drm_gem_handle_create_tail(struct drm_file *file_priv,
 	spin_unlock(&file_priv->table_lock);
 	idr_preload_end();
 
-	mutex_unlock(&dev->object_name_lock);
+	mutex_unlock(&obj->dev->object_name_lock);
 	if (ret < 0)
 		goto err_unref;
 
@@ -902,6 +903,7 @@ err:
 int
 drm_gem_open_ioctl(struct drm_device *dev, void *data,
 		   struct drm_file *file_priv)
+	NO_THREAD_SAFETY_ANALYSIS /* requires alias analysis */
 {
 	struct drm_gem_open *args = data;
 	struct drm_gem_object *obj;

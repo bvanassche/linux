@@ -124,6 +124,7 @@ static void print_drs_error(unsigned int dsr)
 
 static int wait_for_ready(struct map_info *map, struct flchip *chip,
 		unsigned int chip_op_time)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	unsigned int timeo, reset_timeo, sleep_time;
 	unsigned int dsr;
@@ -196,6 +197,7 @@ static int wait_for_ready(struct map_info *map, struct flchip *chip,
 }
 
 static int get_chip(struct map_info *map, struct flchip *chip, int mode)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int ret;
 	DECLARE_WAITQUEUE(wait, current);
@@ -292,6 +294,7 @@ static int get_chip(struct map_info *map, struct flchip *chip, int mode)
 }
 
 static int chip_ready(struct map_info *map, struct flchip *chip, int mode)
+	REQUIRES(chip->mutex)
 {
 	struct lpddr_private *lpddr = map->fldrv_priv;
 	int ret = 0;
@@ -346,6 +349,7 @@ sleep:
 }
 
 static void put_chip(struct map_info *map, struct flchip *chip)
+	REQUIRES(chip->mutex)
 {
 	if (chip->priv) {
 		struct flchip_shared *shared = chip->priv;

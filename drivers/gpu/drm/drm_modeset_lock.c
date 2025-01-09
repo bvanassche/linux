@@ -141,6 +141,7 @@ static void __drm_stack_depot_init(void)
  * drm_modeset_lock_all_ctx() function and pass in the context explicitly.
  */
 void drm_modeset_lock_all(struct drm_device *dev)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct drm_mode_config *config = &dev->mode_config;
 	struct drm_modeset_acquire_ctx *ctx;
@@ -195,6 +196,7 @@ EXPORT_SYMBOL(drm_modeset_lock_all);
  * directly to the drm_modeset_drop_locks() function.
  */
 void drm_modeset_unlock_all(struct drm_device *dev)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlocking */
 {
 	struct drm_mode_config *config = &dev->mode_config;
 	struct drm_modeset_acquire_ctx *ctx = config->acquire_ctx;

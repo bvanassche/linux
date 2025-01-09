@@ -180,6 +180,7 @@ static int write_relocate_add(Elf64_Shdr *sechdrs,
 			      unsigned int relsec,
 			      struct module *me,
 			      bool apply)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int ret;
 	bool early = me->state == MODULE_STATE_UNFORMED;

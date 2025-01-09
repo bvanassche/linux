@@ -921,6 +921,7 @@ int io_import_fixed(int ddir, struct iov_iter *iter,
 
 /* Lock two rings at once. The rings must be different! */
 static void lock_two_rings(struct io_ring_ctx *ctx1, struct io_ring_ctx *ctx2)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (ctx1 > ctx2)
 		swap(ctx1, ctx2);
@@ -931,6 +932,7 @@ static void lock_two_rings(struct io_ring_ctx *ctx1, struct io_ring_ctx *ctx2)
 /* Both rings are locked by the caller. */
 static int io_clone_buffers(struct io_ring_ctx *ctx, struct io_ring_ctx *src_ctx,
 			    struct io_uring_clone_buffers *arg)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct io_rsrc_data data;
 	int i, ret, off, nr;
@@ -1045,6 +1047,7 @@ out_free:
  * Since the memory is already accounted once, don't account it again.
  */
 int io_register_clone_buffers(struct io_ring_ctx *ctx, void __user *arg)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct io_uring_clone_buffers buf;
 	struct io_ring_ctx *src_ctx;

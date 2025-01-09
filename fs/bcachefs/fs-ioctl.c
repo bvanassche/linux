@@ -209,6 +209,7 @@ static int bch2_ioc_reinherit_attrs(struct bch_fs *c,
 				    struct file *file,
 				    struct bch_inode_info *src,
 				    const char __user *name)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct bch_hash_info hash = bch2_hash_info_init(c, &src->ei_inode);
 	struct bch_inode_info *dst;

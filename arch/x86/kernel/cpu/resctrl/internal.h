@@ -599,8 +599,11 @@ __printf(1, 2)
 void rdt_last_cmd_printf(const char *fmt, ...);
 
 void rdt_ctrl_update(void *arg);
-struct rdtgroup *rdtgroup_kn_lock_live(struct kernfs_node *kn);
-void rdtgroup_kn_unlock(struct kernfs_node *kn);
+DEFINE_CAPABILITY(rdtgroup);
+struct rdtgroup *rdtgroup_kn_lock_live(struct kernfs_node *kn)
+	ACQUIRE(rdtgroup);
+void rdtgroup_kn_unlock(struct kernfs_node *kn)
+	RELEASE(rdtgroup);
 int rdtgroup_kn_mode_restrict(struct rdtgroup *r, const char *name);
 int rdtgroup_kn_mode_restore(struct rdtgroup *r, const char *name,
 			     umode_t mask);

@@ -122,6 +122,7 @@ static void __bm_print_lock_info(struct drbd_device *device, const char *func)
 }
 
 void drbd_bm_lock(struct drbd_device *device, char *why, enum bm_flag flags)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct drbd_bitmap *b = device->bitmap;
 	int trylock_failed;
@@ -149,6 +150,7 @@ void drbd_bm_lock(struct drbd_device *device, char *why, enum bm_flag flags)
 }
 
 void drbd_bm_unlock(struct drbd_device *device)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct drbd_bitmap *b = device->bitmap;
 	if (!b) {

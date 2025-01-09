@@ -14,6 +14,7 @@
 
 static int sof_ipc4_set_get_kcontrol_data(struct snd_sof_control *scontrol,
 					  bool set, bool lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct sof_ipc4_control_data *cdata = scontrol->ipc_control_data;
 	struct snd_soc_component *scomp = scontrol->scomp;

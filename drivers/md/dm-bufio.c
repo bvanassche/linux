@@ -1020,6 +1020,7 @@ struct dm_bufio_client {
 #define dm_bufio_in_request()	(!!current->bio_list)
 
 static void dm_bufio_lock(struct dm_bufio_client *c)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (static_branch_unlikely(&no_sleep_enabled) && c->no_sleep)
 		spin_lock_bh(&c->spinlock);
@@ -1028,6 +1029,7 @@ static void dm_bufio_lock(struct dm_bufio_client *c)
 }
 
 static void dm_bufio_unlock(struct dm_bufio_client *c)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (static_branch_unlikely(&no_sleep_enabled) && c->no_sleep)
 		spin_unlock_bh(&c->spinlock);

@@ -598,6 +598,7 @@ static void *__conn_prepare_command(struct drbd_connection *connection,
 }
 
 void *conn_prepare_command(struct drbd_connection *connection, struct drbd_socket *sock)
+	TRY_ACQUIRE(true, sock->mutex)
 {
 	void *p;
 
@@ -610,6 +611,7 @@ void *conn_prepare_command(struct drbd_connection *connection, struct drbd_socke
 }
 
 void *drbd_prepare_command(struct drbd_peer_device *peer_device, struct drbd_socket *sock)
+	TRY_ACQUIRE(true, sock->mutex)
 {
 	return conn_prepare_command(peer_device->connection, sock);
 }
@@ -655,6 +657,7 @@ static int __conn_send_command(struct drbd_connection *connection, struct drbd_s
 int conn_send_command(struct drbd_connection *connection, struct drbd_socket *sock,
 		      enum drbd_packet cmd, unsigned int header_size,
 		      void *data, unsigned int size)
+	RELEASE(sock->mutex)
 {
 	int err;
 
@@ -666,6 +669,7 @@ int conn_send_command(struct drbd_connection *connection, struct drbd_socket *so
 int drbd_send_command(struct drbd_peer_device *peer_device, struct drbd_socket *sock,
 		      enum drbd_packet cmd, unsigned int header_size,
 		      void *data, unsigned int size)
+	RELEASE(sock->mutex)
 {
 	int err;
 
@@ -676,6 +680,7 @@ int drbd_send_command(struct drbd_peer_device *peer_device, struct drbd_socket *
 }
 
 int drbd_send_ping(struct drbd_connection *connection)
+	TRY_ACQUIRE(true, connection->meta.mutex)
 {
 	struct drbd_socket *sock;
 
@@ -686,6 +691,7 @@ int drbd_send_ping(struct drbd_connection *connection)
 }
 
 int drbd_send_ping_ack(struct drbd_connection *connection)
+	TRY_ACQUIRE(true, connection->meta.mutex)
 {
 	struct drbd_socket *sock;
 
@@ -696,6 +702,7 @@ int drbd_send_ping_ack(struct drbd_connection *connection)
 }
 
 int drbd_send_sync_param(struct drbd_peer_device *peer_device)
+	TRY_ACQUIRE(true, peer_device->connection->data.mutex)
 {
 	struct drbd_socket *sock;
 	struct p_rs_param_95 *p;
@@ -806,6 +813,7 @@ int drbd_send_protocol(struct drbd_connection *connection)
 }
 
 static int _drbd_send_uuids(struct drbd_peer_device *peer_device, u64 uuid_flags)
+	TRY_ACQUIRE(true, peer_device->connection->data.mutex)
 {
 	struct drbd_device *device = peer_device->device;
 	struct drbd_socket *sock;
@@ -868,6 +876,7 @@ void drbd_print_uuids(struct drbd_device *device, const char *text)
 }
 
 void drbd_gen_and_send_sync_uuid(struct drbd_peer_device *peer_device)
+	TRY_ACQUIRE(true, peer_device->connection->data.mutex)
 {
 	struct drbd_device *device = peer_device->device;
 	struct drbd_socket *sock;
@@ -894,6 +903,7 @@ void drbd_gen_and_send_sync_uuid(struct drbd_peer_device *peer_device)
 }
 
 int drbd_send_sizes(struct drbd_peer_device *peer_device, int trigger_reply, enum dds_flags flags)
+	TRY_ACQUIRE(true, peer_device->connection->data.mutex)
 {
 	struct drbd_device *device = peer_device->device;
 	struct drbd_socket *sock;
@@ -975,6 +985,7 @@ int drbd_send_sizes(struct drbd_peer_device *peer_device, int trigger_reply, enu
  * @peer_device:	DRBD peer device.
  */
 int drbd_send_current_state(struct drbd_peer_device *peer_device)
+	TRY_ACQUIRE(true, peer_device->connection->data.mutex)
 {
 	struct drbd_socket *sock;
 	struct p_state *p;
@@ -998,6 +1009,7 @@ int drbd_send_current_state(struct drbd_peer_device *peer_device)
  * want to send each intermediary state in the order it occurred.
  */
 int drbd_send_state(struct drbd_peer_device *peer_device, union drbd_state state)
+	TRY_ACQUIRE(true, peer_device->connection->data.mutex)
 {
 	struct drbd_socket *sock;
 	struct p_state *p;
@@ -1011,6 +1023,7 @@ int drbd_send_state(struct drbd_peer_device *peer_device, union drbd_state state
 }
 
 int drbd_send_state_req(struct drbd_peer_device *peer_device, union drbd_state mask, union drbd_state val)
+	TRY_ACQUIRE(true, peer_device->connection->data.mutex)
 {
 	struct drbd_socket *sock;
 	struct p_req_state *p;
@@ -1025,6 +1038,7 @@ int drbd_send_state_req(struct drbd_peer_device *peer_device, union drbd_state m
 }
 
 int conn_send_state_req(struct drbd_connection *connection, union drbd_state mask, union drbd_state val)
+	TRY_ACQUIRE(true, connection->data.mutex)
 {
 	enum drbd_packet cmd;
 	struct drbd_socket *sock;
@@ -1041,6 +1055,7 @@ int conn_send_state_req(struct drbd_connection *connection, union drbd_state mas
 }
 
 void drbd_send_sr_reply(struct drbd_peer_device *peer_device, enum drbd_state_rv retcode)
+	TRY_ACQUIRE(true, peer_device->connection->data.mutex)
 {
 	struct drbd_socket *sock;
 	struct p_req_state_reply *p;
@@ -1054,6 +1069,7 @@ void drbd_send_sr_reply(struct drbd_peer_device *peer_device, enum drbd_state_rv
 }
 
 void conn_send_sr_reply(struct drbd_connection *connection, enum drbd_state_rv retcode)
+	TRY_ACQUIRE(true, connection->data.mutex)
 {
 	struct drbd_socket *sock;
 	struct p_req_state_reply *p;
@@ -1297,6 +1313,7 @@ int drbd_send_bitmap(struct drbd_device *device, struct drbd_peer_device *peer_d
 }
 
 void drbd_send_b_ack(struct drbd_connection *connection, u32 barrier_nr, u32 set_size)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct drbd_socket *sock;
 	struct p_barrier_ack *p;
@@ -1323,6 +1340,7 @@ void drbd_send_b_ack(struct drbd_connection *connection, u32 barrier_nr, u32 set
  */
 static int _drbd_send_ack(struct drbd_peer_device *peer_device, enum drbd_packet cmd,
 			  u64 sector, u32 blksize, u64 block_id)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct drbd_socket *sock;
 	struct p_block_ack *p;
@@ -1387,6 +1405,7 @@ int drbd_send_ack_ex(struct drbd_peer_device *peer_device, enum drbd_packet cmd,
 
 int drbd_send_rs_deallocated(struct drbd_peer_device *peer_device,
 			     struct drbd_peer_request *peer_req)
+	TRY_ACQUIRE(true, peer_device->connection->data.mutex)
 {
 	struct drbd_socket *sock;
 	struct p_block_desc *p;
@@ -1403,6 +1422,7 @@ int drbd_send_rs_deallocated(struct drbd_peer_device *peer_device,
 
 int drbd_send_drequest(struct drbd_peer_device *peer_device, int cmd,
 		       sector_t sector, int size, u64 block_id)
+	TRY_ACQUIRE(true, peer_device->connection->data.mutex)
 {
 	struct drbd_socket *sock;
 	struct p_block_req *p;
@@ -1419,6 +1439,7 @@ int drbd_send_drequest(struct drbd_peer_device *peer_device, int cmd,
 
 int drbd_send_drequest_csum(struct drbd_peer_device *peer_device, sector_t sector, int size,
 			    void *digest, int digest_size, enum drbd_packet cmd)
+	TRY_ACQUIRE(true, peer_device->connection->data.mutex)
 {
 	struct drbd_socket *sock;
 	struct p_block_req *p;
@@ -1436,6 +1457,7 @@ int drbd_send_drequest_csum(struct drbd_peer_device *peer_device, sector_t secto
 }
 
 int drbd_send_ov_request(struct drbd_peer_device *peer_device, sector_t sector, int size)
+	TRY_ACQUIRE(true, peer_device->connection->data.mutex)
 {
 	struct drbd_socket *sock;
 	struct p_block_req *p;
@@ -1649,6 +1671,7 @@ static u32 bio_flags_to_wire(struct drbd_connection *connection,
  * R_PRIMARY -> Peer	(P_DATA, P_TRIM)
  */
 int drbd_send_dblock(struct drbd_peer_device *peer_device, struct drbd_request *req)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct drbd_device *device = peer_device->device;
 	struct drbd_socket *sock;
@@ -1742,6 +1765,7 @@ out:
  */
 int drbd_send_block(struct drbd_peer_device *peer_device, enum drbd_packet cmd,
 		    struct drbd_peer_request *peer_req)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct drbd_device *device = peer_device->device;
 	struct drbd_socket *sock;
@@ -1772,6 +1796,7 @@ int drbd_send_block(struct drbd_peer_device *peer_device, enum drbd_packet cmd,
 }
 
 int drbd_send_out_of_sync(struct drbd_peer_device *peer_device, struct drbd_request *req)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct drbd_socket *sock;
 	struct p_block_desc *p;
@@ -3705,6 +3730,7 @@ int drbd_wait_misc(struct drbd_device *device, struct drbd_interval *i)
 }
 
 void lock_all_resources(void)
+	ACQUIRE(resources_mutex)
 {
 	struct drbd_resource *resource;
 	int __maybe_unused i = 0;
@@ -3716,6 +3742,7 @@ void lock_all_resources(void)
 }
 
 void unlock_all_resources(void)
+	RELEASE(resources_mutex)
 {
 	struct drbd_resource *resource;
 

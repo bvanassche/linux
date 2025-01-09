@@ -124,6 +124,7 @@ static int rz_mtu3_lock_if_counter_is_valid(struct counter_device *counter,
 					    struct rz_mtu3_channel *const ch,
 					    struct rz_mtu3_cnt *const priv,
 					    int id)
+	TRY_ACQUIRE(0, priv->lock)
 {
 	mutex_lock(&priv->lock);
 
@@ -143,6 +144,7 @@ static int rz_mtu3_lock_if_counter_is_valid(struct counter_device *counter,
 static int rz_mtu3_lock_if_count_is_enabled(struct rz_mtu3_channel *const ch,
 					    struct rz_mtu3_cnt *const priv,
 					    int id)
+	TRY_ACQUIRE(0, priv->lock)
 {
 	mutex_lock(&priv->lock);
 
@@ -518,6 +520,7 @@ static int rz_mtu3_count_enable_write(struct counter_device *counter,
 }
 
 static int rz_mtu3_lock_if_ch0_is_enabled(struct rz_mtu3_cnt *const priv)
+	TRY_ACQUIRE(0, priv->lock)
 {
 	mutex_lock(&priv->lock);
 	if (priv->ch->is_busy && !(priv->count_is_enabled[RZ_MTU3_16_BIT_MTU1_CH] ||

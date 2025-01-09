@@ -337,6 +337,7 @@ struct rxrpc_call *rxrpc_kernel_begin_call(struct socket *sock,
 					   bool upgrade,
 					   enum rxrpc_interruptibility interruptibility,
 					   unsigned int debug_id)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct rxrpc_conn_parameters cp;
 	struct rxrpc_call_params p;

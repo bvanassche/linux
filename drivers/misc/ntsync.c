@@ -198,6 +198,7 @@ static void obj_unlock(struct ntsync_obj *obj)
 }
 
 static bool ntsync_lock_obj(struct ntsync_device *dev, struct ntsync_obj *obj)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	bool all;
 
@@ -213,6 +214,7 @@ static bool ntsync_lock_obj(struct ntsync_device *dev, struct ntsync_obj *obj)
 }
 
 static void ntsync_unlock_obj(struct ntsync_device *dev, struct ntsync_obj *obj, bool all)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	if (all) {
 		dev_unlock_obj(dev, obj);

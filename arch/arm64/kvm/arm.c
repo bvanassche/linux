@@ -1886,6 +1886,7 @@ int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
 
 /* unlocks vcpus from @vcpu_lock_idx and smaller */
 static void unlock_vcpus(struct kvm *kvm, int vcpu_lock_idx)
+	NO_THREAD_SAFETY_ANALYSIS /* too complex to be annotated */
 {
 	struct kvm_vcpu *tmp_vcpu;
 
@@ -1904,6 +1905,7 @@ void unlock_all_vcpus(struct kvm *kvm)
 
 /* Returns true if all vcpus were locked, false otherwise */
 bool lock_all_vcpus(struct kvm *kvm)
+	NO_THREAD_SAFETY_ANALYSIS /* too complex to be annotated */
 {
 	struct kvm_vcpu *tmp_vcpu;
 	unsigned long c;

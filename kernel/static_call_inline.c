@@ -32,11 +32,13 @@ void static_call_force_reinit(void)
 static DEFINE_MUTEX(static_call_mutex);
 
 static void static_call_lock(void)
+	ACQUIRE(static_call_mutex)
 {
 	mutex_lock(&static_call_mutex);
 }
 
 static void static_call_unlock(void)
+	RELEASE(static_call_mutex)
 {
 	mutex_unlock(&static_call_mutex);
 }

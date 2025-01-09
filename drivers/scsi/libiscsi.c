@@ -1914,6 +1914,7 @@ static int iscsi_exec_task_mgmt_fn(struct iscsi_conn *conn,
 				   struct iscsi_tm *hdr, int age,
 				   int timeout)
 	__must_hold(&session->frwd_lock)
+	NO_THREAD_SAFETY_ANALYSIS /* REQUIRES(conn->session->frwd_lock) */
 {
 	struct iscsi_session *session = conn->session;
 

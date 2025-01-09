@@ -371,6 +371,7 @@ static void tcf_action_cleanup(struct tc_action *p)
 }
 
 static int __tcf_action_put(struct tc_action *p, bool bind)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct tcf_idrinfo *idrinfo = p->idrinfo;
 

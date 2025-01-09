@@ -455,11 +455,13 @@ EXPORT_SYMBOL_GPL(irq_to_desc);
 #endif
 
 void irq_lock_sparse(void)
+	ACQUIRE(sparse_irq_lock)
 {
 	mutex_lock(&sparse_irq_lock);
 }
 
 void irq_unlock_sparse(void)
+	RELEASE(sparse_irq_lock)
 {
 	mutex_unlock(&sparse_irq_lock);
 }

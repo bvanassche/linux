@@ -628,6 +628,7 @@ static void hns_roce_table_mhop_put(struct hns_roce_dev *hr_dev,
 				    struct hns_roce_hem_table *table,
 				    unsigned long obj,
 				    int check_refcount)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct hns_roce_hem_index index = {};
 	struct hns_roce_hem_mhop mhop = {};
@@ -654,6 +655,7 @@ static void hns_roce_table_mhop_put(struct hns_roce_dev *hr_dev,
 
 void hns_roce_table_put(struct hns_roce_dev *hr_dev,
 			struct hns_roce_hem_table *table, unsigned long obj)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct device *dev = hr_dev->dev;
 	unsigned long i;

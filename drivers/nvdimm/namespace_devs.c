@@ -2036,6 +2036,7 @@ static struct device **scan_labels(struct nd_region *nd_region)
 }
 
 static struct device **create_namespaces(struct nd_region *nd_region)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct nd_mapping *nd_mapping;
 	struct device **devs;

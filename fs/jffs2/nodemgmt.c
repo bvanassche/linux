@@ -77,6 +77,7 @@ static int jffs2_do_reserve_space(struct jffs2_sb_info *c,  uint32_t minsize,
 
 int jffs2_reserve_space(struct jffs2_sb_info *c, uint32_t minsize,
 			uint32_t *len, int prio, uint32_t sumsize)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int ret = -EAGAIN;
 	int blocksneeded = c->resv_blocks_write;
@@ -561,6 +562,7 @@ struct jffs2_raw_node_ref *jffs2_add_physical_node_ref(struct jffs2_sb_info *c,
 
 
 void jffs2_complete_reservation(struct jffs2_sb_info *c)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	jffs2_dbg(1, "jffs2_complete_reservation()\n");
 	spin_lock(&c->erase_completion_lock);

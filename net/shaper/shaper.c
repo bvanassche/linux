@@ -37,6 +37,7 @@ static struct net_shaper_binding *net_shaper_binding_from_ctx(void *ctx)
 }
 
 static void net_shaper_lock(struct net_shaper_binding *binding)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	switch (binding->type) {
 	case NET_SHAPER_BINDING_TYPE_NETDEV:
@@ -46,6 +47,7 @@ static void net_shaper_lock(struct net_shaper_binding *binding)
 }
 
 static void net_shaper_unlock(struct net_shaper_binding *binding)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	switch (binding->type) {
 	case NET_SHAPER_BINDING_TYPE_NETDEV:

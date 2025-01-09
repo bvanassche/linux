@@ -11263,6 +11263,7 @@ static int tg3_restart_hw(struct tg3 *tp, bool reset_phy)
 	__acquires(tp->lock)
 	__releases(tp->dev->lock)
 	__acquires(tp->dev->lock)
+	NO_THREAD_SAFETY_ANALYSIS /* REQUIRES(tp->dev->lock) */
 {
 	int err;
 

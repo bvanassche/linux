@@ -229,6 +229,7 @@ static int send_modifychannel_without_ack(struct vmbus_channel *channel, u32 tar
 }
 
 static int send_modifychannel_with_ack(struct vmbus_channel *channel, u32 target_vp)
+	REQUIRES(vmbus_connection.channel_mutex)
 {
 	struct vmbus_channel_modifychannel *msg;
 	struct vmbus_channel_msginfo *info;
@@ -298,6 +299,7 @@ free_info:
  * VERSION_WIN10_V4_1.
  */
 int vmbus_send_modifychannel(struct vmbus_channel *channel, u32 target_vp)
+	REQUIRES(vmbus_connection.channel_mutex)
 {
 	if (vmbus_proto_version >= VERSION_WIN10_V5_3)
 		return send_modifychannel_with_ack(channel, target_vp);

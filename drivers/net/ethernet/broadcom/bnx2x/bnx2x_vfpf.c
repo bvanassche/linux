@@ -39,6 +39,7 @@ static void bnx2x_add_tlv(struct bnx2x *bp, void *tlvs_list,
 /* Clear the mailbox and init the header of the first tlv */
 static void bnx2x_vfpf_prep(struct bnx2x *bp, struct vfpf_first_tlv *first_tlv,
 			    u16 type, u16 length)
+	ACQUIRE(bp->vf2pf_mutex)
 {
 	mutex_lock(&bp->vf2pf_mutex);
 
@@ -58,6 +59,7 @@ static void bnx2x_vfpf_prep(struct bnx2x *bp, struct vfpf_first_tlv *first_tlv,
 /* releases the mailbox */
 static void bnx2x_vfpf_finalize(struct bnx2x *bp,
 				struct vfpf_first_tlv *first_tlv)
+	RELEASE(bp->vf2pf_mutex)
 {
 	DP(BNX2X_MSG_IOV, "done sending [%d] tlv over vf pf channel\n",
 	   first_tlv->tl.type);

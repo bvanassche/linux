@@ -355,6 +355,7 @@ int drm_open_helper(struct file *filp, struct drm_minor *minor)
  * 0 on success or negative errno value on failure.
  */
 int drm_open(struct inode *inode, struct file *filp)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct drm_device *dev;
 	struct drm_minor *minor;
@@ -413,6 +414,7 @@ static void drm_lastclose(struct drm_device *dev)
  * Always succeeds and returns 0.
  */
 int drm_release(struct inode *inode, struct file *filp)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct drm_file *file_priv = filp->private_data;
 	struct drm_minor *minor = file_priv->minor;
@@ -483,6 +485,7 @@ void drm_file_update_pid(struct drm_file *filp)
  * Always succeeds and returns 0.
  */
 int drm_release_noglobal(struct inode *inode, struct file *filp)
+	NO_THREAD_SAFETY_ANALYSIS /* needed because of a clang bug? */
 {
 	struct drm_file *file_priv = filp->private_data;
 	struct drm_minor *minor = file_priv->minor;
@@ -527,6 +530,7 @@ EXPORT_SYMBOL(drm_release_noglobal);
  */
 ssize_t drm_read(struct file *filp, char __user *buffer,
 		 size_t count, loff_t *offset)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct drm_file *file_priv = filp->private_data;
 	struct drm_device *dev = file_priv->minor->dev;

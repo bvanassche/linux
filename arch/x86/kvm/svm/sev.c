@@ -1857,6 +1857,8 @@ static bool is_cmd_allowed_from_mirror(u32 cmd_id)
 }
 
 static int sev_lock_two_vms(struct kvm *dst_kvm, struct kvm *src_kvm)
+	TRY_ACQUIRE(0, dst_kvm->lock)
+	TRY_ACQUIRE(0, src_kvm->lock)
 {
 	struct kvm_sev_info *dst_sev = &to_kvm_svm(dst_kvm)->sev_info;
 	struct kvm_sev_info *src_sev = &to_kvm_svm(src_kvm)->sev_info;
@@ -1892,6 +1894,8 @@ release_dst:
 }
 
 static void sev_unlock_two_vms(struct kvm *dst_kvm, struct kvm *src_kvm)
+	RELEASE(&dst_kvm->lock)
+	RELEASE(&src_kvm->lock)
 {
 	struct kvm_sev_info *dst_sev = &to_kvm_svm(dst_kvm)->sev_info;
 	struct kvm_sev_info *src_sev = &to_kvm_svm(src_kvm)->sev_info;
@@ -1911,6 +1915,7 @@ enum sev_migration_role {
 
 static int sev_lock_vcpus_for_migration(struct kvm *kvm,
 					enum sev_migration_role role)
+	NO_THREAD_SAFETY_ANALYSIS /* too complex for annotations */
 {
 	struct kvm_vcpu *vcpu;
 	unsigned long i, j;
@@ -1950,6 +1955,7 @@ out_unlock:
 }
 
 static void sev_unlock_vcpus_for_migration(struct kvm *kvm)
+	NO_THREAD_SAFETY_ANALYSIS /* too complex for annotations */
 {
 	struct kvm_vcpu *vcpu;
 	unsigned long i;

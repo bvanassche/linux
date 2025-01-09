@@ -2912,6 +2912,7 @@ static void b43legacy_op_configure_filter(struct ieee80211_hw *hw,
 
 /* Locking: wl->mutex */
 static void b43legacy_wireless_core_stop(struct b43legacy_wldev *dev)
+	NO_THREAD_SAFETY_ANALYSIS /* REQUIRES(dev->wl->mutex) */
 {
 	struct b43legacy_wl *wl = dev->wl;
 	unsigned long flags;

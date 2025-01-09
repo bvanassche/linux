@@ -239,11 +239,13 @@ static DEFINE_MUTEX(device_links_lock);
 DEFINE_STATIC_SRCU(device_links_srcu);
 
 static inline void device_links_write_lock(void)
+	ACQUIRE(device_links_lock)
 {
 	mutex_lock(&device_links_lock);
 }
 
 static inline void device_links_write_unlock(void)
+	RELEASE(device_links_lock)
 {
 	mutex_unlock(&device_links_lock);
 }
@@ -1160,6 +1162,7 @@ static void __device_links_queue_sync_state(struct device *dev,
  */
 static void device_links_flush_sync_list(struct list_head *list,
 					 struct device *dont_lock_dev)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct device *dev, *tmp;
 
@@ -2343,16 +2346,19 @@ static struct kobject *sysfs_dev_block_kobj;
 static DEFINE_MUTEX(device_hotplug_lock);
 
 void lock_device_hotplug(void)
+	NO_THREAD_SAFETY_ANALYSIS /* function declaration has been annotated */
 {
 	mutex_lock(&device_hotplug_lock);
 }
 
 void unlock_device_hotplug(void)
+	NO_THREAD_SAFETY_ANALYSIS /* function declaration has been annotated */
 {
 	mutex_unlock(&device_hotplug_lock);
 }
 
 int lock_device_hotplug_sysfs(void)
+	NO_THREAD_SAFETY_ANALYSIS /* function declaration has been annotated */
 {
 	if (mutex_trylock(&device_hotplug_lock))
 		return 0;
@@ -4763,6 +4769,7 @@ EXPORT_SYMBOL_GPL(device_change_owner);
  * device_shutdown - call ->shutdown() on each device to shutdown.
  */
 void device_shutdown(void)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct device *dev, *parent;
 

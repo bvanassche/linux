@@ -11,6 +11,7 @@
 #include "qed_vf.h"
 
 static void *qed_vf_pf_prep(struct qed_hwfn *p_hwfn, u16 type, u16 length)
+	ACQUIRE(p_hwfn->vf_iov_info->mutex)
 {
 	struct qed_vf_iov *p_iov = p_hwfn->vf_iov_info;
 	void *p_tlv;
@@ -20,7 +21,7 @@ static void *qed_vf_pf_prep(struct qed_hwfn *p_hwfn, u16 type, u16 length)
 	 * So, qed_vf_pf_prep() and qed_send_msg2pf()
 	 * must come in sequence.
 	 */
-	mutex_lock(&(p_iov->mutex));
+	mutex_lock(&p_hwfn->vf_iov_info->mutex);
 
 	DP_VERBOSE(p_hwfn,
 		   QED_MSG_IOV,
@@ -45,6 +46,7 @@ static void *qed_vf_pf_prep(struct qed_hwfn *p_hwfn, u16 type, u16 length)
 }
 
 static void qed_vf_pf_req_end(struct qed_hwfn *p_hwfn, int req_status)
+	RELEASE(p_hwfn->vf_iov_info->mutex)
 {
 	union pfvf_tlvs *resp = p_hwfn->vf_iov_info->pf2vf_reply;
 

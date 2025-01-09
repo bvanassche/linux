@@ -254,6 +254,7 @@ static inline void io_put_file(struct io_kiocb *req)
 
 static inline void io_ring_submit_unlock(struct io_ring_ctx *ctx,
 					 unsigned issue_flags)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	lockdep_assert_held(&ctx->uring_lock);
 	if (unlikely(issue_flags & IO_URING_F_UNLOCKED))
@@ -262,6 +263,7 @@ static inline void io_ring_submit_unlock(struct io_ring_ctx *ctx,
 
 static inline void io_ring_submit_lock(struct io_ring_ctx *ctx,
 				       unsigned issue_flags)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	/*
 	 * "Normal" inline submissions always hold the uring_lock, since we

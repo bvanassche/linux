@@ -395,6 +395,7 @@ out_mutex:
 
 /* Call with group->mark_mutex held, releases it */
 static int create_chunk(struct inode *inode, struct audit_tree *tree)
+	RELEASE(audit_tree_group->mark_mutex)
 {
 	struct fsnotify_mark *mark;
 	struct audit_chunk *chunk = alloc_chunk(1);
@@ -798,6 +799,7 @@ static int audit_launch_prune(void)
 
 /* called with audit_filter_mutex */
 int audit_add_tree_rule(struct audit_krule *rule)
+	REQUIRES(audit_filter_mutex)
 {
 	struct audit_tree *seed = rule->tree, *tree;
 	struct path path;

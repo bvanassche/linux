@@ -16,6 +16,7 @@ static void snd_gf1_mem_info_read(struct snd_info_entry *entry,
 #endif
 
 void snd_gf1_mem_lock(struct snd_gf1_mem * alloc, int xup)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (!xup) {
 		mutex_lock(&alloc->memory_mutex);
@@ -27,6 +28,7 @@ void snd_gf1_mem_lock(struct snd_gf1_mem * alloc, int xup)
 static struct snd_gf1_mem_block *
 snd_gf1_mem_xalloc(struct snd_gf1_mem *alloc, struct snd_gf1_mem_block *block,
 		   const char *name)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_gf1_mem_block *pblock, *nblock;
 
@@ -68,6 +70,7 @@ snd_gf1_mem_xalloc(struct snd_gf1_mem *alloc, struct snd_gf1_mem_block *block,
 }
 
 int snd_gf1_mem_xfree(struct snd_gf1_mem * alloc, struct snd_gf1_mem_block * block)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (block->share) {	/* ok.. shared block */
 		block->share--;

@@ -917,6 +917,7 @@ static DECLARE_RWSEM(all_cpu_access_lock);
 static DEFINE_PER_CPU(struct mutex, cpu_access_lock);
 
 static inline void trace_access_lock(int cpu)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (cpu == RING_BUFFER_ALL_CPUS) {
 		/* gain it for accessing the whole ring buffer. */
@@ -933,6 +934,7 @@ static inline void trace_access_lock(int cpu)
 }
 
 static inline void trace_access_unlock(int cpu)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (cpu == RING_BUFFER_ALL_CPUS) {
 		up_write(&all_cpu_access_lock);
@@ -955,12 +957,14 @@ static inline void trace_access_lock_init(void)
 static DEFINE_MUTEX(access_lock);
 
 static inline void trace_access_lock(int cpu)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	(void)cpu;
 	mutex_lock(&access_lock);
 }
 
 static inline void trace_access_unlock(int cpu)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	(void)cpu;
 	mutex_unlock(&access_lock);
@@ -4885,6 +4889,7 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void *t_start(struct seq_file *m, loff_t *pos)
+	ACQUIRE(trace_types_lock)
 {
 	struct trace_array *tr = m->private;
 	struct tracer *t;
@@ -4900,6 +4905,7 @@ static void *t_start(struct seq_file *m, loff_t *pos)
 }
 
 static void t_stop(struct seq_file *m, void *p)
+	RELEASE(trace_types_lock)
 {
 	mutex_unlock(&trace_types_lock);
 }
@@ -5705,6 +5711,7 @@ static void *eval_map_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void *eval_map_start(struct seq_file *m, loff_t *pos)
+	ACQUIRE(trace_eval_mutex)
 {
 	union trace_eval_map_item *v;
 	loff_t l = 0;
@@ -5723,6 +5730,7 @@ static void *eval_map_start(struct seq_file *m, loff_t *pos)
 }
 
 static void eval_map_stop(struct seq_file *m, void *v)
+	RELEASE(trace_eval_mutex)
 {
 	mutex_unlock(&trace_eval_mutex);
 }
@@ -6440,6 +6448,7 @@ tracing_poll_pipe(struct file *filp, poll_table *poll_table)
 
 /* Must be called with iter->mutex held. */
 static int tracing_wait_pipe(struct file *filp)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct trace_iterator *iter = filp->private_data;
 	int ret;
@@ -7497,6 +7506,7 @@ static const struct file_operations snapshot_raw_fops = {
  */
 static ssize_t
 trace_min_max_write(struct file *filp, const char __user *ubuf, size_t cnt, loff_t *ppos)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct trace_min_max_param *param = filp->private_data;
 	u64 val;
@@ -7733,6 +7743,7 @@ static void clear_tracing_err_log(struct trace_array *tr)
 }
 
 static void *tracing_err_log_seq_start(struct seq_file *m, loff_t *pos)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct trace_array *tr = m->private;
 
@@ -7749,6 +7760,7 @@ static void *tracing_err_log_seq_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void tracing_err_log_seq_stop(struct seq_file *m, void *v)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_unlock(&tracing_err_log_lock);
 }

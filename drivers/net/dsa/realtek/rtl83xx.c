@@ -20,6 +20,7 @@
  * Return: nothing
  */
 void rtl83xx_lock(void *ctx)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct realtek_priv *priv = ctx;
 
@@ -37,6 +38,7 @@ EXPORT_SYMBOL_NS_GPL(rtl83xx_lock, "REALTEK_DSA");
  * Return: nothing
  */
 void rtl83xx_unlock(void *ctx)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct realtek_priv *priv = ctx;
 

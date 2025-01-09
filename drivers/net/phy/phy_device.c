@@ -1824,6 +1824,7 @@ EXPORT_SYMBOL_GPL(of_phy_package_join);
  * freed. Resets the phydev->shared pointer to NULL.
  */
 void phy_package_leave(struct phy_device *phydev)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct phy_package_shared *shared = phydev->shared;
 	struct mii_bus *bus = phydev->mdio.bus;

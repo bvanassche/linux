@@ -69,6 +69,7 @@ nvkm_falcon_cmdq_rewind(struct nvkm_falcon_cmdq *cmdq)
 
 static int
 nvkm_falcon_cmdq_open(struct nvkm_falcon_cmdq *cmdq, u32 size)
+	TRY_ACQUIRE(0, cmdq->mutex)
 {
 	struct nvkm_falcon *falcon = cmdq->qmgr->falcon;
 	bool rewind = false;
@@ -91,6 +92,7 @@ nvkm_falcon_cmdq_open(struct nvkm_falcon_cmdq *cmdq, u32 size)
 
 static void
 nvkm_falcon_cmdq_close(struct nvkm_falcon_cmdq *cmdq)
+	RELEASE(cmdq->mutex)
 {
 	nvkm_falcon_wr32(cmdq->qmgr->falcon, cmdq->head_reg, cmdq->position);
 	mutex_unlock(&cmdq->mutex);
@@ -98,6 +100,7 @@ nvkm_falcon_cmdq_close(struct nvkm_falcon_cmdq *cmdq)
 
 static int
 nvkm_falcon_cmdq_write(struct nvkm_falcon_cmdq *cmdq, struct nvfw_falcon_cmd *cmd)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	static unsigned timeout = 2000;
 	unsigned long end_jiffies = jiffies + msecs_to_jiffies(timeout);

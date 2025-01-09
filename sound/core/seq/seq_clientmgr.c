@@ -173,6 +173,7 @@ struct snd_seq_client *snd_seq_client_use_ptr(int clientid)
  * Unlock via snd_seq_client_ioctl_unlock() below
  */
 bool snd_seq_client_ioctl_lock(int clientid)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_seq_client *client;
 
@@ -187,6 +188,7 @@ EXPORT_SYMBOL_GPL(snd_seq_client_ioctl_lock);
 
 /* Unlock and unref the given client; for OSS sequencer use only */
 void snd_seq_client_ioctl_unlock(int clientid)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_seq_client *client;
 

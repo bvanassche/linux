@@ -692,6 +692,7 @@ void vmw_validation_unref_lists(struct vmw_validation_context *ctx)
 int vmw_validation_prepare(struct vmw_validation_context *ctx,
 			   struct mutex *mutex,
 			   bool intr)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int ret = 0;
 
@@ -743,6 +744,7 @@ out_no_res_reserve:
  * The caller still needs to unref resources after a call to this function.
  */
 void vmw_validation_revert(struct vmw_validation_context *ctx)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	vmw_validation_bo_backoff(ctx);
 	vmw_validation_res_unreserve(ctx, true);
@@ -762,6 +764,7 @@ void vmw_validation_revert(struct vmw_validation_context *ctx)
  */
 void vmw_validation_done(struct vmw_validation_context *ctx,
 			 struct vmw_fence_obj *fence)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	vmw_validation_bo_fence(ctx, fence);
 	vmw_validation_res_unreserve(ctx, false);

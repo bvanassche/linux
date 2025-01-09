@@ -762,11 +762,13 @@ static struct o2nm_cluster_group o2nm_cluster_group = {
 };
 
 static inline void o2nm_lock_subsystem(void)
+	ACQUIRE(o2nm_cluster_group.cs_subsys.su_mutex)
 {
 	mutex_lock(&o2nm_cluster_group.cs_subsys.su_mutex);
 }
 
 static inline void o2nm_unlock_subsystem(void)
+	RELEASE(o2nm_cluster_group.cs_subsys.su_mutex)
 {
 	mutex_unlock(&o2nm_cluster_group.cs_subsys.su_mutex);
 }

@@ -295,6 +295,7 @@ EXPORT_SYMBOL(drm_gem_dmabuf_release);
 int drm_gem_prime_fd_to_handle(struct drm_device *dev,
 			       struct drm_file *file_priv, int prime_fd,
 			       uint32_t *handle)
+	NO_THREAD_SAFETY_ANALYSIS /* requires alias analysis */
 {
 	struct dma_buf *dma_buf;
 	struct drm_gem_object *obj;

@@ -835,6 +835,7 @@ static int cm109_usb_resume(struct usb_interface *intf)
 }
 
 static int cm109_usb_pre_reset(struct usb_interface *intf)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct cm109_dev *dev = usb_get_intfdata(intf);
 
@@ -853,6 +854,7 @@ static int cm109_usb_pre_reset(struct usb_interface *intf)
 }
 
 static int cm109_usb_post_reset(struct usb_interface *intf)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct cm109_dev *dev = usb_get_intfdata(intf);
 

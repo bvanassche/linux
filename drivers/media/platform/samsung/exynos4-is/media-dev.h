@@ -164,11 +164,13 @@ static inline struct fimc_md *notifier_to_fimc_md(struct v4l2_async_notifier *n)
 }
 
 static inline void fimc_md_graph_lock(struct exynos_video_entity *ve)
+	ACQUIRE(ve->vdev.entity.graph_obj.mdev->graph_mutex)
 {
 	mutex_lock(&ve->vdev.entity.graph_obj.mdev->graph_mutex);
 }
 
 static inline void fimc_md_graph_unlock(struct exynos_video_entity *ve)
+	RELEASE(ve->vdev.entity.graph_obj.mdev->graph_mutex)
 {
 	mutex_unlock(&ve->vdev.entity.graph_obj.mdev->graph_mutex);
 }

@@ -906,6 +906,7 @@ static int cdn_dp_audio_codec_init(struct cdn_dp_device *dp,
 }
 
 static int cdn_dp_request_firmware(struct cdn_dp_device *dp)
+	REQUIRES(dp->lock)
 {
 	int ret;
 	unsigned long timeout = jiffies + msecs_to_jiffies(CDN_FW_TIMEOUT_MS);

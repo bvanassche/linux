@@ -63,6 +63,7 @@ static const char *pps_name(struct intel_dp *intel_dp)
 }
 
 intel_wakeref_t intel_pps_lock(struct intel_dp *intel_dp)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct intel_display *display = to_intel_display(intel_dp);
 	struct drm_i915_private *dev_priv = to_i915(display->drm);
@@ -79,6 +80,7 @@ intel_wakeref_t intel_pps_lock(struct intel_dp *intel_dp)
 
 intel_wakeref_t intel_pps_unlock(struct intel_dp *intel_dp,
 				 intel_wakeref_t wakeref)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct intel_display *display = to_intel_display(intel_dp);
 	struct drm_i915_private *dev_priv = to_i915(display->drm);

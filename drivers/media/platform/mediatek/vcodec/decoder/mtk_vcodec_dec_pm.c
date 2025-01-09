@@ -230,6 +230,7 @@ static void mtk_vcodec_dec_child_dev_off(struct mtk_vcodec_dec_dev *vdec_dev,
 }
 
 void mtk_vcodec_dec_enable_hardware(struct mtk_vcodec_dec_ctx *ctx, int hw_idx)
+	ACQUIRE(ctx->dev->dec_mutex[hw_idx])
 {
 	mutex_lock(&ctx->dev->dec_mutex[hw_idx]);
 
@@ -246,6 +247,7 @@ void mtk_vcodec_dec_enable_hardware(struct mtk_vcodec_dec_ctx *ctx, int hw_idx)
 EXPORT_SYMBOL_GPL(mtk_vcodec_dec_enable_hardware);
 
 void mtk_vcodec_dec_disable_hardware(struct mtk_vcodec_dec_ctx *ctx, int hw_idx)
+	RELEASE(ctx->dev->dec_mutex[hw_idx])
 {
 	if (IS_VDEC_INNER_RACING(ctx->dev->dec_capability))
 		mtk_vcodec_record_racing_info(ctx);

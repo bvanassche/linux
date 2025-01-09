@@ -293,6 +293,7 @@ xfs_qm_dqattach_one(
 	xfs_dqtype_t		type,
 	bool			doalloc,
 	struct xfs_dquot	**IO_idqpp)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xfs_dquot	*dqp;
 	int			error;
@@ -461,6 +462,7 @@ xfs_qm_dquot_isolate(
 	struct list_lru_one	*lru,
 	void			*arg)
 		__releases(&lru->lock) __acquires(&lru->lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xfs_dquot	*dqp = container_of(item,
 						struct xfs_dquot, q_lru);
@@ -1949,6 +1951,7 @@ xfs_qm_vop_dqalloc(
 	struct xfs_dquot	**O_udqpp,
 	struct xfs_dquot	**O_gdqpp,
 	struct xfs_dquot	**O_pdqpp)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xfs_mount	*mp = ip->i_mount;
 	struct inode		*inode = VFS_I(ip);

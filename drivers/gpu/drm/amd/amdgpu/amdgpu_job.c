@@ -50,6 +50,7 @@ static void amdgpu_job_do_core_dump(struct amdgpu_device *adev,
 
 static void amdgpu_job_core_dump(struct amdgpu_device *adev,
 				 struct amdgpu_job *job)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct list_head device_list, *device_list_handle =  NULL;
 	struct amdgpu_device *tmp_adev = NULL;

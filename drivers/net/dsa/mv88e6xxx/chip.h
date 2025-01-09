@@ -830,11 +830,13 @@ int mv88e6xxx_wait_bit(struct mv88e6xxx_chip *chip, int addr, int reg,
 struct mii_bus *mv88e6xxx_default_mdio_bus(struct mv88e6xxx_chip *chip);
 
 static inline void mv88e6xxx_reg_lock(struct mv88e6xxx_chip *chip)
+	ACQUIRE(chip->reg_lock)
 {
 	mutex_lock(&chip->reg_lock);
 }
 
 static inline void mv88e6xxx_reg_unlock(struct mv88e6xxx_chip *chip)
+	RELEASE(chip->reg_lock)
 {
 	mutex_unlock(&chip->reg_lock);
 }

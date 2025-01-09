@@ -579,6 +579,7 @@ static int list_ptr_order_cmp(const struct list_head *l, const struct list_head 
 
 static ssize_t bch2_btree_transactions_read(struct file *file, char __user *buf,
 					    size_t size, loff_t *ppos)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct dump_iter *i = file->private_data;
 	struct bch_fs *c = i->c;
@@ -813,6 +814,7 @@ static const struct file_operations btree_transaction_stats_op = {
 
 /* walk btree transactions until we find a deadlock and print it */
 static void btree_deadlock_to_text(struct printbuf *out, struct bch_fs *c)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct btree_trans *trans;
 	ulong iter = 0;

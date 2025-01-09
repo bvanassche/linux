@@ -75,12 +75,14 @@ struct rtnl_link {
 static DEFINE_MUTEX(rtnl_mutex);
 
 void rtnl_lock(void)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_lock(&rtnl_mutex);
 }
 EXPORT_SYMBOL(rtnl_lock);
 
 int rtnl_lock_killable(void)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	return mutex_lock_killable(&rtnl_mutex);
 }
@@ -96,6 +98,7 @@ void rtnl_kfree_skbs(struct sk_buff *head, struct sk_buff *tail)
 EXPORT_SYMBOL(rtnl_kfree_skbs);
 
 void __rtnl_unlock(void)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct sk_buff *head = defer_kfree_skb_list;
 
@@ -165,6 +168,7 @@ int rtnl_is_locked(void)
 EXPORT_SYMBOL(rtnl_is_locked);
 
 bool refcount_dec_and_rtnl_lock(refcount_t *r)
+	TRY_ACQUIRE(true, rtnl_mutex)
 {
 	return refcount_dec_and_mutex_lock(r, &rtnl_mutex);
 }
@@ -180,6 +184,7 @@ EXPORT_SYMBOL(lockdep_rtnl_is_held);
 
 #ifdef CONFIG_DEBUG_NET_SMALL_RTNL
 void __rtnl_net_lock(struct net *net)
+	ACQUIRE(net->rtnl_mutex)
 {
 	ASSERT_RTNL();
 
@@ -188,6 +193,7 @@ void __rtnl_net_lock(struct net *net)
 EXPORT_SYMBOL(__rtnl_net_lock);
 
 void __rtnl_net_unlock(struct net *net)
+	RELEASE(net->rtnl_mutex)
 {
 	ASSERT_RTNL();
 
@@ -196,6 +202,7 @@ void __rtnl_net_unlock(struct net *net)
 EXPORT_SYMBOL(__rtnl_net_unlock);
 
 void rtnl_net_lock(struct net *net)
+	ACQUIRE(net->rtnl_mutex)
 {
 	rtnl_lock();
 	__rtnl_net_lock(net);
@@ -203,6 +210,7 @@ void rtnl_net_lock(struct net *net)
 EXPORT_SYMBOL(rtnl_net_lock);
 
 void rtnl_net_unlock(struct net *net)
+	RELEASE(net->rtnl_mutex)
 {
 	__rtnl_net_unlock(net);
 	rtnl_unlock();
@@ -210,6 +218,7 @@ void rtnl_net_unlock(struct net *net)
 EXPORT_SYMBOL(rtnl_net_unlock);
 
 int rtnl_net_trylock(struct net *net)
+	TRY_ACQUIRE(1, net->rtnl_mutex)
 {
 	int ret = rtnl_trylock();
 
@@ -221,6 +230,7 @@ int rtnl_net_trylock(struct net *net)
 EXPORT_SYMBOL(rtnl_net_trylock);
 
 int rtnl_net_lock_killable(struct net *net)
+	TRY_ACQUIRE(0, net->rtnl_mutex)
 {
 	int ret = rtnl_lock_killable();
 
@@ -329,6 +339,7 @@ static void rtnl_nets_add(struct rtnl_nets *rtnl_nets, struct net *net)
 }
 
 static void rtnl_nets_lock(struct rtnl_nets *rtnl_nets)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int i;
 
@@ -339,6 +350,7 @@ static void rtnl_nets_lock(struct rtnl_nets *rtnl_nets)
 }
 
 static void rtnl_nets_unlock(struct rtnl_nets *rtnl_nets)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int i;
 

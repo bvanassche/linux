@@ -1151,6 +1151,7 @@ static void ath9k_hif_usb_dev_deinit(struct hif_device_usb *hif_dev)
  * detach the device.
  */
 static void ath9k_hif_usb_firmware_fail(struct hif_device_usb *hif_dev)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct device *dev = &hif_dev->udev->dev;
 	struct device *parent = dev->parent;

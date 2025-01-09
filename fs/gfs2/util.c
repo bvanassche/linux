@@ -116,6 +116,7 @@ void gfs2_freeze_unlock(struct gfs2_sbd *sdp)
 }
 
 static void signal_our_withdraw(struct gfs2_sbd *sdp)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct gfs2_glock *live_gl = sdp->sd_live_gh.gh_gl;
 	struct inode *inode;

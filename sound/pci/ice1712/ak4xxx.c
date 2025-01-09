@@ -22,6 +22,7 @@ MODULE_DESCRIPTION("ICEnsemble ICE17xx <-> AK4xxx AD/DA chip interface");
 MODULE_LICENSE("GPL");
 
 static void snd_ice1712_akm4xxx_lock(struct snd_akm4xxx *ak, int chip)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_ice1712 *ice = ak->private_data[0];
 
@@ -29,6 +30,7 @@ static void snd_ice1712_akm4xxx_lock(struct snd_akm4xxx *ak, int chip)
 }
 
 static void snd_ice1712_akm4xxx_unlock(struct snd_akm4xxx *ak, int chip)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_ice1712 *ice = ak->private_data[0];
 

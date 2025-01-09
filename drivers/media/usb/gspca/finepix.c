@@ -220,6 +220,7 @@ static int sd_start(struct gspca_dev *gspca_dev)
 /* called on streamoff with alt==0 and on disconnect */
 /* the usb_lock is held at entry - restore on exit */
 static void sd_stop0(struct gspca_dev *gspca_dev)
+	REQUIRES(gspca_dev->usb_lock)
 {
 	struct usb_fpix *dev = (struct usb_fpix *) gspca_dev;
 

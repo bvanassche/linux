@@ -1207,6 +1207,7 @@ void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
  * (after exec_mmap()) by search_binary_handler (see below).
  */
 int begin_new_exec(struct linux_binprm * bprm)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct task_struct *me = current;
 	int retval;
@@ -1433,6 +1434,7 @@ void would_dump(struct linux_binprm *bprm, struct file *file)
 EXPORT_SYMBOL(would_dump);
 
 void setup_new_exec(struct linux_binprm * bprm)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	/* Setup things that can depend upon the personality */
 	struct task_struct *me = current;
@@ -1468,6 +1470,7 @@ EXPORT_SYMBOL(finalize_exec);
  * and unlock.
  */
 static int prepare_bprm_creds(struct linux_binprm *bprm)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (mutex_lock_interruptible(&current->signal->cred_guard_mutex))
 		return -ERESTARTNOINTR;
@@ -1490,6 +1493,7 @@ static void do_close_execat(struct file *file)
 }
 
 static void free_bprm(struct linux_binprm *bprm)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (bprm->mm) {
 		acct_arg_size(bprm, 0);

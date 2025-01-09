@@ -779,6 +779,7 @@ EXPORT_SYMBOL_GPL(blkg_conf_init);
  * of @ctx->input. Returns -errno on error.
  */
 int blkg_conf_open_bdev(struct blkg_conf_ctx *ctx)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	char *input = ctx->input;
 	unsigned int major, minor;
@@ -956,6 +957,7 @@ EXPORT_SYMBOL_GPL(blkg_conf_prep);
 void blkg_conf_exit(struct blkg_conf_ctx *ctx)
 	__releases(&ctx->bdev->bd_queue->queue_lock)
 	__releases(&ctx->bdev->bd_queue->rq_qos_mutex)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	if (ctx->blkg) {
 		spin_unlock_irq(&bdev_get_queue(ctx->bdev)->queue_lock);

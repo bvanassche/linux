@@ -2018,6 +2018,7 @@ void mlx5_ib_revoke_data_direct_mrs(struct mlx5_ib_dev *dev)
 }
 
 static int mlx5_revoke_mr(struct mlx5_ib_mr *mr)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct mlx5_ib_dev *dev = to_mdev(mr->ibmr.device);
 	struct mlx5_cache_ent *ent = mr->mmkey.cache_ent;

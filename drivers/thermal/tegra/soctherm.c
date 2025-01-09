@@ -1082,6 +1082,7 @@ static irqreturn_t soctherm_edp_isr(int irq, void *arg)
  * a particular over-current interrupt request.
  */
 static void soctherm_oc_irq_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct soctherm_oc_irq_chip_data *d = irq_data_get_irq_chip_data(data);
 
@@ -1096,6 +1097,7 @@ static void soctherm_oc_irq_lock(struct irq_data *data)
  * with a particular over-current interrupt request.
  */
 static void soctherm_oc_irq_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct soctherm_oc_irq_chip_data *d = irq_data_get_irq_chip_data(data);
 

@@ -872,6 +872,7 @@ static int __xipram chip_good(struct map_info *map, struct flchip *chip,
 }
 
 static int get_chip(struct map_info *map, struct flchip *chip, unsigned long adr, int mode)
+	REQUIRES(chip->mutex)
 {
 	DECLARE_WAITQUEUE(wait, current);
 	struct cfi_private *cfi = map->fldrv_priv;
@@ -1645,6 +1646,7 @@ static int __xipram do_write_oneword_once(struct map_info *map,
 					  struct flchip *chip,
 					  unsigned long adr, map_word datum,
 					  int mode, struct cfi_private *cfi)
+	REQUIRES(chip->mutex)
 {
 	unsigned long timeo;
 	/*
@@ -1715,6 +1717,7 @@ static int __xipram do_write_oneword_once(struct map_info *map,
 static int __xipram do_write_oneword_start(struct map_info *map,
 					   struct flchip *chip,
 					   unsigned long adr, int mode)
+	TRY_ACQUIRE(0, chip->mutex)
 {
 	int ret;
 
@@ -1735,6 +1738,7 @@ static int __xipram do_write_oneword_start(struct map_info *map,
 static void __xipram do_write_oneword_done(struct map_info *map,
 					   struct flchip *chip,
 					   unsigned long adr, int mode)
+	RELEASE(chip->mutex)
 {
 	if (mode == FL_OTP_WRITE)
 		otp_exit(map, chip, adr, map_bankwidth(map));
@@ -1750,6 +1754,7 @@ static int __xipram do_write_oneword_retry(struct map_info *map,
 					   struct flchip *chip,
 					   unsigned long adr, map_word datum,
 					   int mode)
+	REQUIRES(chip->mutex)
 {
 	struct cfi_private *cfi = map->fldrv_priv;
 	int ret = 0;
@@ -1937,6 +1942,7 @@ static int cfi_amdstd_write_words(struct mtd_info *mtd, loff_t to, size_t len,
 static int __xipram do_write_buffer_wait(struct map_info *map,
 					 struct flchip *chip, unsigned long adr,
 					 map_word datum)
+	REQUIRES(chip->mutex)
 {
 	unsigned long timeo;
 	unsigned long u_write_timeout;

@@ -3103,6 +3103,7 @@ static void ipmi_bmc_unregister(struct ipmi_smi *intf)
 static int __ipmi_bmc_register(struct ipmi_smi *intf,
 			       struct ipmi_device_id *id,
 			       bool guid_set, guid_t *guid, int intf_num)
+	REQUIRES(&intf->bmc_reg_mutex)
 {
 	int               rv;
 	struct bmc_device *bmc;

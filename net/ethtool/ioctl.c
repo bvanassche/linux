@@ -1347,6 +1347,7 @@ ethtool_rxfh_ctx_alloc(const struct ethtool_ops *ops,
 
 static noinline_for_stack int ethtool_set_rxfh(struct net_device *dev,
 					       void __user *useraddr)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	u32 rss_cfg_offset = offsetof(struct ethtool_rxfh, rss_config[0]);
 	const struct ethtool_ops *ops = dev->ethtool_ops;

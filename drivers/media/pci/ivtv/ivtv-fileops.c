@@ -192,6 +192,7 @@ static void ivtv_update_pgm_info(struct ivtv *itv)
 }
 
 static void ivtv_schedule(struct ivtv_stream *s)
+	NO_THREAD_SAFETY_ANALYSIS /* requires alias analysis */
 {
 	struct ivtv *itv = s->itv;
 	DEFINE_WAIT(wait);
@@ -544,6 +545,7 @@ int ivtv_start_decoding(struct ivtv_open_id *id, int speed)
 }
 
 static int ivtv_schedule_dma(struct ivtv_stream *s)
+	NO_THREAD_SAFETY_ANALYSIS /* requires alias analysis */
 {
 	struct ivtv *itv = s->itv;
 	int got_sig;

@@ -34,12 +34,14 @@ struct io_msg {
 };
 
 static void io_double_unlock_ctx(struct io_ring_ctx *octx)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_unlock(&octx->uring_lock);
 }
 
 static int io_double_lock_ctx(struct io_ring_ctx *octx,
 			      unsigned int issue_flags)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	/*
 	 * To ensure proper ordering between the two ctxs, we can only
@@ -135,6 +137,7 @@ static int io_msg_data_remote(struct io_ring_ctx *target_ctx,
 
 static int __io_msg_ring_data(struct io_ring_ctx *target_ctx,
 			      struct io_msg *msg, unsigned int issue_flags)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	u32 flags = 0;
 	int ret;

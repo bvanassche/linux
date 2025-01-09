@@ -6890,6 +6890,7 @@ static void rb_setup_ids_meta_page(struct ring_buffer_per_cpu *cpu_buffer,
 
 static struct ring_buffer_per_cpu *
 rb_get_mapped_buffer(struct trace_buffer *buffer, int cpu)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ring_buffer_per_cpu *cpu_buffer;
 
@@ -6909,6 +6910,7 @@ rb_get_mapped_buffer(struct trace_buffer *buffer, int cpu)
 }
 
 static void rb_put_mapped_buffer(struct ring_buffer_per_cpu *cpu_buffer)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_unlock(&cpu_buffer->mapping_lock);
 }

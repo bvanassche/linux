@@ -349,6 +349,7 @@ static int dln2_irq_set_type(struct irq_data *irqd, unsigned type)
 }
 
 static void dln2_irq_bus_lock(struct irq_data *irqd)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
 	struct dln2_gpio *dln2 = gpiochip_get_data(gc);
@@ -357,6 +358,7 @@ static void dln2_irq_bus_lock(struct irq_data *irqd)
 }
 
 static void dln2_irq_bus_unlock(struct irq_data *irqd)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
 	struct dln2_gpio *dln2 = gpiochip_get_data(gc);

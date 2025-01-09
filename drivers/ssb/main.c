@@ -399,6 +399,7 @@ static const struct bus_type ssb_bustype = {
 };
 
 static void ssb_buses_lock(void)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	/* See the comment at the ssb_is_early_boot definition */
 	if (!ssb_is_early_boot)
@@ -406,6 +407,7 @@ static void ssb_buses_lock(void)
 }
 
 static void ssb_buses_unlock(void)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	/* See the comment at the ssb_is_early_boot definition */
 	if (!ssb_is_early_boot)

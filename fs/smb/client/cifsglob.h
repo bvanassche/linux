@@ -860,6 +860,7 @@ static inline bool is_smb1(struct TCP_Server_Info *server)
 }
 
 static inline void cifs_server_lock(struct TCP_Server_Info *server)
+	ACQUIRE(server->_srv_mutex)
 {
 	unsigned int nofs_flag = memalloc_nofs_save();
 
@@ -868,6 +869,7 @@ static inline void cifs_server_lock(struct TCP_Server_Info *server)
 }
 
 static inline void cifs_server_unlock(struct TCP_Server_Info *server)
+	RELEASE(server->_srv_mutex)
 {
 	unsigned int nofs_flag = server->nofs_flag;
 

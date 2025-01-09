@@ -243,6 +243,7 @@ static int mc_polling_wait_atomic(struct fsl_mc_io *mc_io,
  * Returns '0' on Success; Error code otherwise.
  */
 int mc_send_command(struct fsl_mc_io *mc_io, struct fsl_mc_command *cmd)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	int error;
 	enum mc_cmd_status status;

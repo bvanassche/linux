@@ -3259,6 +3259,7 @@ static inline bool __should_serialize_io(struct inode *inode,
 static int __f2fs_write_data_pages(struct address_space *mapping,
 						struct writeback_control *wbc,
 						enum iostat_type io_type)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct inode *inode = mapping->host;
 	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);

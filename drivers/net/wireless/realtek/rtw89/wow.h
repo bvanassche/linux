@@ -117,7 +117,7 @@ static inline bool rtw_wow_has_mgd_features(struct rtw89_dev *rtwdev)
 }
 
 int rtw89_wow_suspend(struct rtw89_dev *rtwdev, struct cfg80211_wowlan *wowlan);
-int rtw89_wow_resume(struct rtw89_dev *rtwdev);
+int rtw89_wow_resume(struct rtw89_dev *rtwdev) REQUIRES(rtwdev->mutex);
 void rtw89_wow_parse_akm(struct rtw89_dev *rtwdev, struct sk_buff *skb);
 #else
 static inline

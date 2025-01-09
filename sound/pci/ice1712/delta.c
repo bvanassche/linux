@@ -245,6 +245,7 @@ static int delta_spdif_stream_put(struct snd_ice1712 *ice, struct snd_ctl_elem_v
  * AK4524 on Delta 44 and 66 to choose the chip mask
  */
 static void delta_ak4524_lock(struct snd_akm4xxx *ak, int chip)
+	NO_THREAD_SAFETY_ANALYSIS
 {
         struct snd_ak4xxx_private *priv = (void *)ak->private_value[0];
         struct snd_ice1712 *ice = ak->private_data[0];
@@ -259,6 +260,7 @@ static void delta_ak4524_lock(struct snd_akm4xxx *ak, int chip)
  * AK4524 on Delta1010LT to choose the chip address
  */
 static void delta1010lt_ak4524_lock(struct snd_akm4xxx *ak, int chip)
+	NO_THREAD_SAFETY_ANALYSIS
 {
         struct snd_ak4xxx_private *priv = (void *)ak->private_value[0];
         struct snd_ice1712 *ice = ak->private_data[0];
@@ -272,6 +274,7 @@ static void delta1010lt_ak4524_lock(struct snd_akm4xxx *ak, int chip)
  * AK4524 on Delta66 rev E to choose the chip address
  */
 static void delta66e_ak4524_lock(struct snd_akm4xxx *ak, int chip)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct snd_ak4xxx_private *priv = (void *)ak->private_value[0];
 	struct snd_ice1712 *ice = ak->private_data[0];
@@ -286,6 +289,7 @@ static void delta66e_ak4524_lock(struct snd_akm4xxx *ak, int chip)
  * AK4528 on VX442 to choose the chip mask
  */
 static void vx442_ak4524_lock(struct snd_akm4xxx *ak, int chip)
+	NO_THREAD_SAFETY_ANALYSIS
 {
         struct snd_ak4xxx_private *priv = (void *)ak->private_value[0];
         struct snd_ice1712 *ice = ak->private_data[0];

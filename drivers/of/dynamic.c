@@ -726,6 +726,7 @@ int __of_changeset_apply_entries(struct of_changeset *ocs, int *ret_revert)
  * final notification error is reported.
  */
 int __of_changeset_apply_notify(struct of_changeset *ocs)
+	REQUIRES(of_mutex)
 {
 	struct of_changeset_entry *ce;
 	int ret = 0, ret_tmp;
@@ -754,6 +755,7 @@ int __of_changeset_apply_notify(struct of_changeset *ocs)
  * is unknown if an apply error occurs.
  */
 static int __of_changeset_apply(struct of_changeset *ocs)
+	REQUIRES(of_mutex)
 {
 	int ret, ret_revert = 0;
 
@@ -827,6 +829,7 @@ int __of_changeset_revert_entries(struct of_changeset *ocs, int *ret_apply)
  * final notification error is reported.
  */
 int __of_changeset_revert_notify(struct of_changeset *ocs)
+	REQUIRES(of_mutex)
 {
 	struct of_changeset_entry *ce;
 	int ret = 0, ret_tmp;
@@ -847,6 +850,7 @@ int __of_changeset_revert_notify(struct of_changeset *ocs)
 }
 
 static int __of_changeset_revert(struct of_changeset *ocs)
+	REQUIRES(of_mutex)
 {
 	int ret, ret_reply;
 

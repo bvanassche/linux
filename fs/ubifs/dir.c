@@ -424,6 +424,7 @@ out_free:
  * wrapper function.
  */
 static void lock_2_inodes(struct inode *inode1, struct inode *inode2)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_lock_nested(&ubifs_inode(inode1)->ui_mutex, WB_MUTEX_1);
 	mutex_lock_nested(&ubifs_inode(inode2)->ui_mutex, WB_MUTEX_2);
@@ -435,6 +436,7 @@ static void lock_2_inodes(struct inode *inode1, struct inode *inode2)
  * @inode2: second inode
  */
 static void unlock_2_inodes(struct inode *inode1, struct inode *inode2)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_unlock(&ubifs_inode(inode2)->ui_mutex);
 	mutex_unlock(&ubifs_inode(inode1)->ui_mutex);
@@ -1289,6 +1291,7 @@ out_budg:
  */
 static void lock_4_inodes(struct inode *inode1, struct inode *inode2,
 			  struct inode *inode3, struct inode *inode4)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_lock_nested(&ubifs_inode(inode1)->ui_mutex, WB_MUTEX_1);
 	if (inode2 != inode1)
@@ -1308,6 +1311,7 @@ static void lock_4_inodes(struct inode *inode1, struct inode *inode2,
  */
 static void unlock_4_inodes(struct inode *inode1, struct inode *inode2,
 			    struct inode *inode3, struct inode *inode4)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (inode4)
 		mutex_unlock(&ubifs_inode(inode4)->ui_mutex);

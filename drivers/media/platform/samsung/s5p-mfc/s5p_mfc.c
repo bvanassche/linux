@@ -164,6 +164,7 @@ static void s5p_mfc_watchdog(struct timer_list *t)
 }
 
 static void s5p_mfc_watchdog_worker(struct work_struct *work)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct s5p_mfc_dev *dev;
 	struct s5p_mfc_ctx *ctx;
@@ -955,6 +956,7 @@ err_enter:
 
 /* Release MFC context */
 static int s5p_mfc_release(struct file *file)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct s5p_mfc_ctx *ctx = fh_to_ctx(file->private_data);
 	struct s5p_mfc_dev *dev = ctx->dev;

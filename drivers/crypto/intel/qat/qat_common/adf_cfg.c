@@ -11,6 +11,7 @@
 static DEFINE_MUTEX(qat_cfg_read_lock);
 
 static void *qat_dev_cfg_start(struct seq_file *sfile, loff_t *pos)
+	ACQUIRE(qat_cfg_read_lock)
 {
 	struct adf_cfg_device_data *dev_cfg = sfile->private;
 
@@ -41,6 +42,7 @@ static void *qat_dev_cfg_next(struct seq_file *sfile, void *v, loff_t *pos)
 }
 
 static void qat_dev_cfg_stop(struct seq_file *sfile, void *v)
+	RELEASE(qat_cfg_read_lock)
 {
 	mutex_unlock(&qat_cfg_read_lock);
 }

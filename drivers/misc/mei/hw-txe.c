@@ -250,6 +250,7 @@ static int mei_txe_aliveness_poll(struct mei_device *dev, u32 expected)
  * Return: 0 on success and < 0 otherwise
  */
 static int mei_txe_aliveness_wait(struct mei_device *dev, u32 expected)
+	REQUIRES(dev->device_lock)
 {
 	struct mei_txe_hw *hw = to_txe_hw(dev);
 	const unsigned long timeout =
@@ -290,6 +291,7 @@ static int mei_txe_aliveness_wait(struct mei_device *dev, u32 expected)
  * Return: 0 on success and < 0 otherwise
  */
 int mei_txe_aliveness_set_sync(struct mei_device *dev, u32 req)
+	REQUIRES(dev->device_lock)
 {
 	if (mei_txe_aliveness_set(dev, req))
 		return mei_txe_aliveness_wait(dev, req);
@@ -603,6 +605,7 @@ static inline bool mei_txe_host_is_ready(struct mei_device *dev)
  * Return: 0 on success and -ETIME on timeout
  */
 static int mei_txe_readiness_wait(struct mei_device *dev)
+	REQUIRES(dev->device_lock)
 {
 	if (mei_txe_hw_is_ready(dev))
 		return 0;
@@ -910,6 +913,7 @@ static int mei_txe_hw_reset(struct mei_device *dev, bool intr_enable)
  * Return: 0 on success an error code otherwise
  */
 static int mei_txe_hw_start(struct mei_device *dev)
+	REQUIRES(dev->device_lock)
 {
 	struct mei_txe_hw *hw = to_txe_hw(dev);
 	int ret;

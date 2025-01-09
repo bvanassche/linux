@@ -188,6 +188,7 @@ static void mv88e6xxx_phy_ppu_reenable_timer(struct timer_list *t)
 }
 
 static int mv88e6xxx_phy_ppu_access_get(struct mv88e6xxx_chip *chip)
+	TRY_ACQUIRE(0, chip->ppu_mutex)
 {
 	int ret;
 
@@ -214,6 +215,7 @@ static int mv88e6xxx_phy_ppu_access_get(struct mv88e6xxx_chip *chip)
 }
 
 static void mv88e6xxx_phy_ppu_access_put(struct mv88e6xxx_chip *chip)
+	RELEASE(chip->ppu_mutex)
 {
 	/* Schedule a timer to re-enable the PHY polling unit. */
 	mod_timer(&chip->ppu_timer, jiffies + msecs_to_jiffies(10));

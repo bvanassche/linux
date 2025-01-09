@@ -78,6 +78,7 @@ struct ks8851_net_spi {
  * Claim chip register access lock
  */
 static void ks8851_lock_spi(struct ks8851_net *ks, unsigned long *flags)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct ks8851_net_spi *kss = to_ks8851_spi(ks);
 
@@ -92,6 +93,7 @@ static void ks8851_lock_spi(struct ks8851_net *ks, unsigned long *flags)
  * Release chip register access lock
  */
 static void ks8851_unlock_spi(struct ks8851_net *ks, unsigned long *flags)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct ks8851_net_spi *kss = to_ks8851_spi(ks);
 

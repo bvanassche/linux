@@ -32,6 +32,7 @@ static u16 mec_emi_base, mec_emi_end;
  * @return: Negative error code, or zero for success
  */
 static int cros_ec_lpc_mec_lock(void)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	bool success;
 
@@ -54,6 +55,7 @@ static int cros_ec_lpc_mec_lock(void)
  * @return: Negative error code, or zero for success
  */
 static int cros_ec_lpc_mec_unlock(void)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional unlock */
 {
 	bool success;
 

@@ -495,6 +495,7 @@ static irqreturn_t aw9523_irq_thread_func(int irq, void *dev_id)
  * @d: irq data
  */
 static void aw9523_irq_bus_lock(struct irq_data *d)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct aw9523 *awi = gpiochip_get_data(irq_data_get_irq_chip_data(d));
 
@@ -510,6 +511,7 @@ static void aw9523_irq_bus_lock(struct irq_data *d)
  * hardware, then unlocks the bus.
  */
 static void aw9523_irq_bus_sync_unlock(struct irq_data *d)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct aw9523 *awi = gpiochip_get_data(irq_data_get_irq_chip_data(d));
 

@@ -34,6 +34,7 @@ static const struct resource pb_resources[] = {
 };
 
 static void tps65217_irq_lock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct tps65217 *tps = irq_data_get_irq_chip_data(data);
 
@@ -41,6 +42,7 @@ static void tps65217_irq_lock(struct irq_data *data)
 }
 
 static void tps65217_irq_sync_unlock(struct irq_data *data)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {
 	struct tps65217 *tps = irq_data_get_irq_chip_data(data);
 	int ret;

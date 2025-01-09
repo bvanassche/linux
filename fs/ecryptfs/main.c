@@ -140,6 +140,7 @@ int ecryptfs_get_lower_file(struct dentry *dentry, struct inode *inode)
 }
 
 void ecryptfs_put_lower_file(struct inode *inode)
+	NO_THREAD_SAFETY_ANALYSIS /* needed because of a clang bug? */
 {
 	struct ecryptfs_inode_info *inode_info;
 

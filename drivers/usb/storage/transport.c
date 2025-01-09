@@ -602,6 +602,7 @@ static void last_sector_hacks(struct us_data *us, struct scsi_cmnd *srb)
  * the device and receive the response.
  */
 void usb_stor_invoke_transport(struct scsi_cmnd *srb, struct us_data *us)
+	REQUIRES(us->dev_mutex)
 {
 	int need_auto_sense;
 	int result;

@@ -2420,6 +2420,7 @@ static int smc_listen_rdma_finish(struct smc_sock *new_smc,
 
 /* setup for connection of server */
 static void smc_listen_work(struct work_struct *work)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct smc_sock *new_smc = container_of(work, struct smc_sock,
 						smc_listen_work);

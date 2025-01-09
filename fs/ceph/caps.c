@@ -202,6 +202,7 @@ static void __ceph_unreserve_caps(struct ceph_mds_client *mdsc, int nr_caps)
  */
 int ceph_reserve_caps(struct ceph_mds_client *mdsc,
 		      struct ceph_cap_reservation *ctx, int need)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ceph_client *cl = mdsc->fsc->client;
 	int i, j;
@@ -3489,6 +3490,7 @@ static void handle_cap_grant(struct inode *inode,
 			     struct cap_extra_info *extra_info)
 	__releases(ci->i_ceph_lock)
 	__releases(session->s_mdsc->snap_rwsem)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ceph_client *cl = ceph_inode_to_client(inode);
 	struct ceph_inode_info *ci = ceph_inode(inode);
@@ -4064,6 +4066,7 @@ static bool handle_cap_trunc(struct inode *inode,
 static void handle_cap_export(struct inode *inode, struct ceph_mds_caps *ex,
 			      struct ceph_mds_cap_peer *ph,
 			      struct ceph_mds_session *session)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ceph_mds_client *mdsc = ceph_inode_to_fs_client(inode)->mdsc;
 	struct ceph_client *cl = mdsc->fsc->client;
@@ -4326,6 +4329,7 @@ bad:
  */
 void ceph_handle_caps(struct ceph_mds_session *session,
 		      struct ceph_msg *msg)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct ceph_mds_client *mdsc = session->s_mdsc;
 	struct ceph_client *cl = mdsc->fsc->client;

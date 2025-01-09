@@ -485,6 +485,7 @@ static void torture_mutex_init(void)
 
 static int torture_mutex_nested_lock(int tid __maybe_unused,
 				     u32 lockset)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int i;
 
@@ -496,6 +497,7 @@ static int torture_mutex_nested_lock(int tid __maybe_unused,
 
 static int torture_mutex_lock(int tid __maybe_unused)
 __acquires(torture_mutex)
+	ACQUIRE(torture_mutex)
 {
 	mutex_lock(&torture_mutex);
 	return 0;
@@ -512,12 +514,14 @@ static void torture_mutex_delay(struct torture_random_state *trsp)
 
 static void torture_mutex_unlock(int tid __maybe_unused)
 __releases(torture_mutex)
+	RELEASE(torture_mutex)
 {
 	mutex_unlock(&torture_mutex);
 }
 
 static void torture_mutex_nested_unlock(int tid __maybe_unused,
 					u32 lockset)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int i;
 

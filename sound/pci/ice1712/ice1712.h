@@ -423,6 +423,7 @@ static inline unsigned int snd_ice1712_gpio_read(struct snd_ice1712 *ice)
  * restore!
  */
 static inline void snd_ice1712_save_gpio_status(struct snd_ice1712 *ice)
+	ACQUIRE(ice->gpio_mutex)
 {
 	mutex_lock(&ice->gpio_mutex);
 	ice->gpio.saved[0] = ice->gpio.direction;
@@ -430,6 +431,7 @@ static inline void snd_ice1712_save_gpio_status(struct snd_ice1712 *ice)
 }
 
 static inline void snd_ice1712_restore_gpio_status(struct snd_ice1712 *ice)
+	RELEASE(ice->gpio_mutex)
 {
 	ice->gpio.set_dir(ice, ice->gpio.saved[0]);
 	ice->gpio.set_mask(ice, ice->gpio.saved[1]);

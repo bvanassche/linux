@@ -580,6 +580,7 @@ int fuse_reverse_inval_inode(struct fuse_conn *fc, u64 nodeid,
 }
 
 bool fuse_lock_inode(struct inode *inode)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	bool locked = false;
 
@@ -592,6 +593,7 @@ bool fuse_lock_inode(struct inode *inode)
 }
 
 void fuse_unlock_inode(struct inode *inode, bool locked)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (locked)
 		mutex_unlock(&get_fuse_inode(inode)->mutex);

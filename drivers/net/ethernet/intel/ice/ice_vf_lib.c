@@ -856,6 +856,7 @@ static void ice_notify_vf_reset(struct ice_vf *vf)
  * rebuild.
  */
 int ice_reset_vf(struct ice_vf *vf, u32 flags)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	struct ice_pf *pf = vf->pf;
 	struct ice_lag *lag;

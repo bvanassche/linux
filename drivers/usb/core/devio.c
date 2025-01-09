@@ -1168,6 +1168,7 @@ static int usbfs_start_wait_urb(struct urb *urb, int timeout,
 
 static int do_proc_control(struct usb_dev_state *ps,
 		struct usbdevfs_ctrltransfer *ctrl)
+	NO_THREAD_SAFETY_ANALYSIS /* requires alias analysis */
 {
 	struct usb_device *dev = ps->dev;
 	unsigned int tmo;
@@ -1282,6 +1283,7 @@ static int proc_control(struct usb_dev_state *ps, void __user *arg)
 
 static int do_proc_bulk(struct usb_dev_state *ps,
 		struct usbdevfs_bulktransfer *bulk)
+	NO_THREAD_SAFETY_ANALYSIS /* requires alias analysis */
 {
 	struct usb_device *dev = ps->dev;
 	unsigned int tmo, len1, len2, pipe;
@@ -2079,6 +2081,7 @@ err_out:
 }
 
 static struct async *reap_as(struct usb_dev_state *ps)
+	NO_THREAD_SAFETY_ANALYSIS /* REQUIRES(ps->dev->dev.mutex) */
 {
 	DECLARE_WAITQUEUE(wait, current);
 	struct async *as = NULL;
@@ -2102,6 +2105,7 @@ static struct async *reap_as(struct usb_dev_state *ps)
 }
 
 static int proc_reapurb(struct usb_dev_state *ps, void __user *arg)
+	REQUIRES(ps->dev->dev.mutex)
 {
 	struct async *as = reap_as(ps);
 
@@ -2247,6 +2251,7 @@ static int processcompl_compat(struct async *as, void __user * __user *arg)
 }
 
 static int proc_reapurb_compat(struct usb_dev_state *ps, void __user *arg)
+	REQUIRES(ps->dev->dev.mutex)
 {
 	struct async *as = reap_as(ps);
 
@@ -2579,6 +2584,7 @@ static int proc_allow_suspend(struct usb_dev_state *ps)
 }
 
 static int proc_wait_for_resume(struct usb_dev_state *ps)
+	REQUIRES(ps->dev->dev.mutex)
 {
 	int ret;
 
@@ -2599,6 +2605,7 @@ static int proc_wait_for_resume(struct usb_dev_state *ps)
  */
 static long usbdev_do_ioctl(struct file *file, unsigned int cmd,
 				void __user *p)
+	NO_THREAD_SAFETY_ANALYSIS /* requires alias analysis */
 {
 	struct usb_dev_state *ps = file->private_data;
 	struct inode *inode = file_inode(file);

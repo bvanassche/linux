@@ -110,11 +110,13 @@ static int build_changeset_next_level(struct overlay_changeset *ovcs,
 static DEFINE_MUTEX(of_overlay_phandle_mutex);
 
 void of_overlay_mutex_lock(void)
+	ACQUIRE(of_overlay_phandle_mutex)
 {
 	mutex_lock(&of_overlay_phandle_mutex);
 }
 
 void of_overlay_mutex_unlock(void)
+	RELEASE(of_overlay_phandle_mutex)
 {
 	mutex_unlock(&of_overlay_phandle_mutex);
 }

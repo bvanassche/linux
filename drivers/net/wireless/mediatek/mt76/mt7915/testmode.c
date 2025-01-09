@@ -425,6 +425,7 @@ mt7915_tm_init(struct mt7915_phy *phy, bool en)
 
 static void
 mt7915_tm_update_channel(struct mt7915_phy *phy)
+	REQUIRES(phy->dev->mt76.mutex)
 {
 	mutex_unlock(&phy->dev->mt76.mutex);
 	mt76_update_channel(phy->mt76);
@@ -435,6 +436,7 @@ mt7915_tm_update_channel(struct mt7915_phy *phy)
 
 static void
 mt7915_tm_set_tx_frames(struct mt7915_phy *phy, bool en)
+	REQUIRES(phy->dev->mt76.mutex)
 {
 	struct mt76_testmode_data *td = &phy->mt76->test;
 	struct mt7915_dev *dev = phy->dev;
@@ -483,6 +485,7 @@ mt7915_tm_set_tx_frames(struct mt7915_phy *phy, bool en)
 
 static void
 mt7915_tm_set_rx_frames(struct mt7915_phy *phy, bool en)
+	REQUIRES(phy->dev->mt76.mutex)
 {
 	mt7915_tm_set_trx(phy, TM_MAC_RX_RXV, false);
 
@@ -510,6 +513,7 @@ mt7915_tm_rf_switch_mode(struct mt7915_dev *dev, u32 oper)
 
 static int
 mt7915_tm_set_tx_cont(struct mt7915_phy *phy, bool en)
+	REQUIRES(phy->dev->mt76.mutex)
 {
 #define TX_CONT_START	0x05
 #define TX_CONT_STOP	0x06
@@ -648,6 +652,7 @@ mt7915_tm_update_params(struct mt7915_phy *phy, u32 changed)
 
 static int
 mt7915_tm_set_state(struct mt76_phy *mphy, enum mt76_testmode_state state)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct mt76_testmode_data *td = &mphy->test;
 	struct mt7915_phy *phy = mphy->priv;

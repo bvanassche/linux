@@ -122,6 +122,7 @@ xfs_qm_dquot_logitem_push(
 	struct list_head	*buffer_list)
 		__releases(&lip->li_ailp->ail_lock)
 		__acquires(&lip->li_ailp->ail_lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xfs_dq_logitem	*qlip = DQUOT_ITEM(lip);
 	struct xfs_dquot	*dqp = qlip->qli_dquot;
@@ -184,6 +185,7 @@ out_unlock:
 STATIC void
 xfs_qm_dquot_logitem_release(
 	struct xfs_log_item	*lip)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xfs_dquot	*dqp = DQUOT_ITEM(lip)->qli_dquot;
 

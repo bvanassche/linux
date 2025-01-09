@@ -1308,6 +1308,7 @@ static struct dma_fence *
 __xe_migrate_update_pgtables(struct xe_migrate *m,
 			     struct xe_migrate_pt_update *pt_update,
 			     struct xe_vm_pgtable_update_ops *pt_update_ops)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	const struct xe_migrate_pt_update_ops *ops = pt_update->ops;
 	struct xe_tile *tile = m->tile;

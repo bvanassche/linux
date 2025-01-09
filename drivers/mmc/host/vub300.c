@@ -2393,6 +2393,7 @@ static int vub300_resume(struct usb_interface *intf)
 #define vub300_resume NULL
 #endif
 static int vub300_pre_reset(struct usb_interface *intf)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {				/* NOT irq */
 	struct vub300_mmc_host *vub300 = usb_get_intfdata(intf);
 	mutex_lock(&vub300->cmd_mutex);
@@ -2400,6 +2401,7 @@ static int vub300_pre_reset(struct usb_interface *intf)
 }
 
 static int vub300_post_reset(struct usb_interface *intf)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex is not a member of an argument */
 {				/* NOT irq */
 	struct vub300_mmc_host *vub300 = usb_get_intfdata(intf);
 	/* we are sure no URBs are active - no locking needed */

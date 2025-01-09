@@ -713,6 +713,7 @@ static int qcuefi_set_reference(struct qcuefi_client *qcuefi)
 }
 
 static struct qcuefi_client *qcuefi_acquire(void)
+	TRY_ACQUIRE(true, __qcuefi_lock)
 {
 	mutex_lock(&__qcuefi_lock);
 	if (!__qcuefi) {
@@ -723,12 +724,14 @@ static struct qcuefi_client *qcuefi_acquire(void)
 }
 
 static void qcuefi_release(void)
+	RELEASE(__qcuefi_lock)
 {
 	mutex_unlock(&__qcuefi_lock);
 }
 
 static efi_status_t qcuefi_get_variable(efi_char16_t *name, efi_guid_t *vendor, u32 *attr,
 					unsigned long *data_size, void *data)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct qcuefi_client *qcuefi;
 	efi_status_t status;
@@ -745,6 +748,7 @@ static efi_status_t qcuefi_get_variable(efi_char16_t *name, efi_guid_t *vendor, 
 
 static efi_status_t qcuefi_set_variable(efi_char16_t *name, efi_guid_t *vendor,
 					u32 attr, unsigned long data_size, void *data)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct qcuefi_client *qcuefi;
 	efi_status_t status;
@@ -761,6 +765,7 @@ static efi_status_t qcuefi_set_variable(efi_char16_t *name, efi_guid_t *vendor,
 
 static efi_status_t qcuefi_get_next_variable(unsigned long *name_size, efi_char16_t *name,
 					     efi_guid_t *vendor)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct qcuefi_client *qcuefi;
 	efi_status_t status;
@@ -777,6 +782,7 @@ static efi_status_t qcuefi_get_next_variable(unsigned long *name_size, efi_char1
 
 static efi_status_t qcuefi_query_variable_info(u32 attr, u64 *storage_space, u64 *remaining_space,
 					       u64 *max_variable_size)
+	NO_THREAD_SAFETY_ANALYSIS /* clang bug? */
 {
 	struct qcuefi_client *qcuefi;
 	efi_status_t status;

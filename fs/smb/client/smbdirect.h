@@ -269,7 +269,7 @@ struct smbd_connection *smbd_get_connection(
 /* Reconnect SMBDirect session */
 int smbd_reconnect(struct TCP_Server_Info *server);
 /* Destroy SMBDirect session */
-void smbd_destroy(struct TCP_Server_Info *server);
+void smbd_destroy(struct TCP_Server_Info *server) REQUIRES(server->_srv_mutex);
 
 /* Interface for carrying upper layer I/O through send/recv */
 int smbd_recv(struct smbd_connection *info, struct msghdr *msg);

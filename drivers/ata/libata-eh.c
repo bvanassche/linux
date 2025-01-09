@@ -2613,6 +2613,7 @@ static int ata_eh_followup_srst_needed(struct ata_link *link, int rc)
 int ata_eh_reset(struct ata_link *link, int classify,
 		 ata_prereset_fn_t prereset, ata_reset_fn_t softreset,
 		 ata_reset_fn_t hardreset, ata_postreset_fn_t postreset)
+	NO_THREAD_SAFETY_ANALYSIS /*REQUIRES(link->ap->host->eh_mutex)*/
 {
 	struct ata_port *ap = link->ap;
 	struct ata_link *slave = ap->slave_link;
@@ -3730,6 +3731,7 @@ int ata_eh_recover(struct ata_port *ap, ata_prereset_fn_t prereset,
 		   ata_reset_fn_t softreset, ata_reset_fn_t hardreset,
 		   ata_postreset_fn_t postreset,
 		   struct ata_link **r_failed_link)
+	NO_THREAD_SAFETY_ANALYSIS /*REQUIRES(link->ap->host->eh_mutex)*/
 {
 	struct ata_link *link;
 	struct ata_device *dev;

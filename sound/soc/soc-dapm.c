@@ -149,6 +149,7 @@ static int dapm_down_seq[] = {
 };
 
 static void dapm_assert_locked(struct snd_soc_dapm_context *dapm)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (snd_soc_card_is_instantiated(dapm->card))
 		snd_soc_dapm_mutex_assert_held(dapm);
@@ -607,6 +608,7 @@ struct snd_soc_dapm_context *snd_soc_dapm_kcontrol_dapm(
 EXPORT_SYMBOL_GPL(snd_soc_dapm_kcontrol_dapm);
 
 static void dapm_reset(struct snd_soc_card *card)
+	REQUIRES(card->dapm_mutex)
 {
 	struct snd_soc_dapm_widget *w;
 
@@ -1953,6 +1955,7 @@ static bool dapm_idle_bias_off(struct snd_soc_dapm_context *dapm)
  *  o DAC to ADC (loopback).
  */
 static int dapm_power_widgets(struct snd_soc_card *card, int event)
+	REQUIRES(card->dapm_mutex)
 {
 	struct snd_soc_dapm_widget *w;
 	struct snd_soc_dapm_context *d;
@@ -2334,6 +2337,7 @@ static void soc_dapm_connect_path(struct snd_soc_dapm_path *path,
 /* test and update the power status of a mux widget */
 static int soc_dapm_mux_update_power(struct snd_soc_card *card,
 				 struct snd_kcontrol *kcontrol, int mux, struct soc_enum *e)
+	REQUIRES(card->dapm_mutex)
 {
 	struct snd_soc_dapm_path *path;
 	int found = 0;
@@ -2381,6 +2385,7 @@ EXPORT_SYMBOL_GPL(snd_soc_dapm_mux_update_power);
 static int soc_dapm_mixer_update_power(struct snd_soc_card *card,
 				       struct snd_kcontrol *kcontrol,
 				       int connect, int rconnect)
+	REQUIRES(card->dapm_mutex)
 {
 	struct snd_soc_dapm_path *path;
 	int found = 0;
@@ -2682,6 +2687,7 @@ static int snd_soc_dapm_set_pin(struct snd_soc_dapm_context *dapm,
  * Returns 0 for success.
  */
 int snd_soc_dapm_sync_unlocked(struct snd_soc_dapm_context *dapm)
+	REQUIRES(dapm->card->dapm_mutex)
 {
 	/*
 	 * Suppress early reports (eg, jacks syncing their state) to avoid
@@ -4521,6 +4527,7 @@ void snd_soc_dapm_connect_dai_link_widgets(struct snd_soc_card *card)
 
 static void soc_dapm_stream_event(struct snd_soc_pcm_runtime *rtd, int stream,
 	int event)
+	REQUIRES(rtd->card->dapm_mutex)
 {
 	struct snd_soc_dai *dai;
 	int i;
@@ -4544,6 +4551,7 @@ static void soc_dapm_stream_event(struct snd_soc_pcm_runtime *rtd, int stream,
  */
 void snd_soc_dapm_stream_event(struct snd_soc_pcm_runtime *rtd, int stream,
 			      int event)
+	REQUIRES(rtd->card->dapm_mutex)
 {
 	struct snd_soc_card *card = rtd->card;
 
@@ -4553,6 +4561,7 @@ void snd_soc_dapm_stream_event(struct snd_soc_pcm_runtime *rtd, int stream,
 }
 
 void snd_soc_dapm_stream_stop(struct snd_soc_pcm_runtime *rtd, int stream)
+	REQUIRES(rtd->card->dapm_mutex)
 {
 	if (stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		if (snd_soc_runtime_ignore_pmdown_time(rtd)) {

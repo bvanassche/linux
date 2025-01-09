@@ -274,6 +274,7 @@ xfs_qm_scall_setqlim(
 	xfs_dqid_t		id,
 	xfs_dqtype_t		type,
 	struct qc_dqblk		*newlim)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct xfs_quotainfo	*q = mp->m_quotainfo;
 	struct xfs_dquot	*dqp;

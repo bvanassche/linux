@@ -3221,6 +3221,7 @@ static int thread_is_running(const struct pktgen_thread *t)
 }
 
 static int pktgen_wait_thread_run(struct pktgen_thread *t)
+	REQUIRES(pktgen_thread_lock)
 {
 	while (thread_is_running(t)) {
 

@@ -1298,6 +1298,7 @@ static void put_ctx(struct perf_event_context *ctx)
  */
 static struct perf_event_context *
 perf_event_ctx_lock_nested(struct perf_event *event, int nesting)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct perf_event_context *ctx;
 
@@ -1328,6 +1329,7 @@ perf_event_ctx_lock(struct perf_event *event)
 
 static void perf_event_ctx_unlock(struct perf_event *event,
 				  struct perf_event_context *ctx)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	mutex_unlock(&ctx->mutex);
 	put_ctx(ctx);
@@ -6407,6 +6409,7 @@ static void perf_pmu_output_stop(struct perf_event *event);
  * to detach all events redirecting to us.
  */
 static void perf_mmap_close(struct vm_area_struct *vma)
+	NO_THREAD_SAFETY_ANALYSIS /* needed because of a clang bug? */
 {
 	struct perf_event *event = vma->vm_file->private_data;
 	struct perf_buffer *rb = ring_buffer_get(event);
@@ -6598,6 +6601,7 @@ static int map_range(struct perf_buffer *rb, struct vm_area_struct *vma)
 }
 
 static int perf_mmap(struct file *file, struct vm_area_struct *vma)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct perf_event *event = file->private_data;
 	unsigned long user_locked, user_lock_limit;
@@ -11258,6 +11262,7 @@ fail_clear_files:
 }
 
 static int perf_event_set_filter(struct perf_event *event, void __user *arg)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int ret = -EINVAL;
 	char *filter_str;
@@ -12592,6 +12597,8 @@ err_size:
 }
 
 static void mutex_lock_double(struct mutex *a, struct mutex *b)
+	ACQUIRE(*a)
+	ACQUIRE(*b)
 {
 	if (b < a)
 		swap(a, b);
@@ -12602,6 +12609,7 @@ static void mutex_lock_double(struct mutex *a, struct mutex *b)
 
 static int
 perf_event_set_output(struct perf_event *event, struct perf_event *output_event)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct perf_buffer *rb = NULL;
 	int ret = -EINVAL;
@@ -13394,6 +13402,7 @@ static void sync_child_event(struct perf_event *child_event)
 
 static void
 perf_event_exit_event(struct perf_event *event, struct perf_event_context *ctx)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	struct perf_event *parent_event = event->parent;
 	unsigned long detach_flags = 0;

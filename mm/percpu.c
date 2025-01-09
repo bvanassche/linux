@@ -1729,6 +1729,7 @@ static void pcpu_alloc_tag_free_hook(struct pcpu_chunk *chunk, int off, size_t s
  */
 void __percpu *pcpu_alloc_noprof(size_t size, size_t align, bool reserved,
 				 gfp_t gfp)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	gfp_t pcpu_gfp;
 	bool is_atomic;

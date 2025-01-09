@@ -1843,6 +1843,7 @@ void __i915_request_queue(struct i915_request *rq,
 }
 
 void i915_request_add(struct i915_request *rq)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct intel_timeline * const tl = i915_request_timeline(rq);
 	struct i915_sched_attr attr = {};

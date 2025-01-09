@@ -1089,6 +1089,7 @@ void device_initial_probe(struct device *dev)
  * interface, @parent lock will be held as well.
  */
 static void __device_driver_lock(struct device *dev, struct device *parent)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	if (parent && dev->bus->need_parent_lock)
 		device_lock(parent);
@@ -1105,6 +1106,7 @@ static void __device_driver_lock(struct device *dev, struct device *parent)
  * USB interface, @parent lock will be released as well.
  */
 static void __device_driver_unlock(struct device *dev, struct device *parent)
+	NO_THREAD_SAFETY_ANALYSIS /* conditional locking */
 {
 	device_unlock(dev);
 	if (parent && dev->bus->need_parent_lock)

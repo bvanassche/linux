@@ -1773,6 +1773,7 @@ void intel_tc_port_link_cancel_reset_work(struct intel_digital_port *dig_port)
 
 static void __intel_tc_port_lock(struct intel_tc_port *tc,
 				 int required_lanes)
+	ACQUIRE(tc->lock)
 {
 	struct drm_i915_private *i915 = tc_to_i915(tc);
 
@@ -1790,6 +1791,7 @@ static void __intel_tc_port_lock(struct intel_tc_port *tc,
 }
 
 void intel_tc_port_lock(struct intel_digital_port *dig_port)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	__intel_tc_port_lock(to_tc_port(dig_port), 1);
 }
@@ -1832,6 +1834,7 @@ void intel_tc_port_suspend(struct intel_digital_port *dig_port)
 }
 
 void intel_tc_port_unlock(struct intel_digital_port *dig_port)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct intel_tc_port *tc = to_tc_port(dig_port);
 
@@ -1852,6 +1855,7 @@ bool intel_tc_port_ref_held(struct intel_digital_port *dig_port)
 
 void intel_tc_port_get_link(struct intel_digital_port *dig_port,
 			    int required_lanes)
+	NO_THREAD_SAFETY_ANALYSIS /* mutex not a member of an argument */
 {
 	struct intel_tc_port *tc = to_tc_port(dig_port);
 

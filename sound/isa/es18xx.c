@@ -1943,6 +1943,8 @@ MODULE_DEVICE_TABLE(pnp, snd_audiodrive_pnpbiosids);
 /* PnP main device initialization */
 static int snd_audiodrive_pnp_init_main(int dev, struct pnp_dev *pdev)
 {
+	int ret;
+
 	if (pnp_activate_dev(pdev) < 0) {
 		dev_err(&pdev->dev, "PnP configure failure (out of resources?)\n");
 		return -EBUSY;
@@ -1950,7 +1952,10 @@ static int snd_audiodrive_pnp_init_main(int dev, struct pnp_dev *pdev)
 	/* ok. hack using Vendor-Defined Card-Level registers */
 	/* skip csn and logdev initialization - already done in isapnp_configure */
 	if (pnp_device_is_isapnp(pdev)) {
-		isapnp_cfg_begin(isapnp_card_number(pdev), isapnp_csn_number(pdev));
+		ret = isapnp_cfg_begin(isapnp_card_number(pdev),
+				       isapnp_csn_number(pdev));
+		if (ret)
+			return ret;
 		isapnp_write_byte(0x27, pnp_irq(pdev, 0));	/* Hardware Volume IRQ Number */
 		if (mpu_port[dev] != SNDRV_AUTO_PORT)
 			isapnp_write_byte(0x28, pnp_irq(pdev, 0)); /* MPU-401 IRQ Number */

@@ -313,7 +313,7 @@ nonblock:
 	}
 
 	val = mutex_lock_interruptible(&epdata->lock);
-	if (val < 0)
+	if (val)
 		return val;
 
 	switch (epdata->state) {
@@ -386,7 +386,7 @@ ep_release (struct inode *inode, struct file *fd)
 	int value;
 
 	value = mutex_lock_interruptible(&data->lock);
-	if (value < 0)
+	if (value)
 		return value;
 
 	/* clean up if this can be reopened */
@@ -406,7 +406,8 @@ static long ep_ioctl(struct file *fd, unsigned code, unsigned long value)
 	struct ep_data		*data = fd->private_data;
 	int			status;
 
-	if ((status = get_ready_ep (fd->f_flags, data, false)) < 0)
+	status = get_ready_ep(fd->f_flags, data, false);
+	if (status)
 		return status;
 
 	spin_lock_irq (&data->dev->lock);
@@ -587,7 +588,8 @@ ep_read_iter(struct kiocb *iocb, struct iov_iter *to)
 	ssize_t value;
 	char *buf;
 
-	if ((value = get_ready_ep(file->f_flags, epdata, false)) < 0)
+	value = get_ready_ep(file->f_flags, epdata, false);
+	if (value)
 		return value;
 
 	/* halt any endpoint by doing a "wrong direction" i/o call */
@@ -647,7 +649,8 @@ ep_write_iter(struct kiocb *iocb, struct iov_iter *from)
 	ssize_t value;
 	char *buf;
 
-	if ((value = get_ready_ep(file->f_flags, epdata, true)) < 0)
+	value = get_ready_ep(file->f_flags, epdata, true);
+	if (value)
 		return value;
 
 	configured = epdata->state == STATE_EP_ENABLED;

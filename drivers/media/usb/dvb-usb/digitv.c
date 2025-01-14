@@ -56,7 +56,7 @@ static int digitv_i2c_xfer(struct i2c_adapter *adap,struct i2c_msg msg[],int num
 	struct dvb_usb_device *d = i2c_get_adapdata(adap);
 	int i;
 
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	if (num > 2)

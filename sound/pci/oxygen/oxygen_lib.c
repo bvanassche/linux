@@ -203,7 +203,7 @@ static void oxygen_proc_read(struct snd_info_entry *entry,
 			snd_iprintf(buffer, " %02x", oxygen_read8(chip, i + j));
 		snd_iprintf(buffer, "\n");
 	}
-	if (mutex_lock_interruptible(&chip->mutex) < 0)
+	if (mutex_lock_interruptible(&chip->mutex))
 		return;
 	if (chip->has_ac97_0) {
 		snd_iprintf(buffer, "\nAC97:\n");

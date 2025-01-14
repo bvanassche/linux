@@ -3647,10 +3647,10 @@ static ssize_t srpt_tpg_attrib_use_srq_store(struct config_item *item,
 		return -EINVAL;
 
 	ret = mutex_lock_interruptible(&sdev->sdev_mutex);
-	if (ret < 0)
+	if (ret)
 		return ret;
 	ret = mutex_lock_interruptible(&sport->mutex);
-	if (ret < 0)
+	if (ret)
 		goto unlock_sdev;
 	enabled = sport->enabled;
 	/* Log out all initiator systems before changing 'use_srq'. */

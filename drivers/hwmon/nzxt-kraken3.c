@@ -251,7 +251,7 @@ static int kraken3_read_z53(struct kraken3_data *priv)
 {
 	int ret = mutex_lock_interruptible(&priv->z53_status_request_lock);
 
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	if (!time_after(jiffies, priv->updated + msecs_to_jiffies(STATUS_VALIDITY))) {

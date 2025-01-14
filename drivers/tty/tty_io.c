@@ -965,7 +965,7 @@ static ssize_t iterate_tty_write(struct tty_ldisc *ld, struct tty_struct *tty,
 	ssize_t ret, written = 0;
 
 	ret = tty_write_lock(tty, file->f_flags & O_NDELAY);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	/*
@@ -1154,7 +1154,7 @@ int tty_send_xchar(struct tty_struct *tty, u8 ch)
 		return 0;
 	}
 
-	if (tty_write_lock(tty, false) < 0)
+	if (tty_write_lock(tty, false))
 		return -ERESTARTSYS;
 
 	down_read(&tty->termios_rwsem);
@@ -2486,7 +2486,7 @@ static int send_break(struct tty_struct *tty, unsigned int duration)
 		return tty->ops->break_ctl(tty, duration);
 
 	/* Do the work ourselves */
-	if (tty_write_lock(tty, false) < 0)
+	if (tty_write_lock(tty, false))
 		return -EINTR;
 
 	retval = tty->ops->break_ctl(tty, -1);

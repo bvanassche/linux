@@ -370,7 +370,7 @@ static ssize_t ima_write_policy(struct file *file, const char __user *buf,
 	}
 
 	result = mutex_lock_interruptible(&ima_write_mutex);
-	if (result < 0)
+	if (result)
 		goto out_free;
 
 	if (data[0] == '/') {

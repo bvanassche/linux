@@ -198,7 +198,7 @@ static int rog_ryujin_get_status(struct rog_ryujin_data *priv)
 {
 	int ret = mutex_lock_interruptible(&priv->status_report_request_mutex);
 
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	if (!time_after(jiffies, priv->updated + msecs_to_jiffies(STATUS_VALIDITY))) {
@@ -304,7 +304,7 @@ static int rog_ryujin_write_fixed_duty(struct rog_ryujin_data *priv, int channel
 		 * together, then write back with one of them modified.
 		 */
 		ret = mutex_lock_interruptible(&priv->status_report_request_mutex);
-		if (ret < 0)
+		if (ret)
 			return ret;
 		ret =
 		    rog_ryujin_execute_cmd(priv, get_cooler_duty_cmd, GET_CMD_LENGTH,

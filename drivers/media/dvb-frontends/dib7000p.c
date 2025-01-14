@@ -96,7 +96,7 @@ static u16 dib7000p_read_word(struct dib7000p_state *state, u16 reg)
 {
 	u16 ret;
 
-	if (mutex_lock_interruptible(&state->i2c_buffer_lock) < 0) {
+	if (mutex_lock_interruptible(&state->i2c_buffer_lock)) {
 		dprintk("could not acquire lock\n");
 		return 0;
 	}
@@ -126,7 +126,7 @@ static int dib7000p_write_word(struct dib7000p_state *state, u16 reg, u16 val)
 {
 	int ret;
 
-	if (mutex_lock_interruptible(&state->i2c_buffer_lock) < 0) {
+	if (mutex_lock_interruptible(&state->i2c_buffer_lock)) {
 		dprintk("could not acquire lock\n");
 		return -EINVAL;
 	}

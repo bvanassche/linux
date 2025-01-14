@@ -166,7 +166,7 @@ static int rtl28xxu_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msg[],
 	 * where write is more than one byte.
 	 */
 
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	if (num == 2 && !(msg[0].flags & I2C_M_RD) &&

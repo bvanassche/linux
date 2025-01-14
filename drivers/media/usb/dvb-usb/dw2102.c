@@ -121,7 +121,7 @@ static int dw2102_i2c_transfer(struct i2c_adapter *adap, struct i2c_msg msg[],
 
 	if (!d)
 		return -ENODEV;
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	switch (num) {
@@ -216,7 +216,7 @@ static int dw2102_serit_i2c_transfer(struct i2c_adapter *adap,
 
 	if (!d)
 		return -ENODEV;
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	switch (num) {
@@ -291,7 +291,7 @@ static int dw2102_earda_i2c_transfer(struct i2c_adapter *adap, struct i2c_msg ms
 
 	if (!d)
 		return -ENODEV;
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	switch (num) {
@@ -399,7 +399,7 @@ static int dw2104_i2c_transfer(struct i2c_adapter *adap, struct i2c_msg msg[], i
 
 	if (!d)
 		return -ENODEV;
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	for (j = 0; j < num; j++) {
@@ -501,7 +501,7 @@ static int dw3101_i2c_transfer(struct i2c_adapter *adap, struct i2c_msg msg[],
 
 	if (!d)
 		return -ENODEV;
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	switch (num) {
@@ -589,7 +589,7 @@ static int s6x0_i2c_transfer(struct i2c_adapter *adap, struct i2c_msg msg[],
 	if (!d)
 		return -ENODEV;
 	udev = d->udev;
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	for (j = 0; j < num; j++) {
@@ -726,9 +726,9 @@ static int su3000_i2c_transfer(struct i2c_adapter *adap, struct i2c_msg msg[],
 
 	state = d->priv;
 
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
-	if (mutex_lock_interruptible(&d->data_mutex) < 0) {
+	if (mutex_lock_interruptible(&d->data_mutex)) {
 		mutex_unlock(&d->i2c_mutex);
 		return -EAGAIN;
 	}

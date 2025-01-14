@@ -442,7 +442,7 @@ static ssize_t yurex_write(struct file *file, const char __user *user_buffer,
 		goto error;
 
 	retval = mutex_lock_interruptible(&dev->io_mutex);
-	if (retval < 0)
+	if (retval)
 		return -EINTR;
 
 	if (dev->disconnected) {		/* already disconnected */

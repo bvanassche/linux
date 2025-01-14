@@ -368,7 +368,7 @@ try_again:
 		if (flags & MSG_DONTWAIT)
 			goto error_requeue_call;
 		ret = -ERESTARTSYS;
-		if (mutex_lock_interruptible(&call->user_mutex) < 0)
+		if (mutex_lock_interruptible(&call->user_mutex))
 			goto error_requeue_call;
 	}
 

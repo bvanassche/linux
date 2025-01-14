@@ -21,7 +21,7 @@ static int dibx000_write_word(struct dibx000_i2c_master *mst, u16 reg, u16 val)
 {
 	int ret;
 
-	if (mutex_lock_interruptible(&mst->i2c_buffer_lock) < 0) {
+	if (mutex_lock_interruptible(&mst->i2c_buffer_lock)) {
 		dprintk("could not acquire lock\n");
 		return -EINVAL;
 	}
@@ -47,7 +47,7 @@ static u16 dibx000_read_word(struct dibx000_i2c_master *mst, u16 reg)
 {
 	u16 ret;
 
-	if (mutex_lock_interruptible(&mst->i2c_buffer_lock) < 0) {
+	if (mutex_lock_interruptible(&mst->i2c_buffer_lock)) {
 		dprintk("could not acquire lock\n");
 		return 0;
 	}
@@ -296,7 +296,7 @@ static int dibx000_i2c_gated_gpio67_xfer(struct i2c_adapter *i2c_adap,
 
 	dibx000_i2c_select_interface(mst, DIBX000_I2C_INTERFACE_GPIO_6_7);
 
-	if (mutex_lock_interruptible(&mst->i2c_buffer_lock) < 0) {
+	if (mutex_lock_interruptible(&mst->i2c_buffer_lock)) {
 		dprintk("could not acquire lock\n");
 		return -EINVAL;
 	}
@@ -343,7 +343,7 @@ static int dibx000_i2c_gated_tuner_xfer(struct i2c_adapter *i2c_adap,
 
 	dibx000_i2c_select_interface(mst, DIBX000_I2C_INTERFACE_TUNER);
 
-	if (mutex_lock_interruptible(&mst->i2c_buffer_lock) < 0) {
+	if (mutex_lock_interruptible(&mst->i2c_buffer_lock)) {
 		dprintk("could not acquire lock\n");
 		return -EINVAL;
 	}
@@ -440,7 +440,7 @@ int dibx000_init_i2c_master(struct dibx000_i2c_master *mst, u16 device_rev,
 	int ret;
 
 	mutex_init(&mst->i2c_buffer_lock);
-	if (mutex_lock_interruptible(&mst->i2c_buffer_lock) < 0) {
+	if (mutex_lock_interruptible(&mst->i2c_buffer_lock)) {
 		dprintk("could not acquire lock\n");
 		return -EINVAL;
 	}

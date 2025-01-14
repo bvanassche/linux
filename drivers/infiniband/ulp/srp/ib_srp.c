@@ -3731,7 +3731,7 @@ static ssize_t add_target_store(struct device *dev,
 	scsi_host_get(target->scsi_host);
 
 	ret = mutex_lock_interruptible(&host->add_target_mutex);
-	if (ret < 0)
+	if (ret)
 		goto put;
 
 	ret = srp_parse_options(target->net, buf, target);

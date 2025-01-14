@@ -563,7 +563,8 @@ void ice_dcb_rebuild(struct ice_pf *pf)
 	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
 	if (ret) {
 		dev_err(dev, "Query Port ETS failed\n");
-		goto dcb_error;
+		disable_dcb(pf);
+		return;
 	}
 
 	mutex_lock(&pf->tc_mutex);

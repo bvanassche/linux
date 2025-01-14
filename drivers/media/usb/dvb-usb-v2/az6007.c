@@ -128,7 +128,7 @@ static int az6007_read(struct dvb_usb_device *d, u8 req, u16 value,
 	struct az6007_device_state *st = d->priv;
 	int ret;
 
-	if (mutex_lock_interruptible(&st->mutex) < 0)
+	if (mutex_lock_interruptible(&st->mutex))
 		return -EAGAIN;
 
 	ret = __az6007_read(d->udev, req, value, index, b, blen);
@@ -175,7 +175,7 @@ static int az6007_write(struct dvb_usb_device *d, u8 req, u16 value,
 	struct az6007_device_state *st = d->priv;
 	int ret;
 
-	if (mutex_lock_interruptible(&st->mutex) < 0)
+	if (mutex_lock_interruptible(&st->mutex))
 		return -EAGAIN;
 
 	ret = __az6007_write(d->udev, req, value, index, b, blen);
@@ -752,7 +752,7 @@ static int az6007_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[],
 	int length;
 	u8 req, addr;
 
-	if (mutex_lock_interruptible(&st->mutex) < 0)
+	if (mutex_lock_interruptible(&st->mutex))
 		return -EAGAIN;
 
 	for (i = 0; i < num; i++) {

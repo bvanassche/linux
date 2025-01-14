@@ -33,7 +33,7 @@ static ssize_t fscontext_read(struct file *file,
 	int index, n;
 
 	ret = mutex_lock_interruptible(&fc->uapi_mutex);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	if (log->head == log->tail) {

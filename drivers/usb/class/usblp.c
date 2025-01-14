@@ -849,7 +849,7 @@ static ssize_t usblp_read(struct file *file, char __user *buffer, size_t len, lo
 		return -EINVAL;
 
 	rv = usblp_rwait_and_lock(usblp, !!(file->f_flags & O_NONBLOCK));
-	if (rv < 0)
+	if (rv)
 		return rv;
 
 	if (!usblp->present) {

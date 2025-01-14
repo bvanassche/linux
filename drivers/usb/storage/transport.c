@@ -1427,7 +1427,7 @@ int usb_stor_port_reset(struct us_data *us)
 		return -EPERM;
 
 	result = usb_lock_device_for_reset(us->pusb_dev, us->pusb_intf);
-	if (result < 0)
+	if (result)
 		usb_stor_dbg(us, "unable to lock device for reset: %d\n",
 			     result);
 	else {

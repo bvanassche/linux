@@ -35,7 +35,8 @@ static int gp8psk_usb_in_op(struct dvb_usb_device *d, u8 req, u16 value,
 	if (blen > sizeof(st->data))
 		return -EIO;
 
-	if ((ret = mutex_lock_interruptible(&d->usb_mutex)))
+	ret = mutex_lock_interruptible(&d->usb_mutex);
+	if (ret)
 		return ret;
 
 	while (ret >= 0 && ret != blen && try < 3) {
@@ -77,7 +78,8 @@ static int gp8psk_usb_out_op(struct dvb_usb_device *d, u8 req, u16 value,
 	if (blen > sizeof(st->data))
 		return -EIO;
 
-	if ((ret = mutex_lock_interruptible(&d->usb_mutex)))
+	ret = mutex_lock_interruptible(&d->usb_mutex);
+	if (ret)
 		return ret;
 
 	memcpy(st->data, b, blen);

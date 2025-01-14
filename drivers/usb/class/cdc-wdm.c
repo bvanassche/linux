@@ -523,9 +523,8 @@ static ssize_t wdm_read
 	int i = 0;
 	struct wdm_device *desc = file->private_data;
 
-
 	rv = mutex_lock_interruptible(&desc->rlock); /*concurrent reads */
-	if (rv < 0)
+	if (rv)
 		return -ERESTARTSYS;
 
 	cntr = READ_ONCE(desc->length);

@@ -188,7 +188,7 @@ static int afs_query_for_alias(struct afs_cell *cell, struct key *key)
 
 	_enter("%s", cell->name);
 
-	if (mutex_lock_interruptible(&cell->net->proc_cells_lock) < 0)
+	if (mutex_lock_interruptible(&cell->net->proc_cells_lock))
 		return -ERESTARTSYS;
 
 	hlist_for_each_entry(p, &cell->net->proc_cells, proc_link) {
@@ -204,7 +204,7 @@ static int afs_query_for_alias(struct afs_cell *cell, struct key *key)
 		if (afs_query_for_alias_one(cell, key, p) != 0)
 			goto is_alias;
 
-		if (mutex_lock_interruptible(&cell->net->proc_cells_lock) < 0) {
+		if (mutex_lock_interruptible(&cell->net->proc_cells_lock)) {
 			afs_unuse_cell(cell->net, p, afs_cell_trace_unuse_check_alias);
 			return -ERESTARTSYS;
 		}
@@ -318,7 +318,7 @@ int afs_cell_detect_alias(struct afs_cell *cell, struct key *key)
 	struct afs_net *net = cell->net;
 	int ret;
 
-	if (mutex_lock_interruptible(&net->cells_alias_lock) < 0)
+	if (mutex_lock_interruptible(&net->cells_alias_lock))
 		return -ERESTARTSYS;
 
 	if (test_bit(AFS_CELL_FL_CHECK_ALIAS, &cell->flags)) {

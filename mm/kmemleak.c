@@ -1916,7 +1916,7 @@ static void *kmemleak_seq_start(struct seq_file *seq, loff_t *pos)
 	int err;
 
 	err = mutex_lock_interruptible(&scan_mutex);
-	if (err < 0)
+	if (err)
 		return ERR_PTR(err);
 
 	rcu_read_lock();
@@ -2074,7 +2074,7 @@ static ssize_t kmemleak_write(struct file *file, const char __user *user_buf,
 	buf[buf_size] = 0;
 
 	ret = mutex_lock_interruptible(&scan_mutex);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	if (strncmp(buf, "clear", 5) == 0) {

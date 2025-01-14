@@ -22,7 +22,8 @@ int dvb_usb_generic_rw(struct dvb_usb_device *d, u8 *wbuf, u16 wlen, u8 *rbuf,
 		return -EINVAL;
 	}
 
-	if ((ret = mutex_lock_interruptible(&d->usb_mutex)))
+	ret = mutex_lock_interruptible(&d->usb_mutex);
+	if (ret)
 		return ret;
 
 	deb_xfer(">>> ");

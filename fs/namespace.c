@@ -4198,7 +4198,7 @@ SYSCALL_DEFINE3(fsmount, int, fs_fd, unsigned int, flags,
 	fc = fd_file(f)->private_data;
 
 	ret = mutex_lock_interruptible(&fc->uapi_mutex);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	/* There must be a valid superblock or we can't mount it */

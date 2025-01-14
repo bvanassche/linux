@@ -6462,7 +6462,7 @@ static void tpacpi_brightness_checkpoint_nvram(void)
 	vdbg_printk(TPACPI_DBG_BRGHT,
 		"trying to checkpoint backlight level to NVRAM...\n");
 
-	if (mutex_lock_killable(&brightness_mutex) < 0)
+	if (mutex_lock_killable(&brightness_mutex))
 		return;
 
 	if (unlikely(!acpi_ec_read(TP_EC_BACKLIGHT, &lec)))
@@ -6565,7 +6565,7 @@ static int brightness_set(unsigned int value)
 			"set backlight level to %d\n", value);
 
 	res = mutex_lock_killable(&brightness_mutex);
-	if (res < 0)
+	if (res)
 		return res;
 
 	switch (brightness_mode) {
@@ -6604,7 +6604,7 @@ static int brightness_get(struct backlight_device *bd)
 	int status, res;
 
 	res = mutex_lock_killable(&brightness_mutex);
-	if (res < 0)
+	if (res)
 		return 0;
 
 	res = tpacpi_brightness_get_raw(&status);
@@ -7075,7 +7075,7 @@ static void tpacpi_volume_checkpoint_nvram(void)
 	else
 		ec_mask = TP_EC_AUDIO_MUTESW_MSK | TP_EC_AUDIO_LVL_MSK;
 
-	if (mutex_lock_killable(&volume_mutex) < 0)
+	if (mutex_lock_killable(&volume_mutex))
 		return;
 
 	if (unlikely(!acpi_ec_read(TP_EC_AUDIO, &lec)))
@@ -7147,7 +7147,7 @@ static int __volume_set_mute_ec(const bool mute)
 	int rc;
 	u8 s, n;
 
-	if (mutex_lock_killable(&volume_mutex) < 0)
+	if (mutex_lock_killable(&volume_mutex))
 		return -EINTR;
 
 	rc = volume_get_status_ec(&s);
@@ -7195,7 +7195,7 @@ static int __volume_set_volume_ec(const u8 vol)
 	if (vol > TP_EC_VOLUME_MAX)
 		return -EINVAL;
 
-	if (mutex_lock_killable(&volume_mutex) < 0)
+	if (mutex_lock_killable(&volume_mutex))
 		return -EINTR;
 
 	rc = volume_get_status_ec(&s);

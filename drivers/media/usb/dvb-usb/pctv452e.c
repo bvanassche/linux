@@ -478,7 +478,7 @@ static int pctv452e_i2c_xfer(struct i2c_adapter *adapter, struct i2c_msg *msg,
 	struct dvb_usb_device *d = i2c_get_adapdata(adapter);
 	int i;
 
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	for (i = 0; i < num; i++) {
@@ -623,7 +623,7 @@ static int pctv452e_read_mac_address(struct dvb_usb_device *d, u8 mac[6])
 	int ret;
 
 	ret = -EAGAIN;
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		goto failed;
 
 	ret = pctv452e_i2c_msg(d, I2C_ADDR_24C16,

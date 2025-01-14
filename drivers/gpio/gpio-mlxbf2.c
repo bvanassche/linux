@@ -191,7 +191,7 @@ static int mlxbf2_gpio_direction_input(struct gpio_chip *chip,
 	 * if it is still enabled to be able to write to the ModeX registers.
 	 */
 	ret = mlxbf2_gpio_lock_acquire(gs);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	writel(BIT(offset), gs->gpio_io + YU_GPIO_MODE0_CLEAR);
@@ -219,7 +219,7 @@ static int mlxbf2_gpio_direction_output(struct gpio_chip *chip,
 	 * ModeX registers.
 	 */
 	ret = mlxbf2_gpio_lock_acquire(gs);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	writel(BIT(offset), gs->gpio_io + YU_GPIO_MODE1_CLEAR);

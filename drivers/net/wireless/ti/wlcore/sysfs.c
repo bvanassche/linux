@@ -97,7 +97,7 @@ static ssize_t wl1271_sysfs_read_fwlog(struct file *filp, struct kobject *kobj,
 	int ret;
 
 	ret = mutex_lock_interruptible(&wl->mutex);
-	if (ret < 0)
+	if (ret)
 		return -ERESTARTSYS;
 
 	/* Check if the fwlog is still valid */

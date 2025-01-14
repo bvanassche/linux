@@ -225,7 +225,7 @@ static int bcm3510_do_hab_cmd(struct bcm3510_state *st, u8 cmd, u8 msgid, u8 *ob
 	dbufout(ob,olen+2,deb_hab);
 	deb_hab("\n");
 
-	if (mutex_lock_interruptible(&st->hab_mutex) < 0)
+	if (mutex_lock_interruptible(&st->hab_mutex))
 		return -EAGAIN;
 
 	if ((ret = bcm3510_hab_send_request(st, ob, olen+2)) < 0 ||

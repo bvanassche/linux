@@ -156,7 +156,7 @@ static int tweak_reset_device_cmd(struct urb *urb)
 	dev_info(&urb->dev->dev, "usb_queue_reset_device\n");
 
 	err = usb_lock_device_for_reset(sdev->udev, NULL);
-	if (err < 0) {
+	if (err) {
 		dev_err(&urb->dev->dev, "could not obtain lock to reset device\n");
 		return err;
 	}

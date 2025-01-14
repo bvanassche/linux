@@ -24,7 +24,7 @@ int dib0700_get_version(struct dvb_usb_device *d, u32 *hwversion,
 	struct dib0700_state *st = d->priv;
 	int ret;
 
-	if (mutex_lock_interruptible(&d->usb_mutex) < 0) {
+	if (mutex_lock_interruptible(&d->usb_mutex)) {
 		err("could not acquire lock");
 		return -EINTR;
 	}
@@ -110,7 +110,7 @@ int dib0700_set_gpio(struct dvb_usb_device *d, enum dib07x0_gpios gpio, u8 gpio_
 	struct dib0700_state *st = d->priv;
 	int ret;
 
-	if (mutex_lock_interruptible(&d->usb_mutex) < 0) {
+	if (mutex_lock_interruptible(&d->usb_mutex)) {
 		err("could not acquire lock");
 		return -EINTR;
 	}
@@ -131,7 +131,7 @@ static int dib0700_set_usb_xfer_len(struct dvb_usb_device *d, u16 nb_ts_packets)
 	int ret;
 
 	if (st->fw_version >= 0x10201) {
-		if (mutex_lock_interruptible(&d->usb_mutex) < 0) {
+		if (mutex_lock_interruptible(&d->usb_mutex)) {
 			err("could not acquire lock");
 			return -EINTR;
 		}
@@ -171,7 +171,7 @@ static int dib0700_i2c_xfer_new(struct i2c_adapter *adap, struct i2c_msg *msg,
 
 	/* Ensure nobody else hits the i2c bus while we're sending our
 	   sequence of messages, (such as the remote control thread) */
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EINTR;
 
 	for (i = 0; i < num; i++) {
@@ -229,7 +229,7 @@ static int dib0700_i2c_xfer_new(struct i2c_adapter *adap, struct i2c_msg *msg,
 
 		} else {
 			/* Write request */
-			if (mutex_lock_interruptible(&d->usb_mutex) < 0) {
+			if (mutex_lock_interruptible(&d->usb_mutex)) {
 				err("could not acquire lock");
 				result = -EINTR;
 				goto unlock;
@@ -286,9 +286,9 @@ static int dib0700_i2c_xfer_legacy(struct i2c_adapter *adap,
 	struct dib0700_state *st = d->priv;
 	int i, len, result;
 
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EINTR;
-	if (mutex_lock_interruptible(&d->usb_mutex) < 0) {
+	if (mutex_lock_interruptible(&d->usb_mutex)) {
 		err("could not acquire lock");
 		mutex_unlock(&d->i2c_mutex);
 		return -EINTR;
@@ -404,7 +404,7 @@ static int dib0700_set_clock(struct dvb_usb_device *d, u8 en_pll,
 	struct dib0700_state *st = d->priv;
 	int ret;
 
-	if (mutex_lock_interruptible(&d->usb_mutex) < 0) {
+	if (mutex_lock_interruptible(&d->usb_mutex)) {
 		err("could not acquire lock");
 		return -EINTR;
 	}
@@ -436,7 +436,7 @@ int dib0700_set_i2c_speed(struct dvb_usb_device *d, u16 scl_kHz)
 	if (scl_kHz == 0)
 		return -EINVAL;
 
-	if (mutex_lock_interruptible(&d->usb_mutex) < 0) {
+	if (mutex_lock_interruptible(&d->usb_mutex)) {
 		err("could not acquire lock");
 		return -EINTR;
 	}
@@ -641,7 +641,7 @@ int dib0700_change_protocol(struct rc_dev *rc, u64 *rc_proto)
 	struct dib0700_state *st = d->priv;
 	int new_proto, ret;
 
-	if (mutex_lock_interruptible(&d->usb_mutex) < 0) {
+	if (mutex_lock_interruptible(&d->usb_mutex)) {
 		err("could not acquire lock");
 		return -EINTR;
 	}

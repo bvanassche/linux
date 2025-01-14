@@ -32,7 +32,7 @@ static ssize_t field##_show(struct device *dev,				\
 									\
 	udev = to_usb_device(dev);					\
 	rc = usb_lock_device_interruptible(udev);			\
-	if (rc < 0)							\
+	if (rc)								\
 		return -EINTR;						\
 	actconfig = udev->actconfig;					\
 	if (actconfig)							\
@@ -58,7 +58,7 @@ static ssize_t bMaxPower_show(struct device *dev,
 
 	udev = to_usb_device(dev);
 	rc = usb_lock_device_interruptible(udev);
-	if (rc < 0)
+	if (rc)
 		return -EINTR;
 	actconfig = udev->actconfig;
 	if (actconfig)
@@ -77,7 +77,7 @@ static ssize_t configuration_show(struct device *dev,
 
 	udev = to_usb_device(dev);
 	rc = usb_lock_device_interruptible(udev);
-	if (rc < 0)
+	if (rc)
 		return -EINTR;
 	actconfig = udev->actconfig;
 	if (actconfig && actconfig->string)
@@ -100,7 +100,7 @@ static ssize_t bConfigurationValue_store(struct device *dev,
 	if (sscanf(buf, "%d", &config) != 1 || config < -1 || config > 255)
 		return -EINVAL;
 	rc = usb_lock_device_interruptible(udev);
-	if (rc < 0)
+	if (rc)
 		return -EINTR;
 	value = usb_set_configuration(udev, config);
 	usb_unlock_device(udev);
@@ -130,7 +130,7 @@ static ssize_t  name##_show(struct device *dev,				\
 									\
 	udev = to_usb_device(dev);					\
 	retval = usb_lock_device_interruptible(udev);			\
-	if (retval < 0)							\
+	if (retval)							\
 		return -EINTR;						\
 	retval = sysfs_emit(buf, "%s\n", udev->name);			\
 	usb_unlock_device(udev);					\
@@ -279,7 +279,7 @@ static ssize_t avoid_reset_quirk_store(struct device *dev,
 	if (kstrtobool(buf, &val) != 0)
 		return -EINVAL;
 	rc = usb_lock_device_interruptible(udev);
-	if (rc < 0)
+	if (rc)
 		return -EINTR;
 	if (val)
 		udev->quirks |= USB_QUIRK_RESET;
@@ -334,7 +334,7 @@ static ssize_t persist_store(struct device *dev, struct device_attribute *attr,
 		return -EINVAL;
 
 	rc = usb_lock_device_interruptible(udev);
-	if (rc < 0)
+	if (rc)
 		return -EINTR;
 	udev->persist_enabled = !!value;
 	usb_unlock_device(udev);
@@ -460,7 +460,7 @@ static ssize_t level_store(struct device *dev, struct device_attribute *attr,
 		len = cp - buf;
 
 	rv = usb_lock_device_interruptible(udev);
-	if (rv < 0)
+	if (rv)
 		return -EINTR;
 
 	if (len == sizeof on_string - 1 &&
@@ -502,7 +502,7 @@ static ssize_t usb2_hardware_lpm_store(struct device *dev,
 	int ret;
 
 	ret = usb_lock_device_interruptible(udev);
-	if (ret < 0)
+	if (ret)
 		return -EINTR;
 
 	ret = kstrtobool(buf, &value);
@@ -579,7 +579,7 @@ static ssize_t usb3_hardware_lpm_u1_show(struct device *dev,
 	int rc;
 
 	rc = usb_lock_device_interruptible(udev);
-	if (rc < 0)
+	if (rc)
 		return -EINTR;
 
 	if (udev->usb3_lpm_u1_enabled)
@@ -601,7 +601,7 @@ static ssize_t usb3_hardware_lpm_u2_show(struct device *dev,
 	int rc;
 
 	rc = usb_lock_device_interruptible(udev);
-	if (rc < 0)
+	if (rc)
 		return -EINTR;
 
 	if (udev->usb3_lpm_u2_enabled)
@@ -1188,7 +1188,7 @@ static ssize_t supports_autosuspend_show(struct device *dev,
 	int s;
 
 	s = device_lock_interruptible(dev);
-	if (s < 0)
+	if (s)
 		return -EINTR;
 	/* Devices will be autosuspended even when an interface isn't claimed */
 	s = (!dev->driver || to_usb_driver(dev->driver)->supports_autosuspend);

@@ -637,7 +637,7 @@ static long dispatch_ioctl_command(unsigned int command, unsigned long arg)
 		 * mounts to fail)
 		 */
 		ret = mutex_lock_interruptible(&orangefs_request_mutex);
-		if (ret < 0)
+		if (ret)
 			return ret;
 		gossip_debug(GOSSIP_DEV_DEBUG,
 			     "%s: priority remount in progress\n",

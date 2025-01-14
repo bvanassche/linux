@@ -94,7 +94,7 @@ static int ce6230_i2c_master_xfer(struct i2c_adapter *adap,
 
 	memset(&req, 0, sizeof(req));
 
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	while (i < num) {

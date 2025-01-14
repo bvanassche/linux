@@ -135,7 +135,7 @@ static int hdq_write_byte(struct hdq_data *hdq_data, u8 val, u8 *status)
 	u8 tmp_status;
 
 	ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-	if (ret < 0) {
+	if (ret) {
 		ret = -EINTR;
 		goto rtn;
 	}
@@ -235,7 +235,7 @@ static int omap_hdq_break(struct hdq_data *hdq_data)
 	u8 tmp_status;
 
 	ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-	if (ret < 0) {
+	if (ret) {
 		dev_dbg(hdq_data->dev, "Could not acquire mutex\n");
 		ret = -EINTR;
 		goto rtn;
@@ -305,7 +305,7 @@ static int hdq_read_byte(struct hdq_data *hdq_data, u8 *val)
 	u8 status;
 
 	ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-	if (ret < 0) {
+	if (ret) {
 		ret = -EINTR;
 		goto rtn;
 	}
@@ -374,7 +374,7 @@ static u8 omap_w1_triplet(void *_hdq, u8 bdir)
 	}
 
 	err = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-	if (err < 0) {
+	if (err) {
 		dev_dbg(hdq_data->dev, "Could not acquire mutex\n");
 		goto rtn;
 	}

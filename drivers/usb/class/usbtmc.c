@@ -1396,7 +1396,7 @@ static ssize_t usbtmc_read(struct file *filp, char __user *buf,
 		return -ENOMEM;
 
 	retval = mutex_lock_interruptible(&data->io_mutex);
-	if (retval < 0)
+	if (retval)
 		goto exit_nolock;
 
 	if (data->zombie) {

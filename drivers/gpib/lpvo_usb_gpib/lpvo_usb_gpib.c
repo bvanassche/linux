@@ -1093,7 +1093,7 @@ static int usb_gpib_init_module(struct usb_interface *interface)
 	int j, mask, rv;
 
 	rv = mutex_lock_interruptible(&minors_lock);
-	if (rv < 0)
+	if (rv)
 		return rv;
 
 	if (!assigned_usb_minors) {
@@ -1420,7 +1420,7 @@ restart:  /* added to comply with ftdi timeout technique */
 	/* no concurrent readers */
 
 	rv = mutex_lock_interruptible(&dev->io_mutex);
-	if (rv < 0)
+	if (rv)
 		return rv;
 
 	if (!dev->interface) {		      /* disconnect() was called */

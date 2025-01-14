@@ -218,7 +218,7 @@ static void stub_device_reset(struct usbip_device *ud)
 	dev_dbg(&udev->dev, "device reset");
 
 	ret = usb_lock_device_for_reset(udev, NULL);
-	if (ret < 0) {
+	if (ret) {
 		dev_err(&udev->dev, "lock for reset\n");
 		spin_lock_irq(&ud->lock);
 		ud->status = SDEV_ST_ERROR;

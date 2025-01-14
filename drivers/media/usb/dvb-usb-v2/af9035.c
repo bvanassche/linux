@@ -271,7 +271,7 @@ static int af9035_i2c_master_xfer(struct i2c_adapter *adap,
 	struct state *state = d_to_priv(d);
 	int ret;
 
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	/*

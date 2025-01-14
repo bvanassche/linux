@@ -760,7 +760,7 @@ struct xe_ggtt_node *xe_ggtt_insert_node_transform(struct xe_ggtt *ggtt,
 	if (IS_ERR(node))
 		return ERR_CAST(node);
 
-	if (mutex_lock_interruptible(&ggtt->lock) < 0) {
+	if (mutex_lock_interruptible(&ggtt->lock)) {
 		ret = -ERESTARTSYS;
 		goto err;
 	}

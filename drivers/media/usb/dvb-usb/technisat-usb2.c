@@ -166,7 +166,7 @@ static int technisat_usb2_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msg
 
 	/* Ensure nobody else hits the i2c bus while we're sending our
 	   sequence of messages, (such as the remote control thread) */
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	for (i = 0; i < num; i++) {
@@ -259,7 +259,7 @@ static int technisat_usb2_set_led(struct dvb_usb_device *d, int red,
 		break;
 	}
 
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	ret = usb_control_msg(d->udev, usb_sndctrlpipe(d->udev, 0),
@@ -280,7 +280,7 @@ static int technisat_usb2_set_led_timer(struct dvb_usb_device *d, u8 red, u8 gre
 
 	b[0] = 0;
 
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	ret = usb_control_msg(d->udev, usb_sndctrlpipe(d->udev, 0),
@@ -550,7 +550,7 @@ static int technisat_usb2_frontend_attach(struct dvb_usb_adapter *a)
 			if (a->fe_adap[0].fe->ops.init)
 				a->fe_adap[0].fe->ops.init(a->fe_adap[0].fe);
 
-			if (mutex_lock_interruptible(&a->dev->i2c_mutex) < 0)
+			if (mutex_lock_interruptible(&a->dev->i2c_mutex))
 				return -EAGAIN;
 
 			ret = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
@@ -618,7 +618,7 @@ static int technisat_usb2_get_ir(struct dvb_usb_device *d)
 	buf[3] = MINIMUM_IR_BIT_TRANSITION_TICK_COUNT;
 	buf[4] = MAXIMUM_IR_BIT_TIME_TICK_COUNT;
 
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 	ret = usb_control_msg(d->udev, usb_sndctrlpipe(d->udev, 0),
 			GET_IR_DATA_VENDOR_REQUEST,

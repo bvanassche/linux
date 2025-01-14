@@ -962,7 +962,7 @@ static int az6027_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msg[], int n
 	if (!data)
 		return -ENOMEM;
 
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0) {
+	if (mutex_lock_interruptible(&d->i2c_mutex)) {
 		kfree(data);
 		return -EAGAIN;
 	}

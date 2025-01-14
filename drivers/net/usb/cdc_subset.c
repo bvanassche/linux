@@ -80,7 +80,7 @@ static void m5632_recover(struct usbnet *dev)
 	int r;
 
 	r = usb_lock_device_for_reset(udev, intf);
-	if (r < 0)
+	if (r)
 		return;
 
 	usb_reset_device(udev);

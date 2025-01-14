@@ -235,7 +235,7 @@ static ssize_t skel_read(struct file *file, char *buffer, size_t count,
 
 	/* no concurrent readers */
 	rv = mutex_lock_interruptible(&dev->io_mutex);
-	if (rv < 0)
+	if (rv)
 		return rv;
 
 	if (dev->disconnected) {		/* disconnect() was called */

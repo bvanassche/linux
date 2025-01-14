@@ -54,7 +54,7 @@ static ssize_t fscontext_read(struct file *file,
 	int n;
 
 	err = mutex_lock_interruptible(&fc->uapi_mutex);
-	if (err < 0)
+	if (err)
 		return err;
 	message = fetch_message_locked(fc->log.log, len, &need_free);
 	mutex_unlock(&fc->uapi_mutex);

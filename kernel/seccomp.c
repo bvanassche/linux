@@ -1640,7 +1640,7 @@ static long seccomp_notify_send(struct seccomp_filter *filter,
 		return -EINVAL;
 
 	ret = mutex_lock_interruptible(&filter->notify_lock);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	knotif = find_notification(filter, resp.id);
@@ -1680,7 +1680,7 @@ static long seccomp_notify_id_valid(struct seccomp_filter *filter,
 		return -EFAULT;
 
 	ret = mutex_lock_interruptible(&filter->notify_lock);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	knotif = find_notification(filter, id);
@@ -1702,7 +1702,7 @@ static long seccomp_notify_set_flags(struct seccomp_filter *filter,
 		return -EINVAL;
 
 	ret = mutex_lock_interruptible(&filter->notify_lock);
-	if (ret < 0)
+	if (ret)
 		return ret;
 	filter->notif->flags = flags;
 	mutex_unlock(&filter->notify_lock);
@@ -1748,7 +1748,7 @@ static long seccomp_notify_addfd(struct seccomp_filter *filter,
 	init_completion(&kaddfd.completion);
 
 	ret = mutex_lock_interruptible(&filter->notify_lock);
-	if (ret < 0)
+	if (ret)
 		goto out;
 
 	knotif = find_notification(filter, addfd.id);
@@ -1861,7 +1861,7 @@ static __poll_t seccomp_notify_poll(struct file *file,
 
 	poll_wait(file, &filter->wqh, poll_tab);
 
-	if (mutex_lock_interruptible(&filter->notify_lock) < 0)
+	if (mutex_lock_interruptible(&filter->notify_lock))
 		return EPOLLERR;
 
 	list_for_each_entry(cur, &filter->notif->notifications, list) {

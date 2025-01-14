@@ -1768,7 +1768,7 @@ static int snd_pcm_oss_set_rate(struct snd_pcm_oss_file *pcm_oss_file, int rate)
 		else if (rate > 192000)
 			rate = 192000;
 		err = lock_params(runtime);
-		if (err < 0)
+		if (err)
 			return err;
 		if (runtime->oss.rate != rate) {
 			runtime->oss.params = 1;
@@ -1806,7 +1806,7 @@ static int snd_pcm_oss_set_channels(struct snd_pcm_oss_file *pcm_oss_file, unsig
 			continue;
 		runtime = substream->runtime;
 		err = lock_params(runtime);
-		if (err < 0)
+		if (err)
 			return err;
 		if (runtime->oss.channels != channels) {
 			runtime->oss.params = 1;
@@ -1902,7 +1902,7 @@ static int snd_pcm_oss_set_format(struct snd_pcm_oss_file *pcm_oss_file, int for
 				continue;
 			runtime = substream->runtime;
 			err = lock_params(runtime);
-			if (err < 0)
+			if (err)
 				return err;
 			if (runtime->oss.format != format) {
 				runtime->oss.params = 1;
@@ -1958,7 +1958,7 @@ static int snd_pcm_oss_set_subdivide(struct snd_pcm_oss_file *pcm_oss_file, int 
 			continue;
 		runtime = substream->runtime;
 		err = lock_params(runtime);
-		if (err < 0)
+		if (err)
 			return err;
 		err = snd_pcm_oss_set_subdivide1(substream, subdivide);
 		unlock_params(runtime);
@@ -2001,7 +2001,7 @@ static int snd_pcm_oss_set_fragment(struct snd_pcm_oss_file *pcm_oss_file, unsig
 			continue;
 		runtime = substream->runtime;
 		err = lock_params(runtime);
-		if (err < 0)
+		if (err)
 			return err;
 		err = snd_pcm_oss_set_fragment1(substream, val);
 		unlock_params(runtime);

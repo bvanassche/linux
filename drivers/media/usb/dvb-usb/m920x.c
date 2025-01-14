@@ -252,7 +252,7 @@ static int m920x_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msg[], int nu
 	int i, j;
 	int ret = 0;
 
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	for (i = 0; i < num; i++) {

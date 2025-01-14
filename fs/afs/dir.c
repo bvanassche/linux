@@ -306,7 +306,7 @@ ssize_t afs_read_dir(struct afs_vnode *dvnode, struct file *file)
 	i_size = i_size_read(&dvnode->netfs.inode);
 
 	ret = -ERESTARTSYS;
-	if (down_read_killable(&dvnode->validate_lock) < 0)
+	if (down_read_killable(&dvnode->validate_lock))
 		goto error;
 
 	/* We only need to reread the data if it became invalid - or if we
@@ -319,7 +319,7 @@ ssize_t afs_read_dir(struct afs_vnode *dvnode, struct file *file)
 	}
 
 	up_read(&dvnode->validate_lock);
-	if (down_write_killable(&dvnode->validate_lock) < 0)
+	if (down_write_killable(&dvnode->validate_lock))
 		goto error;
 
 	if (!test_bit(AFS_VNODE_DIR_VALID, &dvnode->flags))
@@ -1436,7 +1436,7 @@ static int afs_rmdir(struct inode *dir, struct dentry *dentry)
 
 	if (vnode) {
 		ret = down_write_killable(&vnode->rmdir_lock);
-		if (ret < 0)
+		if (ret != 0)
 			goto error;
 		op->file[1].vnode = vnode;
 	}

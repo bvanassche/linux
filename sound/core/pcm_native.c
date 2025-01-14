@@ -739,7 +739,7 @@ int snd_pcm_runtime_buffer_set_silence(struct snd_pcm_runtime *runtime)
 	int err;
 
 	err = snd_pcm_buffer_access_lock(runtime);
-	if (err < 0)
+	if (err)
 		return err;
 	if (runtime->dma_area)
 		snd_pcm_format_set_silence(runtime->format, runtime->dma_area,
@@ -804,7 +804,7 @@ static int snd_pcm_hw_params(struct snd_pcm_substream *substream,
 		return -ENXIO;
 	runtime = substream->runtime;
 	err = snd_pcm_buffer_access_lock(runtime);
-	if (err < 0)
+	if (err)
 		return err;
 	err = hw_params_state_check(substream);
 	if (err)
@@ -999,7 +999,7 @@ static int snd_pcm_hw_free(struct snd_pcm_substream *substream)
 		return -ENXIO;
 	runtime = substream->runtime;
 	result = snd_pcm_buffer_access_lock(runtime);
-	if (result < 0)
+	if (result)
 		return result;
 	scoped_guard(pcm_stream_lock_irq, substream) {
 		switch (runtime->state) {
@@ -1495,7 +1495,7 @@ static int snd_pcm_action_nonatomic(const struct action_ops *ops,
 	/* Guarantee the group members won't change during non-atomic action */
 	guard(rwsem_read)(&snd_pcm_link_rwsem);
 	res = snd_pcm_buffer_access_lock(substream->runtime);
-	if (res < 0)
+	if (res)
 		return res;
 	if (snd_pcm_stream_linked(substream))
 		res = snd_pcm_action_group(ops, substream, state, false);

@@ -147,7 +147,7 @@ static int lme2510_usb_talk(struct dvb_usb_device *d,
 		return -EINVAL;
 
 	ret = mutex_lock_interruptible(&d->usb_mutex);
-	if (ret < 0)
+	if (ret)
 		return -EAGAIN;
 
 	memcpy(st->usb_buffer, wbuf, wlen);

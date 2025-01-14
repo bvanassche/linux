@@ -486,7 +486,7 @@ wait_for_space:
 	if (ret < 0)
 		goto out_nolock;
 	if (call->interruptibility == RXRPC_INTERRUPTIBLE) {
-		if (mutex_lock_interruptible(&call->user_mutex) < 0) {
+		if (mutex_lock_interruptible(&call->user_mutex)) {
 			ret = sock_intr_errno(timeo);
 			goto out_nolock;
 		}

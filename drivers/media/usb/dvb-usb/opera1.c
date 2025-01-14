@@ -92,7 +92,7 @@ static int opera1_usb_i2c_msgxfer(struct dvb_usb_device *dev, u16 addr,
 		info("no usb_device");
 		return -EINVAL;
 	}
-	if (mutex_lock_interruptible(&dev->usb_mutex) < 0)
+	if (mutex_lock_interruptible(&dev->usb_mutex))
 		return -EAGAIN;
 
 	switch (addr>>1){
@@ -132,7 +132,7 @@ static int opera1_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msg[],
 
 	if (!d)
 		return -ENODEV;
-	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+	if (mutex_lock_interruptible(&d->i2c_mutex))
 		return -EAGAIN;
 
 	for (i = 0; i < num; i++) {

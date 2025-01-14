@@ -576,7 +576,7 @@ struct net *copy_net_ns(u64 flags,
 		goto put_userns_no_common;
 
 	rv = down_read_killable(&pernet_ops_rwsem);
-	if (rv < 0)
+	if (rv)
 		goto put_userns;
 
 	rv = setup_net(net);

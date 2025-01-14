@@ -125,7 +125,7 @@ static int waterforce_get_status(struct waterforce_data *priv)
 {
 	int ret = mutex_lock_interruptible(&priv->status_report_request_mutex);
 
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	if (!time_after(jiffies, priv->updated + msecs_to_jiffies(STATUS_VALIDITY))) {

@@ -404,7 +404,7 @@ int afs_validate(struct afs_vnode *vnode, struct key *key)
 		return test_bit(AFS_VNODE_DELETED, &vnode->flags) ? -ESTALE : 0;
 
 	ret = down_write_killable(&vnode->validate_lock);
-	if (ret < 0)
+	if (ret != 0)
 		goto error;
 
 	if (test_bit(AFS_VNODE_DELETED, &vnode->flags)) {
@@ -420,7 +420,7 @@ int afs_validate(struct afs_vnode *vnode, struct key *key)
 	if (volume->cb_expires_at <= deadline ||
 	    atomic_read(&volume->cb_v_check) != atomic_read(&volume->cb_v_break)) {
 		ret = mutex_lock_interruptible(&volume->cb_check_lock);
-		if (ret < 0)
+		if (ret)
 			goto error_unlock;
 		locked_vol = true;
 	}

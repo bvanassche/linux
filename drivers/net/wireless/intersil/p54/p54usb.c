@@ -455,7 +455,7 @@ static int p54u_device_reset(struct ieee80211_hw *dev)
 
 	if (lock) {
 		ret = usb_lock_device_for_reset(priv->udev, priv->intf);
-		if (ret < 0) {
+		if (ret) {
 			dev_err(&priv->udev->dev, "(p54usb) unable to lock "
 				"device for reset (%d)!\n", ret);
 			return ret;

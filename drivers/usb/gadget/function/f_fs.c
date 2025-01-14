@@ -378,7 +378,7 @@ static ssize_t ffs_ep0_write(struct file *file, const char __user *buf,
 
 	/* Acquire mutex */
 	ret = ffs_mutex_lock(&ffs->mutex, file->f_flags & O_NONBLOCK);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	/* Check state */
@@ -554,7 +554,7 @@ static ssize_t ffs_ep0_read(struct file *file, char __user *buf,
 retry:
 	/* Acquire mutex */
 	ret = ffs_mutex_lock(&ffs->mutex, file->f_flags & O_NONBLOCK);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	/* Check state */
@@ -707,7 +707,7 @@ static __poll_t ffs_ep0_poll(struct file *file, poll_table *wait)
 	poll_wait(file, &ffs->ev.waitq, wait);
 
 	ret = ffs_mutex_lock(&ffs->mutex, file->f_flags & O_NONBLOCK);
-	if (ret < 0)
+	if (ret)
 		return mask;
 
 	switch (ffs->state) {

@@ -99,7 +99,8 @@ int vp702x_usb_inout_op(struct dvb_usb_device *d, u8 *o, int olen, u8 *i, int il
 {
 	int ret;
 
-	if ((ret = mutex_lock_interruptible(&d->usb_mutex)))
+	ret = mutex_lock_interruptible(&d->usb_mutex);
+	if (ret)
 		return ret;
 
 	ret = vp702x_usb_out_op_unlocked(d, REQUEST_OUT, 0, 0, o, olen);
@@ -119,7 +120,7 @@ static int vp702x_usb_inout_cmd(struct dvb_usb_device *d, u8 cmd, u8 *o,
 	int buflen = max(olen + 2, ilen + 1);
 
 	ret = mutex_lock_interruptible(&st->buf_mutex);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	if (buflen > st->buf_len) {

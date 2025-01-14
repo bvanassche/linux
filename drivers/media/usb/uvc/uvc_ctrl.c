@@ -1906,7 +1906,7 @@ int uvc_query_v4l2_ctrl(struct uvc_video_chain *chain,
 	int ret;
 
 	ret = mutex_lock_interruptible(&chain->ctrl_mutex);
-	if (ret < 0)
+	if (ret)
 		return -ERESTARTSYS;
 
 	/* Check if the ctrl is a know class */
@@ -1967,7 +1967,7 @@ int uvc_query_v4l2_menu(struct uvc_video_chain *chain,
 		return -EINVAL;
 
 	ret = mutex_lock_interruptible(&chain->ctrl_mutex);
-	if (ret < 0)
+	if (ret)
 		return -ERESTARTSYS;
 
 	ctrl = uvc_find_control(chain, query_menu->id, &mapping);
@@ -2301,7 +2301,7 @@ static int uvc_ctrl_add_event(struct v4l2_subscribed_event *sev, unsigned elems)
 	int ret;
 
 	ret = mutex_lock_interruptible(&handle->chain->ctrl_mutex);
-	if (ret < 0)
+	if (ret)
 		return -ERESTARTSYS;
 
 	if (__uvc_query_v4l2_class(handle->chain, sev->id, 0) >= 0) {

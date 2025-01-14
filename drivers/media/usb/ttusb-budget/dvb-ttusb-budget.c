@@ -143,7 +143,7 @@ static int ttusb_cmd(struct ttusb *ttusb, u8 *data, int len, int len_result)
 	int actual_len;
 	int err;
 
-	if (mutex_lock_interruptible(&ttusb->semusb) < 0)
+	if (mutex_lock_interruptible(&ttusb->semusb))
 		return -EAGAIN;
 
 	if (debug >= 3)
@@ -236,7 +236,7 @@ static int master_xfer(struct i2c_adapter* adapter, struct i2c_msg *msg, int num
 	int i = 0;
 	int inc;
 
-	if (mutex_lock_interruptible(&ttusb->semi2c) < 0)
+	if (mutex_lock_interruptible(&ttusb->semi2c))
 		return -EAGAIN;
 
 	while (i < num) {

@@ -185,7 +185,7 @@ const char *afs_get_link(struct dentry *dentry, struct inode *inode,
 		up_read(&vnode->validate_lock);
 	}
 
-	if (down_write_killable(&vnode->validate_lock) < 0)
+	if (down_write_killable(&vnode->validate_lock))
 		return ERR_PTR(-ERESTARTSYS);
 	if (!vnode->symlink) {
 		ret = afs_read_symlink(vnode);

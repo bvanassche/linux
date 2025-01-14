@@ -530,7 +530,7 @@ static ssize_t wdm_read
 
 
 	rv = mutex_lock_interruptible(&desc->rlock); /*concurrent reads */
-	if (rv < 0)
+	if (rv)
 		return -ERESTARTSYS;
 
 	cntr = READ_ONCE(desc->length);

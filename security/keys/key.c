@@ -520,7 +520,7 @@ int key_instantiate_and_link(struct key *key,
 
 	if (keyring) {
 		ret = __key_link_lock(keyring, &key->index_key);
-		if (ret < 0)
+		if (ret)
 			goto error;
 
 		ret = __key_link_begin(keyring, &key->index_key, &edit);
@@ -873,7 +873,7 @@ static key_ref_t __key_create_or_update(key_ref_t keyring_ref,
 	key_set_index_key(&index_key);
 
 	ret = __key_link_lock(keyring, &index_key);
-	if (ret < 0) {
+	if (ret) {
 		key_ref = ERR_PTR(ret);
 		goto error_free_prep;
 	}

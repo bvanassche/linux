@@ -64,14 +64,14 @@ int netfs_start_io_read(struct inode *inode)
 	struct netfs_inode *ictx = netfs_inode(inode);
 
 	/* Be an optimist! */
-	if (down_read_interruptible(&inode->i_rwsem) < 0)
+	if (down_read_interruptible(&inode->i_rwsem))
 		return -ERESTARTSYS;
 	if (test_bit(NETFS_ICTX_ODIRECT, &ictx->flags) == 0)
 		return 0;
 	up_read(&inode->i_rwsem);
 
 	/* Slow path.... */
-	if (down_write_killable(&inode->i_rwsem) < 0)
+	if (down_write_killable(&inode->i_rwsem))
 		return -ERESTARTSYS;
 	if (netfs_block_o_direct(ictx) < 0) {
 		up_write(&inode->i_rwsem);
@@ -108,7 +108,7 @@ int netfs_start_io_write(struct inode *inode)
 {
 	struct netfs_inode *ictx = netfs_inode(inode);
 
-	if (down_write_killable(&inode->i_rwsem) < 0)
+	if (down_write_killable(&inode->i_rwsem))
 		return -ERESTARTSYS;
 	if (netfs_block_o_direct(ictx) < 0) {
 		up_write(&inode->i_rwsem);
@@ -176,14 +176,14 @@ int netfs_start_io_direct(struct inode *inode)
 	int ret;
 
 	/* Be an optimist! */
-	if (down_read_interruptible(&inode->i_rwsem) < 0)
+	if (down_read_interruptible(&inode->i_rwsem))
 		return -ERESTARTSYS;
 	if (test_bit(NETFS_ICTX_ODIRECT, &ictx->flags) != 0)
 		return 0;
 	up_read(&inode->i_rwsem);
 
 	/* Slow path.... */
-	if (down_write_killable(&inode->i_rwsem) < 0)
+	if (down_write_killable(&inode->i_rwsem))
 		return -ERESTARTSYS;
 	ret = netfs_block_buffered(inode);
 	if (ret < 0) {

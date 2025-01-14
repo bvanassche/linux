@@ -402,7 +402,7 @@ static int construct_alloc_key(struct keyring_search_context *ctx,
 
 	if (dest_keyring) {
 		ret = __key_link_lock(dest_keyring, &key->index_key);
-		if (ret < 0)
+		if (ret)
 			goto link_lock_failed;
 	}
 

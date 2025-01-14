@@ -60,7 +60,7 @@ SYSCALL_DEFINE4(lsm_set_self_attr, unsigned int, attr, struct lsm_ctx __user *,
 	int rc;
 
 	rc = mutex_lock_interruptible(&current->signal->cred_guard_mutex);
-	if (rc < 0)
+	if (rc)
 		return rc;
 	rc = security_setselfattr(attr, ctx, size, flags);
 	mutex_unlock(&current->signal->cred_guard_mutex);

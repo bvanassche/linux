@@ -3846,7 +3846,7 @@ do_ip_vs_get_ctl(struct sock *sk, int cmd, void __user *user, int *len)
 		 */
 		while (1) {
 			ret = down_read_killable(&ipvs->svc_resize_sem);
-			if (ret < 0)
+			if (ret)
 				return ret;
 			if (mutex_trylock(&ipvs->service_mutex))
 				break;

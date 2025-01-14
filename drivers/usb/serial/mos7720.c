@@ -336,7 +336,7 @@ static void parport_mos7715_write_data(struct parport *pp, unsigned char d)
 {
 	struct mos7715_parport *mos_parport = pp->private_data;
 
-	if (parport_prologue(pp) < 0)
+	if (parport_prologue(pp) != 0)
 		return;
 	mos7715_change_mode(mos_parport, SPP);
 	write_mos_reg(mos_parport->serial, dummy, MOS7720_DPR, (__u8)d);
@@ -348,7 +348,7 @@ static unsigned char parport_mos7715_read_data(struct parport *pp)
 	struct mos7715_parport *mos_parport = pp->private_data;
 	unsigned char d;
 
-	if (parport_prologue(pp) < 0)
+	if (parport_prologue(pp) != 0)
 		return 0;
 	read_mos_reg(mos_parport->serial, dummy, MOS7720_DPR, &d);
 	parport_epilogue(pp);
@@ -360,7 +360,7 @@ static void parport_mos7715_write_control(struct parport *pp, unsigned char d)
 	struct mos7715_parport *mos_parport = pp->private_data;
 	__u8 data;
 
-	if (parport_prologue(pp) < 0)
+	if (parport_prologue(pp) != 0)
 		return;
 	data = ((__u8)d & 0x0f) | (mos_parport->shadowDCR & 0xf0);
 	write_mos_reg(mos_parport->serial, dummy, MOS7720_DCR, data);
@@ -393,7 +393,7 @@ static unsigned char parport_mos7715_frob_control(struct parport *pp,
 
 	mask &= 0x0f;
 	val &= 0x0f;
-	if (parport_prologue(pp) < 0)
+	if (parport_prologue(pp) != 0)
 		return 0;
 	mos_parport->shadowDCR = (mos_parport->shadowDCR & (~mask)) ^ val;
 	write_mos_reg(mos_parport->serial, dummy, MOS7720_DCR,
@@ -431,7 +431,7 @@ static void parport_mos7715_data_forward(struct parport *pp)
 {
 	struct mos7715_parport *mos_parport = pp->private_data;
 
-	if (parport_prologue(pp) < 0)
+	if (parport_prologue(pp) != 0)
 		return;
 	mos7715_change_mode(mos_parport, PS2);
 	mos_parport->shadowDCR &=  ~0x20;
@@ -444,7 +444,7 @@ static void parport_mos7715_data_reverse(struct parport *pp)
 {
 	struct mos7715_parport *mos_parport = pp->private_data;
 
-	if (parport_prologue(pp) < 0)
+	if (parport_prologue(pp) != 0)
 		return;
 	mos7715_change_mode(mos_parport, PS2);
 	mos_parport->shadowDCR |= 0x20;
@@ -504,7 +504,7 @@ static size_t parport_mos7715_write_compat(struct parport *pp,
 	struct mos7715_parport *mos_parport = pp->private_data;
 	int actual_len;
 
-	if (parport_prologue(pp) < 0)
+	if (parport_prologue(pp) != 0)
 		return 0;
 	mos7715_change_mode(mos_parport, PPF);
 	retval = usb_bulk_msg(mos_parport->serial->dev,

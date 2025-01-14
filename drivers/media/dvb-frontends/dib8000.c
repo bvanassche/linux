@@ -150,7 +150,7 @@ static u16 dib8000_i2c_read16(struct i2c_device *i2c, u16 reg)
 		{.addr = i2c->addr >> 1, .flags = I2C_M_RD, .len = 2},
 	};
 
-	if (mutex_lock_interruptible(i2c->i2c_buffer_lock) < 0) {
+	if (mutex_lock_interruptible(i2c->i2c_buffer_lock)) {
 		dprintk("could not acquire lock\n");
 		return 0;
 	}
@@ -197,7 +197,7 @@ static u16 dib8000_read_word(struct dib8000_state *state, u16 reg)
 {
 	u16 ret;
 
-	if (mutex_lock_interruptible(&state->i2c_buffer_lock) < 0) {
+	if (mutex_lock_interruptible(&state->i2c_buffer_lock)) {
 		dprintk("could not acquire lock\n");
 		return 0;
 	}
@@ -213,7 +213,7 @@ static u32 dib8000_read32(struct dib8000_state *state, u16 reg)
 {
 	u16 rw[2];
 
-	if (mutex_lock_interruptible(&state->i2c_buffer_lock) < 0) {
+	if (mutex_lock_interruptible(&state->i2c_buffer_lock)) {
 		dprintk("could not acquire lock\n");
 		return 0;
 	}
@@ -231,7 +231,7 @@ static int dib8000_i2c_write16(struct i2c_device *i2c, u16 reg, u16 val)
 	struct i2c_msg msg = {.addr = i2c->addr >> 1, .flags = 0, .len = 4};
 	int ret = 0;
 
-	if (mutex_lock_interruptible(i2c->i2c_buffer_lock) < 0) {
+	if (mutex_lock_interruptible(i2c->i2c_buffer_lock)) {
 		dprintk("could not acquire lock\n");
 		return -EINVAL;
 	}
@@ -252,7 +252,7 @@ static int dib8000_write_word(struct dib8000_state *state, u16 reg, u16 val)
 {
 	int ret;
 
-	if (mutex_lock_interruptible(&state->i2c_buffer_lock) < 0) {
+	if (mutex_lock_interruptible(&state->i2c_buffer_lock)) {
 		dprintk("could not acquire lock\n");
 		return -EINVAL;
 	}

@@ -1459,7 +1459,7 @@ int key_link(struct key *keyring, struct key *key)
 	key_check(key);
 
 	ret = __key_link_lock(keyring, &key->index_key);
-	if (ret < 0)
+	if (ret)
 		goto error;
 
 	ret = __key_link_begin(keyring, &key->index_key, &edit);
@@ -1567,7 +1567,7 @@ int key_unlink(struct key *keyring, struct key *key)
 	key_check(key);
 
 	ret = __key_unlink_lock(keyring);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	ret = __key_unlink_begin(keyring, key, &edit);
@@ -1621,7 +1621,7 @@ int key_move(struct key *key,
 	key_check(to_keyring);
 
 	ret = __key_move_lock(from_keyring, to_keyring, &key->index_key);
-	if (ret < 0)
+	if (ret)
 		goto out;
 	ret = __key_unlink_begin(from_keyring, key, &from_edit);
 	if (ret < 0)

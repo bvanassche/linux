@@ -70,7 +70,7 @@ static u16 dib0070_read_reg(struct dib0070_state *state, u8 reg)
 {
 	u16 ret;
 
-	if (mutex_lock_interruptible(&state->i2c_buffer_lock) < 0) {
+	if (mutex_lock_interruptible(&state->i2c_buffer_lock)) {
 		dprintk("could not acquire lock\n");
 		return 0;
 	}
@@ -102,7 +102,7 @@ static int dib0070_write_reg(struct dib0070_state *state, u8 reg, u16 val)
 {
 	int ret;
 
-	if (mutex_lock_interruptible(&state->i2c_buffer_lock) < 0) {
+	if (mutex_lock_interruptible(&state->i2c_buffer_lock)) {
 		dprintk("could not acquire lock\n");
 		return -EINVAL;
 	}

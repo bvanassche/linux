@@ -444,7 +444,7 @@ static int dib9000_risc_mem_read(struct dib9000_state *state, u8 cmd, u8 * b, u1
 	if (!state->platform.risc.fw_is_running)
 		return -EIO;
 
-	if (mutex_lock_interruptible(&state->platform.risc.mem_lock) < 0) {
+	if (mutex_lock_interruptible(&state->platform.risc.mem_lock)) {
 		dprintk("could not get the lock\n");
 		return -EINTR;
 	}
@@ -460,7 +460,7 @@ static int dib9000_risc_mem_write(struct dib9000_state *state, u8 cmd, const u8 
 	if (!state->platform.risc.fw_is_running)
 		return -EIO;
 
-	if (mutex_lock_interruptible(&state->platform.risc.mem_lock) < 0) {
+	if (mutex_lock_interruptible(&state->platform.risc.mem_lock)) {
 		dprintk("could not get the lock\n");
 		return -EINTR;
 	}
@@ -535,7 +535,7 @@ static int dib9000_mbx_send_attr(struct dib9000_state *state, u8 id, u16 * data,
 	if (!state->platform.risc.fw_is_running)
 		return -EINVAL;
 
-	if (mutex_lock_interruptible(&state->platform.risc.mbx_if_lock) < 0) {
+	if (mutex_lock_interruptible(&state->platform.risc.mbx_if_lock)) {
 		dprintk("could not get the lock\n");
 		return -EINTR;
 	}
@@ -597,7 +597,7 @@ static u8 dib9000_mbx_read(struct dib9000_state *state, u16 * data, u8 risc_id, 
 	if (!state->platform.risc.fw_is_running)
 		return 0;
 
-	if (mutex_lock_interruptible(&state->platform.risc.mbx_if_lock) < 0) {
+	if (mutex_lock_interruptible(&state->platform.risc.mbx_if_lock)) {
 		dprintk("could not get the lock\n");
 		return 0;
 	}
@@ -709,7 +709,7 @@ static int dib9000_mbx_process(struct dib9000_state *state, u16 attr)
 	if (!state->platform.risc.fw_is_running)
 		return -1;
 
-	if (mutex_lock_interruptible(&state->platform.risc.mbx_lock) < 0) {
+	if (mutex_lock_interruptible(&state->platform.risc.mbx_lock)) {
 		dprintk("could not get the lock\n");
 		return -1;
 	}
@@ -1194,7 +1194,7 @@ static int dib9000_fw_get_channel(struct dvb_frontend *fe)
 	struct dibDVBTChannel *ch;
 	int ret = 0;
 
-	if (mutex_lock_interruptible(&state->platform.risc.mem_mbx_lock) < 0) {
+	if (mutex_lock_interruptible(&state->platform.risc.mem_mbx_lock)) {
 		dprintk("could not get the lock\n");
 		return -EINTR;
 	}
@@ -1679,7 +1679,7 @@ static int dib9000_fw_component_bus_xfer(struct i2c_adapter *i2c_adap, struct i2
 		p[12] = 0;
 	}
 
-	if (mutex_lock_interruptible(&state->platform.risc.mem_mbx_lock) < 0) {
+	if (mutex_lock_interruptible(&state->platform.risc.mem_mbx_lock)) {
 		dprintk("could not get the lock\n");
 		return 0;
 	}
@@ -1790,7 +1790,7 @@ int dib9000_fw_pid_filter_ctrl(struct dvb_frontend *fe, u8 onoff)
 		return 0;
 	}
 
-	if (mutex_lock_interruptible(&state->demod_lock) < 0) {
+	if (mutex_lock_interruptible(&state->demod_lock)) {
 		dprintk("could not get the lock\n");
 		return -EINTR;
 	}
@@ -1825,7 +1825,7 @@ int dib9000_fw_pid_filter(struct dvb_frontend *fe, u8 id, u16 pid, u8 onoff)
 		return 0;
 	}
 
-	if (mutex_lock_interruptible(&state->demod_lock) < 0) {
+	if (mutex_lock_interruptible(&state->demod_lock)) {
 		dprintk("could not get the lock\n");
 		return -EINTR;
 	}
@@ -1871,7 +1871,7 @@ static int dib9000_sleep(struct dvb_frontend *fe)
 	u8 index_frontend;
 	int ret = 0;
 
-	if (mutex_lock_interruptible(&state->demod_lock) < 0) {
+	if (mutex_lock_interruptible(&state->demod_lock)) {
 		dprintk("could not get the lock\n");
 		return -EINTR;
 	}
@@ -1902,7 +1902,7 @@ static int dib9000_get_frontend(struct dvb_frontend *fe,
 	int ret = 0;
 
 	if (state->get_frontend_internal == 0) {
-		if (mutex_lock_interruptible(&state->demod_lock) < 0) {
+		if (mutex_lock_interruptible(&state->demod_lock)) {
 			dprintk("could not get the lock\n");
 			return -EINTR;
 		}
@@ -2009,7 +2009,7 @@ static int dib9000_set_frontend(struct dvb_frontend *fe)
 	}
 
 	state->pid_ctrl_index = -1; /* postpone the pid filtering cmd */
-	if (mutex_lock_interruptible(&state->demod_lock) < 0) {
+	if (mutex_lock_interruptible(&state->demod_lock)) {
 		dprintk("could not get the lock\n");
 		return 0;
 	}
@@ -2172,7 +2172,7 @@ static int dib9000_read_status(struct dvb_frontend *fe, enum fe_status *stat)
 	u8 index_frontend;
 	u16 lock = 0, lock_slave = 0;
 
-	if (mutex_lock_interruptible(&state->demod_lock) < 0) {
+	if (mutex_lock_interruptible(&state->demod_lock)) {
 		dprintk("could not get the lock\n");
 		return -EINTR;
 	}
@@ -2205,11 +2205,11 @@ static int dib9000_read_ber(struct dvb_frontend *fe, u32 * ber)
 	u16 *c;
 	int ret = 0;
 
-	if (mutex_lock_interruptible(&state->demod_lock) < 0) {
+	if (mutex_lock_interruptible(&state->demod_lock)) {
 		dprintk("could not get the lock\n");
 		return -EINTR;
 	}
-	if (mutex_lock_interruptible(&state->platform.risc.mem_mbx_lock) < 0) {
+	if (mutex_lock_interruptible(&state->platform.risc.mem_mbx_lock)) {
 		dprintk("could not get the lock\n");
 		ret = -EINTR;
 		goto error;
@@ -2240,7 +2240,7 @@ static int dib9000_read_signal_strength(struct dvb_frontend *fe, u16 * strength)
 	u16 val;
 	int ret = 0;
 
-	if (mutex_lock_interruptible(&state->demod_lock) < 0) {
+	if (mutex_lock_interruptible(&state->demod_lock)) {
 		dprintk("could not get the lock\n");
 		return -EINTR;
 	}
@@ -2253,7 +2253,7 @@ static int dib9000_read_signal_strength(struct dvb_frontend *fe, u16 * strength)
 			*strength += val;
 	}
 
-	if (mutex_lock_interruptible(&state->platform.risc.mem_mbx_lock) < 0) {
+	if (mutex_lock_interruptible(&state->platform.risc.mem_mbx_lock)) {
 		dprintk("could not get the lock\n");
 		ret = -EINTR;
 		goto error;
@@ -2284,7 +2284,7 @@ static u32 dib9000_get_snr(struct dvb_frontend *fe)
 	u32 n, s, exp;
 	u16 val;
 
-	if (mutex_lock_interruptible(&state->platform.risc.mem_mbx_lock) < 0) {
+	if (mutex_lock_interruptible(&state->platform.risc.mem_mbx_lock)) {
 		dprintk("could not get the lock\n");
 		return 0;
 	}
@@ -2323,7 +2323,7 @@ static int dib9000_read_snr(struct dvb_frontend *fe, u16 * snr)
 	u8 index_frontend;
 	u32 snr_master;
 
-	if (mutex_lock_interruptible(&state->demod_lock) < 0) {
+	if (mutex_lock_interruptible(&state->demod_lock)) {
 		dprintk("could not get the lock\n");
 		return -EINTR;
 	}
@@ -2348,11 +2348,11 @@ static int dib9000_read_unc_blocks(struct dvb_frontend *fe, u32 * unc)
 	u16 *c = (u16 *)state->i2c_read_buffer;
 	int ret = 0;
 
-	if (mutex_lock_interruptible(&state->demod_lock) < 0) {
+	if (mutex_lock_interruptible(&state->demod_lock)) {
 		dprintk("could not get the lock\n");
 		return -EINTR;
 	}
-	if (mutex_lock_interruptible(&state->platform.risc.mem_mbx_lock) < 0) {
+	if (mutex_lock_interruptible(&state->platform.risc.mem_mbx_lock)) {
 		dprintk("could not get the lock\n");
 		ret = -EINTR;
 		goto error;

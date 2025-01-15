@@ -510,12 +510,11 @@ static int mlx5e_macsec_add_txsa(struct macsec_context *ctx)
 	struct mlx5_core_dev *mdev = priv->mdev;
 	u8 assoc_num = ctx->sa.assoc_num;
 	struct mlx5e_macsec_sa *tx_sa;
-	struct mlx5e_macsec *macsec;
+	struct mlx5e_macsec *macsec = priv->macsec;
 	int err = 0;
 
-	mutex_lock(&priv->macsec->lock);
+	mutex_lock(&macsec->lock);
 
-	macsec = priv->macsec;
 	macsec_device = mlx5e_macsec_get_macsec_device_context(macsec, ctx);
 	if (!macsec_device) {
 		netdev_err(ctx->netdev, "MACsec offload: Failed to find device context\n");
@@ -581,13 +580,12 @@ static int mlx5e_macsec_upd_txsa(struct macsec_context *ctx)
 	struct mlx5e_macsec_device *macsec_device;
 	u8 assoc_num = ctx->sa.assoc_num;
 	struct mlx5e_macsec_sa *tx_sa;
-	struct mlx5e_macsec *macsec;
+	struct mlx5e_macsec *macsec = priv->macsec;
 	struct net_device *netdev;
 	int err = 0;
 
-	mutex_lock(&priv->macsec->lock);
+	mutex_lock(&macsec->lock);
 
-	macsec = priv->macsec;
 	netdev = ctx->netdev;
 	macsec_device = mlx5e_macsec_get_macsec_device_context(macsec, ctx);
 	if (!macsec_device) {
@@ -641,11 +639,10 @@ static int mlx5e_macsec_del_txsa(struct macsec_context *ctx)
 	struct mlx5e_macsec_device *macsec_device;
 	u8 assoc_num = ctx->sa.assoc_num;
 	struct mlx5e_macsec_sa *tx_sa;
-	struct mlx5e_macsec *macsec;
+	struct mlx5e_macsec *macsec = priv->macsec;
 	int err = 0;
 
-	mutex_lock(&priv->macsec->lock);
-	macsec = priv->macsec;
+	mutex_lock(&macsec->lock);
 	macsec_device = mlx5e_macsec_get_macsec_device_context(macsec, ctx);
 	if (!macsec_device) {
 		netdev_err(ctx->netdev, "MACsec offload: Failed to find device context\n");
@@ -679,11 +676,10 @@ static int mlx5e_macsec_add_rxsc(struct macsec_context *ctx)
 	struct mlx5e_macsec_device *macsec_device;
 	struct mlx5e_macsec_rx_sc *rx_sc;
 	struct list_head *rx_sc_list;
-	struct mlx5e_macsec *macsec;
+	struct mlx5e_macsec *macsec = priv->macsec;
 	int err = 0;
 
-	mutex_lock(&priv->macsec->lock);
-	macsec = priv->macsec;
+	mutex_lock(&macsec->lock);
 	macsec_device = mlx5e_macsec_get_macsec_device_context(macsec, ctx);
 	if (!macsec_device) {
 		netdev_err(ctx->netdev, "MACsec offload: Failed to find device context\n");
@@ -759,14 +755,12 @@ static int mlx5e_macsec_upd_rxsc(struct macsec_context *ctx)
 	struct mlx5e_macsec_device *macsec_device;
 	struct mlx5e_macsec_rx_sc *rx_sc;
 	struct mlx5e_macsec_sa *rx_sa;
-	struct mlx5e_macsec *macsec;
+	struct mlx5e_macsec *macsec = priv->macsec;
 	struct list_head *list;
 	int i;
 	int err = 0;
 
-	mutex_lock(&priv->macsec->lock);
-
-	macsec = priv->macsec;
+	mutex_lock(&macsec->lock);
 	macsec_device = mlx5e_macsec_get_macsec_device_context(macsec, ctx);
 	if (!macsec_device) {
 		netdev_err(ctx->netdev, "MACsec offload: Failed to find device context\n");
@@ -838,13 +832,11 @@ static int mlx5e_macsec_del_rxsc(struct macsec_context *ctx)
 	struct mlx5e_priv *priv = macsec_netdev_priv(ctx->netdev);
 	struct mlx5e_macsec_device *macsec_device;
 	struct mlx5e_macsec_rx_sc *rx_sc;
-	struct mlx5e_macsec *macsec;
+	struct mlx5e_macsec *macsec = priv->macsec;
 	struct list_head *list;
 	int err = 0;
 
-	mutex_lock(&priv->macsec->lock);
-
-	macsec = priv->macsec;
+	mutex_lock(&macsec->lock);
 	macsec_device = mlx5e_macsec_get_macsec_device_context(macsec, ctx);
 	if (!macsec_device) {
 		netdev_err(ctx->netdev, "MACsec offload: Failed to find device context\n");
@@ -879,13 +871,11 @@ static int mlx5e_macsec_add_rxsa(struct macsec_context *ctx)
 	struct mlx5e_macsec_rx_sc *rx_sc;
 	sci_t sci = ctx_rx_sa->sc->sci;
 	struct mlx5e_macsec_sa *rx_sa;
-	struct mlx5e_macsec *macsec;
+	struct mlx5e_macsec *macsec = priv->macsec;
 	struct list_head *list;
 	int err = 0;
 
-	mutex_lock(&priv->macsec->lock);
-
-	macsec = priv->macsec;
+	mutex_lock(&macsec->lock);
 	macsec_device = mlx5e_macsec_get_macsec_device_context(macsec, ctx);
 	if (!macsec_device) {
 		netdev_err(ctx->netdev, "MACsec offload: Failed to find device context\n");
@@ -963,13 +953,11 @@ static int mlx5e_macsec_upd_rxsa(struct macsec_context *ctx)
 	struct mlx5e_macsec_rx_sc *rx_sc;
 	sci_t sci = ctx_rx_sa->sc->sci;
 	struct mlx5e_macsec_sa *rx_sa;
-	struct mlx5e_macsec *macsec;
+	struct mlx5e_macsec *macsec = priv->macsec;
 	struct list_head *list;
 	int err = 0;
 
-	mutex_lock(&priv->macsec->lock);
-
-	macsec = priv->macsec;
+	mutex_lock(&macsec->lock);
 	macsec_device = mlx5e_macsec_get_macsec_device_context(macsec, ctx);
 	if (!macsec_device) {
 		netdev_err(ctx->netdev, "MACsec offload: Failed to find device context\n");
@@ -1020,13 +1008,11 @@ static int mlx5e_macsec_del_rxsa(struct macsec_context *ctx)
 	struct mlx5e_macsec_rx_sc *rx_sc;
 	u8 assoc_num = ctx->sa.assoc_num;
 	struct mlx5e_macsec_sa *rx_sa;
-	struct mlx5e_macsec *macsec;
+	struct mlx5e_macsec *macsec = priv->macsec;
 	struct list_head *list;
 	int err = 0;
 
-	mutex_lock(&priv->macsec->lock);
-
-	macsec = priv->macsec;
+	mutex_lock(&macsec->lock);
 	macsec_device = mlx5e_macsec_get_macsec_device_context(macsec, ctx);
 	if (!macsec_device) {
 		netdev_err(ctx->netdev, "MACsec offload: Failed to find device context\n");
@@ -1078,8 +1064,9 @@ static int mlx5e_macsec_add_secy(struct macsec_context *ctx)
 	if (!mlx5e_macsec_secy_features_validate(ctx))
 		return -EINVAL;
 
-	mutex_lock(&priv->macsec->lock);
 	macsec = priv->macsec;
+
+	mutex_lock(&macsec->lock);
 	if (mlx5e_macsec_get_macsec_device_context(macsec, ctx)) {
 		netdev_err(netdev, "MACsec offload: MACsec net_device already exist\n");
 		goto out;
@@ -1180,9 +1167,9 @@ static int mlx5e_macsec_upd_secy(struct macsec_context *ctx)
 	if (!mlx5e_macsec_secy_features_validate(ctx))
 		return -EINVAL;
 
-	mutex_lock(&priv->macsec->lock);
-
 	macsec = priv->macsec;
+
+	mutex_lock(&macsec->lock);
 	macsec_device = mlx5e_macsec_get_macsec_device_context(macsec, ctx);
 	if (!macsec_device) {
 		netdev_err(ctx->netdev, "MACsec offload: Failed to find device context\n");
@@ -1229,13 +1216,12 @@ static int mlx5e_macsec_del_secy(struct macsec_context *ctx)
 	struct mlx5e_macsec_device *macsec_device;
 	struct mlx5e_macsec_rx_sc *rx_sc, *tmp;
 	struct mlx5e_macsec_sa *tx_sa;
-	struct mlx5e_macsec *macsec;
+	struct mlx5e_macsec *macsec = priv->macsec;
 	struct list_head *list;
 	int err = 0;
 	int i;
 
-	mutex_lock(&priv->macsec->lock);
-	macsec = priv->macsec;
+	mutex_lock(&macsec->lock);
 	macsec_device = mlx5e_macsec_get_macsec_device_context(macsec, ctx);
 	if (!macsec_device) {
 		netdev_err(ctx->netdev, "MACsec offload: Failed to find device context\n");

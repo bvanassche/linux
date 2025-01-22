@@ -526,6 +526,30 @@ ice_dcb_need_recfg(struct ice_pf *pf, struct ice_dcbx_cfg *old_cfg,
 	return need_reconfig;
 }
 
+static void disable_dcb(struct ice_pf *pf)
+{
+	struct ice_dcbx_cfg *err_cfg;
+	struct device *dev = ice_pf_to_dev(pf);
+
+	dev_err(dev, "Disabling DCB until new settings occur\n");
+	err_cfg = kzalloc(sizeof(*err_cfg), GFP_KERNEL);
+	if (!err_cfg)
+		return;
+
+	err_cfg->etscfg.willing = true;
+	err_cfg->etscfg.tcbwtable[0] = ICE_TC_MAX_BW;
+	err_cfg->etscfg.tsatable[0] = ICE_IEEE_TSA_ETS;
+	memcpy(&err_cfg->etsrec, &err_cfg->etscfg, sizeof(err_cfg->etsrec));
+	/* Coverity warns the return code of ice_pf_dcb_cfg() is not checked
+	 * here as is done for other calls to that function. That check is
+	 * not necessary since this is in this function's error cleanup path.
+	 * Suppress the Coverity warning with the following comment...
+	 */
+	/* coverity[check_return] */
+	ice_pf_dcb_cfg(pf, err_cfg, false);
+	kfree(err_cfg);
+}
+
 /**
  * ice_dcb_rebuild - rebuild DCB post reset
  * @pf: physical function instance
@@ -534,7 +558,6 @@ void ice_dcb_rebuild(struct ice_pf *pf)
 {
 	struct ice_aqc_port_ets_elem buf = { 0 };
 	struct device *dev = ice_pf_to_dev(pf);
-	struct ice_dcbx_cfg *err_cfg;
 	int ret;
 
 	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
@@ -574,26 +597,7 @@ void ice_dcb_rebuild(struct ice_pf *pf)
 	return;
 
 dcb_error:
-	dev_err(dev, "Disabling DCB until new settings occur\n");
-	err_cfg = kzalloc(sizeof(*err_cfg), GFP_KERNEL);
-	if (!err_cfg) {
-		mutex_unlock(&pf->tc_mutex);
-		return;
-	}
-
-	err_cfg->etscfg.willing = true;
-	err_cfg->etscfg.tcbwtable[0] = ICE_TC_MAX_BW;
-	err_cfg->etscfg.tsatable[0] = ICE_IEEE_TSA_ETS;
-	memcpy(&err_cfg->etsrec, &err_cfg->etscfg, sizeof(err_cfg->etsrec));
-	/* Coverity warns the return code of ice_pf_dcb_cfg() is not checked
-	 * here as is done for other calls to that function. That check is
-	 * not necessary since this is in this function's error cleanup path.
-	 * Suppress the Coverity warning with the following comment...
-	 */
-	/* coverity[check_return] */
-	ice_pf_dcb_cfg(pf, err_cfg, false);
-	kfree(err_cfg);
-
+	disable_dcb(pf);
 	mutex_unlock(&pf->tc_mutex);
 }
 

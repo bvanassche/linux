@@ -3,6 +3,7 @@
 #define _LINUX_CLEANUP_H
 
 #include <linux/compiler.h>
+#include <linux/thread_safety.h>
 
 /**
  * DOC: scope-based cleanup helpers
@@ -195,7 +196,8 @@
  */
 
 #define DEFINE_FREE(_name, _type, _free) \
-	static inline void __free_##_name(void *p) { _type _T = *(_type *)p; _free; }
+	static inline void __free_##_name(void *p) NO_THREAD_SAFETY_ANALYSIS \
+	{ _type _T = *(_type *)p; _free; }
 
 #define __free(_name)	__cleanup(__free_##_name)
 
@@ -241,17 +243,25 @@ const volatile void * __must_check_fn(const volatile void *val)
  */
 
 #define DEFINE_CLASS(_name, _type, _exit, _init, _init_args...)		\
+	DEFINE_CLASS_ATTR(_name, _type, _exit,				\
+			  _init, NO_THREAD_SAFETY_ANALYSIS, _init_args)
+
+#define DEFINE_CLASS_ATTR(_name, _type, _exit, _init, _init_attr,	\
+			  _init_args...)				\
 typedef _type class_##_name##_t;					\
 static inline void class_##_name##_destructor(_type *p)			\
+	NO_THREAD_SAFETY_ANALYSIS					\
 { _type _T = *p; _exit; }						\
-static inline _type class_##_name##_constructor(_init_args)		\
+static inline _type class_##_name##_constructor(_init_args) _init_attr	\
 { _type t = _init; return t; }
 
-#define EXTEND_CLASS(_name, ext, _init, _init_args...)			\
+#define EXTEND_CLASS(_name, ext, _init, _init_attr, _init_args...)	\
 typedef class_##_name##_t class_##_name##ext##_t;			\
 static inline void class_##_name##ext##_destructor(class_##_name##_t *p)\
+	NO_THREAD_SAFETY_ANALYSIS					\
 { class_##_name##_destructor(p); }					\
 static inline class_##_name##_t class_##_name##ext##_constructor(_init_args) \
+	_init_attr							\
 { class_##_name##_t t = _init; return t; }
 
 #define CLASS(_name, var)						\
@@ -291,17 +301,25 @@ static inline class_##_name##_t class_##_name##ext##_constructor(_init_args) \
 #define __DEFINE_CLASS_IS_CONDITIONAL(_name, _is_cond)	\
 static __maybe_unused const bool class_##_name##_is_conditional = _is_cond
 
-#define DEFINE_GUARD(_name, _type, _lock, _unlock) \
-	__DEFINE_CLASS_IS_CONDITIONAL(_name, false); \
-	DEFINE_CLASS(_name, _type, if (_T) { _unlock; }, ({ _lock; _T; }), _type _T); \
+#define DEFINE_GUARD(_name, _type, _lock, _unlock)			\
+	DEFINE_GUARD_ATTR(_name, _type, _lock, NO_THREAD_SAFETY_ANALYSIS,\
+			  _unlock)
+
+#define DEFINE_GUARD_ATTR(_name, _type, _lock, _lock_attr, _unlock)	\
+	__DEFINE_CLASS_IS_CONDITIONAL(_name, false);			\
+	DEFINE_CLASS_ATTR(_name, _type, if (_T) { _unlock; },		\
+		     ({ _lock; _T; }), _lock_attr, _type _T);		\
 	static inline void * class_##_name##_lock_ptr(class_##_name##_t *_T) \
 	{ return (void *)(__force unsigned long)*_T; }
 
 #define DEFINE_GUARD_COND(_name, _ext, _condlock) \
+	DEFINE_GUARD_COND_ATTR(_name, _ext, _condlock, )
+
+#define DEFINE_GUARD_COND_ATTR(_name, _ext, _condlock, _condlock_attr)	  \
 	__DEFINE_CLASS_IS_CONDITIONAL(_name##_ext, true); \
 	EXTEND_CLASS(_name, _ext, \
 		     ({ void *_t = _T; if (_T && !(_condlock)) _t = NULL; _t; }), \
-		     class_##_name##_t _T) \
+		     _condlock_attr, class_##_name##_t _T)		\
 	static inline void * class_##_name##_ext##_lock_ptr(class_##_name##_t *_T) \
 	{ return class_##_name##_lock_ptr(_T); }
 
@@ -413,7 +431,7 @@ __DEFINE_LOCK_GUARD_0(_name, _lock)
 	EXTEND_CLASS(_name, _ext,					\
 		     ({ class_##_name##_t _t = { .lock = l }, *_T = &_t;\
 		        if (_T->lock && !(_condlock)) _T->lock = NULL;	\
-			_t; }),						\
+			_t; }),	,					\
 		     typeof_member(class_##_name##_t, lock) l)		\
 	static inline void * class_##_name##_ext##_lock_ptr(class_##_name##_t *_T) \
 	{ return class_##_name##_lock_ptr(_T); }

@@ -2820,8 +2820,7 @@ int amdgpu_ras_add_bad_pages(struct amdgpu_device *adev,
 				sizeof(struct eeprom_table_record), GFP_KERNEL);
 		if (!err_data.err_addr) {
 			dev_warn(adev->dev, "Failed to alloc UMC error address record in mca2pa conversion!\n");
-			ret = -ENOMEM;
-			goto out;
+			return -ENOMEM;
 		}
 
 		err_rec = err_data.err_addr;
@@ -2927,7 +2926,7 @@ int amdgpu_ras_add_bad_pages(struct amdgpu_device *adev,
 free:
 	if (from_rom)
 		kfree(err_data.err_addr);
-out:
+
 	mutex_unlock(&con->recovery_lock);
 
 	return ret;

@@ -1992,8 +1992,10 @@ mt7925_change_vif_links(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 					     GFP_KERNEL);
 			mlink = devm_kzalloc(dev->mt76.dev, sizeof(*mlink),
 					     GFP_KERNEL);
-			if (!mconf || !mlink)
-				return -ENOMEM;
+			if (!mconf || !mlink) {
+				err = -ENOMEM;
+				goto free;
+			}
 		}
 
 		mconfs[link_id] = mconf;

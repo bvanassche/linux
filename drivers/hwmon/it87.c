@@ -3593,7 +3593,9 @@ static int it87_resume(struct device *dev)
 
 	it87_resume_sio(pdev);
 
-	it87_lock(data);
+	int err = it87_lock(data);
+	if (err)
+		return err;
 
 	it87_check_pwm(dev);
 	it87_check_limit_regs(data);

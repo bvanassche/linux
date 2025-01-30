@@ -2517,7 +2517,7 @@ static int otx2_do_set_vf_vlan(struct otx2_nic *pf, int vf, u16 vlan, u8 qos,
 	config = &pf->vf_configs[vf];
 
 	if (!vlan && !config->vlan)
-		goto out;
+		return err;
 
 	mutex_lock(&pf->mbox.lock);
 

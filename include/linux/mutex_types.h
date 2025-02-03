@@ -6,6 +6,7 @@
 #include <linux/lockdep_types.h>
 #include <linux/osq_lock.h>
 #include <linux/spinlock_types.h>
+#include <linux/thread_safety.h>
 #include <linux/types.h>
 
 #ifndef CONFIG_PREEMPT_RT
@@ -38,7 +39,7 @@
  * - detects multi-task circular deadlocks and prints out all affected
  *   locks and tasks (and only those tasks)
  */
-struct mutex {
+struct CAPABILITY("mutex") mutex {
 	atomic_long_t		owner;
 	raw_spinlock_t		wait_lock;
 #ifdef CONFIG_MUTEX_SPIN_ON_OWNER
@@ -59,7 +60,7 @@ struct mutex {
  */
 #include <linux/rtmutex.h>
 
-struct mutex {
+struct CAPABILITY("mutex") mutex {
 	struct rt_mutex_base	rtmutex;
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
 	struct lockdep_map	dep_map;

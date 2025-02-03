@@ -1036,21 +1036,25 @@ static inline bool dev_pm_strict_midlayer_is_set(struct device *dev)
 }
 
 static inline void device_lock(struct device *dev)
+	__acquires(dev->mutex)
 {
 	mutex_lock(&dev->mutex);
 }
 
 static inline int device_lock_interruptible(struct device *dev)
+	__cond_acquires(0, dev->mutex)
 {
 	return mutex_lock_interruptible(&dev->mutex);
 }
 
 static inline int device_trylock(struct device *dev)
+	__cond_acquires(true, dev->mutex)
 {
 	return mutex_trylock(&dev->mutex);
 }
 
 static inline void device_unlock(struct device *dev)
+	__releases(dev->mutex)
 {
 	mutex_unlock(&dev->mutex);
 }

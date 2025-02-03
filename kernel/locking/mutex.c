@@ -1118,19 +1118,19 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(contention_end);
  *
  * return true and hold lock if we dec to 0, return false otherwise
  */
-int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock)
+bool atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock)
 {
 	/* dec if we can't possibly hit 0 */
 	if (atomic_add_unless(cnt, -1, 1))
-		return 0;
+		return false;
 	/* we might hit 0, so take the lock */
 	mutex_lock(lock);
 	if (!atomic_dec_and_test(cnt)) {
 		/* when we actually did the dec, we didn't hit 0 */
 		mutex_unlock(lock);
-		return 0;
+		return false;
 	}
 	/* we hit 0, and we hold the lock */
-	return 1;
+	return true;
 }
 EXPORT_SYMBOL(atomic_dec_and_mutex_lock);

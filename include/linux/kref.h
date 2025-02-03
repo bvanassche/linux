@@ -15,6 +15,7 @@
 
 #include <linux/spinlock.h>
 #include <linux/refcount.h>
+#include <linux/thread_safety.h>
 
 struct kref {
 	refcount_t refcount;
@@ -81,6 +82,8 @@ static inline int kref_put(struct kref *kref, void (*release)(struct kref *kref)
 static inline int kref_put_mutex(struct kref *kref,
 				 void (*release)(struct kref *kref),
 				 struct mutex *mutex)
+	EXCLUDES(*mutex)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (refcount_dec_and_mutex_lock(&kref->refcount, mutex)) {
 		release(kref);

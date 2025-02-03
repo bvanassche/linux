@@ -144,7 +144,7 @@ Acquire the mutex, interruptible::
 
 Acquire the mutex, interruptible, if dec to 0::
 
-   int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock);
+   bool atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock);
 
 Unlock the mutex::
 

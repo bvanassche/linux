@@ -31,6 +31,7 @@
 #include <linux/device/class.h>
 #include <linux/device/driver.h>
 #include <linux/cleanup.h>
+#include <linux/thread_safety.h>
 #include <asm/device.h>
 
 struct device;
@@ -1026,21 +1027,25 @@ static inline bool dev_pm_test_driver_flags(struct device *dev, u32 flags)
 }
 
 static inline void device_lock(struct device *dev)
+	ACQUIRE(dev->mutex)
 {
 	mutex_lock(&dev->mutex);
 }
 
 static inline int device_lock_interruptible(struct device *dev)
+	TRY_ACQUIRE(0, dev->mutex)
 {
 	return mutex_lock_interruptible(&dev->mutex);
 }
 
 static inline int device_trylock(struct device *dev)
+	TRY_ACQUIRE(1, dev->mutex)
 {
 	return mutex_trylock(&dev->mutex);
 }
 
 static inline void device_unlock(struct device *dev)
+	RELEASE(dev->mutex)
 {
 	mutex_unlock(&dev->mutex);
 }
@@ -1182,9 +1187,11 @@ do { \
 				  _THIS_IP_);                          \
 } while (0)
 
-void lock_device_hotplug(void);
-void unlock_device_hotplug(void);
-int lock_device_hotplug_sysfs(void);
+DEFINE_CAPABILITY(device_hotplug_capability);
+
+void lock_device_hotplug(void) ACQUIRE(device_hotplug_capability);
+void unlock_device_hotplug(void) RELEASE(device_hotplug_capability);
+int lock_device_hotplug_sysfs(void) TRY_ACQUIRE(0, device_hotplug_capability);
 int device_offline(struct device *dev);
 int device_online(struct device *dev);
 

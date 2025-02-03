@@ -254,6 +254,7 @@ static void __sched __mutex_lock_slowpath(struct mutex *lock);
  * This function is similar to (but not equivalent to) down().
  */
 void __sched mutex_lock(struct mutex *lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	might_sleep();
 
@@ -515,6 +516,7 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
  * This function is similar to (but not equivalent to) up().
  */
 void __sched mutex_unlock(struct mutex *lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 #ifndef CONFIG_DEBUG_LOCK_ALLOC
 	if (__mutex_unlock_fast(lock))
@@ -536,6 +538,7 @@ EXPORT_SYMBOL(mutex_unlock);
  * of a unlocked mutex is not allowed.
  */
 void __sched ww_mutex_unlock(struct ww_mutex *lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	__ww_mutex_unlock(lock);
 	mutex_unlock(&lock->base);
@@ -751,6 +754,7 @@ __ww_mutex_lock(struct mutex *lock, unsigned int state, unsigned int subclass,
  * A mutex acquired with this function must be released with ww_mutex_unlock.
  */
 int ww_mutex_trylock(struct ww_mutex *ww, struct ww_acquire_ctx *ww_ctx)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	if (!ww_ctx)
 		return mutex_trylock(&ww->base);
@@ -778,6 +782,7 @@ EXPORT_SYMBOL(ww_mutex_trylock);
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
 void __sched
 mutex_lock_nested(struct mutex *lock, unsigned int subclass)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	__mutex_lock(lock, TASK_UNINTERRUPTIBLE, subclass, NULL, _RET_IP_);
 }
@@ -786,6 +791,7 @@ EXPORT_SYMBOL_GPL(mutex_lock_nested);
 
 void __sched
 _mutex_lock_nest_lock(struct mutex *lock, struct lockdep_map *nest)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	__mutex_lock(lock, TASK_UNINTERRUPTIBLE, 0, nest, _RET_IP_);
 }
@@ -807,6 +813,7 @@ EXPORT_SYMBOL_GPL(mutex_lock_interruptible_nested);
 
 void __sched
 mutex_lock_io_nested(struct mutex *lock, unsigned int subclass)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	int token;
 
@@ -957,6 +964,7 @@ __mutex_lock_interruptible_slowpath(struct mutex *lock);
  * signal arrived.
  */
 int __sched mutex_lock_interruptible(struct mutex *lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	might_sleep();
 
@@ -981,6 +989,7 @@ EXPORT_SYMBOL(mutex_lock_interruptible);
  * fatal signal arrived.
  */
 int __sched mutex_lock_killable(struct mutex *lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	might_sleep();
 
@@ -1061,6 +1070,7 @@ __ww_mutex_lock_interruptible_slowpath(struct ww_mutex *lock,
  * mutex must be released by the same task that acquired it.
  */
 int __sched mutex_trylock(struct mutex *lock)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	bool locked;
 
@@ -1077,6 +1087,7 @@ EXPORT_SYMBOL(mutex_trylock);
 #ifndef CONFIG_DEBUG_LOCK_ALLOC
 int __sched
 ww_mutex_lock(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	might_sleep();
 
@@ -1092,6 +1103,7 @@ EXPORT_SYMBOL(ww_mutex_lock);
 
 int __sched
 ww_mutex_lock_interruptible(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	might_sleep();
 

@@ -21,6 +21,7 @@
 #include <linux/debug_locks.h>
 #include <linux/cleanup.h>
 #include <linux/mutex_types.h>
+#include <linux/thread_safety.h>
 
 struct device;
 
@@ -154,14 +155,18 @@ static inline int __devm_mutex_init(struct device *dev, struct mutex *lock)
  * Also see Documentation/locking/mutex-design.rst.
  */
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
-extern void mutex_lock_nested(struct mutex *lock, unsigned int subclass);
-extern void _mutex_lock_nest_lock(struct mutex *lock, struct lockdep_map *nest_lock);
+void mutex_lock_nested(struct mutex *lock, unsigned int subclass) ACQUIRE(*lock);
+void _mutex_lock_nest_lock(struct mutex *lock, struct lockdep_map *nest_lock)
+	ACQUIRE(*lock);
 
 extern int __must_check mutex_lock_interruptible_nested(struct mutex *lock,
-					unsigned int subclass);
+					unsigned int subclass)
+	TRY_ACQUIRE(0, *lock);
 extern int __must_check mutex_lock_killable_nested(struct mutex *lock,
-					unsigned int subclass);
-extern void mutex_lock_io_nested(struct mutex *lock, unsigned int subclass);
+					unsigned int subclass)
+	TRY_ACQUIRE(0, *lock);
+extern void mutex_lock_io_nested(struct mutex *lock, unsigned int subclass)
+	ACQUIRE(*lock);
 
 #define mutex_lock(lock) mutex_lock_nested(lock, 0)
 #define mutex_lock_interruptible(lock) mutex_lock_interruptible_nested(lock, 0)
@@ -175,10 +180,11 @@ do {									\
 } while (0)
 
 #else
-extern void mutex_lock(struct mutex *lock);
-extern int __must_check mutex_lock_interruptible(struct mutex *lock);
-extern int __must_check mutex_lock_killable(struct mutex *lock);
-extern void mutex_lock_io(struct mutex *lock);
+void mutex_lock(struct mutex *lock) ACQUIRE(*lock);
+int __must_check mutex_lock_interruptible(struct mutex *lock)
+	TRY_ACQUIRE(0, *lock);
+int __must_check mutex_lock_killable(struct mutex *lock) TRY_ACQUIRE(0, *lock);
+void mutex_lock_io(struct mutex *lock) ACQUIRE(*lock);
 
 # define mutex_lock_nested(lock, subclass) mutex_lock(lock)
 # define mutex_lock_interruptible_nested(lock, subclass) mutex_lock_interruptible(lock)
@@ -193,13 +199,19 @@ extern void mutex_lock_io(struct mutex *lock);
  *
  * Returns 1 if the mutex has been acquired successfully, and 0 on contention.
  */
-extern int mutex_trylock(struct mutex *lock);
-extern void mutex_unlock(struct mutex *lock);
+int mutex_trylock(struct mutex *lock) TRY_ACQUIRE(1, *lock);
+void mutex_unlock(struct mutex *lock) RELEASE(*lock);
 
-bool atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock);
+bool atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock)
+	TRY_ACQUIRE(true, *lock);
 
-DEFINE_GUARD(mutex, struct mutex *, mutex_lock(_T), mutex_unlock(_T))
-DEFINE_GUARD_COND(mutex, _try, mutex_trylock(_T))
-DEFINE_GUARD_COND(mutex, _intr, mutex_lock_interruptible(_T) == 0)
+DEFINE_GUARD_ATTR(mutex, struct mutex *,
+		  mutex_lock(_T),
+		  ASSERT_CAPABILITY(*_T) NO_THREAD_SAFETY_ANALYSIS,
+		  mutex_unlock(_T))
+DEFINE_GUARD_COND_ATTR(mutex, _try, mutex_trylock(_T),
+		       ASSERT_CAPABILITY(*_T) NO_THREAD_SAFETY_ANALYSIS)
+DEFINE_GUARD_COND_ATTR(mutex, _intr, mutex_lock_interruptible(_T) == 0,
+		       ASSERT_CAPABILITY(*_T) NO_THREAD_SAFETY_ANALYSIS)
 
 #endif /* __LINUX_MUTEX_H */

@@ -502,8 +502,7 @@ int cdns_mhdp_adjust_lt(struct cdns_mhdp_device *mhdp, unsigned int nlanes,
 
 	if (nlanes != 4 && nlanes != 2 && nlanes != 1) {
 		dev_err(mhdp->dev, "invalid number of lanes: %u\n", nlanes);
-		ret = -EINVAL;
-		goto out;
+		return -EINVAL;
 	}
 
 	payload[0] = nlanes;

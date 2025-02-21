@@ -198,6 +198,51 @@ void scsi_finish_command(struct scsi_cmnd *cmd)
 	scsi_io_completion(cmd, good_bytes);
 }
 
+/**
+ * scsi_host_update_can_queue - Modify @host->can_queue
+ * @host:	SCSI host pointer
+ * @can_queue:	New value for @host->can_queue.
+ *
+ * @host->__devices must be empty except for the pseudo SCSI device and I/O
+ * must have been quiesced before this function is called.
+ */
+int scsi_host_update_can_queue(struct Scsi_Host *host, int can_queue)
+{
+	struct blk_mq_tag_set prev_set;
+	bool realloc_pseudo_sdev = false;
+	struct scsi_device *sdev;
+	int prev_can_queue, ret;
+
+	scoped_guard(spinlock_irq, host->host_lock)
+		list_for_each_entry(sdev, &host->__devices, siblings)
+			if (WARN_ON_ONCE(sdev != host->pseudo_sdev))
+				return -EINVAL;
+
+	if (host->pseudo_sdev) {
+		realloc_pseudo_sdev = true;
+		__scsi_remove_device(host->pseudo_sdev);
+		host->pseudo_sdev = NULL;
+	}
+
+	prev_can_queue = host->can_queue;
+	prev_set = host->tag_set;
+	host->can_queue = can_queue;
+	ret = scsi_mq_setup_tags(host);
+	if (ret) {
+		host->can_queue = prev_can_queue;
+		return ret;
+	}
+	blk_mq_free_tag_set(&prev_set);
+
+	if (realloc_pseudo_sdev) {
+		host->pseudo_sdev = scsi_get_pseudo_dev(host);
+		if (!host->pseudo_sdev)
+			return -ENOMEM;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(scsi_host_update_can_queue);
 
 /*
  * 4096 is big enough for saturating fast SCSI LUNs.

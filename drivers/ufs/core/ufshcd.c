@@ -8870,12 +8870,12 @@ static void ufshcd_memory_free(struct ufs_hba *hba)
 	}
 }
 
-static int ufshcd_alloc_mcq(struct ufs_hba *hba)
+static int ufshcd_alloc_mcq(struct ufs_hba *hba, int ufs_dev_qd)
 {
 	int ret;
 	int old_nutrs = hba->nutrs;
 
-	ret = ufshcd_mcq_decide_queue_depth(hba, hba->dev_info.bqueuedepth);
+	ret = ufshcd_mcq_decide_queue_depth(hba, ufs_dev_qd);
 	if (ret < 0)
 		return ret;
 
@@ -10569,7 +10569,7 @@ static int ufshcd_add_scsi_host(struct ufs_hba *hba)
 
 	if (is_mcq_supported(hba)) {
 		ufshcd_mcq_enable(hba);
-		err = ufshcd_alloc_mcq(hba);
+		err = ufshcd_alloc_mcq(hba, hba->dev_info.bqueuedepth);
 		if (!err) {
 			ufshcd_config_mcq(hba);
 		} else {

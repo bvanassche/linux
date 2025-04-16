@@ -9463,6 +9463,7 @@ static const struct scsi_host_template sdebug_driver_template = {
 	.module =		THIS_MODULE,
 	.skip_settle_delay =	1,
 	.track_queue_depth =	1,
+	.alloc_pseudo_sdev =	1,
 	.cmd_size = sizeof(struct sdebug_scsi_cmd),
 	.init_cmd_priv = sdebug_init_cmd_priv,
 	.target_alloc =		sdebug_target_alloc,

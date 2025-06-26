@@ -396,7 +396,8 @@ void scsi_device_unbusy(struct scsi_device *sdev, struct scsi_cmnd *cmd)
 	if (starget->can_queue > 0)
 		atomic_dec(&starget->target_busy);
 
-	sbitmap_put(&sdev->budget_map, cmd->budget_token);
+	if (cmd->budget_token < INT_MAX)
+		sbitmap_put(&sdev->budget_map, cmd->budget_token);
 	cmd->budget_token = -1;
 }
 
@@ -1360,6 +1361,14 @@ static inline int scsi_dev_queue_ready(struct request_queue *q,
 {
 	int token;
 
+	/*
+	 * Do not allocate a budget token for reserved SCSI commands. Budget
+	 * tokens are used to enforce the cmd_per_lun limit. That limit does not
+	 * apply to reserved commands.
+	 */
+	if (scsi_device_is_pseudo_dev(sdev))
+		return INT_MAX;
+
 	token = sbitmap_get(&sdev->budget_map);
 	if (token < 0)
 		return -1;
@@ -1749,7 +1758,8 @@ static void scsi_mq_put_budget(struct request_queue *q, int budget_token)
 {
 	struct scsi_device *sdev = q->queuedata;
 
-	sbitmap_put(&sdev->budget_map, budget_token);
+	if (budget_token < INT_MAX)
+		sbitmap_put(&sdev->budget_map, budget_token);
 }
 
 /*

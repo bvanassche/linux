@@ -3025,10 +3025,12 @@ static int ufshcd_init_cmd_priv(struct Scsi_Host *host, struct scsi_cmnd *cmd)
  */
 static int ufshcd_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *cmd)
 {
+	struct request *rq = scsi_cmd_to_rq(cmd);
 	struct ufs_hba *hba = shost_priv(host);
-	int tag = scsi_cmd_to_rq(cmd)->tag;
+	struct ufs_hw_queue *hwq =
+		hba->mcq_enabled ? ufshcd_mcq_req_to_hwq(hba, rq) : NULL;
+	int tag = rq->tag;
 	int err = 0;
-	struct ufs_hw_queue *hwq = NULL;
 
 	switch (hba->ufshcd_state) {
 	case UFSHCD_STATE_OPERATIONAL:
@@ -3085,9 +3087,6 @@ static int ufshcd_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *cmd)
 		ufshcd_release(hba);
 		goto out;
 	}
-
-	if (hba->mcq_enabled)
-		hwq = ufshcd_mcq_req_to_hwq(hba, scsi_cmd_to_rq(cmd));
 
 	ufshcd_send_command(hba, cmd, hwq);
 

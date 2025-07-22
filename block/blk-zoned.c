@@ -22,6 +22,7 @@
 #include "blk.h"
 #include "blk-mq-sched.h"
 #include "blk-mq-debugfs.h"
+#include "elevator.h"
 
 #define ZONE_COND_NAME(name) [BLK_ZONE_COND_##name] = #name
 static const char *const zone_cond_name[] = {
@@ -376,6 +377,22 @@ fail:
 
 	return ret;
 }
+
+/*
+ * blk_pipeline_zwr() - Whether or not sequential zoned writes will be
+ *	pipelined per zone.
+ * @q: request queue pointer.
+ *
+ * Return: %true if and only if zoned writes will be pipelined per zone.
+ */
+bool blk_pipeline_zwr(struct request_queue *q)
+{
+	return q->limits.features & BLK_FEAT_ORDERED_HWQ &&
+		(!q->elevator ||
+		test_bit(ELEVATOR_FLAG_SUPPORTS_ZONED_WRITE_PIPELINING,
+			 &q->elevator->flags));
+}
+EXPORT_SYMBOL(blk_pipeline_zwr);
 
 static bool disk_zone_is_last(struct gendisk *disk, struct blk_zone *zone)
 {

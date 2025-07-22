@@ -133,6 +133,7 @@ struct elevator_queue
 #define ELEVATOR_FLAG_REGISTERED	0
 #define ELEVATOR_FLAG_DYING		1
 #define ELEVATOR_FLAG_ENABLE_WBT_ON_EXIT	2
+#define ELEVATOR_FLAG_SUPPORTS_ZONED_WRITE_PIPELINING 3
 
 /*
  * block elevator interface

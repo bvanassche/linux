@@ -8872,8 +8872,8 @@ static void ufshcd_memory_free(struct ufs_hba *hba)
 
 static int ufshcd_alloc_mcq(struct ufs_hba *hba, int ufs_dev_qd)
 {
-	int ret;
 	int old_nutrs = hba->nutrs;
+	int i, ret;
 
 	ret = ufshcd_mcq_decide_queue_depth(hba, ufs_dev_qd);
 	if (ret < 0)
@@ -8890,6 +8890,9 @@ static int ufshcd_alloc_mcq(struct ufs_hba *hba, int ufs_dev_qd)
 		if (ret)
 			goto err;
 	}
+
+	for (i = 0; i < hba->nr_hw_queues; i++)
+		hba->uhq[i].max_entries = hba->nutrs + 1;
 
 	/*
 	 * Previously allocated memory for nutrs may not be enough in MCQ mode.

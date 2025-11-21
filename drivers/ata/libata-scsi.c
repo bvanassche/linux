@@ -744,22 +744,16 @@ static struct ata_queued_cmd *ata_scsi_qc_new(struct ata_device *dev,
 {
 	struct ata_port *ap = dev->link->ap;
 	struct ata_queued_cmd *qc;
-	int tag;
+	int tag = scsi_cmd_to_rq(cmd)->tag;
 
 	if (unlikely(ata_port_is_frozen(ap)))
 		goto fail;
 
-	if (ap->flags & ATA_FLAG_SAS_HOST) {
-		/*
-		 * SAS hosts may queue > ATA_MAX_QUEUE commands so use
-		 * unique per-device budget token as a tag.
-		 */
-		if (WARN_ON_ONCE(cmd->budget_token >= ATA_MAX_QUEUE))
-			goto fail;
-		tag = cmd->budget_token;
-	} else {
-		tag = scsi_cmd_to_rq(cmd)->tag;
-	}
+	WARN_ON_ONCE(cmd->device->host->tag_set.nr_hw_queues > 1);
+
+	/* SAS hosts may queue > ATA_MAX_QUEUE commands. */
+	if (ap->flags & ATA_FLAG_SAS_HOST && WARN_ON_ONCE(tag >= ATA_MAX_QUEUE))
+		goto fail;
 
 	qc = __ata_qc_from_tag(ap, tag);
 	qc->tag = qc->hw_tag = tag;

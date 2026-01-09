@@ -323,7 +323,7 @@ int qxl_update_area_ioctl(struct drm_device *dev, void *data, struct drm_file *f
 		qxl_ttm_placement_from_domain(qobj, qobj->type);
 		ret = ttm_bo_validate(&qobj->tbo, &qobj->placement, &ctx);
 		if (unlikely(ret))
-			goto out;
+			goto out2;
 	}
 
 	ret = qxl_bo_check_id(qdev, qobj);

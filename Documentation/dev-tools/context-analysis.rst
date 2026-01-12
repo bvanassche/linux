@@ -28,10 +28,19 @@ Or for all translation units in the directory::
 
     CONTEXT_ANALYSIS := y
 
-It is possible to enable the analysis tree-wide, however, which will result in
-numerous false positive warnings currently and is *not* generally recommended::
+To analyze all kernel objects, including those whose `Makefile` does not opt
+in, configure the kernel with::
 
     CONFIG_WARN_CONTEXT_ANALYSIS_ALL=y
+
+Modules and subsystems that are not ready for tree-wide analysis can opt out
+in their `Makefile`::
+
+    CONTEXT_ANALYSIS_mymodule.o := n
+
+Or for all translation units in the directory::
+
+    CONTEXT_ANALYSIS := n
 
 Programming Model
 -----------------

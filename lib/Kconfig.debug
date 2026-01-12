@@ -651,7 +651,6 @@ config WARN_CONTEXT_ANALYSIS
 config WARN_CONTEXT_ANALYSIS_ALL
 	bool "Enable context analysis for all source files"
 	depends on WARN_CONTEXT_ANALYSIS
-	depends on EXPERT && !COMPILE_TEST
 	help
 	  Enable tree-wide context analysis. This is likely to produce a
 	  large number of false positives - enable at your own risk.

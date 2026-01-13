@@ -83,6 +83,7 @@ static void ip6_frag_expire(struct timer_list *t)
 
 static struct frag_queue *
 fq_find(struct net *net, __be32 id, const struct ipv6hdr *hdr, int iif)
+	__must_hold_shared(RCU)
 {
 	struct frag_v6_compare_key key = {
 		.id = id,

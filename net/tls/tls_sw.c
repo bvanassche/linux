@@ -863,6 +863,7 @@ static int tls_push_record(struct sock *sk, int flags,
 static int bpf_exec_tx_verdict(struct sk_msg *msg, struct sock *sk,
 			       bool full_record, u8 record_type,
 			       ssize_t *copied, int flags)
+	__must_hold(sk)
 {
 	struct tls_context *tls_ctx = tls_get_ctx(sk);
 	struct tls_sw_context_tx *ctx = tls_sw_ctx_tx(tls_ctx);
@@ -993,6 +994,7 @@ more_data:
 }
 
 static int tls_sw_push_pending_record(struct sock *sk, int flags)
+	__must_hold(sk)
 {
 	struct tls_context *tls_ctx = tls_get_ctx(sk);
 	struct tls_sw_context_tx *ctx = tls_sw_ctx_tx(tls_ctx);
@@ -1045,6 +1047,7 @@ static int tls_sw_sendmsg_splice(struct sock *sk, struct msghdr *msg,
 
 static int tls_sw_sendmsg_locked(struct sock *sk, struct msghdr *msg,
 				 size_t size)
+	__must_hold(sk)
 {
 	long timeo = sock_sndtimeo(sk, msg->msg_flags & MSG_DONTWAIT);
 	struct tls_context *tls_ctx = tls_get_ctx(sk);
@@ -1369,6 +1372,7 @@ unlock:
 static int
 tls_rx_rec_wait(struct sock *sk, struct sk_psock *psock, bool nonblock,
 		bool released)
+	__must_hold(sk)
 {
 	struct tls_context *tls_ctx = tls_get_ctx(sk);
 	struct tls_sw_context_rx *ctx = tls_sw_ctx_rx(tls_ctx);
@@ -1988,6 +1992,7 @@ tls_read_flush_backlog(struct sock *sk, struct tls_prot_info *prot,
 
 static int tls_rx_reader_acquire(struct sock *sk, struct tls_sw_context_rx *ctx,
 				 bool nonblock)
+	__must_hold(sk)
 {
 	long timeo;
 	int ret;
@@ -2019,6 +2024,7 @@ static int tls_rx_reader_acquire(struct sock *sk, struct tls_sw_context_rx *ctx,
 
 static int tls_rx_reader_lock(struct sock *sk, struct tls_sw_context_rx *ctx,
 			      bool nonblock)
+	__cond_acquires(0, sk)
 {
 	int err;
 
@@ -2044,6 +2050,7 @@ static void tls_rx_reader_release(struct sock *sk, struct tls_sw_context_rx *ctx
 }
 
 static void tls_rx_reader_unlock(struct sock *sk, struct tls_sw_context_rx *ctx)
+	__releases(sk)
 {
 	tls_rx_reader_release(sk, ctx);
 	release_sock(sk);
@@ -2053,6 +2060,7 @@ int tls_sw_recvmsg(struct sock *sk,
 		   struct msghdr *msg,
 		   size_t len,
 		   int flags)
+	__no_context_analysis /* conditional locking */
 {
 	struct tls_context *tls_ctx = tls_get_ctx(sk);
 	struct tls_sw_context_rx *ctx = tls_sw_ctx_rx(tls_ctx);
@@ -2276,6 +2284,7 @@ end:
 ssize_t tls_sw_splice_read(struct socket *sock,  loff_t *ppos,
 			   struct pipe_inode_info *pipe,
 			   size_t len, unsigned int flags)
+	__no_context_analysis /* conditional locking */
 {
 	struct tls_context *tls_ctx = tls_get_ctx(sock->sk);
 	struct tls_sw_context_rx *ctx = tls_sw_ctx_rx(tls_ctx);
@@ -2346,6 +2355,7 @@ splice_requeue:
 
 int tls_sw_read_sock(struct sock *sk, read_descriptor_t *desc,
 		     sk_read_actor_t read_actor)
+	__must_hold(sk)
 {
 	struct tls_context *tls_ctx = tls_get_ctx(sk);
 	struct tls_sw_context_rx *ctx = tls_sw_ctx_rx(tls_ctx);

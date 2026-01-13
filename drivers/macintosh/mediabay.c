@@ -413,6 +413,7 @@ int check_media_bay(struct macio_dev *baydev)
 EXPORT_SYMBOL_GPL(check_media_bay);
 
 void lock_media_bay(struct macio_dev *baydev)
+	__no_context_analysis /* conditional locking */
 {
 	struct media_bay_info* bay;
 
@@ -427,6 +428,7 @@ void lock_media_bay(struct macio_dev *baydev)
 EXPORT_SYMBOL_GPL(lock_media_bay);
 
 void unlock_media_bay(struct macio_dev *baydev)
+	__no_context_analysis /* conditional locking */
 {
 	struct media_bay_info* bay;
 

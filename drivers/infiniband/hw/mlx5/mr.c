@@ -1338,6 +1338,7 @@ void mlx5_ib_revoke_data_direct_mrs(struct mlx5_ib_dev *dev)
 }
 
 static int mlx5_umr_revoke_mr_with_lock(struct mlx5_ib_mr *mr)
+	__no_context_analysis /* conditional locking */
 {
 	bool is_odp_dma_buf = is_dmabuf_mr(mr) &&
 			      !to_ib_umem_dmabuf(mr->umem)->pinned;
@@ -1374,6 +1375,7 @@ static int mlx5_umr_revoke_mr_with_lock(struct mlx5_ib_mr *mr)
 }
 
 static int mlx5r_handle_mkey_cleanup(struct mlx5_ib_mr *mr)
+	__no_context_analysis /* conditional locking */
 {
 	bool is_odp_dma_buf = is_dmabuf_mr(mr) &&
 			      !to_ib_umem_dmabuf(mr->umem)->pinned;

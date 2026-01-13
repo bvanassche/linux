@@ -958,8 +958,7 @@ static int prep_dma(struct udc_ep *ep, struct udc_request *req, gfp_t gfp)
 /* Completes request packet ... caller MUST hold lock */
 static void
 complete_req(struct udc_ep *ep, struct udc_request *req, int sts)
-__releases(ep->dev->lock)
-__acquires(ep->dev->lock)
+	__no_context_analysis
 {
 	struct udc		*dev;
 	unsigned		halted;
@@ -1632,6 +1631,7 @@ static void usb_connect(struct udc *dev)
  * initial bringup to be ready for ep0 events
  */
 static void usb_disconnect(struct udc *dev)
+	__no_context_analysis
 {
 	u32 tmp;
 

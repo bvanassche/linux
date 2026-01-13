@@ -659,6 +659,7 @@ static void ep_del_request(struct pxa_ep *ep, struct pxa27x_request *req)
  */
 static void req_done(struct pxa_ep *ep, struct pxa27x_request *req, int status,
 	unsigned long *pflags)
+	__no_context_analysis
 {
 	unsigned long	flags;
 

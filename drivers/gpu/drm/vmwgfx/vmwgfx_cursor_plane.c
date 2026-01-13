@@ -594,6 +594,7 @@ vmw_cursor_plane_changed(struct vmw_plane_state *new_vps,
  */
 int vmw_cursor_plane_prepare_fb(struct drm_plane *plane,
 				struct drm_plane_state *new_state)
+	__no_context_analysis
 {
 	struct drm_framebuffer *fb = new_state->fb;
 	struct vmw_cursor_plane *vcp = vmw_plane_to_vcp(plane);

@@ -196,7 +196,8 @@ static int ttm_bo_individualize_resv(struct ttm_buffer_object *bo)
 	if (bo->base.resv == &bo->base._resv)
 		return 0;
 
-	BUG_ON(!dma_resv_trylock(&bo->base._resv));
+	if (!dma_resv_trylock(&bo->base._resv))
+		BUG();
 
 	r = dma_resv_copy_fences(&bo->base._resv, bo->base.resv);
 	dma_resv_unlock(&bo->base._resv);
@@ -447,6 +448,7 @@ EXPORT_SYMBOL(ttm_bo_eviction_valuable);
  */
 int ttm_bo_evict_first(struct ttm_device *bdev, struct ttm_resource_manager *man,
 		       struct ttm_operation_ctx *ctx)
+	__no_context_analysis
 {
 	struct ttm_resource_cursor cursor;
 	struct ttm_buffer_object *bo;
@@ -934,6 +936,7 @@ int ttm_bo_init_reserved(struct ttm_device *bdev, struct ttm_buffer_object *bo,
 			 uint32_t alignment, struct ttm_operation_ctx *ctx,
 			 struct sg_table *sg, struct dma_resv *resv,
 			 void (*destroy) (struct ttm_buffer_object *))
+	__no_context_analysis
 {
 	int ret;
 
@@ -1027,6 +1030,7 @@ int ttm_bo_init_validate(struct ttm_device *bdev, struct ttm_buffer_object *bo,
 			 uint32_t alignment, bool interruptible,
 			 struct sg_table *sg, struct dma_resv *resv,
 			 void (*destroy) (struct ttm_buffer_object *))
+	__cond_acquires(0, &bo->base.resv->lock)
 {
 	struct ttm_operation_ctx ctx = { .interruptible = interruptible };
 	int ret;

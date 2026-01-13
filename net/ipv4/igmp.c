@@ -2923,7 +2923,7 @@ static struct ip_mc_list *igmp_mc_get_idx(struct seq_file *seq, loff_t pos)
 }
 
 static void *igmp_mc_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return *pos ? igmp_mc_get_idx(seq, *pos - 1) : SEQ_START_TOKEN;
@@ -2941,7 +2941,7 @@ static void *igmp_mc_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void igmp_mc_seq_stop(struct seq_file *seq, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	struct igmp_mc_iter_state *state = igmp_mc_seq_private(seq);
 
@@ -3002,6 +3002,7 @@ struct igmp_mcf_iter_state {
 #define igmp_mcf_seq_private(seq)	((struct igmp_mcf_iter_state *)(seq)->private)
 
 static inline struct ip_sf_list *igmp_mcf_get_first(struct seq_file *seq)
+	__no_context_analysis /*__cond_acquires(nonnull, im->lock)*/
 {
 	struct net *net = seq_file_net(seq);
 	struct ip_sf_list *psf = NULL;
@@ -3031,6 +3032,7 @@ static inline struct ip_sf_list *igmp_mcf_get_first(struct seq_file *seq)
 }
 
 static struct ip_sf_list *igmp_mcf_get_next(struct seq_file *seq, struct ip_sf_list *psf)
+	__no_context_analysis
 {
 	struct igmp_mcf_iter_state *state = igmp_mcf_seq_private(seq);
 
@@ -3066,7 +3068,7 @@ static struct ip_sf_list *igmp_mcf_get_idx(struct seq_file *seq, loff_t pos)
 }
 
 static void *igmp_mcf_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return *pos ? igmp_mcf_get_idx(seq, *pos - 1) : SEQ_START_TOKEN;
@@ -3084,7 +3086,8 @@ static void *igmp_mcf_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void igmp_mcf_seq_stop(struct seq_file *seq, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
+	__no_context_analysis
 {
 	struct igmp_mcf_iter_state *state = igmp_mcf_seq_private(seq);
 	if (likely(state->im)) {

@@ -395,9 +395,8 @@ out:
 }
 
 static void
-__releases(&local->queue_stop_reason_lock)
-__acquires(&local->queue_stop_reason_lock)
 _ieee80211_wake_txqs(struct ieee80211_local *local, unsigned long *flags)
+	__must_hold(&local->queue_stop_reason_lock)
 {
 	struct ieee80211_sub_if_data *sdata;
 	int n_acs = IEEE80211_NUM_ACS;
@@ -445,6 +444,7 @@ static void __ieee80211_wake_queue(struct ieee80211_hw *hw, int queue,
 				   enum queue_stop_reason reason,
 				   bool refcounted,
 				   unsigned long *flags)
+	__must_hold(&hw_to_local(hw)->queue_stop_reason_lock)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 
@@ -562,6 +562,7 @@ void ieee80211_add_pending_skb(struct ieee80211_local *local,
 	}
 
 	spin_lock_irqsave(&local->queue_stop_reason_lock, flags);
+	__assume_ctx_lock(&hw_to_local(hw)->queue_stop_reason_lock);
 	__ieee80211_stop_queue(hw, queue, IEEE80211_QUEUE_STOP_REASON_SKB_ADD,
 			       false);
 	__skb_queue_tail(&local->pending[queue], skb);
@@ -579,6 +580,7 @@ void ieee80211_add_pending_skbs(struct ieee80211_local *local,
 	int queue, i;
 
 	spin_lock_irqsave(&local->queue_stop_reason_lock, flags);
+	__assume_ctx_lock(&hw_to_local(hw)->queue_stop_reason_lock);
 	while ((skb = skb_dequeue(skbs))) {
 		struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
 

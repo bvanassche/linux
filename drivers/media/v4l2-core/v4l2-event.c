@@ -58,6 +58,7 @@ static int __v4l2_event_dequeue(struct v4l2_fh *fh, struct v4l2_event *event)
 
 int v4l2_event_dequeue(struct v4l2_fh *fh, struct v4l2_event *event,
 		       int nonblocking)
+	__no_context_analysis /* conditional locking */
 {
 	int ret;
 

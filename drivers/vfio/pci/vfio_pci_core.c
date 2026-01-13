@@ -337,6 +337,7 @@ static int vfio_pci_runtime_pm_entry(struct vfio_pci_core_device *vdev,
 
 static int vfio_pci_core_pm_entry(struct vfio_pci_core_device *vdev, u32 flags,
 				  void __user *arg, size_t argsz)
+	__no_context_analysis
 {
 	int ret;
 
@@ -2437,6 +2438,7 @@ unwind:
 static int vfio_pci_dev_set_hot_reset(struct vfio_device_set *dev_set,
 				      struct vfio_pci_group_info *groups,
 				      struct iommufd_ctx *iommufd_ctx)
+	__no_context_analysis /* locking inside loop */
 {
 	struct vfio_pci_core_device *vdev;
 	struct pci_dev *pdev;

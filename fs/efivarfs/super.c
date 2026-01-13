@@ -516,6 +516,7 @@ static int efivarfs_init_fs_context(struct fs_context *fc)
 }
 
 static void efivarfs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct efivarfs_fs_info *sfi = sb->s_fs_info;
 

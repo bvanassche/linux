@@ -44,6 +44,7 @@ static int imx93_clk_composite_wait_ready(struct clk_hw *hw, void __iomem *reg)
 }
 
 static void imx93_clk_composite_gate_endisable(struct clk_hw *hw, int enable)
+	__no_context_analysis /* conditional locking */
 {
 	struct clk_gate *gate = to_clk_gate(hw);
 	unsigned long flags;
@@ -106,6 +107,7 @@ imx93_clk_composite_divider_determine_rate(struct clk_hw *hw, struct clk_rate_re
 
 static int imx93_clk_composite_divider_set_rate(struct clk_hw *hw, unsigned long rate,
 						unsigned long parent_rate)
+	__no_context_analysis /* conditional locking */
 {
 	struct clk_divider *divider = to_clk_divider(hw);
 	int value;
@@ -145,6 +147,7 @@ static u8 imx93_clk_composite_mux_get_parent(struct clk_hw *hw)
 }
 
 static int imx93_clk_composite_mux_set_parent(struct clk_hw *hw, u8 index)
+	__no_context_analysis /* conditional locking */
 {
 	struct clk_mux *mux = to_clk_mux(hw);
 	u32 val = clk_mux_index_to_val(mux->table, mux->flags, index);

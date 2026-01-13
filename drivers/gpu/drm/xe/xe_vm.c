@@ -1828,6 +1828,7 @@ err_no_resv:
 }
 
 static void xe_vm_close(struct xe_vm *vm)
+	__no_context_analysis /* conditional locking */
 {
 	struct xe_device *xe = vm->xe;
 	bool bound;
@@ -4290,6 +4291,7 @@ release_vm_lock:
  * always returns 0.
  */
 int xe_vm_lock(struct xe_vm *vm, bool intr)
+	__no_context_analysis /* conditional locking */
 {
 	int ret;
 
@@ -4308,6 +4310,7 @@ int xe_vm_lock(struct xe_vm *vm, bool intr)
  * Unlock a buffer object lock that was locked by xe_vm_lock().
  */
 void xe_vm_unlock(struct xe_vm *vm)
+	__no_context_analysis /* conditional locking */
 {
 	dma_resv_unlock(xe_vm_resv(vm));
 }

@@ -440,6 +440,7 @@ ssize_t opal_get_chars(uint32_t vtermno, u8 *buf, size_t count)
 
 static ssize_t __opal_put_chars(uint32_t vtermno, const u8 *data,
 				size_t total_len, bool atomic)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long flags = 0 /* shut up gcc */;
 	ssize_t written;

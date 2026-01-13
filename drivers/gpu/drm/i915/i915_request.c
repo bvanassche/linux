@@ -245,6 +245,7 @@ static void __i915_request_fill(struct i915_request *rq, u8 val)
 bool
 i915_request_active_engine(struct i915_request *rq,
 			   struct intel_engine_cs **active)
+	__no_context_analysis /* TODO */
 {
 	struct intel_engine_cs *engine, *locked;
 	bool ret = false;
@@ -1843,6 +1844,7 @@ void __i915_request_queue(struct i915_request *rq,
 }
 
 void i915_request_add(struct i915_request *rq)
+	__no_context_analysis /* TODO */
 {
 	struct intel_timeline * const tl = i915_request_timeline(rq);
 	struct i915_sched_attr attr = {};

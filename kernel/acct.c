@@ -157,6 +157,7 @@ static inline struct bsd_acct_struct *to_acct(struct fs_pin *p)
 }
 
 static struct bsd_acct_struct *acct_get(struct pid_namespace *ns)
+	__no_context_analysis
 {
 	struct bsd_acct_struct *res;
 again:
@@ -183,6 +184,7 @@ again:
 }
 
 static void acct_pin_kill(struct fs_pin *pin)
+	__no_context_analysis
 {
 	struct bsd_acct_struct *acct = to_acct(pin);
 	mutex_lock(&acct->lock);
@@ -214,6 +216,7 @@ static void close_work(struct work_struct *work)
 
 DEFINE_FREE(fput_sync, struct file *, if (!IS_ERR_OR_NULL(_T)) __fput_sync(_T))
 static int acct_on(const char __user *name)
+	__cond_acquires_shared(0, RCU)
 {
 	/* Difference from BSD - they don't do O_APPEND */
 	const int open_flags = O_WRONLY|O_APPEND|O_LARGEFILE;
@@ -595,6 +598,7 @@ void acct_collect(long exitcode, int group_dead)
 }
 
 static void slow_acct_process(struct pid_namespace *ns)
+	__no_context_analysis
 {
 	for ( ; ns; ns = ns->parent) {
 		struct bsd_acct_struct *acct = acct_get(ns);

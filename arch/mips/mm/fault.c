@@ -38,6 +38,7 @@ int show_unhandled_signals = 1;
  */
 static void __do_page_fault(struct pt_regs *regs, unsigned long write,
 	unsigned long address)
+	__no_context_analysis /* conditional release */
 {
 	struct vm_area_struct * vma = NULL;
 	struct task_struct *tsk = current;

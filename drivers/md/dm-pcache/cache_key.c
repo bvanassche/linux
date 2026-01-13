@@ -573,6 +573,7 @@ static int fixup_overlap_head(struct pcache_cache_key *key,
  * and ensures any invalid keys are removed before insertion.
  */
 void cache_key_insert(struct pcache_cache_tree *cache_tree, struct pcache_cache_key *key, bool fixup)
+	__no_context_analysis
 {
 	struct pcache_cache *cache = cache_tree->cache;
 	struct pcache_cache_subtree_walk_ctx walk_ctx = { 0 };

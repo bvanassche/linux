@@ -85,6 +85,7 @@ static void __page_cache_release(struct folio *folio, struct lruvec **lruvecp,
  * in batches.  But it gets used by networking - and for compound pages.
  */
 static void page_cache_release(struct folio *folio)
+	__no_context_analysis /* conditional locking */
 {
 	struct lruvec *lruvec = NULL;
 	unsigned long flags;
@@ -156,6 +157,7 @@ static void lru_add(struct lruvec *lruvec, struct folio *folio)
 }
 
 static void folio_batch_move_lru(struct folio_batch *fbatch, move_fn_t move_fn)
+	__no_context_analysis /* conditional locking */
 {
 	int i;
 	struct lruvec *lruvec = NULL;
@@ -181,6 +183,7 @@ static void folio_batch_move_lru(struct folio_batch *fbatch, move_fn_t move_fn)
 
 static void __folio_batch_add_and_move(struct folio_batch __percpu *fbatch,
 		struct folio *folio, move_fn_t move_fn, bool disable_irq)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long flags;
 
@@ -239,8 +242,6 @@ void folio_rotate_reclaimable(struct folio *folio)
 
 void lru_note_cost_unlock_irq(struct lruvec *lruvec, bool file,
 		unsigned int nr_io, unsigned int nr_rotated)
-		__releases(lruvec->lru_lock)
-		__releases(rcu)
 {
 	unsigned long cost;
 
@@ -955,6 +956,7 @@ void lru_cache_disable(void)
  * context.  May be called while holding a spinlock.
  */
 void folios_put_refs(struct folio_batch *folios, unsigned int *refs)
+	__no_context_analysis /* conditional locking */
 {
 	int i, j;
 	struct lruvec *lruvec = NULL;

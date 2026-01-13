@@ -1008,6 +1008,7 @@ void i915_request_add_active_barriers(struct i915_request *rq)
 struct dma_fence *
 __i915_active_fence_set(struct i915_active_fence *active,
 			struct dma_fence *fence)
+	__no_context_analysis /* conditional locking */
 {
 	struct dma_fence *prev;
 	unsigned long flags;

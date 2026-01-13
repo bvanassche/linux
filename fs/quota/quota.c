@@ -864,6 +864,7 @@ static bool quotactl_cmd_onoff(int cmd)
  * - use the name of a block device to find the superblock thereon
  */
 static struct super_block *quotactl_block(const char __user *special, int cmd)
+	__no_context_analysis
 {
 #ifdef CONFIG_BLOCK
 	struct super_block *sb;
@@ -916,6 +917,7 @@ retry:
  */
 SYSCALL_DEFINE4(quotactl, unsigned int, cmd, const char __user *, special,
 		qid_t, id, void __user *, addr)
+	__no_context_analysis
 {
 	uint cmds, type;
 	struct super_block *sb = NULL;
@@ -972,6 +974,7 @@ out:
 
 SYSCALL_DEFINE4(quotactl_fd, unsigned int, fd, unsigned int, cmd,
 		qid_t, id, void __user *, addr)
+	__no_context_analysis
 {
 	struct super_block *sb;
 	unsigned int cmds = cmd >> SUBCMDSHIFT;

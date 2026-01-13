@@ -294,6 +294,7 @@ static void epio_complete (struct usb_ep *ep, struct usb_request *req)
  */
 static int
 get_ready_ep (unsigned f_flags, struct ep_data *epdata, bool is_write)
+	__cond_acquires(0, epdata->lock)
 {
 	int	val;
 
@@ -1126,6 +1127,7 @@ next_event (struct dev_data *dev, enum usb_gadgetfs_event_type type)
 
 static ssize_t
 ep0_write (struct file *fd, const char __user *buf, size_t len, loff_t *ptr)
+	__must_hold(&((struct dev_data *)fd->private_data)->lock)
 {
 	struct dev_data		*dev = fd->private_data;
 	ssize_t			retval = -ESRCH;
@@ -2100,6 +2102,7 @@ static int gadgetfs_init_fs_context(struct fs_context *fc)
 
 static void
 gadgetfs_kill_sb (struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	mutex_lock(&sb_mutex);
 	kill_anon_super (sb);

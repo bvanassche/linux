@@ -546,6 +546,7 @@ static void tipc_sk_callback(struct rcu_head *head)
 
 /* Caller should hold socket lock for the socket. */
 static void __tipc_shutdown(struct socket *sock, int error)
+	__must_hold(sock->sk)
 {
 	struct sock *sk = sock->sk;
 	struct tipc_sock *tsk = tipc_sk(sk);
@@ -840,6 +841,7 @@ static __poll_t tipc_poll(struct file *file, struct socket *sock,
  */
 static int tipc_sendmcast(struct  socket *sock, struct tipc_uaddr *ua,
 			  struct msghdr *msg, size_t dlen, long timeout)
+	__must_hold(sock->sk)
 {
 	struct sock *sk = sock->sk;
 	struct tipc_sock *tsk = tipc_sk(sk);
@@ -954,6 +956,7 @@ static int tipc_send_group_msg(struct net *net, struct tipc_sock *tsk,
  */
 static int tipc_send_group_unicast(struct socket *sock, struct msghdr *m,
 				   int dlen, long timeout)
+	__must_hold(sock->sk)
 {
 	struct sock *sk = sock->sk;
 	struct tipc_uaddr *ua = (struct tipc_uaddr *)m->msg_name;
@@ -998,6 +1001,7 @@ static int tipc_send_group_unicast(struct socket *sock, struct msghdr *m,
  */
 static int tipc_send_group_anycast(struct socket *sock, struct msghdr *m,
 				   int dlen, long timeout)
+	__must_hold(sock->sk)
 {
 	struct tipc_uaddr *ua = (struct tipc_uaddr *)m->msg_name;
 	struct sock *sk = sock->sk;
@@ -1079,6 +1083,7 @@ static int tipc_send_group_anycast(struct socket *sock, struct msghdr *m,
  */
 static int tipc_send_group_bcast(struct socket *sock, struct msghdr *m,
 				 int dlen, long timeout)
+	__must_hold(sock->sk)
 {
 	struct tipc_uaddr *ua = (struct tipc_uaddr *)m->msg_name;
 	struct sock *sk = sock->sk;
@@ -1153,6 +1158,7 @@ static int tipc_send_group_bcast(struct socket *sock, struct msghdr *m,
  */
 static int tipc_send_group_mcast(struct socket *sock, struct msghdr *m,
 				 int dlen, long timeout)
+	__must_hold(sock->sk)
 {
 	struct tipc_uaddr *ua = (struct tipc_uaddr *)m->msg_name;
 	struct sock *sk = sock->sk;
@@ -1403,6 +1409,7 @@ static int tipc_sendmsg(struct socket *sock,
 }
 
 static int __tipc_sendmsg(struct socket *sock, struct msghdr *m, size_t dlen)
+	__must_hold(sock->sk)
 {
 	struct sock *sk = sock->sk;
 	struct net *net = sock_net(sk);
@@ -1550,6 +1557,7 @@ static int tipc_sendstream(struct socket *sock, struct msghdr *m, size_t dsz)
 }
 
 static int __tipc_sendstream(struct socket *sock, struct msghdr *m, size_t dlen)
+	__must_hold(sock->sk)
 {
 	struct sock *sk = sock->sk;
 	DECLARE_SOCKADDR(struct sockaddr_tipc *, dest, m->msg_name);
@@ -1826,6 +1834,7 @@ static void tipc_sk_send_ack(struct tipc_sock *tsk)
 }
 
 static int tipc_wait_for_rcvmsg(struct socket *sock, long *timeop)
+	__must_hold(sock->sk)
 {
 	struct sock *sk = sock->sk;
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
@@ -2524,6 +2533,7 @@ xmit:
 }
 
 static int tipc_wait_for_connect(struct socket *sock, long *timeo_p)
+	__must_hold(sock->sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct sock *sk = sock->sk;
@@ -2674,6 +2684,7 @@ static int tipc_listen(struct socket *sock, int len)
 }
 
 static int tipc_wait_for_accept(struct socket *sock, long timeo)
+	__must_hold(sock->sk)
 {
 	struct sock *sk = sock->sk;
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);

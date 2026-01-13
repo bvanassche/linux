@@ -65,6 +65,7 @@ static inline struct lowpan_frag_queue *
 fq_find(struct net *net, const struct lowpan_802154_cb *cb,
 	const struct ieee802154_addr *src,
 	const struct ieee802154_addr *dst)
+	__must_hold_shared(RCU)
 {
 	struct netns_ieee802154_lowpan *ieee802154_lowpan =
 		net_ieee802154_lowpan(net);

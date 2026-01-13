@@ -70,6 +70,7 @@ static const struct sdw_slave_ops class_sdw_ops = {
 };
 
 static void class_regmap_lock(void *data)
+	__acquires((struct mutex *)data)
 {
 	struct mutex *lock = data;
 
@@ -77,6 +78,7 @@ static void class_regmap_lock(void *data)
 }
 
 static void class_regmap_unlock(void *data)
+	__releases((struct mutex *)data)
 {
 	struct mutex *lock = data;
 

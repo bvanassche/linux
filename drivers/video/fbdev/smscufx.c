@@ -1456,6 +1456,7 @@ static int ufx_read_edid(struct ufx_data *dev, u8 *edid, int edid_len)
  * Returns 0 if successful */
 static int ufx_setup_modes(struct ufx_data *dev, struct fb_info *info,
 	char *default_edid, size_t default_edid_size)
+	__no_context_analysis /* conditional locking */
 {
 	const struct fb_videomode *default_vmode = NULL;
 	u8 *edid;

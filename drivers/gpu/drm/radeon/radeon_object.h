@@ -62,6 +62,7 @@ static inline unsigned radeon_mem_type_to_domain(u32 mem_type)
  * a signal. Release all buffer reservations and return to user-space.
  */
 static inline int radeon_bo_reserve(struct radeon_bo *bo, bool no_intr)
+	__no_context_analysis
 {
 	int r;
 
@@ -75,6 +76,7 @@ static inline int radeon_bo_reserve(struct radeon_bo *bo, bool no_intr)
 }
 
 static inline void radeon_bo_unreserve(struct radeon_bo *bo)
+	__no_context_analysis
 {
 	ttm_bo_unreserve(&bo->tbo);
 }

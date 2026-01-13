@@ -404,6 +404,7 @@ mt76_connac_skip_fw_pmctrl(struct mt76_phy *phy, struct mt76_connac_pm *pm)
 static inline void
 mt76_connac_mutex_acquire(struct mt76_dev *dev, struct mt76_connac_pm *pm)
 	__acquires(&dev->mutex)
+	__acquires(dev->mutex)
 {
 	mutex_lock(&dev->mutex);
 	mt76_connac_pm_wake(&dev->phy, pm);
@@ -412,6 +413,7 @@ mt76_connac_mutex_acquire(struct mt76_dev *dev, struct mt76_connac_pm *pm)
 static inline void
 mt76_connac_mutex_release(struct mt76_dev *dev, struct mt76_connac_pm *pm)
 	__releases(&dev->mutex)
+	__releases(dev->mutex)
 {
 	mt76_connac_power_save_sched(&dev->phy, pm);
 	mutex_unlock(&dev->mutex);

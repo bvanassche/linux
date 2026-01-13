@@ -1410,6 +1410,7 @@ static int agilent_82357a_go_idle(struct gpib_board *board)
 }
 
 static void agilent_82357a_detach(struct gpib_board *board)
+	__no_context_analysis /* conditional locking */
 {
 	struct agilent_82357a_priv *a_priv;
 

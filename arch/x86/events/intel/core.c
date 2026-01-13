@@ -4029,6 +4029,7 @@ __intel_get_event_constraints(struct cpu_hw_events *cpuc, int idx,
 
 static void
 intel_start_scheduling(struct cpu_hw_events *cpuc)
+	__no_context_analysis /* conditional locking */
 {
 	struct intel_excl_cntrs *excl_cntrs = cpuc->excl_cntrs;
 	struct intel_excl_states *xl;
@@ -4085,6 +4086,7 @@ static void intel_commit_scheduling(struct cpu_hw_events *cpuc, int idx, int cnt
 
 static void
 intel_stop_scheduling(struct cpu_hw_events *cpuc)
+	__no_context_analysis /* conditional locking */
 {
 	struct intel_excl_cntrs *excl_cntrs = cpuc->excl_cntrs;
 	struct intel_excl_states *xl;
@@ -4274,6 +4276,7 @@ intel_get_event_constraints(struct cpu_hw_events *cpuc, int idx,
 
 static void intel_put_excl_constraints(struct cpu_hw_events *cpuc,
 		struct perf_event *event)
+	__no_context_analysis /* conditional locking */
 {
 	struct hw_perf_event *hwc = &event->hw;
 	struct intel_excl_cntrs *excl_cntrs = cpuc->excl_cntrs;

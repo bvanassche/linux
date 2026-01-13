@@ -139,6 +139,7 @@ void update_sk_prot(struct sock *sk, struct tls_context *ctx)
 }
 
 int wait_on_pending_writer(struct sock *sk, long *timeo)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	int ret, rc = 0;
@@ -339,6 +340,7 @@ void tls_ctx_free(struct sock *sk, struct tls_context *ctx)
 
 static void tls_sk_proto_cleanup(struct sock *sk,
 				 struct tls_context *ctx, long timeo)
+	__must_hold(sk)
 {
 	if (unlikely(sk->sk_write_pending) &&
 	    !wait_on_pending_writer(sk, &timeo))

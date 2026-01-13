@@ -841,6 +841,7 @@ static int pca953x_irq_set_wake(struct irq_data *d, unsigned int on)
 }
 
 static void pca953x_irq_bus_lock(struct irq_data *d)
+	__acquires(&((struct pca953x_chip *)gpiochip_get_data(irq_data_get_irq_chip_data(d)))->irq_lock)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct pca953x_chip *chip = gpiochip_get_data(gc);
@@ -849,6 +850,7 @@ static void pca953x_irq_bus_lock(struct irq_data *d)
 }
 
 static void pca953x_irq_bus_sync_unlock(struct irq_data *d)
+	__releases(&((struct pca953x_chip *)gpiochip_get_data(irq_data_get_irq_chip_data(d)))->irq_lock)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct pca953x_chip *chip = gpiochip_get_data(gc);

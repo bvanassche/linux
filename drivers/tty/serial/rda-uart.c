@@ -582,6 +582,7 @@ static void rda_console_putchar(struct uart_port *port, unsigned char ch)
 
 static void rda_uart_port_write(struct uart_port *port, const char *s,
 				u_int count)
+	__no_context_analysis /* conditional locking */
 {
 	u32 old_irq_mask;
 	unsigned long flags;

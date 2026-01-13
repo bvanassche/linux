@@ -1119,6 +1119,7 @@ void dpaa2_eth_free_tx_fd(struct dpaa2_eth_priv *priv,
 			  struct dpaa2_eth_channel *ch,
 			  struct dpaa2_eth_fq *fq,
 			  const struct dpaa2_fd *fd, bool in_napi)
+	__no_context_analysis /* conditional locking */
 {
 	struct device *dev = priv->net_dev->dev.parent;
 	dma_addr_t fd_addr, sg_addr;
@@ -1518,6 +1519,7 @@ err_build_fd:
 }
 
 static void dpaa2_eth_tx_onestep_tstamp(struct work_struct *work)
+	__no_context_analysis /* conditional locking */
 {
 	struct dpaa2_eth_priv *priv = container_of(work, struct dpaa2_eth_priv,
 						   tx_onestep_tstamp);

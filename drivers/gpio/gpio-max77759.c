@@ -271,6 +271,7 @@ static int max77759_gpio_set_irq_type(struct irq_data *d, unsigned int type)
 }
 
 static void max77759_gpio_bus_lock(struct irq_data *d)
+	__acquires(&((struct max77759_gpio_chip *)gpiochip_get_data(irq_data_get_irq_chip_data(d)))->irq_lock)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct max77759_gpio_chip *chip = gpiochip_get_data(gc);
@@ -280,7 +281,7 @@ static void max77759_gpio_bus_lock(struct irq_data *d)
 
 static int max77759_gpio_bus_sync_unlock_helper(struct gpio_chip *gc,
 						struct max77759_gpio_chip *chip)
-					       __must_hold(&chip->maxq_lock)
+	__must_hold(&chip->maxq_lock)
 {
 	int ctrl, trigger, new_trigger, new_ctrl;
 	unsigned long irq_trig_changed;
@@ -332,6 +333,7 @@ static int max77759_gpio_bus_sync_unlock_helper(struct gpio_chip *gc,
 }
 
 static void max77759_gpio_bus_sync_unlock(struct irq_data *d)
+	__releases(&((struct max77759_gpio_chip *)gpiochip_get_data(irq_data_get_irq_chip_data(d)))->irq_lock)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct max77759_gpio_chip *chip = gpiochip_get_data(gc);

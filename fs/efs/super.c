@@ -23,6 +23,7 @@ static int efs_statfs(struct dentry *dentry, struct kstatfs *buf);
 static int efs_init_fs_context(struct fs_context *fc);
 
 static void efs_kill_sb(struct super_block *s)
+	__releases(&s->s_umount)
 {
 	struct efs_sb_info *sbi = SUPER_INFO(s);
 	kill_block_super(s);

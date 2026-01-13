@@ -503,6 +503,7 @@ STATIC int
 xrep_dirtree_delete_path(
 	struct xchk_dirtree		*dl,
 	struct xchk_dirpath		*path)
+	__must_hold(dl->lock)
 {
 	struct xchk_dirpath_step	step;
 	struct xfs_scrub		*sc = dl->sc;
@@ -720,6 +721,7 @@ out_iolock:
 STATIC int
 xrep_dirtree_move_to_orphanage(
 	struct xchk_dirtree		*dl)
+	__must_hold(dl->lock)
 {
 	struct xfs_scrub		*sc = dl->sc;
 	int				error;
@@ -757,6 +759,7 @@ STATIC int
 xrep_dirtree_fix_problems(
 	struct xchk_dirtree		*dl,
 	struct xchk_dirtree_outcomes	*oc)
+	__no_context_analysis
 {
 	struct xchk_dirpath		*path;
 	int				error;

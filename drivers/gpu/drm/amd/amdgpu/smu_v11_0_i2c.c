@@ -609,6 +609,7 @@ static uint32_t smu_v11_0_i2c_write_data(struct i2c_adapter *control,
 }
 
 static void lock_bus(struct i2c_adapter *i2c, unsigned int flags)
+	__acquires(&((struct amdgpu_smu_i2c_bus *)i2c_get_adapdata(i2c))->mutex)
 {
 	struct amdgpu_smu_i2c_bus *smu_i2c = i2c_get_adapdata(i2c);
 	struct amdgpu_device *adev = smu_i2c->adev;
@@ -627,6 +628,7 @@ static int trylock_bus(struct i2c_adapter *i2c, unsigned int flags)
 }
 
 static void unlock_bus(struct i2c_adapter *i2c, unsigned int flags)
+	__releases(&((struct amdgpu_smu_i2c_bus *)i2c_get_adapdata(i2c))->mutex)
 {
 	struct amdgpu_smu_i2c_bus *smu_i2c = i2c_get_adapdata(i2c);
 	struct amdgpu_device *adev = smu_i2c->adev;

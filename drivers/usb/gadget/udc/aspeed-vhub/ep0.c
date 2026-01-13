@@ -27,6 +27,7 @@
 #include "vhub.h"
 
 int ast_vhub_reply(struct ast_vhub_ep *ep, char *ptr, int len)
+	__no_context_analysis
 {
 	struct usb_request *req = &ep->ep0.req.req;
 	int rc;
@@ -77,6 +78,7 @@ int __ast_vhub_simple_reply(struct ast_vhub_ep *ep, int len, ...)
 }
 
 void ast_vhub_ep0_handle_setup(struct ast_vhub_ep *ep)
+	__no_context_analysis
 {
 	struct usb_ctrlrequest crq;
 	enum std_req_rc std_req_rc;

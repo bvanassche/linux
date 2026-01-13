@@ -2399,6 +2399,7 @@ out_free:
 }
 
 static void azx_remove(struct pci_dev *pci)
+	__must_hold(pci->dev.mutex)
 {
 	struct snd_card *card = pci_get_drvdata(pci);
 	struct azx *chip;

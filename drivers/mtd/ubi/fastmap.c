@@ -1487,6 +1487,9 @@ static void return_fm_pebs(struct ubi_device *ubi,
  * Returns 0 on success, < 0 indicates an internal error.
  */
 int ubi_update_fastmap(struct ubi_device *ubi)
+	__releases(&ubi->fm_eba_sem)
+	__releases(&ubi->work_sem)
+	__releases(&ubi->fm_protect)
 {
 	int ret, i, j;
 	struct ubi_fastmap_layout *new_fm, *old_fm;

@@ -25,7 +25,7 @@ static __inline__ struct atalk_iface *atalk_get_interface_idx(loff_t pos)
 }
 
 static void *atalk_seq_interface_start(struct seq_file *seq, loff_t *pos)
-	__acquires(atalk_interfaces_lock)
+	__acquires_shared(&atalk_interfaces_lock)
 {
 	loff_t l = *pos;
 
@@ -51,7 +51,7 @@ out:
 }
 
 static void atalk_seq_interface_stop(struct seq_file *seq, void *v)
-	__releases(atalk_interfaces_lock)
+	__releases_shared(&atalk_interfaces_lock)
 {
 	read_unlock_bh(&atalk_interfaces_lock);
 }
@@ -86,7 +86,7 @@ static __inline__ struct atalk_route *atalk_get_route_idx(loff_t pos)
 }
 
 static void *atalk_seq_route_start(struct seq_file *seq, loff_t *pos)
-	__acquires(atalk_routes_lock)
+	__acquires_shared(&atalk_routes_lock)
 {
 	loff_t l = *pos;
 
@@ -112,7 +112,7 @@ out:
 }
 
 static void atalk_seq_route_stop(struct seq_file *seq, void *v)
-	__releases(atalk_routes_lock)
+	__releases_shared(&atalk_routes_lock)
 {
 	read_unlock_bh(&atalk_routes_lock);
 }
@@ -143,7 +143,7 @@ out:
 }
 
 static void *atalk_seq_socket_start(struct seq_file *seq, loff_t *pos)
-	__acquires(atalk_sockets_lock)
+	__acquires_shared(&atalk_sockets_lock)
 {
 	read_lock_bh(&atalk_sockets_lock);
 	return seq_hlist_start_head(&atalk_sockets, *pos);
@@ -155,7 +155,7 @@ static void *atalk_seq_socket_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void atalk_seq_socket_stop(struct seq_file *seq, void *v)
-	__releases(atalk_sockets_lock)
+	__releases_shared(&atalk_sockets_lock)
 {
 	read_unlock_bh(&atalk_sockets_lock);
 }

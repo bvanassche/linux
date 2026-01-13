@@ -345,7 +345,7 @@ int xe_hw_engine_group_get_mode(struct xe_hw_engine_group *group,
 				enum xe_hw_engine_group_execution_mode new_mode,
 				enum xe_hw_engine_group_execution_mode *previous_mode,
 				struct xe_sync_entry *syncs, int num_syncs)
-__acquires(&group->mode_sem)
+	__cond_acquires_shared(0, &group->mode_sem)
 {
 	bool has_deps = !!num_syncs;
 	int err = down_read_interruptible(&group->mode_sem);
@@ -389,7 +389,7 @@ retry:
  * @group: The hw engine group
  */
 void xe_hw_engine_group_put(struct xe_hw_engine_group *group)
-__releases(&group->mode_sem)
+	__releases_shared(&group->mode_sem)
 {
 	up_read(&group->mode_sem);
 }

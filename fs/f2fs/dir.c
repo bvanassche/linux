@@ -676,6 +676,7 @@ void f2fs_update_dentry(nid_t ino, umode_t mode, struct f2fs_dentry_ptr *d,
 
 int f2fs_add_regular_entry(struct inode *dir, const struct f2fs_filename *fname,
 			   struct inode *inode, nid_t ino, umode_t mode)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned int bit_pos;
 	unsigned int level;

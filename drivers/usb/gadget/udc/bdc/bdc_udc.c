@@ -127,6 +127,7 @@ static void bdc_uspc_connected(struct bdc *bdc)
 
 /* device got disconnected */
 static void bdc_uspc_disconnected(struct bdc *bdc, bool reinit)
+	__no_context_analysis
 {
 	struct bdc_ep *ep;
 
@@ -178,6 +179,7 @@ static void bdc_func_wake_timer(struct work_struct *work)
 
 /* handler for Link state change condition */
 static void handle_link_state_change(struct bdc *bdc, u32 uspc)
+	__no_context_analysis
 {
 	u32 link_state;
 

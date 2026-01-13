@@ -550,6 +550,8 @@ mlxsw_sp1_ptp_unmatched_lookup(struct mlxsw_sp *mlxsw_sp,
 	struct rhlist_head *tmp, *list;
 	int length = 0;
 
+	__assume_ctx_lock(RCU);
+
 	list = rhltable_lookup(&ptp_state->unmatched_ht, &key,
 			       mlxsw_sp1_ptp_unmatched_ht_params);
 	rhl_for_each_entry_rcu(unmatched, tmp, list, ht_node) {

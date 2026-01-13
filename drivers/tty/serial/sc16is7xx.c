@@ -397,6 +397,7 @@ static void sc16is7xx_power(struct uart_port *port, int on)
  * workqueue job in thread context.
  */
 static void sc16is7xx_regs_lock(struct uart_port *port, u8 register_set)
+	__no_context_analysis /* container_of() */
 {
 	struct sc16is7xx_one *one = to_sc16is7xx_one(port);
 
@@ -413,6 +414,7 @@ static void sc16is7xx_regs_lock(struct uart_port *port, u8 register_set)
 }
 
 static void sc16is7xx_regs_unlock(struct uart_port *port)
+	__no_context_analysis /* container_of() */
 {
 	struct sc16is7xx_one *one = to_sc16is7xx_one(port);
 
@@ -542,6 +544,7 @@ static bool sc16is7xx_regmap_noinc(struct device *dev, unsigned int reg)
  *            baud-rate x sampling-rate
  */
 static int sc16is7xx_set_baud(struct uart_port *port, int baud)
+	__no_context_analysis /* container_of() */
 {
 	unsigned int prescaler = 1;
 	unsigned long clk = port->uartclk, div = clk / 16 / baud;
@@ -979,6 +982,7 @@ static void sc16is7xx_break_ctl(struct uart_port *port, int break_state)
 static void sc16is7xx_set_termios(struct uart_port *port,
 				  struct ktermios *termios,
 				  const struct ktermios *old)
+	__no_context_analysis /* container_of() */
 {
 	struct sc16is7xx_one *one = to_sc16is7xx_one(port);
 	unsigned int lcr, flow = 0;
@@ -1458,6 +1462,7 @@ static int sc16is7xx_reset(struct device *dev, struct regmap *regmap)
 
 static int sc16is7xx_setup_channel(struct sc16is7xx_one *one, int i,
 				   bool *port_registered)
+	__no_context_analysis /* container_of() */
 {
 	struct uart_port *port = &one->port;
 	int ret;

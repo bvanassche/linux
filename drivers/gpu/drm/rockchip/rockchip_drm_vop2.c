@@ -138,11 +138,13 @@ static DRM_ENUM_NAME_FN(drm_get_bus_format_name, drm_bus_format_enum_list)
 static const struct regmap_config vop2_regmap_config;
 
 static void vop2_lock(struct vop2 *vop2)
+	__acquires(vop2->vop2_lock)
 {
 	mutex_lock(&vop2->vop2_lock);
 }
 
 static void vop2_unlock(struct vop2 *vop2)
+	__releases(vop2->vop2_lock)
 {
 	mutex_unlock(&vop2->vop2_lock);
 }

@@ -1453,6 +1453,7 @@ static void am65_cpsw_nuss_tx_wake(struct am65_cpsw_tx_chn *tx_chn, struct net_d
 
 static int am65_cpsw_nuss_tx_compl_packets(struct am65_cpsw_common *common,
 					   int chn, unsigned int budget, bool *tdown)
+	__no_context_analysis /* conditional locking */
 {
 	bool single_port = AM65_CPSW_IS_CPSW2G(common);
 	enum am65_cpsw_tx_buf_type buf_type;

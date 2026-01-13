@@ -534,6 +534,7 @@ static int tegra_vde_decode_begin(struct tegra_vde *vde,
 				  struct tegra_video_frame *dpb_frames,
 				  dma_addr_t bitstream_data_addr,
 				  size_t bitstream_data_size)
+	__cond_acquires(0, vde->lock)
 {
 	struct device *dev = vde->dev;
 	unsigned int macroblocks_nb;
@@ -594,6 +595,7 @@ unlock:
 }
 
 static void tegra_vde_decode_abort(struct tegra_vde *vde)
+	__releases(vde->lock)
 {
 	struct device *dev = vde->dev;
 	int err;
@@ -617,6 +619,7 @@ static void tegra_vde_decode_abort(struct tegra_vde *vde)
 }
 
 static int tegra_vde_decode_end(struct tegra_vde *vde)
+	__releases(vde->lock)
 {
 	unsigned int read_bytes, macroblocks_nb;
 	struct device *dev = vde->dev;
@@ -916,6 +919,7 @@ static int tegra_vde_h264_setup_context(struct tegra_ctx *ctx,
 }
 
 int tegra_vde_h264_decode_run(struct tegra_ctx *ctx)
+	__cond_acquires(0, ctx->vde->lock)
 {
 	struct vb2_v4l2_buffer *src = v4l2_m2m_next_src_buf(ctx->fh.m2m_ctx);
 	struct tegra_m2m_buffer *bitstream = vb_to_tegra_buf(&src->vb2_buf);
@@ -938,6 +942,7 @@ int tegra_vde_h264_decode_run(struct tegra_ctx *ctx)
 }
 
 int tegra_vde_h264_decode_wait(struct tegra_ctx *ctx)
+	__releases(ctx->vde->lock)
 {
 	return tegra_vde_decode_end(ctx->vde);
 }

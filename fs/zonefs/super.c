@@ -1334,6 +1334,7 @@ cleanup:
 }
 
 static void zonefs_kill_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct zonefs_sb_info *sbi = ZONEFS_SB(sb);
 

@@ -1752,6 +1752,7 @@ static int damon_sysfs_update_schemes_tried_regions(
  */
 static int damon_sysfs_handle_cmd(enum damon_sysfs_cmd cmd,
 		struct damon_sysfs_kdamond *kdamond)
+	__must_hold(damon_sysfs_lock)
 {
 	if (cmd != DAMON_SYSFS_CMD_OFF && kdamond->contexts->nr != 1)
 		return -EINVAL;

@@ -20,9 +20,11 @@
 void smc_rx_init(struct smc_sock *smc);
 
 int smc_rx_recvmsg(struct smc_sock *smc, struct msghdr *msg,
-		   struct pipe_inode_info *pipe, size_t len, int flags);
+		   struct pipe_inode_info *pipe, size_t len, int flags)
+	__must_hold(&smc->sk);
 int smc_rx_wait(struct smc_sock *smc, long *timeo, size_t peeked,
-		int (*fcrit)(struct smc_connection *conn, size_t baseline));
+		int (*fcrit)(struct smc_connection *conn, size_t baseline))
+	__must_hold(&smc->sk);
 static inline int smc_rx_data_available(struct smc_connection *conn, size_t peeked)
 {
 	return atomic_read(&conn->bytes_to_rcv) - peeked;

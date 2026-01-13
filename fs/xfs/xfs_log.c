@@ -422,6 +422,7 @@ out_error:
 static void
 xlog_state_shutdown_callbacks(
 	struct xlog		*log)
+	__must_hold(&log->l_icloglock)
 {
 	struct xlog_in_core	*iclog;
 	LIST_HEAD(cb_list);
@@ -470,6 +471,7 @@ xlog_state_release_iclog(
 	struct xlog		*log,
 	struct xlog_in_core	*iclog,
 	struct xlog_ticket	*ticket)
+	__must_hold(&log->l_icloglock)
 {
 	bool			last_ref;
 
@@ -745,6 +747,7 @@ xfs_log_mount_cancel(
 static inline int
 xlog_force_iclog(
 	struct xlog_in_core	*iclog)
+	__must_hold(&iclog->ic_log->l_icloglock)
 {
 	atomic_inc(&iclog->ic_refcnt);
 	iclog->ic_flags |= XLOG_ICL_NEED_FLUSH | XLOG_ICL_NEED_FUA;
@@ -858,6 +861,7 @@ xlog_write_unmount_record(
 static void
 xlog_unmount_write(
 	struct xlog		*log)
+	__must_not_hold(&log->l_icloglock)
 {
 	struct xfs_mount	*mp = log->l_mp;
 	struct xlog_in_core	*iclog;
@@ -878,6 +882,8 @@ out_err:
 		xfs_alert(mp, "%s: unmount record failed", __func__);
 
 	spin_lock(&log->l_icloglock);
+	__release(&log->l_icloglock);
+	__acquire(&log->l_iclog->ic_log->l_icloglock);
 	iclog = log->l_iclog;
 	error = xlog_force_iclog(iclog);
 	xlog_wait_on_iclog(iclog);
@@ -2743,6 +2749,7 @@ static int
 xlog_force_and_check_iclog(
 	struct xlog_in_core	*iclog,
 	bool			*completed)
+	__must_hold(&iclog->ic_log->l_icloglock)
 {
 	xfs_lsn_t		lsn = be64_to_cpu(iclog->ic_header->h_lsn);
 	int			error;
@@ -2792,6 +2799,7 @@ int
 xfs_log_force(
 	struct xfs_mount	*mp,
 	uint			flags)
+	__no_context_analysis
 {
 	struct xlog		*log = mp->m_log;
 	struct xlog_in_core	*iclog;
@@ -2880,6 +2888,7 @@ xlog_force_lsn(
 	uint			flags,
 	int			*log_flushed,
 	bool			already_slept)
+	__no_context_analysis
 {
 	struct xlog_in_core	*iclog;
 	bool			completed;

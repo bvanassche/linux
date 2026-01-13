@@ -30,11 +30,13 @@ static char *vpu_type_name(u32 type)
 }
 
 void vpu_inst_lock(struct vpu_inst *inst)
+	__acquires(inst->lock)
 {
 	mutex_lock(&inst->lock);
 }
 
 void vpu_inst_unlock(struct vpu_inst *inst)
+	__releases(inst->lock)
 {
 	mutex_unlock(&inst->lock);
 }
@@ -583,6 +585,7 @@ static void vpu_vb2_buffers_return(struct vpu_inst *inst, unsigned int type,
 }
 
 static int vpu_vb2_start_streaming(struct vb2_queue *q, unsigned int count)
+	__must_hold(&((struct vpu_inst *)vb2_get_drv_priv(q))->lock)
 {
 	struct vpu_inst *inst = vb2_get_drv_priv(q);
 	struct vpu_format *fmt = vpu_get_format(inst, q->type);

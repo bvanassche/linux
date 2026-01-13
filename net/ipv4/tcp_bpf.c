@@ -180,6 +180,7 @@ EXPORT_SYMBOL_GPL(tcp_bpf_sendmsg_redir);
 #ifdef CONFIG_BPF_SYSCALL
 static int tcp_msg_wait_data(struct sock *sk, struct sk_psock *psock,
 			     long timeo)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	int ret = 0;
@@ -402,6 +403,7 @@ unlock:
 
 static int tcp_bpf_send_verdict(struct sock *sk, struct sk_psock *psock,
 				struct sk_msg *msg, int *copied, int flags)
+	__must_hold(sk)
 {
 	bool cork = false, enospc = sk_msg_full(msg), redir_ingress;
 	struct sock *sk_redir;

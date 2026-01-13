@@ -493,6 +493,7 @@ static int posix_cpu_timer_del(struct k_itimer *timer)
 		 */
 		WARN_ON_ONCE(ctmr->head || timerqueue_node_queued(&ctmr->node));
 	} else {
+		__acquire(&p->sighand->siglock);
 		if (timer->it.cpu.firing) {
 			/*
 			 * Prevent signal delivery. The timer cannot be dequeued
@@ -661,6 +662,8 @@ static int posix_cpu_timer_set(struct k_itimer *timer, int timer_flags,
 		rcu_read_unlock();
 		return -ESRCH;
 	}
+
+	__acquire(&p->sighand->siglock);
 
 	/* Retrieve the current expiry time before disarming the timer */
 	old_expires = cpu_timer_getexpires(ctmr);
@@ -1030,6 +1033,8 @@ static void posix_cpu_timer_rearm(struct k_itimer *timer)
 	if (unlikely(sighand == NULL))
 		goto out;
 
+	__acquire(&p->sighand->siglock);
+
 	/*
 	 * Fetch the current sample and update the timer's expiry time.
 	 */
@@ -1144,6 +1149,7 @@ static void posix_cpu_timers_work(struct callback_head *work)
  * protects the timer and the task which is expiring it from being freed.
  */
 static void posix_cpu_timer_wait_running(struct k_itimer *timr)
+	__must_hold_shared(RCU)
 {
 	struct task_struct *tsk = rcu_dereference(timr->it.cpu.handling);
 
@@ -1166,6 +1172,7 @@ static void posix_cpu_timer_wait_running(struct k_itimer *timr)
 }
 
 static void posix_cpu_timer_wait_running_nsleep(struct k_itimer *timr)
+	__must_hold(&timr->it_lock)
 {
 	/* Ensure that timr->it.cpu.handling task cannot go away */
 	rcu_read_lock();
@@ -1274,6 +1281,7 @@ static void posix_cpu_timer_wait_running(struct k_itimer *timr)
 }
 
 static void posix_cpu_timer_wait_running_nsleep(struct k_itimer *timr)
+	__must_hold(&timr->it_lock)
 {
 	spin_unlock_irq(&timr->it_lock);
 	cpu_relax();

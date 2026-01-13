@@ -1895,6 +1895,7 @@ static int dib9000_fe_get_tune_settings(struct dvb_frontend *fe, struct dvb_fron
 
 static int dib9000_get_frontend(struct dvb_frontend *fe,
 				struct dtv_frontend_properties *c)
+	__no_context_analysis /* conditional locking */
 {
 	struct dib9000_state *state = fe->demodulator_priv;
 	u8 index_frontend, sub_index_frontend;

@@ -865,6 +865,7 @@ static const struct i2c_algorithm gmbus_algorithm = {
 
 static void gmbus_lock_bus(struct i2c_adapter *adapter,
 			   unsigned int flags)
+	__acquires(to_intel_gmbus(adapter)->display->gmbus.mutex)
 {
 	struct intel_gmbus *bus = to_intel_gmbus(adapter);
 	struct intel_display *display = bus->display;
@@ -874,6 +875,7 @@ static void gmbus_lock_bus(struct i2c_adapter *adapter,
 
 static int gmbus_trylock_bus(struct i2c_adapter *adapter,
 			     unsigned int flags)
+	__cond_acquires(0, to_intel_gmbus(adapter)->display->gmbus.mutex)
 {
 	struct intel_gmbus *bus = to_intel_gmbus(adapter);
 	struct intel_display *display = bus->display;
@@ -883,6 +885,7 @@ static int gmbus_trylock_bus(struct i2c_adapter *adapter,
 
 static void gmbus_unlock_bus(struct i2c_adapter *adapter,
 			     unsigned int flags)
+	__releases(to_intel_gmbus(adapter)->display->gmbus.mutex)
 {
 	struct intel_gmbus *bus = to_intel_gmbus(adapter);
 	struct intel_display *display = bus->display;

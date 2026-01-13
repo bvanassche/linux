@@ -1108,6 +1108,7 @@ out:
 }
 
 static int xsk_generic_xmit(struct sock *sk)
+	__must_hold_shared(RCU)
 {
 	int ret;
 
@@ -1142,6 +1143,7 @@ static int xsk_check_common(struct xdp_sock *xs)
 }
 
 static int __xsk_sendmsg(struct socket *sock, struct msghdr *m, size_t total_len)
+	__must_hold_shared(RCU)
 {
 	bool need_wait = !(m->msg_flags & MSG_DONTWAIT);
 	struct sock *sk = sock->sk;

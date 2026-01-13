@@ -1036,6 +1036,7 @@ static void i915_ttm_delayed_free(struct drm_i915_gem_object *obj)
 }
 
 static vm_fault_t vm_fault_ttm(struct vm_fault *vmf)
+	__no_context_analysis /* conditional release */
 {
 	struct vm_area_struct *area = vmf->vma;
 	struct ttm_buffer_object *bo = area->vm_private_data;

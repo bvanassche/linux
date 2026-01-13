@@ -46,6 +46,7 @@ static bool
 with_vm_locks(struct ww_acquire_ctx *ticket,
 	      void (*fn)(struct drm_gem_object *obj),
 	      struct drm_gem_object *obj)
+	__no_context_analysis /* locking inside loop */
 {
 	/*
 	 * Track last locked entry for for unwinding locks in error and

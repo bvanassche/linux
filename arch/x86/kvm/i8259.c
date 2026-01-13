@@ -72,6 +72,7 @@ static void pic_unlock(struct kvm_pic *s)
 }
 
 static void pic_clear_isr(struct kvm_kpic_state *s, int irq)
+	__must_hold(&s->pics_state->lock)
 {
 	s->isr &= ~(1 << irq);
 	if (s != &s->pics_state->pics[0])
@@ -212,6 +213,7 @@ int kvm_pic_set_irq(struct kvm_kernel_irq_routing_entry *e, struct kvm *kvm,
  * acknowledge interrupt 'irq'
  */
 static inline void pic_intack(struct kvm_kpic_state *s, int irq)
+	__must_hold(&s->pics_state->lock)
 {
 	s->isr |= 1 << irq;
 	/*
@@ -236,6 +238,8 @@ int kvm_pic_read_irq(struct kvm *kvm)
 	s->output = 0;
 
 	pic_lock(s);
+	__assume_ctx_lock(&kvm->arch.vpic->pics[0].pics_state->lock);
+	__assume_ctx_lock(&kvm->arch.vpic->pics[1].pics_state->lock);
 	irq = pic_get_irq(&s->pics[0]);
 	if (irq >= 0) {
 		pic_intack(&s->pics[0], irq);
@@ -265,6 +269,7 @@ int kvm_pic_read_irq(struct kvm *kvm)
 }
 
 static void kvm_pic_reset(struct kvm_kpic_state *s)
+	__must_hold(&s->pics_state->lock)
 {
 	int irq;
 	unsigned long i;
@@ -300,6 +305,7 @@ static void kvm_pic_reset(struct kvm_kpic_state *s)
 }
 
 static void pic_ioport_write(void *opaque, u32 addr, u32 val)
+	__must_hold(&((struct kvm_kpic_state *)opaque)->pics_state->lock)
 {
 	struct kvm_kpic_state *s = opaque;
 	int priority, cmd, irq;
@@ -393,6 +399,7 @@ static void pic_ioport_write(void *opaque, u32 addr, u32 val)
 }
 
 static u32 pic_poll_read(struct kvm_kpic_state *s, u32 addr1)
+	__must_hold(&s->pics_state->lock)
 {
 	int ret;
 
@@ -418,6 +425,7 @@ static u32 pic_poll_read(struct kvm_kpic_state *s, u32 addr1)
 }
 
 static u32 pic_ioport_read(void *opaque, u32 addr)
+	__must_hold(&((struct kvm_kpic_state *)opaque)->pics_state->lock)
 {
 	struct kvm_kpic_state *s = opaque;
 	int ret;
@@ -461,12 +469,14 @@ static int picdev_write(struct kvm_pic *s,
 	case 0x20:
 	case 0x21:
 		pic_lock(s);
+		__assume_ctx_lock(&s->pics[0].pics_state->lock);
 		pic_ioport_write(&s->pics[0], addr, data);
 		pic_unlock(s);
 		break;
 	case 0xa0:
 	case 0xa1:
 		pic_lock(s);
+		__assume_ctx_lock(&s->pics[1].pics_state->lock);
 		pic_ioport_write(&s->pics[1], addr, data);
 		pic_unlock(s);
 		break;
@@ -498,6 +508,7 @@ static int picdev_read(struct kvm_pic *s,
 	case 0xa0:
 	case 0xa1:
 		pic_lock(s);
+		__assume_ctx_lock(&s->pics[addr >> 7].pics_state->lock);
 		*data = pic_ioport_read(&s->pics[addr >> 7], addr);
 		pic_unlock(s);
 		break;

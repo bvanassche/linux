@@ -476,6 +476,7 @@ static bool rcu_preempt_has_tasks(struct rcu_node *rnp)
  */
 static notrace void
 rcu_preempt_deferred_qs_irqrestore(struct task_struct *t, unsigned long flags)
+	__no_context_analysis
 {
 	bool empty_exp;
 	bool empty_norm;
@@ -1200,6 +1201,7 @@ static int rcu_boost(struct rcu_node *rnp)
 	 * section.
 	 */
 	t = container_of(tb, struct task_struct, rcu_node_entry);
+	__assume_ctx_lock(&rnp->boost_mtx.rtmutex.wait_lock);
 	rt_mutex_init_proxy_locked(&rnp->boost_mtx.rtmutex, t);
 	raw_spin_unlock_irqrestore_rcu_node(rnp, flags);
 	/* Lock only for side effect: boosts task t's priority. */

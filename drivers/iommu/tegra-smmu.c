@@ -681,6 +681,7 @@ static void tegra_smmu_set_pte(struct tegra_smmu_as *as, unsigned long iova,
 static struct tegra_pt *as_get_pde_page(struct tegra_smmu_as *as,
 					unsigned long iova, gfp_t gfp,
 					unsigned long *flags)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned int pde = iova_pd_index(iova);
 	struct tegra_pt *pt = as->pts[pde];

@@ -48,6 +48,7 @@ static const struct mt7530_mib_desc mt7530_mib[] = {
 
 static void
 mt7530_mutex_lock(struct mt7530_priv *priv)
+	__no_context_analysis /* conditional locking */
 {
 	if (priv->bus)
 		mutex_lock_nested(&priv->bus->mdio_lock, MDIO_MUTEX_NESTED);
@@ -55,6 +56,7 @@ mt7530_mutex_lock(struct mt7530_priv *priv)
 
 static void
 mt7530_mutex_unlock(struct mt7530_priv *priv)
+	__no_context_analysis /* conditional locking */
 {
 	if (priv->bus)
 		mutex_unlock(&priv->bus->mdio_lock);

@@ -130,6 +130,7 @@ static void lpc32xx_hsuart_console_putchar(struct uart_port *port, unsigned char
 
 static void lpc32xx_hsuart_console_write(struct console *co, const char *s,
 					 unsigned int count)
+	__no_context_analysis /* conditional locking */
 {
 	struct lpc32xx_hsuart_port *up = &lpc32xx_hs_ports[co->index];
 	unsigned long flags;

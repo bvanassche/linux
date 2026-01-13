@@ -1118,6 +1118,7 @@ int run_unpack(struct runs_tree *run, struct ntfs_sb_info *sbi, CLST ino,
 int run_unpack_ex(struct runs_tree *run, struct ntfs_sb_info *sbi, CLST ino,
 		  CLST svcn, CLST evcn, CLST vcn, const u8 *run_buf,
 		  int run_buf_size)
+	__no_context_analysis /* conditional locking */
 {
 	int ret, err;
 	CLST next_vcn, lcn, len;

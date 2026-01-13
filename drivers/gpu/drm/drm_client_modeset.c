@@ -1239,6 +1239,7 @@ int drm_client_modeset_commit(struct drm_client_dev *client)
 EXPORT_SYMBOL(drm_client_modeset_commit);
 
 static void drm_client_modeset_dpms_legacy(struct drm_client_dev *client, int dpms_mode)
+	__no_context_analysis /* DRM_MODESET_LOCK */
 {
 	struct drm_device *dev = client->dev;
 	struct drm_connector *connector;

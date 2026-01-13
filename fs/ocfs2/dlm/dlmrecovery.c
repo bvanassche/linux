@@ -2884,6 +2884,7 @@ stage2:
 
 int dlm_finalize_reco_handler(struct o2net_msg *msg, u32 len, void *data,
 			      void **ret_data)
+	__must_not_hold(&((struct dlm_ctxt *)data)->spinlock)
 {
 	struct dlm_ctxt *dlm = data;
 	struct dlm_finalize_reco *fr = (struct dlm_finalize_reco *)msg->buf;
@@ -2943,6 +2944,8 @@ int dlm_finalize_reco_handler(struct o2net_msg *msg, u32 len, void *data,
 			spin_unlock(&dlm->spinlock);
 			dlm_kick_recovery_thread(dlm);
 			break;
+		default:
+			__release(&dlm->spinlock);
 	}
 
 	mlog(0, "%s: recovery done, reco master was %u, dead now %u, master now %u\n",

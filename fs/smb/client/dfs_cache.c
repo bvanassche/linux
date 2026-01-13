@@ -682,6 +682,7 @@ static struct cache_entry *cache_refresh_path(const unsigned int xid,
 					      struct cifs_ses *ses,
 					      const char *path,
 					      bool force_refresh)
+	__no_context_analysis /* __cond_acquires_shared(?, &htable_rw_lock) */
 {
 	struct dfs_info3_param *refs = NULL;
 	struct cache_entry *ce;
@@ -868,6 +869,8 @@ int dfs_cache_find(const unsigned int xid, struct cifs_ses *ses, const struct nl
 		rc = PTR_ERR(ce);
 		goto out_free_path;
 	}
+
+	__acquire_shared(&htable_rw_lock);
 
 	if (ref)
 		rc = setup_referral(path, ce, ref, get_tgt_name(ce));
@@ -1199,10 +1202,12 @@ static void refresh_ses_referral(struct cifs_tcon *tcon, struct cifs_ses *ses)
 	}
 
 	ce = cache_refresh_path(xid, ses, path, false);
-	if (!IS_ERR(ce))
+	if (!IS_ERR(ce)) {
+		__acquire_shared(&htable_rw_lock);
 		up_read(&htable_rw_lock);
-	else
+	} else {
 		rc = PTR_ERR(ce);
+	}
 
 out:
 	free_xid(xid);

@@ -187,6 +187,7 @@ static void its_fini_core(void)
 
 #ifdef CONFIG_MODULES
 void its_init_mod(struct module *mod)
+	__no_context_analysis /* conditional locking */
 {
 	if (!cpu_feature_enabled(X86_FEATURE_INDIRECT_THUNK_ITS))
 		return;
@@ -197,6 +198,7 @@ void its_init_mod(struct module *mod)
 }
 
 void its_fini_mod(struct module *mod)
+	__no_context_analysis /* conditional locking */
 {
 	if (!cpu_feature_enabled(X86_FEATURE_INDIRECT_THUNK_ITS))
 		return;
@@ -2544,6 +2546,7 @@ static void text_poke_memset(void *dst, const void *src, size_t len)
 typedef void text_poke_f(void *dst, const void *src, size_t len);
 
 static void *__text_poke(text_poke_f func, void *addr, const void *src, size_t len)
+	__no_context_analysis /* clang bug? */
 {
 	bool cross_page_boundary = offset_in_page(addr) + len > PAGE_SIZE;
 	struct page *pages[2] = {NULL};
@@ -2589,7 +2592,10 @@ static void *__text_poke(text_poke_f func, void *addr, const void *src, size_t l
 	/*
 	 * This must not fail; preallocated in poking_init().
 	 */
-	VM_BUG_ON(!ptep);
+	if (unlikely(!ptep)) {
+		VM_BUG_ON(!ptep);
+		return NULL;
+	}
 
 	local_irq_save(flags);
 

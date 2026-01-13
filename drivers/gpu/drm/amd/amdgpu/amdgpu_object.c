@@ -625,6 +625,7 @@ bool amdgpu_bo_support_uswc(u64 bo_flags)
 int amdgpu_bo_create(struct amdgpu_device *adev,
 			       struct amdgpu_bo_param *bp,
 			       struct amdgpu_bo **bo_ptr)
+	__no_context_analysis /* conditional locking */
 {
 	struct ttm_operation_ctx ctx = {
 		.interruptible = (bp->type != ttm_bo_type_kernel),
@@ -1311,8 +1312,10 @@ void amdgpu_bo_release_notify(struct ttm_buffer_object *bo)
 	 * So when this locking here fails something is wrong with the reference
 	 * counting.
 	 */
-	if (WARN_ON_ONCE(!dma_resv_trylock(&bo->base._resv)))
+	if (!dma_resv_trylock(&bo->base._resv)) {
+		WARN_ON_ONCE(true);
 		return;
+	}
 
 	amdgpu_amdkfd_remove_all_eviction_fences(abo);
 

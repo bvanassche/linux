@@ -595,6 +595,7 @@ static bool is_invalid_gcs_access(struct vm_area_struct *vma, u64 esr)
 
 static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
 				   struct pt_regs *regs)
+	__no_context_analysis /* conditional locking */
 {
 	const struct fault_info *inf;
 	struct mm_struct *mm = current->mm;

@@ -207,6 +207,7 @@ static void __mptcp_pm_send_ack(struct mptcp_sock *msk,
 void mptcp_pm_send_ack(struct mptcp_sock *msk,
 		       struct mptcp_subflow_context *subflow,
 		       bool prio, bool backup)
+	__must_hold(&msk->pm.lock)
 {
 	spin_unlock_bh(&msk->pm.lock);
 	__mptcp_pm_send_ack(msk, subflow, prio, backup);
@@ -745,6 +746,7 @@ void mptcp_pm_add_addr_send_ack(struct mptcp_sock *msk)
 static void mptcp_pm_rm_addr_or_subflow(struct mptcp_sock *msk,
 					const struct mptcp_rm_list *rm_list,
 					enum linux_mptcp_mib_field rm_type)
+	__must_hold(&msk->pm.lock)
 {
 	struct mptcp_subflow_context *subflow, *tmp;
 	struct sock *sk = (struct sock *)msk;
@@ -806,12 +808,14 @@ static void mptcp_pm_rm_addr_or_subflow(struct mptcp_sock *msk,
 }
 
 static void mptcp_pm_rm_addr_recv(struct mptcp_sock *msk)
+	__must_hold(&msk->pm.lock)
 {
 	mptcp_pm_rm_addr_or_subflow(msk, &msk->pm.rm_list_rx, MPTCP_MIB_RMADDR);
 }
 
 void mptcp_pm_rm_subflow(struct mptcp_sock *msk,
 			 const struct mptcp_rm_list *rm_list)
+	__must_hold(&msk->pm.lock)
 {
 	mptcp_pm_rm_addr_or_subflow(msk, rm_list, MPTCP_MIB_RMSUBFLOW);
 }

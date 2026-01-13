@@ -1372,6 +1372,7 @@ EXPORT_SYMBOL_GPL(kthread_flush_work);
  */
 static void kthread_cancel_delayed_work_timer(struct kthread_work *work,
 					      unsigned long *flags)
+	__no_context_analysis /* container_of() */
 {
 	struct kthread_delayed_work *dwork =
 		container_of(work, struct kthread_delayed_work, work);

@@ -2728,6 +2728,8 @@ mlxsw_sp_sample_trigger_params_lookup(struct mlxsw_sp *mlxsw_sp,
 	struct mlxsw_sp_sample_trigger_node *trigger_node;
 	struct mlxsw_sp_sample_trigger key;
 
+	__assume_ctx_lock(RCU);
+
 	mlxsw_sp_sample_trigger_key_init(&key, trigger);
 	trigger_node = rhashtable_lookup(&mlxsw_sp->sample_trigger_ht, &key,
 					 mlxsw_sp_sample_trigger_ht_params);

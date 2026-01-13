@@ -1787,6 +1787,7 @@ static int btrfs_find_all_roots_safe(struct btrfs_backref_walk_ctx *ctx)
 
 int btrfs_find_all_roots(struct btrfs_backref_walk_ctx *ctx,
 			 bool skip_commit_root_sem)
+	__no_context_analysis
 {
 	int ret;
 
@@ -1843,6 +1844,7 @@ void btrfs_free_backref_share_ctx(struct btrfs_backref_share_check_ctx *ctx)
 int btrfs_is_data_extent_shared(struct btrfs_inode *inode, u64 bytenr,
 				u64 extent_gen,
 				struct btrfs_backref_share_check_ctx *ctx)
+	__no_context_analysis
 {
 	struct btrfs_backref_walk_ctx walk_ctx = { 0 };
 	struct btrfs_root *root = inode->root;
@@ -2410,6 +2412,7 @@ static int iterate_leaf_refs(struct btrfs_fs_info *fs_info,
 int iterate_extent_inodes(struct btrfs_backref_walk_ctx *ctx,
 			  bool search_commit_root,
 			  iterate_extent_inodes_t *iterate, void *user_ctx)
+	__no_context_analysis
 {
 	int ret;
 	struct ulist *refs;

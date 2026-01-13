@@ -438,6 +438,7 @@ fail:
  * @dev: Device to run the callback for.
  */
 static int rpm_callback(int (*cb)(struct device *), struct device *dev)
+	__must_hold(&dev->power.lock)
 {
 	int retval;
 
@@ -489,6 +490,7 @@ static int rpm_callback(int (*cb)(struct device *), struct device *dev)
  * This function must be called under dev->power.lock with interrupts disabled.
  */
 static int rpm_idle(struct device *dev, int rpmflags)
+	__must_hold(&dev->power.lock)
 {
 	int (*callback)(struct device *);
 	int retval;
@@ -1422,6 +1424,7 @@ EXPORT_SYMBOL_GPL(__pm_runtime_set_status);
  * Should be called under dev->power.lock with interrupts disabled.
  */
 static void __pm_runtime_barrier(struct device *dev)
+	__must_hold(&dev->power.lock)
 {
 	pm_runtime_deactivate_timer(dev);
 
@@ -1760,6 +1763,7 @@ EXPORT_SYMBOL_GPL(pm_runtime_irq_safe);
  * This function must be called under dev->power.lock with interrupts disabled.
  */
 static void update_autosuspend(struct device *dev, int old_delay, int old_use)
+	__must_hold(&dev->power.lock)
 {
 	int delay = dev->power.autosuspend_delay;
 

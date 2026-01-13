@@ -645,12 +645,16 @@ static void dm_exception_table_lock_init(struct dm_snapshot *s, chunk_t chunk,
 }
 
 static void dm_exception_table_lock(struct dm_exception_table_lock *lock)
+	__acquires(lock->complete_slot)
+	__acquires(lock->pending_slot)
 {
 	spin_lock_nested(lock->complete_slot, 1);
 	spin_lock_nested(lock->pending_slot, 2);
 }
 
 static void dm_exception_table_unlock(struct dm_exception_table_lock *lock)
+	__releases(lock->pending_slot)
+	__releases(lock->complete_slot)
 {
 	spin_unlock(lock->pending_slot);
 	spin_unlock(lock->complete_slot);
@@ -1529,6 +1533,7 @@ static void account_end_copy(struct dm_snapshot *s)
 }
 
 static bool wait_for_in_progress(struct dm_snapshot *s, bool unlock_origins)
+	__no_context_analysis /* conditional locking */
 {
 	if (unlikely(s->in_progress > cow_threshold)) {
 		spin_lock(&s->in_progress_wait.lock);
@@ -2557,8 +2562,10 @@ again:
 			struct dm_snapshot *s;
 
 			list_for_each_entry(s, &o->snapshots, list)
-				if (unlikely(!wait_for_in_progress(s, true)))
+				if (unlikely(!wait_for_in_progress(s, true))) {
+					__release_shared(&_origins_lock);
 					goto again;
+				}
 		}
 
 		r = __origin_write(&o->snapshots, bio->bi_iter.bi_sector, bio);

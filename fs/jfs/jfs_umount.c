@@ -36,6 +36,7 @@
  * RETURN :	EBUSY	- device has open files
  */
 int jfs_umount(struct super_block *sb)
+	__context_unsafe(conditional locking)
 {
 	struct jfs_sb_info *sbi = JFS_SBI(sb);
 	struct inode *ipbmap = sbi->ipbmap;

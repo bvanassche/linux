@@ -415,12 +415,14 @@ DECLARE_STATIC_KEY_FALSE(enetc_has_err050089);
  * minimize the overhead of the lock
  */
 static inline void enetc_lock_mdio(void)
+	__no_context_analysis /* conditional locking */
 {
 	if (static_branch_unlikely(&enetc_has_err050089))
 		read_lock(&enetc_mdio_lock);
 }
 
 static inline void enetc_unlock_mdio(void)
+	__no_context_analysis /* conditional locking */
 {
 	if (static_branch_unlikely(&enetc_has_err050089))
 		read_unlock(&enetc_mdio_lock);

@@ -227,6 +227,7 @@ static unsigned int unix_abstract_hash(struct sockaddr_un *sunaddr,
 
 static void unix_table_double_lock(struct net *net,
 				   unsigned int hash1, unsigned int hash2)
+	__no_context_analysis /* conditional locking */
 {
 	if (hash1 == hash2) {
 		spin_lock(&net->unx.table.locks[hash1]);
@@ -242,6 +243,7 @@ static void unix_table_double_lock(struct net *net,
 
 static void unix_table_double_unlock(struct net *net,
 				     unsigned int hash1, unsigned int hash2)
+	__no_context_analysis /* conditional locking */
 {
 	if (hash1 == hash2) {
 		spin_unlock(&net->unx.table.locks[hash1]);
@@ -1483,6 +1485,7 @@ static int unix_bind(struct socket *sock, struct sockaddr_unsized *uaddr, int ad
 }
 
 static void unix_state_double_lock(struct sock *sk1, struct sock *sk2)
+	__no_context_analysis
 {
 	if (unlikely(sk1 == sk2) || !sk2) {
 		unix_state_lock(sk1);
@@ -1497,6 +1500,7 @@ static void unix_state_double_lock(struct sock *sk1, struct sock *sk2)
 }
 
 static void unix_state_double_unlock(struct sock *sk1, struct sock *sk2)
+	__no_context_analysis
 {
 	if (unlikely(sk1 == sk2) || !sk2) {
 		unix_state_unlock(sk1);
@@ -1605,6 +1609,7 @@ out:
 }
 
 static long unix_wait_for_peer(struct sock *other, long timeo)
+	__releases(&unix_sk(other)->lock)
 {
 	struct unix_sock *u = unix_sk(other);
 	int sched;
@@ -1627,6 +1632,7 @@ static long unix_wait_for_peer(struct sock *other, long timeo)
 
 static int unix_stream_connect(struct socket *sock, struct sockaddr_unsized *uaddr,
 			       int addr_len, int flags)
+	__no_context_analysis /* too complex for static analysis */
 {
 	struct sockaddr_un *sunaddr = (struct sockaddr_un *)uaddr;
 	struct sock *sk = sock->sk, *newsk = NULL, *other = NULL;
@@ -2086,6 +2092,7 @@ static void unix_orphan_scm(struct sock *sk, struct sk_buff *skb)
 
 static int unix_dgram_sendmsg(struct socket *sock, struct msghdr *msg,
 			      size_t len)
+	__no_context_analysis /* too complex for static analysis */
 {
 	struct sock *sk = sock->sk, *other = NULL;
 	struct unix_sock *u = unix_sk(sk);
@@ -2565,6 +2572,7 @@ static void unix_copy_addr(struct msghdr *msg, struct sock *sk)
 
 int __unix_dgram_recvmsg(struct sock *sk, struct msghdr *msg, size_t size,
 			 int flags)
+	__no_context_analysis /* too complex for static analysis */
 {
 	struct scm_cookie scm;
 	struct socket *sock = sk->sk_socket;
@@ -3491,6 +3499,7 @@ static struct sock *unix_from_bucket(struct seq_file *seq, loff_t *pos)
 }
 
 static struct sock *unix_get_first(struct seq_file *seq, loff_t *pos)
+	__no_context_analysis /* __cond_acquires(nonnull, ?) */
 {
 	unsigned long bucket = get_bucket(*pos);
 	struct net *net = seq_file_net(seq);
@@ -3513,6 +3522,7 @@ static struct sock *unix_get_first(struct seq_file *seq, loff_t *pos)
 
 static struct sock *unix_get_next(struct seq_file *seq, struct sock *sk,
 				  loff_t *pos)
+	__no_context_analysis /* __must_hold(?) */
 {
 	unsigned long bucket = get_bucket(*pos);
 
@@ -3547,6 +3557,7 @@ static void *unix_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void unix_seq_stop(struct seq_file *seq, void *v)
+	__no_context_analysis
 {
 	struct sock *sk = v;
 
@@ -3636,7 +3647,7 @@ static int unix_prog_seq_show(struct bpf_prog *prog, struct bpf_iter_meta *meta,
 }
 
 static int bpf_iter_unix_hold_batch(struct seq_file *seq, struct sock *start_sk)
-
+	__no_context_analysis
 {
 	struct bpf_unix_iter_state *iter = seq->private;
 	unsigned int expected = 1;

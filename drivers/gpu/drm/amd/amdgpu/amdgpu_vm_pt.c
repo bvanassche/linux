@@ -497,6 +497,7 @@ static int amdgpu_vm_pt_alloc(struct amdgpu_device *adev,
 			      struct amdgpu_vm *vm,
 			      struct amdgpu_vm_pt_cursor *cursor,
 			      bool immediate)
+	__must_hold(vm->eviction_lock)
 {
 	struct amdgpu_vm_bo_base *entry = cursor->entry;
 	struct amdgpu_bo *pt_bo;

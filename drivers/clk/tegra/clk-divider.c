@@ -87,6 +87,7 @@ static int clk_frac_div_determine_rate(struct clk_hw *hw,
 
 static int clk_frac_div_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_frac_div *divider = to_clk_frac_div(hw);
 	int div;

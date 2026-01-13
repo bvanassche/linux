@@ -815,6 +815,7 @@ static inline bool __must_check tdp_mmu_iter_need_resched(struct kvm *kvm,
 static inline bool __must_check tdp_mmu_iter_cond_resched(struct kvm *kvm,
 							  struct tdp_iter *iter,
 							  bool flush, bool shared)
+	__no_context_analysis /* conditional locking */
 {
 	KVM_MMU_WARN_ON(iter->yielded);
 
@@ -1062,6 +1063,7 @@ void kvm_tdp_mmu_zap_all(struct kvm *kvm)
  * zap" completes.
  */
 void kvm_tdp_mmu_zap_invalidated_roots(struct kvm *kvm, bool shared)
+	__no_context_analysis /* conditional locking */
 {
 	struct kvm_mmu_page *root;
 
@@ -1559,6 +1561,7 @@ static int tdp_mmu_split_huge_pages_root(struct kvm *kvm,
 					 struct kvm_mmu_page *root,
 					 gfn_t start, gfn_t end,
 					 int target_level, bool shared)
+	__no_context_analysis /* conditional locking */
 {
 	struct kvm_mmu_page *sp = NULL;
 	struct tdp_iter iter;
@@ -1641,6 +1644,7 @@ void kvm_tdp_mmu_try_split_huge_pages(struct kvm *kvm,
 				      const struct kvm_memory_slot *slot,
 				      gfn_t start, gfn_t end,
 				      int target_level, bool shared)
+	__must_hold(&kvm->mmu_lock)
 {
 	struct kvm_mmu_page *root;
 	int r = 0;

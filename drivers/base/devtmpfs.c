@@ -74,6 +74,7 @@ static struct file_system_type internal_fs_type = {
 
 /* Simply take a ref on the existing mount */
 static int devtmpfs_get_tree(struct fs_context *fc)
+	__acquires(&mnt->mnt_sb->s_umount)
 {
 	struct super_block *sb = mnt->mnt_sb;
 

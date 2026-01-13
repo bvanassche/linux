@@ -384,6 +384,7 @@ static void drm_log_write_thread(struct console *con, struct nbcon_write_context
 }
 
 static void drm_log_lock(struct console *con, unsigned long *flags)
+	__acquires(&console_to_drm_log(con)->lock)
 {
 	struct drm_log *dlog = console_to_drm_log(con);
 
@@ -392,6 +393,7 @@ static void drm_log_lock(struct console *con, unsigned long *flags)
 }
 
 static void drm_log_unlock(struct console *con, unsigned long flags)
+	__releases(&console_to_drm_log(con)->lock)
 {
 	struct drm_log *dlog = console_to_drm_log(con);
 

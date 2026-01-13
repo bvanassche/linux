@@ -709,6 +709,7 @@ static int restore_dsp_settings(struct echoaudio *chip)
 	if (err < 0)
 		return err;
 
+	__assume_ctx_lock(&chip->lock);
 	err = set_sample_rate(chip, chip->sample_rate);
 	if (err < 0)
 		return err;

@@ -432,6 +432,7 @@ static void vbg_pci_remove(struct pci_dev *pci)
 }
 
 struct vbg_dev *vbg_get_gdev(void)
+	__no_context_analysis /* __cond_acquires() does not support pointers */
 {
 	mutex_lock(&vbg_gdev_mutex);
 
@@ -449,6 +450,7 @@ struct vbg_dev *vbg_get_gdev(void)
 EXPORT_SYMBOL(vbg_get_gdev);
 
 void vbg_put_gdev(struct vbg_dev *gdev)
+	__no_context_analysis /* see also vbg_get_gdev() */
 {
 	WARN_ON(gdev != vbg_gdev);
 	mutex_unlock(&vbg_gdev_mutex);

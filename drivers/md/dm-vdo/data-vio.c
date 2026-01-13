@@ -957,6 +957,7 @@ static void wait_permit(struct limiter *limiter, struct bio *bio)
  * This will block if data_vios or discard permits are not available.
  */
 void vdo_launch_bio(struct data_vio_pool *pool, struct bio *bio)
+	__no_context_analysis
 {
 	struct data_vio *data_vio;
 

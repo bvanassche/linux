@@ -682,6 +682,7 @@ static void ar933x_uart_console_putchar(struct uart_port *port, unsigned char ch
 
 static void ar933x_uart_console_write(struct console *co, const char *s,
 				      unsigned int count)
+	__no_context_analysis /* conditional locking */
 {
 	struct ar933x_uart_port *up = ar933x_console_ports[co->index];
 	unsigned long flags;

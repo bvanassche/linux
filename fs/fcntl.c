@@ -258,6 +258,7 @@ static int f_setown_ex(struct file *filp, unsigned long arg)
 }
 
 static int f_getown_ex(struct file *filp, unsigned long arg)
+	__no_context_analysis /* conditional locking */
 {
 	struct f_owner_ex __user *owner_p = (void __user *)arg;
 	struct f_owner_ex owner = {};

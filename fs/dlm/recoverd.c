@@ -109,7 +109,7 @@ static int enable_locking(struct dlm_ls *ls, uint64_t seq)
 		 */
 		resume_scan_timer(ls);
 		/* unblocks processes waiting to enter the dlm */
-		up_write(&ls->ls_in_recovery);
+		context_unsafe(up_write(&ls->ls_in_recovery));
 		clear_bit(LSFL_RECOVER_LOCK, &ls->ls_flags);
 		error = 0;
 	}
@@ -388,6 +388,7 @@ static void do_ls_recovery(struct dlm_ls *ls)
 }
 
 static int dlm_recoverd(void *arg)
+	__no_context_analysis
 {
 	struct dlm_ls *ls;
 
@@ -456,12 +457,14 @@ void dlm_recoverd_stop(struct dlm_ls *ls)
 }
 
 void dlm_recoverd_suspend(struct dlm_ls *ls)
+	__acquires(ls->ls_recoverd_active)
 {
 	wake_up(&ls->ls_wait_general);
 	mutex_lock(&ls->ls_recoverd_active);
 }
 
 void dlm_recoverd_resume(struct dlm_ls *ls)
+	__releases(ls->ls_recoverd_active)
 {
 	mutex_unlock(&ls->ls_recoverd_active);
 }

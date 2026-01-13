@@ -239,6 +239,7 @@ int virtio_gpu_array_lock_resv(struct virtio_gpu_object_array *objs)
 }
 
 void virtio_gpu_array_unlock_resv(struct virtio_gpu_object_array *objs)
+	__no_context_analysis
 {
 	if (objs->nents == 1) {
 		dma_resv_unlock(objs->objs[0]->resv);

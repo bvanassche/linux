@@ -90,6 +90,7 @@ static struct inet_peer *lookup(const struct inetpeer_addr *daddr,
 				unsigned int *gc_cnt,
 				struct rb_node **parent_p,
 				struct rb_node ***pp_p)
+	__no_context_analysis
 {
 	struct rb_node **pp, *parent, *next;
 	struct inet_peer *p;
@@ -168,6 +169,7 @@ static void inet_peer_gc(struct inet_peer_base *base,
 /* Must be called under RCU : No refcount change is done here. */
 struct inet_peer *inet_getpeer(struct inet_peer_base *base,
 			       const struct inetpeer_addr *daddr)
+	__no_context_analysis
 {
 	struct inet_peer *p, *gc_stack[PEER_MAX_GC];
 	struct rb_node **pp, *parent;

@@ -32,10 +32,12 @@ netdev_napi_by_id_lock(struct net *net, unsigned int napi_id);
 struct net_device *dev_get_by_napi_id(unsigned int napi_id);
 
 struct net_device *netdev_put_lock(struct net_device *dev, struct net *net,
-				   netdevice_tracker *tracker);
+				   netdevice_tracker *tracker)
+	__cond_acquires(nonnull, &dev->lock);
 
 static inline struct net_device *
 __netdev_put_lock(struct net_device *dev, struct net *net)
+	__cond_acquires(nonnull, &dev->lock)
 {
 	return netdev_put_lock(dev, net, NULL);
 }
@@ -177,6 +179,7 @@ void unregister_netdevice_many_notify(struct list_head *head,
 				      u32 portid, const struct nlmsghdr *nlh);
 
 static inline void netif_set_up(struct net_device *dev, bool value)
+	__no_context_analysis /* conditional locking */
 {
 	if (value)
 		dev->flags |= IFF_UP;

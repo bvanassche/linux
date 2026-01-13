@@ -240,6 +240,7 @@ static void handle_fault_error_nolock(struct pt_regs *regs, int si_code)
 }
 
 static void handle_fault_error(struct pt_regs *regs, int si_code)
+	__releases_shared(&current->mm->mmap_lock)
 {
 	struct mm_struct *mm = current->mm;
 
@@ -264,6 +265,7 @@ static void do_sigbus(struct pt_regs *regs)
  *   3b       Region third trans.  ->  Not present	 (nullification)
  */
 static void do_exception(struct pt_regs *regs, int access)
+	__context_unsafe(conditional unlocking)
 {
 	struct vm_area_struct *vma;
 	unsigned long address;

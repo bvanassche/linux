@@ -1259,6 +1259,7 @@ static struct dlm_msg *dlm_lowcomms_new_msg_con(struct connection *con, int len,
 #ifndef __CHECKER__
 struct dlm_msg *dlm_lowcomms_new_msg(int nodeid, int len, char **ppc,
 				     void (*cb)(void *data), void *data)
+	__cond_acquires_shared(nonnull, &connections_srcu)
 {
 	struct connection *con;
 	struct dlm_msg *msg;
@@ -1321,6 +1322,7 @@ out:
  */
 #ifndef __CHECKER__
 void dlm_lowcomms_commit_msg(struct dlm_msg *msg)
+	__releases_shared(&connections_srcu)
 {
 	_dlm_lowcomms_commit_msg(msg);
 	srcu_read_unlock(&connections_srcu, msg->idx);

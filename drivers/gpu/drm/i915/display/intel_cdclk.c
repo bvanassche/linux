@@ -2613,6 +2613,7 @@ static void intel_pcode_notify(struct intel_display *display,
 static void intel_set_cdclk(struct intel_display *display,
 			    const struct intel_cdclk_config *cdclk_config,
 			    enum pipe pipe, const char *context)
+	__no_context_analysis /* mutex calls inside a loop */
 {
 	struct intel_encoder *encoder;
 

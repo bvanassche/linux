@@ -3246,11 +3246,13 @@ __bpf_kfunc void *bpf_rdonly_cast(const void *obj__ign, u32 btf_id__k)
 }
 
 __bpf_kfunc void bpf_rcu_read_lock(void)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 }
 
 __bpf_kfunc void bpf_rcu_read_unlock(void)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

@@ -805,6 +805,7 @@ bool aa_label_remove(struct aa_label *label)
  *     else @old was not in tree, and @new was not inserted
  */
 bool aa_label_replace(struct aa_label *old, struct aa_label *new)
+	__no_context_analysis /* too complex for static analysis */
 {
 	unsigned long flags;
 	bool res;

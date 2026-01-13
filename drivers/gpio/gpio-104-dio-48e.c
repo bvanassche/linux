@@ -122,7 +122,8 @@ struct dio48e_gpio {
 	unsigned int irq_mask;
 };
 
-static void dio48e_regmap_lock(void *lock_arg) __acquires(&dio48egpio->lock)
+static void dio48e_regmap_lock(void *lock_arg)
+	__acquires(&((struct dio48e_gpio *)lock_arg)->lock)
 {
 	struct dio48e_gpio *const dio48egpio = lock_arg;
 	unsigned long flags;
@@ -131,14 +132,16 @@ static void dio48e_regmap_lock(void *lock_arg) __acquires(&dio48egpio->lock)
 	dio48egpio->flags = flags;
 }
 
-static void dio48e_regmap_unlock(void *lock_arg) __releases(&dio48egpio->lock)
+static void dio48e_regmap_unlock(void *lock_arg)
+	__releases(&((struct dio48e_gpio *)lock_arg)->lock)
 {
 	struct dio48e_gpio *const dio48egpio = lock_arg;
 
 	raw_spin_unlock_irqrestore(&dio48egpio->lock, dio48egpio->flags);
 }
 
-static void pit_regmap_lock(void *lock_arg) __acquires(&dio48egpio->lock)
+static void pit_regmap_lock(void *lock_arg)
+	__acquires(&((struct dio48e_gpio *)lock_arg)->lock)
 {
 	struct dio48e_gpio *const dio48egpio = lock_arg;
 	unsigned long flags;
@@ -149,7 +152,8 @@ static void pit_regmap_lock(void *lock_arg) __acquires(&dio48egpio->lock)
 	iowrite8(0x00, dio48egpio->regs + DIO48E_ENABLE_COUNTER_TIMER_ADDRESSING);
 }
 
-static void pit_regmap_unlock(void *lock_arg) __releases(&dio48egpio->lock)
+static void pit_regmap_unlock(void *lock_arg)
+	__releases(&((struct dio48e_gpio *)lock_arg)->lock)
 {
 	struct dio48e_gpio *const dio48egpio = lock_arg;
 

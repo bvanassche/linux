@@ -2365,6 +2365,7 @@ static int bitmap_get_stats(void *data, struct md_bitmap_stats *stats)
 
 static int __bitmap_resize(struct bitmap *bitmap, sector_t blocks,
 			   int chunksize, bool init)
+	__no_context_analysis
 {
 	/* If chunk_size is 0, choose an appropriate chunk size.
 	 * Then possibly allocate new storage space.

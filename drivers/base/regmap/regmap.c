@@ -442,19 +442,21 @@ static void regmap_lock_unlock_none(void *__map)
 }
 
 static void regmap_lock_mutex(void *__map)
+	__acquires(((struct regmap *)__map)->mutex)
 {
 	struct regmap *map = __map;
 	mutex_lock(&map->mutex);
 }
 
 static void regmap_unlock_mutex(void *__map)
+	__releases(((struct regmap *)__map)->mutex)
 {
 	struct regmap *map = __map;
 	mutex_unlock(&map->mutex);
 }
 
 static void regmap_lock_spinlock(void *__map)
-__acquires(&map->spinlock)
+	__acquires(((struct regmap *)__map)->spinlock)
 {
 	struct regmap *map = __map;
 	unsigned long flags;
@@ -464,14 +466,14 @@ __acquires(&map->spinlock)
 }
 
 static void regmap_unlock_spinlock(void *__map)
-__releases(&map->spinlock)
+	__releases(&((struct regmap *)__map)->spinlock)
 {
 	struct regmap *map = __map;
 	spin_unlock_irqrestore(&map->spinlock, map->spinlock_flags);
 }
 
 static void regmap_lock_raw_spinlock(void *__map)
-__acquires(&map->raw_spinlock)
+	__acquires(&((struct regmap *)__map)->raw_spinlock)
 {
 	struct regmap *map = __map;
 	unsigned long flags;
@@ -481,7 +483,7 @@ __acquires(&map->raw_spinlock)
 }
 
 static void regmap_unlock_raw_spinlock(void *__map)
-__releases(&map->raw_spinlock)
+	__releases(&((struct regmap *)__map)->raw_spinlock)
 {
 	struct regmap *map = __map;
 	raw_spin_unlock_irqrestore(&map->raw_spinlock, map->raw_spinlock_flags);

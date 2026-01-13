@@ -2156,6 +2156,7 @@ static void lan78xx_irq_unmask(struct irq_data *irqd)
 }
 
 static void lan78xx_irq_bus_lock(struct irq_data *irqd)
+	__acquires(&((struct irq_domain_data *)irq_data_get_irq_chip_data(irqd))->irq_lock)
 {
 	struct irq_domain_data *data = irq_data_get_irq_chip_data(irqd);
 
@@ -2163,6 +2164,7 @@ static void lan78xx_irq_bus_lock(struct irq_data *irqd)
 }
 
 static void lan78xx_irq_bus_sync_unlock(struct irq_data *irqd)
+	__releases(&((struct irq_domain_data *)irq_data_get_irq_chip_data(irqd))->irq_lock)
 {
 	struct irq_domain_data *data = irq_data_get_irq_chip_data(irqd);
 	struct lan78xx_net *dev =

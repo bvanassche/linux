@@ -26,6 +26,7 @@
  */
 struct key *request_trusted_key(const char *trusted_desc,
 				const u8 **master_key, size_t *master_keylen)
+	__no_context_analysis /* returns ERR_PTR() */
 {
 	struct trusted_key_payload *tpayload;
 	struct key *tkey;

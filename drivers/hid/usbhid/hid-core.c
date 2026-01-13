@@ -523,6 +523,7 @@ static void hid_ctrl(struct urb *urb)
 
 static void __usbhid_submit_report(struct hid_device *hid, struct hid_report *report,
 				   unsigned char dir)
+	__must_hold(&((struct usbhid_device *)hid->driver_data)->lock)
 {
 	int head;
 	struct usbhid_device *usbhid = hid->driver_data;

@@ -265,7 +265,9 @@ static u32 mgr_fld_read(enum omap_channel channel, enum mgr_reg_fields regfld)
 }
 
 static void mgr_fld_write(enum omap_channel channel,
-					enum mgr_reg_fields regfld, int val) {
+					enum mgr_reg_fields regfld, int val)
+	__no_context_analysis /* conditional locking */
+{
 	const struct dispc_reg_field rfld = mgr_desc[channel].reg_desc[regfld];
 	const bool need_lock = rfld.reg == DISPC_CONTROL || rfld.reg == DISPC_CONFIG;
 	unsigned long flags;

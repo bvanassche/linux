@@ -110,6 +110,7 @@ void afs_break_callback(struct afs_vnode *vnode, enum afs_cb_break_reason reason
  */
 static struct afs_volume *afs_lookup_volume_rcu(struct afs_cell *cell,
 						afs_volid_t vid)
+	__no_context_analysis
 {
 	struct afs_volume *volume = NULL;
 	struct rb_node *p;
@@ -157,7 +158,7 @@ static struct afs_volume *afs_lookup_volume_rcu(struct afs_cell *cell,
  */
 static void afs_break_volume_callback(struct afs_server *server,
 				      struct afs_volume *volume)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	struct afs_server_list *slist = rcu_dereference(volume->servers);
 	unsigned int i, cb_v_break;

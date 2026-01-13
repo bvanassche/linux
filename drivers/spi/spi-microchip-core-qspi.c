@@ -605,6 +605,7 @@ static const struct spi_controller_mem_caps mchp_coreqspi_mem_caps = {
 };
 
 static int mchp_coreqspi_unprepare_message(struct spi_controller *ctlr, struct spi_message *m)
+	__releases(&((struct mchp_coreqspi *)spi_controller_get_devdata(ctlr))->op_lock)
 {
 	struct mchp_coreqspi *qspi = spi_controller_get_devdata(ctlr);
 
@@ -620,6 +621,7 @@ static int mchp_coreqspi_unprepare_message(struct spi_controller *ctlr, struct s
 }
 
 static int mchp_coreqspi_prepare_message(struct spi_controller *ctlr, struct spi_message *m)
+	__cond_acquires(0, &((struct mchp_coreqspi *)spi_controller_get_devdata(ctlr))->op_lock)
 {
 	struct mchp_coreqspi *qspi = spi_controller_get_devdata(ctlr);
 	struct spi_transfer *t = NULL;

@@ -646,6 +646,7 @@ static inline void deadline_queue_pull_task(struct rq *rq)
 static struct rq *find_lock_later_rq(struct task_struct *task, struct rq *rq);
 
 static struct rq *dl_task_offline_migration(struct rq *rq, struct task_struct *p)
+	__no_context_analysis /* too complex for static analysis */
 {
 	struct rq *later_rq = NULL;
 	struct dl_bw *dl_b;
@@ -1208,6 +1209,7 @@ static enum hrtimer_restart dl_server_timer(struct hrtimer *timer, struct sched_
  * next call to enqueue_task_dl().
  */
 static enum hrtimer_restart dl_task_timer(struct hrtimer *timer)
+	__no_context_analysis
 {
 	struct sched_dl_entity *dl_se = container_of(timer,
 						     struct sched_dl_entity,
@@ -1955,6 +1957,7 @@ static void update_curr_dl(struct rq *rq)
 }
 
 static enum hrtimer_restart inactive_task_timer(struct hrtimer *timer)
+	__no_context_analysis /* conditional locking */
 {
 	struct sched_dl_entity *dl_se = container_of(timer,
 						     struct sched_dl_entity,
@@ -2835,6 +2838,7 @@ static struct task_struct *pick_next_pushable_dl_task(struct rq *rq)
 
 /* Locks the rq it finds */
 static struct rq *find_lock_later_rq(struct task_struct *task, struct rq *rq)
+	__no_context_analysis /* too complex for static analysis */
 {
 	struct rq *later_rq = NULL;
 	int tries;
@@ -2919,6 +2923,7 @@ static struct rq *find_lock_later_rq(struct task_struct *task, struct rq *rq)
  * and start executing.
  */
 static int push_dl_task(struct rq *rq)
+	__no_context_analysis /* too complex for static analysis */
 {
 	struct task_struct *next_task;
 	struct rq *later_rq;
@@ -2999,6 +3004,7 @@ static void push_dl_tasks(struct rq *rq)
 }
 
 static void pull_dl_task(struct rq *this_rq)
+	__no_context_analysis /* too complex for static analysis */
 {
 	int this_cpu = this_rq->cpu, cpu;
 	struct task_struct *p, *push_task;

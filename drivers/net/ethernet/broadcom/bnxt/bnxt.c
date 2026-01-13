@@ -14371,6 +14371,7 @@ bnxt_restart_timer:
 }
 
 static void bnxt_lock_sp(struct bnxt *bp)
+	__acquires(&bp->dev->lock)
 {
 	/* We are called from bnxt_sp_task which has BNXT_STATE_IN_SP_TASK
 	 * set.  If the device is being closed, bnxt_close() may be holding
@@ -14383,6 +14384,7 @@ static void bnxt_lock_sp(struct bnxt *bp)
 }
 
 static void bnxt_unlock_sp(struct bnxt *bp)
+	__releases(&bp->dev->lock)
 {
 	set_bit(BNXT_STATE_IN_SP_TASK, &bp->state);
 	netdev_unlock(bp->dev);

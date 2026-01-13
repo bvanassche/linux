@@ -111,7 +111,8 @@ EXPORT_SYMBOL_GPL(usb_offload_put);
  *
  * Returns true on any offload activity, false otherwise.
  */
-bool usb_offload_check(struct usb_device *udev) __must_hold(&udev->dev->mutex)
+bool usb_offload_check(struct usb_device *udev)
+	__must_hold(&udev->dev.mutex)
 {
 	struct usb_device *child;
 	bool active = false;

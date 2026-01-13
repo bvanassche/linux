@@ -104,11 +104,13 @@ static void ovs_notify(struct genl_family *family,
 static DEFINE_MUTEX(ovs_mutex);
 
 void ovs_lock(void)
+	__acquires(ovs_mutex)
 {
 	mutex_lock(&ovs_mutex);
 }
 
 void ovs_unlock(void)
+	__releases(ovs_mutex)
 {
 	mutex_unlock(&ovs_mutex);
 }
@@ -243,6 +245,7 @@ void ovs_dp_detach_port(struct vport *p)
 
 /* Must be called with rcu_read_lock. */
 void ovs_dp_process_packet(struct sk_buff *skb, struct sw_flow_key *key)
+	__no_context_analysis
 {
 	struct ovs_pcpu_storage *ovs_pcpu = this_cpu_ptr(ovs_pcpu_storage);
 	const struct vport *p = OVS_CB(skb)->input_vport;

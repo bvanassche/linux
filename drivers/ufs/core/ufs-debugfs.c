@@ -66,7 +66,6 @@ static int ee_usr_mask_get(void *data, u64 *val)
 }
 
 static int ufs_debugfs_get_user_access(struct ufs_hba *hba)
-__acquires(&hba->host_sem)
 {
 	down(&hba->host_sem);
 	if (!ufshcd_is_user_access_allowed(hba)) {
@@ -78,7 +77,6 @@ __acquires(&hba->host_sem)
 }
 
 static void ufs_debugfs_put_user_access(struct ufs_hba *hba)
-__releases(&hba->host_sem)
 {
 	ufshcd_rpm_put_sync(hba);
 	up(&hba->host_sem);

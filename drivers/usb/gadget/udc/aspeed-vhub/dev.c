@@ -473,6 +473,7 @@ static const struct usb_gadget_ops ast_vhub_udc_ops = {
 };
 
 void ast_vhub_dev_suspend(struct ast_vhub_dev *d)
+	__no_context_analysis
 {
 	if (d->driver && d->driver->suspend) {
 		spin_unlock(&d->vhub->lock);
@@ -482,6 +483,7 @@ void ast_vhub_dev_suspend(struct ast_vhub_dev *d)
 }
 
 void ast_vhub_dev_resume(struct ast_vhub_dev *d)
+	__no_context_analysis
 {
 	if (d->driver && d->driver->resume) {
 		spin_unlock(&d->vhub->lock);
@@ -491,6 +493,7 @@ void ast_vhub_dev_resume(struct ast_vhub_dev *d)
 }
 
 void ast_vhub_dev_reset(struct ast_vhub_dev *d)
+	__no_context_analysis
 {
 	/* No driver, just disable the device and return */
 	if (!d->driver) {

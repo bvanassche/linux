@@ -842,6 +842,7 @@ static void asc_console_putchar(struct uart_port *port, unsigned char ch)
  */
 
 static void asc_console_write(struct console *co, const char *s, unsigned count)
+	__no_context_analysis /* conditional locking */
 {
 	struct uart_port *port = &asc_ports[co->index].port;
 	unsigned long flags;

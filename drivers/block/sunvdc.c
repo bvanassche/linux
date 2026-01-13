@@ -1112,6 +1112,7 @@ static void vdc_requeue_inflight(struct vdc_port *port)
 }
 
 static void vdc_queue_drain(struct vdc_port *port)
+	__must_hold(&port->vio.lock)
 {
 	struct request_queue *q = port->disk->queue;
 	unsigned int memflags;

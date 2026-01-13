@@ -48,6 +48,7 @@ static struct omapfb2_mem_region *get_mem_region(struct omapfb_info *ofbi,
 }
 
 static int omapfb_setup_plane(struct fb_info *fbi, struct omapfb_plane_info *pi)
+	__no_context_analysis /* conditional locking */
 {
 	struct omapfb_info *ofbi = FB2OFB(fbi);
 	struct omapfb2_device *fbdev = ofbi->fbdev;

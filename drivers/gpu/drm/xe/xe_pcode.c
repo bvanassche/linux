@@ -292,6 +292,7 @@ unlock:
  * Returns 0 on success, and -error number on failure.
  */
 int xe_pcode_ready(struct xe_device *xe, bool locked)
+	__no_context_analysis /* conditional locking */
 {
 	u32 status, request = DGFX_GET_INIT_STATUS;
 	struct xe_tile *tile = xe_device_get_root_tile(xe);

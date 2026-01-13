@@ -147,6 +147,7 @@ static int ras_psp_put_gpu_mem(struct ras_core_context *ras_core,
 }
 
 static void __acquire_psp_cmd_lock(struct ras_core_context *ras_core)
+	__no_context_analysis /* conditional locking */
 {
 	struct ras_psp_ctx *psp_ctx = &ras_core->ras_psp.psp_ctx;
 
@@ -157,6 +158,7 @@ static void __acquire_psp_cmd_lock(struct ras_core_context *ras_core)
 }
 
 static void __release_psp_cmd_lock(struct ras_core_context *ras_core)
+	__no_context_analysis /* conditional locking */
 {
 	struct ras_psp_ctx *psp_ctx = &ras_core->ras_psp.psp_ctx;
 

@@ -1223,6 +1223,7 @@ EXPORT_SYMBOL(configfs_undepend_item);
  */
 int configfs_depend_item_unlocked(struct configfs_subsystem *caller_subsys,
 				  struct config_item *target)
+	__no_context_analysis
 {
 	struct configfs_subsystem *target_subsys;
 	struct config_group *root, *parent;

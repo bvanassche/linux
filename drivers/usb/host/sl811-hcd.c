@@ -423,7 +423,8 @@ static void finish_request(
 	struct sl811h_ep	*ep,
 	struct urb		*urb,
 	int			status
-) __releases(sl811->lock) __acquires(sl811->lock)
+)
+	__no_context_analysis
 {
 	unsigned		i;
 

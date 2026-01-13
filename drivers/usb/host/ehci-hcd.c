@@ -317,6 +317,7 @@ static int ehci_port_power(struct ehci_hcd *ehci, int portnum, bool enable);
  * This routine turns off remote wakeup and everything else, on all ports.
  */
 static void ehci_turn_off_all_ports(struct ehci_hcd *ehci)
+	__must_hold(&ehci->lock)
 {
 	int	port = HCS_N_PORTS(ehci->hcs_params);
 

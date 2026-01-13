@@ -1229,6 +1229,7 @@ static int nl80211_prepare_wdev_dump(struct netlink_callback *cb,
 				     struct cfg80211_registered_device **rdev,
 				     struct wireless_dev **wdev,
 				     struct nlattr **attrbuf)
+	__no_context_analysis
 {
 	int err;
 
@@ -5041,6 +5042,7 @@ static int nl80211_new_interface(struct sk_buff *skb, struct genl_info *info)
 }
 
 static int nl80211_del_interface(struct sk_buff *skb, struct genl_info *info)
+	__no_context_analysis
 {
 	struct cfg80211_registered_device *rdev = info->user_ptr[0];
 	struct wireless_dev *wdev = info->user_ptr[1];
@@ -8204,6 +8206,7 @@ static void cfg80211_sta_set_mld_sinfo(struct station_info *sinfo)
 
 static int nl80211_dump_station(struct sk_buff *skb,
 				struct netlink_callback *cb)
+	__no_context_analysis
 {
 	struct station_info sinfo;
 	struct cfg80211_registered_device *rdev;
@@ -9355,6 +9358,7 @@ static int nl80211_send_mpath(struct sk_buff *msg, u32 portid, u32 seq,
 
 static int nl80211_dump_mpath(struct sk_buff *skb,
 			      struct netlink_callback *cb)
+	__no_context_analysis
 {
 	struct mpath_info pinfo;
 	struct cfg80211_registered_device *rdev;
@@ -9555,6 +9559,7 @@ static int nl80211_get_mpp(struct sk_buff *skb, struct genl_info *info)
 
 static int nl80211_dump_mpp(struct sk_buff *skb,
 			    struct netlink_callback *cb)
+	__no_context_analysis
 {
 	struct mpath_info pinfo;
 	struct cfg80211_registered_device *rdev;
@@ -12090,6 +12095,7 @@ static int nl80211_send_bss(struct sk_buff *msg, struct netlink_callback *cb,
 }
 
 static int nl80211_dump_scan(struct sk_buff *skb, struct netlink_callback *cb)
+	__no_context_analysis
 {
 	struct cfg80211_registered_device *rdev;
 	struct cfg80211_internal_bss *scan;
@@ -12230,6 +12236,7 @@ static int nl80211_send_survey(struct sk_buff *msg, u32 portid, u32 seq,
 }
 
 static int nl80211_dump_survey(struct sk_buff *skb, struct netlink_callback *cb)
+	__no_context_analysis
 {
 	struct nlattr **attrbuf;
 	struct survey_info survey;
@@ -18882,6 +18889,7 @@ static u32 nl80211_internal_flags[] = {
 static int nl80211_pre_doit(const struct genl_split_ops *ops,
 			    struct sk_buff *skb,
 			    struct genl_info *info)
+	__no_context_analysis
 {
 	struct cfg80211_registered_device *rdev = NULL;
 	struct wireless_dev *wdev = NULL;
@@ -18984,6 +18992,7 @@ out_unlock:
 static void nl80211_post_doit(const struct genl_split_ops *ops,
 			      struct sk_buff *skb,
 			      struct genl_info *info)
+	__no_context_analysis
 {
 	u32 internal_flags = nl80211_internal_flags[ops->internal_flags];
 

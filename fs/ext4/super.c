@@ -1050,8 +1050,7 @@ void __ext4_grp_locked_error(const char *function, unsigned int line,
 			     struct super_block *sb, ext4_group_t grp,
 			     u64 ino, ext4_fsblk_t block,
 			     const char *fmt, ...)
-__releases(bitlock)
-__acquires(bitlock)
+	__must_hold(ext4_group_lock_ptr(sb, grp))
 {
 	struct va_format vaf;
 	va_list args;
@@ -7485,6 +7484,7 @@ static inline int ext3_feature_set_ok(struct super_block *sb)
 }
 
 static void ext4_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct ext4_sb_info *sbi = EXT4_SB(sb);
 	struct file *bdev_file = sbi ? sbi->s_journal_bdev_file : NULL;

@@ -169,6 +169,7 @@ static bool tegra_utc_tx_chars(struct tegra_utc_port *tup)
 }
 
 static void tegra_utc_rx_chars(struct tegra_utc_port *tup)
+	__must_hold(&tup->port.lock)
 {
 	struct tty_port *port = &tup->port.state->port;
 	unsigned int max_chars = 256;
@@ -460,6 +461,7 @@ static void tegra_utc_console_write_thread(struct console *cons, struct nbcon_wr
 }
 
 static void tegra_utc_console_device_lock(struct console *cons, unsigned long *flags)
+	__no_context_analysis /* container_of() */
 {
 	struct tegra_utc_port *tup = container_of(cons, struct tegra_utc_port, console);
 	struct uart_port *port = &tup->port;
@@ -468,6 +470,7 @@ static void tegra_utc_console_device_lock(struct console *cons, unsigned long *f
 }
 
 static void tegra_utc_console_device_unlock(struct console *cons, unsigned long flags)
+	__no_context_analysis /* container_of() */
 {
 	struct tegra_utc_port *tup = container_of(cons, struct tegra_utc_port, console);
 	struct uart_port *port = &tup->port;

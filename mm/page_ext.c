@@ -525,6 +525,7 @@ struct page_ext *page_ext_lookup(unsigned long pfn)
  * page_ext_put().
  */
 struct page_ext *page_ext_get(const struct page *page)
+	__no_context_analysis /* see page_ext_put() */
 {
 	struct page_ext *page_ext;
 
@@ -572,6 +573,7 @@ struct page_ext *page_ext_from_phys(phys_addr_t phys)
  * Context: Any context with corresponding page_ext_get() is called.
  */
 void page_ext_put(struct page_ext *page_ext)
+	__no_context_analysis /* not a good fit for thread safety annotations */
 {
 	if (unlikely(!page_ext))
 		return;

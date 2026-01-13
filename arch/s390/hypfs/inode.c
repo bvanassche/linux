@@ -306,6 +306,7 @@ static int hypfs_init_fs_context(struct fs_context *fc)
 }
 
 static void hypfs_kill_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct hypfs_sb_info *sb_info = sb->s_fs_info;
 

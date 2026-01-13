@@ -353,6 +353,7 @@ EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa);
 
 bool mm_iommu_is_devmem(struct mm_struct *mm, unsigned long hpa,
 		unsigned int pageshift, unsigned long *size)
+	__cond_acquires_shared(true, RCU)
 {
 	struct mm_iommu_table_group_mem_t *mem;
 	unsigned long end;

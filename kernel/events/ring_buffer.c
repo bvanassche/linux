@@ -154,6 +154,7 @@ __perf_output_begin(struct perf_output_handle *handle,
 		    struct perf_sample_data *data,
 		    struct perf_event *event, unsigned int size,
 		    bool backward)
+	__cond_acquires_shared(0, RCU)
 {
 	struct perf_buffer *rb;
 	unsigned long tail, offset, head;
@@ -306,6 +307,7 @@ unsigned int perf_output_skip(struct perf_output_handle *handle,
 }
 
 void perf_output_end(struct perf_output_handle *handle)
+	__releases_shared(RCU)
 {
 	perf_output_put_handle(handle);
 	rcu_read_unlock();

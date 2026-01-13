@@ -545,6 +545,7 @@ static void chx_rxidle(fsm_instance *fi, int event, void *arg)
  * arg		Generic pointer, casted from channel * upon call.
  */
 static void ctcm_chx_setmode(fsm_instance *fi, int event, void *arg)
+	__context_unsafe(conditional locking)
 {
 	struct channel *ch = arg;
 	int rc;
@@ -648,6 +649,7 @@ static void ctcm_chx_start(fsm_instance *fi, int event, void *arg)
  * arg		Generic pointer, casted from channel * upon call.
  */
 static void ctcm_chx_haltio(fsm_instance *fi, int event, void *arg)
+	__context_unsafe(conditional locking)
 {
 	struct channel *ch = arg;
 	unsigned long saveflags = 0;
@@ -824,6 +826,7 @@ static void ctcm_chx_setuperr(fsm_instance *fi, int event, void *arg)
  * arg		Generic pointer, casted from channel * upon call.
  */
 static void ctcm_chx_restart(fsm_instance *fi, int event, void *arg)
+	__context_unsafe(conditional locking)
 {
 	struct channel *ch = arg;
 	struct net_device *dev = ch->netdev;
@@ -999,6 +1002,7 @@ static void ctcm_chx_txiniterr(fsm_instance *fi, int event, void *arg)
  * arg		Generic pointer, casted from channel * upon call.
  */
 static void ctcm_chx_txretry(fsm_instance *fi, int event, void *arg)
+	__context_unsafe(conditional locking)
 {
 	struct channel *ch = arg;
 	struct net_device *dev = ch->netdev;
@@ -1383,6 +1387,7 @@ done:
  * arg		Generic pointer, casted from channel * upon call.
  */
 static void ctcmpc_chx_rx(fsm_instance *fi, int event, void *arg)
+	__context_unsafe(conditional locking)
 {
 	struct channel		*ch = arg;
 	struct net_device	*dev = ch->netdev;
@@ -1539,6 +1544,7 @@ done:
  * arg		Generic pointer, casted from channel * upon call.
  */
 void ctcmpc_chx_rxidle(fsm_instance *fi, int event, void *arg)
+	__context_unsafe(conditional locking)
 {
 	struct channel *ch = arg;
 	struct net_device *dev = ch->netdev;

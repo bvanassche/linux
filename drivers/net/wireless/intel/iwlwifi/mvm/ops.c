@@ -786,6 +786,7 @@ static void iwl_mvm_tx_unblock_dwork(struct work_struct *work)
 }
 
 static void iwl_mvm_fwrt_dump_start(void *ctx)
+	__acquires(&((struct iwl_mvm *)ctx)->mutex)
 {
 	struct iwl_mvm *mvm = ctx;
 
@@ -793,6 +794,7 @@ static void iwl_mvm_fwrt_dump_start(void *ctx)
 }
 
 static void iwl_mvm_fwrt_dump_end(void *ctx)
+	__releases(&((struct iwl_mvm *)ctx)->mutex)
 {
 	struct iwl_mvm *mvm = ctx;
 
@@ -1631,6 +1633,7 @@ void iwl_mvm_async_handlers_purge(struct iwl_mvm *mvm)
  */
 static void iwl_mvm_async_handlers_by_context(struct iwl_mvm *mvm,
 					      u8 contexts)
+	__no_context_analysis /* conditional locking */
 {
 	struct iwl_async_handler_entry *entry, *tmp;
 	LIST_HEAD(local_list);

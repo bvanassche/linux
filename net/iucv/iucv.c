@@ -1023,6 +1023,7 @@ out:
  * Returns: the result from the CP IUCV call.
  */
 int iucv_path_sever(struct iucv_path *path, u8 *userdata)
+	__context_unsafe(conditional locking)
 {
 	int rc;
 

@@ -182,7 +182,8 @@ static struct hrtimer_cpu_base migration_cpu_base = {
  */
 static struct hrtimer_clock_base *lock_hrtimer_base(const struct hrtimer *timer,
 						    unsigned long *flags)
-	__acquires(&timer->base->lock)
+	__acquires(&timer->base->cpu_base->lock)
+	__no_context_analysis /* TODO: fix the READ_ONCE() definition. */
 {
 	for (;;) {
 		struct hrtimer_clock_base *base = READ_ONCE(timer->base);
@@ -268,6 +269,7 @@ static inline struct hrtimer_cpu_base *get_target_base(struct hrtimer_cpu_base *
  */
 static inline struct hrtimer_clock_base *
 switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base, bool pinned)
+	__no_context_analysis
 {
 	struct hrtimer_cpu_base *new_cpu_base, *this_cpu_base;
 	struct hrtimer_clock_base *new_base;
@@ -1562,6 +1564,8 @@ static void hrtimer_cpu_base_unlock_expiry(struct hrtimer_cpu_base *base)
  * allows the waiter to acquire the lock and make progress.
  */
 static void hrtimer_sync_wait_running(struct hrtimer_cpu_base *cpu_base, unsigned long flags)
+	__must_hold(&cpu_base->lock)
+	__must_hold(&cpu_base->softirq_expiry_lock)
 {
 	if (atomic_read(&cpu_base->timer_waiters)) {
 		raw_spin_unlock_irqrestore(&cpu_base->lock, flags);
@@ -1887,7 +1891,7 @@ EXPORT_SYMBOL_GPL(hrtimer_active);
  */
 static void __run_hrtimer(struct hrtimer_cpu_base *cpu_base, struct hrtimer_clock_base *base,
 			  struct hrtimer *timer, ktime_t now, unsigned long flags)
-	__must_hold(&cpu_base->lock)
+	__no_context_analysis
 {
 	enum hrtimer_restart (*fn)(struct hrtimer *);
 	bool expires_in_hardirq;
@@ -1967,6 +1971,7 @@ static __always_inline struct hrtimer *clock_base_next_timer_safe(struct hrtimer
 
 static void __hrtimer_run_queues(struct hrtimer_cpu_base *cpu_base, ktime_t now,
 				 unsigned long flags, unsigned int active_mask)
+	__must_hold(&cpu_base->lock)
 {
 	unsigned int active = cpu_base->active_bases & active_mask;
 	struct hrtimer_clock_base *base;
@@ -1992,8 +1997,12 @@ static void __hrtimer_run_queues(struct hrtimer_cpu_base *cpu_base, ktime_t now,
 				break;
 
 			__run_hrtimer(cpu_base, base, timer, basenow, flags);
-			if (active_mask == HRTIMER_ACTIVE_SOFT)
+			if (active_mask == HRTIMER_ACTIVE_SOFT) {
+#ifdef CONFIG_PREEMPT_RT
+				__assume_ctx_lock(&cpu_base->softirq_expiry_lock);
+#endif
 				hrtimer_sync_wait_running(cpu_base, flags);
+			}
 		}
 	}
 }

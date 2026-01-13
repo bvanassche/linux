@@ -357,12 +357,14 @@ static struct its_vlpi_map *get_vlpi_map(struct irq_data *d)
 }
 
 static int vpe_to_cpuid_lock(struct its_vpe *vpe, unsigned long *flags)
+	__acquires(&vpe->vpe_lock)
 {
 	raw_spin_lock_irqsave(&vpe->vpe_lock, *flags);
 	return vpe->col_idx;
 }
 
 static void vpe_to_cpuid_unlock(struct its_vpe *vpe, unsigned long flags)
+	__releases(&vpe->vpe_lock)
 {
 	raw_spin_unlock_irqrestore(&vpe->vpe_lock, flags);
 }
@@ -370,6 +372,7 @@ static void vpe_to_cpuid_unlock(struct its_vpe *vpe, unsigned long flags)
 static struct irq_chip its_vpe_irq_chip;
 
 static int irq_to_cpuid_lock(struct irq_data *d, unsigned long *flags)
+	__no_context_analysis /* conditional locking */
 {
 	struct its_vpe *vpe = NULL;
 	int cpu;
@@ -396,6 +399,7 @@ static int irq_to_cpuid_lock(struct irq_data *d, unsigned long *flags)
 }
 
 static void irq_to_cpuid_unlock(struct irq_data *d, unsigned long flags)
+	__no_context_analysis /* conditional locking */
 {
 	struct its_vpe *vpe = NULL;
 
@@ -1549,18 +1553,20 @@ static void wait_for_syncr(void __iomem *rdbase)
 static void __direct_lpi_inv(struct irq_data *d, u64 val)
 {
 	void __iomem *rdbase;
+	raw_spinlock_t *rd_lock;
 	unsigned long flags;
 	int cpu;
 
 	/* Target the redistributor this LPI is currently routed to */
 	cpu = irq_to_cpuid_lock(d, &flags);
-	raw_spin_lock(&gic_data_rdist_cpu(cpu)->rd_lock);
+	rd_lock = &gic_data_rdist_cpu(cpu)->rd_lock;
+	raw_spin_lock(rd_lock);
 
 	rdbase = per_cpu_ptr(gic_rdists->rdist, cpu)->rd_base;
 	gic_write_lpir(val, rdbase + GICR_INVLPIR);
 	wait_for_syncr(rdbase);
 
-	raw_spin_unlock(&gic_data_rdist_cpu(cpu)->rd_lock);
+	raw_spin_unlock(rd_lock);
 	irq_to_cpuid_unlock(d, flags);
 }
 
@@ -3894,13 +3900,14 @@ static void its_vpe_db_proxy_move(struct its_vpe *vpe, int from, int to)
 
 static void its_vpe_4_1_invall_locked(int cpu, struct its_vpe *vpe)
 {
+	raw_spinlock_t *rd_lock = &gic_data_rdist_cpu(cpu)->rd_lock;
 	void __iomem *rdbase;
 	u64 val;
 
 	val  = GICR_INVALLR_V;
 	val |= FIELD_PREP(GICR_INVALLR_VPEID, vpe->vpe_id);
 
-	guard(raw_spinlock)(&gic_data_rdist_cpu(cpu)->rd_lock);
+	guard(raw_spinlock)(rd_lock);
 	rdbase = per_cpu_ptr(gic_rdists->rdist, cpu)->rd_base;
 	gic_write_lpir(val, rdbase + GICR_INVALLR);
 	wait_for_syncr(rdbase);
@@ -3909,6 +3916,7 @@ static void its_vpe_4_1_invall_locked(int cpu, struct its_vpe *vpe)
 static int its_vpe_set_affinity(struct irq_data *d,
 				const struct cpumask *mask_val,
 				bool force)
+	__no_context_analysis /* conditional locking */
 {
 	struct its_vpe *vpe = irq_data_get_irq_chip_data(d);
 	unsigned int from, cpu = nr_cpu_ids;
@@ -4409,6 +4417,7 @@ static int its_sgi_get_irqchip_state(struct irq_data *d,
 {
 	struct its_vpe *vpe = irq_data_get_irq_chip_data(d);
 	void __iomem *base;
+	raw_spinlock_t *rd_lock;
 	unsigned long flags;
 	u32 count = 1000000;	/* 1s! */
 	u32 status;
@@ -4428,7 +4437,8 @@ static int its_sgi_get_irqchip_state(struct irq_data *d,
 	 *   MMIO registers, this must be made atomic one way or another.
 	 */
 	cpu = vpe_to_cpuid_lock(vpe, &flags);
-	raw_spin_lock(&gic_data_rdist_cpu(cpu)->rd_lock);
+	rd_lock = &gic_data_rdist_cpu(cpu)->rd_lock;
+	raw_spin_lock(rd_lock);
 	base = gic_data_rdist_cpu(cpu)->rd_base + SZ_128K;
 	writel_relaxed(vpe->vpe_id, base + GICR_VSGIR);
 	do {
@@ -4446,7 +4456,7 @@ static int its_sgi_get_irqchip_state(struct irq_data *d,
 	} while (count);
 
 out:
-	raw_spin_unlock(&gic_data_rdist_cpu(cpu)->rd_lock);
+	raw_spin_unlock(rd_lock);
 	vpe_to_cpuid_unlock(vpe, flags);
 
 	if (!count)

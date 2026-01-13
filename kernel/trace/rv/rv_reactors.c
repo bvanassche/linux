@@ -94,11 +94,13 @@ static int reactors_show(struct seq_file *m, void *p)
 }
 
 static void reactors_stop(struct seq_file *m, void *p)
+	__releases(rv_interface_lock)
 {
 	mutex_unlock(&rv_interface_lock);
 }
 
 static void *reactors_start(struct seq_file *m, loff_t *pos)
+	__acquires(rv_interface_lock)
 {
 	mutex_lock(&rv_interface_lock);
 	return seq_list_start(&rv_reactors_list, *pos);

@@ -420,6 +420,7 @@ static void tegra_vde_shutdown(struct platform_device *pdev)
 }
 
 static __maybe_unused int tegra_vde_pm_suspend(struct device *dev)
+	__acquires(&((struct tegra_vde *)dev_get_drvdata(dev))->lock)
 {
 	struct tegra_vde *vde = dev_get_drvdata(dev);
 	int err;
@@ -434,6 +435,7 @@ static __maybe_unused int tegra_vde_pm_suspend(struct device *dev)
 }
 
 static __maybe_unused int tegra_vde_pm_resume(struct device *dev)
+	__cond_releases(0, &((struct tegra_vde *)dev_get_drvdata(dev))->lock)
 {
 	struct tegra_vde *vde = dev_get_drvdata(dev);
 	int err;

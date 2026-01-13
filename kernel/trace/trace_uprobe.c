@@ -940,6 +940,7 @@ static void uprobe_buffer_disable(void)
 }
 
 static struct uprobe_cpu_buffer *uprobe_buffer_get(void)
+	__no_context_analysis
 {
 	struct uprobe_cpu_buffer *ucb;
 	int cpu;
@@ -957,6 +958,7 @@ static struct uprobe_cpu_buffer *uprobe_buffer_get(void)
 }
 
 static void uprobe_buffer_put(struct uprobe_cpu_buffer *ucb)
+	__no_context_analysis
 {
 	if (!ucb)
 		return;

@@ -1628,6 +1628,7 @@ static void crypt_free_buffer_pages(struct crypt_config *cc, struct bio *clone);
  * the first pass. If they are not available, we fall back to the mempool.
  */
 static struct bio *crypt_alloc_buffer(struct dm_crypt_io *io, unsigned int size)
+	__no_context_analysis /* conditional locking */
 {
 	struct crypt_config *cc = io->cc;
 	struct bio *clone;

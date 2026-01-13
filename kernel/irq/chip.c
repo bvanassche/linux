@@ -461,6 +461,7 @@ void unmask_threaded_irq(struct irq_desc *desc)
 
 /* Busy wait until INPROGRESS is cleared */
 static bool irq_wait_on_inprogress(struct irq_desc *desc)
+	__must_hold(&desc->lock)
 {
 	if (IS_ENABLED(CONFIG_SMP)) {
 		do {
@@ -477,6 +478,7 @@ static bool irq_wait_on_inprogress(struct irq_desc *desc)
 }
 
 static bool irq_can_handle_pm(struct irq_desc *desc)
+	__must_hold(&desc->lock)
 {
 	struct irq_data *irqd = &desc->irq_data;
 	const struct cpumask *aff;
@@ -555,6 +557,7 @@ static inline bool irq_can_handle_actions(struct irq_desc *desc)
 }
 
 static inline bool irq_can_handle(struct irq_desc *desc)
+	__must_hold(&desc->lock)
 {
 	if (!irq_can_handle_pm(desc))
 		return false;

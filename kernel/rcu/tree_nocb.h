@@ -90,7 +90,7 @@ module_param(nocb_nobypass_lim_per_jiffy, int, 0);
  * lock isn't immediately available, perform minimal sanity check.
  */
 static void rcu_nocb_bypass_lock(struct rcu_data *rdp)
-	__acquires(&rdp->nocb_bypass_lock)
+	__no_context_analysis
 {
 	lockdep_assert_irqs_disabled();
 	if (raw_spin_trylock(&rdp->nocb_bypass_lock))
@@ -117,7 +117,7 @@ static bool rcu_nocb_bypass_trylock(struct rcu_data *rdp)
  * Release the specified rcu_data structure's ->nocb_bypass_lock.
  */
 static void rcu_nocb_bypass_unlock(struct rcu_data *rdp)
-	__releases(&rdp->nocb_bypass_lock)
+	__no_context_analysis
 {
 	lockdep_assert_irqs_disabled();
 	raw_spin_unlock(&rdp->nocb_bypass_lock);
@@ -128,6 +128,7 @@ static void rcu_nocb_bypass_unlock(struct rcu_data *rdp)
  * if it corresponds to a no-CBs CPU.
  */
 static void rcu_nocb_lock(struct rcu_data *rdp)
+	__no_context_analysis
 {
 	lockdep_assert_irqs_disabled();
 	if (!rcu_rdp_is_offloaded(rdp))
@@ -140,6 +141,7 @@ static void rcu_nocb_lock(struct rcu_data *rdp)
  * if it corresponds to a no-CBs CPU.
  */
 static void rcu_nocb_unlock(struct rcu_data *rdp)
+	__no_context_analysis
 {
 	if (rcu_rdp_is_offloaded(rdp)) {
 		lockdep_assert_irqs_disabled();
@@ -153,6 +155,7 @@ static void rcu_nocb_unlock(struct rcu_data *rdp)
  */
 static void rcu_nocb_unlock_irqrestore(struct rcu_data *rdp,
 				       unsigned long flags)
+	__no_context_analysis
 {
 	if (rcu_rdp_is_offloaded(rdp)) {
 		lockdep_assert_irqs_disabled();
@@ -313,6 +316,7 @@ static void wake_nocb_gp_defer(struct rcu_data *rdp, int waketype,
  */
 static bool rcu_nocb_do_flush_bypass(struct rcu_data *rdp, struct rcu_head *rhp_in,
 				     unsigned long j, bool lazy)
+	__no_context_analysis
 {
 	struct rcu_cblist rcl;
 	struct rcu_head *rhp = rhp_in;
@@ -357,6 +361,7 @@ static bool rcu_nocb_do_flush_bypass(struct rcu_data *rdp, struct rcu_head *rhp_
  */
 static bool rcu_nocb_flush_bypass(struct rcu_data *rdp, struct rcu_head *rhp,
 				  unsigned long j, bool lazy)
+	__no_context_analysis
 {
 	if (!rcu_rdp_is_offloaded(rdp))
 		return true;
@@ -559,7 +564,7 @@ static bool rcu_nocb_try_bypass(struct rcu_data *rdp, struct rcu_head *rhp,
  */
 static void __call_rcu_nocb_wake(struct rcu_data *rdp, bool was_alldone,
 				 unsigned long flags)
-				 __releases(rdp->nocb_lock)
+	__no_context_analysis
 {
 	long bypass_len;
 	long lazy_len;
@@ -656,6 +661,7 @@ static void nocb_gp_sleep(struct rcu_data *my_rdp, int cpu)
  * or for grace periods to end.
  */
 static void nocb_gp_wait(struct rcu_data *my_rdp)
+	__no_context_analysis
 {
 	bool bypass = false;
 	int __maybe_unused cpu = my_rdp->cpu;
@@ -875,6 +881,7 @@ static inline bool nocb_cb_wait_cond(struct rcu_data *rdp)
  * then, if there are no more, wait for more to appear.
  */
 static void nocb_cb_wait(struct rcu_data *rdp)
+	__no_context_analysis
 {
 	struct rcu_segcblist *cblist = &rdp->cblist;
 	unsigned long cur_gp_seq;
@@ -1051,6 +1058,7 @@ static bool rcu_nocb_rdp_deoffload_wait_cond(struct rcu_data *rdp)
 }
 
 static int rcu_nocb_rdp_deoffload(struct rcu_data *rdp)
+	__no_context_analysis
 {
 	unsigned long flags;
 	int wake_gp;
@@ -1224,6 +1232,7 @@ lazy_rcu_shrink_count(struct shrinker *shrink, struct shrink_control *sc)
 
 static unsigned long
 lazy_rcu_shrink_scan(struct shrinker *shrink, struct shrink_control *sc)
+	__no_context_analysis
 {
 	int cpu;
 	unsigned long flags;

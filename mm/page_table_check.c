@@ -262,6 +262,7 @@ EXPORT_SYMBOL(__page_table_check_puds_set);
 void __page_table_check_pte_clear_range(struct mm_struct *mm,
 					unsigned long addr,
 					pmd_t pmd)
+	__no_context_analysis /* conditional locking */
 {
 	if (&init_mm == mm)
 		return;

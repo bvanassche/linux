@@ -416,6 +416,7 @@ static void snd_intel8x0m_setup_periods(struct intel8x0m *chip, struct ichdev *i
  */
 
 static inline void snd_intel8x0m_update(struct intel8x0m *chip, struct ichdev *ichdev)
+	__must_hold(&chip->reg_lock)
 {
 	unsigned long port = ichdev->reg_offset;
 	int civ, i, step;

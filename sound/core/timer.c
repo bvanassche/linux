@@ -775,6 +775,7 @@ static void snd_timer_reschedule(struct snd_timer * timer, unsigned long ticks_l
 /* call callbacks in timer ack list */
 static void snd_timer_process_callbacks(struct snd_timer *timer,
 					struct list_head *head)
+	__must_hold(&timer->lock)
 {
 	struct snd_timer_instance *ti;
 	unsigned long resolution, ticks;

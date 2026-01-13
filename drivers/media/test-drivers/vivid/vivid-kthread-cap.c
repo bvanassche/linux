@@ -385,6 +385,7 @@ update_vid_out_y:
 }
 
 static void vivid_fillbuff(struct vivid_dev *dev, struct vivid_buffer *buf)
+	__no_context_analysis /* conditional locking */
 {
 	struct vivid_dev *out_dev = NULL;
 	struct tpg_data *tpg = &dev->tpg;

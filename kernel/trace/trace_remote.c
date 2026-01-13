@@ -421,6 +421,7 @@ static void trace_remote_iter_free(struct trace_remote_iterator *iter)
 }
 
 static void trace_remote_iter_read_start(struct trace_remote_iterator *iter)
+	__context_unsafe(conditional locking)
 {
 	struct trace_remote *remote = iter->remote;
 	int cpu = iter->cpu;
@@ -450,6 +451,7 @@ static void trace_remote_iter_read_start(struct trace_remote_iterator *iter)
 }
 
 static void trace_remote_iter_read_finished(struct trace_remote_iterator *iter)
+	__context_unsafe(conditional locking)
 {
 	struct trace_remote *remote = iter->remote;
 	int cpu = iter->cpu;

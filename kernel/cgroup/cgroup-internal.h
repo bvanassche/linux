@@ -249,10 +249,10 @@ void cgroup_attach_unlock(enum cgroup_attach_lock_mode lock_mode,
 			  struct task_struct *tsk);
 struct task_struct *cgroup_procs_write_start(char *buf, bool threadgroup,
 					     enum cgroup_attach_lock_mode *lock_mode)
-	__acquires(&cgroup_threadgroup_rwsem);
+	/*__cond_acquires(nonnull, &cgroup_threadgroup_rwsem)*/;
 void cgroup_procs_write_finish(struct task_struct *task,
 			       enum cgroup_attach_lock_mode lock_mode)
-	__releases(&cgroup_threadgroup_rwsem);
+	/*__releases(&cgroup_threadgroup_rwsem)*/;
 
 void cgroup_lock_and_drain_offline(struct cgroup *cgrp);
 

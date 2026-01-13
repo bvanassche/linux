@@ -1472,6 +1472,7 @@ snd_m3_pcm_pointer(struct snd_pcm_substream *subs)
 /* update pointer */
 /* spinlock held! */
 static void snd_m3_update_ptr(struct snd_m3 *chip, struct m3_dma *s)
+	__must_hold(&chip->reg_lock)
 {
 	struct snd_pcm_substream *subs = s->substream;
 	unsigned int hwptr;

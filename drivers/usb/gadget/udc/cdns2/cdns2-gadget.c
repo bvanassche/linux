@@ -237,6 +237,7 @@ static struct cdns2_trb *cdns2_next_trb(struct cdns2_endpoint *pep,
 void cdns2_gadget_giveback(struct cdns2_endpoint *pep,
 			   struct cdns2_request *preq,
 			   int status)
+	__no_context_analysis
 {
 	struct usb_request *request = &preq->request;
 	struct cdns2_device *pdev = pep->pdev;
@@ -1208,6 +1209,7 @@ static irqreturn_t cdns2_usb_irq_handler(int irq, void *data)
 }
 
 static irqreturn_t cdns2_thread_usb_irq_handler(struct cdns2_device *pdev)
+	__no_context_analysis
 {
 	u8 usb_irq, ext_irq;
 	int speed;

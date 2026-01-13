@@ -63,6 +63,7 @@ static void btrfs_crc32c_final(u32 crc, u8 *result)
 }
 
 static void __btrfs_remove_free_space_cache(struct btrfs_free_space_ctl *ctl)
+	__must_hold(&ctl->tree_lock)
 {
 	struct btrfs_free_space *info;
 	struct rb_node *node;
@@ -294,6 +295,7 @@ int btrfs_remove_free_space_inode(struct btrfs_trans_handle *trans,
 int btrfs_truncate_free_space_cache(struct btrfs_trans_handle *trans,
 				    struct btrfs_block_group *block_group,
 				    struct inode *vfs_inode)
+	__no_context_analysis /* too complex for clang */
 {
 	struct btrfs_truncate_control control = {
 		.inode = BTRFS_I(vfs_inode),
@@ -898,6 +900,7 @@ free_cache:
 
 static int copy_free_space_cache(struct btrfs_block_group *block_group,
 				 struct btrfs_free_space_ctl *ctl)
+	__must_hold(&ctl->tree_lock)
 {
 	struct btrfs_free_space *info;
 	struct rb_node *n;
@@ -1072,6 +1075,7 @@ int write_cache_extent_entries(struct btrfs_io_ctl *io_ctl,
 			      struct btrfs_block_group *block_group,
 			      int *entries, int *bitmaps,
 			      struct list_head *bitmap_list)
+	__no_context_analysis
 {
 	int ret;
 	struct btrfs_free_cluster *cluster = NULL;
@@ -1370,6 +1374,7 @@ static int __btrfs_write_out_cache(struct inode *inode,
 				   struct btrfs_free_space_ctl *ctl,
 				   struct btrfs_block_group *block_group,
 				   struct btrfs_trans_handle *trans)
+	__no_context_analysis
 {
 	struct btrfs_io_ctl *io_ctl = &block_group->io_ctl;
 	struct extent_state *cached_state = NULL;
@@ -2307,6 +2312,7 @@ static const struct btrfs_free_space_op free_space_op = {
 
 static int insert_into_bitmap(struct btrfs_free_space_ctl *ctl,
 			      struct btrfs_free_space *info)
+	__no_context_analysis
 {
 	struct btrfs_free_space *bitmap_info;
 	struct btrfs_block_group *block_group = NULL;

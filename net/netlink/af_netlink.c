@@ -2251,6 +2251,7 @@ static int netlink_dump_done(struct netlink_sock *nlk, struct sk_buff *skb,
 }
 
 static int netlink_dump(struct sock *sk, bool lock_taken)
+	__no_context_analysis
 {
 	struct netlink_sock *nlk = nlk_sk(sk);
 	struct netlink_ext_ack extack = {};
@@ -2386,6 +2387,7 @@ errout_skb:
 int __netlink_dump_start(struct sock *ssk, struct sk_buff *skb,
 			 const struct nlmsghdr *nlh,
 			 struct netlink_dump_control *control)
+	__no_context_analysis
 {
 	struct netlink_callback *cb;
 	struct netlink_sock *nlk;
@@ -2615,18 +2617,21 @@ struct nl_seq_iter {
 };
 
 static void netlink_walk_start(struct nl_seq_iter *iter)
+	__acquires_shared(RCU)
 {
 	rhashtable_walk_enter(&nl_table[iter->link].hash, &iter->hti);
 	rhashtable_walk_start(&iter->hti);
 }
 
 static void netlink_walk_stop(struct nl_seq_iter *iter)
+	__releases_shared(RCU)
 {
 	rhashtable_walk_stop(&iter->hti);
 	rhashtable_walk_exit(&iter->hti);
 }
 
 static void *__netlink_seq_next(struct seq_file *seq)
+	__no_context_analysis /* conditionally releases RCU */
 {
 	struct nl_seq_iter *iter = seq->private;
 	struct netlink_sock *nlk;
@@ -2657,7 +2662,7 @@ static void *__netlink_seq_next(struct seq_file *seq)
 }
 
 static void *netlink_seq_start(struct seq_file *seq, loff_t *posp)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	struct nl_seq_iter *iter = seq->private;
 	void *obj = SEQ_START_TOKEN;
@@ -2680,6 +2685,7 @@ static void *netlink_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void netlink_native_seq_stop(struct seq_file *seq, void *v)
+	__no_context_analysis /* conditionally releases RCU */
 {
 	struct nl_seq_iter *iter = seq->private;
 

@@ -217,31 +217,37 @@ static inline void put_anon_vma(struct anon_vma *anon_vma)
 }
 
 static inline void anon_vma_lock_write(struct anon_vma *anon_vma)
+	__acquires(&anon_vma->root->rwsem)
 {
 	down_write(&anon_vma->root->rwsem);
 }
 
 static inline int anon_vma_trylock_write(struct anon_vma *anon_vma)
+	__cond_acquires(true, &anon_vma->root->rwsem)
 {
 	return down_write_trylock(&anon_vma->root->rwsem);
 }
 
 static inline void anon_vma_unlock_write(struct anon_vma *anon_vma)
+	__releases(&anon_vma->root->rwsem)
 {
 	up_write(&anon_vma->root->rwsem);
 }
 
 static inline void anon_vma_lock_read(struct anon_vma *anon_vma)
+	__acquires_shared(&anon_vma->root->rwsem)
 {
 	down_read(&anon_vma->root->rwsem);
 }
 
 static inline int anon_vma_trylock_read(struct anon_vma *anon_vma)
+	__cond_acquires_shared(true, &anon_vma->root->rwsem)
 {
 	return down_read_trylock(&anon_vma->root->rwsem);
 }
 
 static inline void anon_vma_unlock_read(struct anon_vma *anon_vma)
+	__releases_shared(&anon_vma->root->rwsem)
 {
 	up_read(&anon_vma->root->rwsem);
 }
@@ -1880,6 +1886,7 @@ static inline int io_remap_pfn_range_prepare(struct vm_area_desc *desc)
  */
 static inline void maybe_rmap_unlock_action(struct vm_area_struct *vma,
 		struct mmap_action *action)
+	__no_context_analysis /* conditional unlocking */
 {
 	struct file *file;
 

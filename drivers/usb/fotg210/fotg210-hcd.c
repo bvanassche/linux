@@ -2187,8 +2187,7 @@ static int qtd_copy_status(struct fotg210_hcd *fotg210, struct urb *urb,
 
 static void fotg210_urb_done(struct fotg210_hcd *fotg210, struct urb *urb,
 		int status)
-__releases(fotg210->lock)
-__acquires(fotg210->lock)
+	__no_context_analysis
 {
 	if (likely(urb->hcpriv != NULL)) {
 		struct fotg210_qh *qh = (struct fotg210_qh *) urb->hcpriv;

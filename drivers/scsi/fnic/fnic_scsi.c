@@ -2529,6 +2529,7 @@ clean_pending_aborts_end:
  * on the LUN.
  */
 int fnic_device_reset(struct scsi_cmnd *sc)
+	__no_context_analysis /* conditional locking */
 {
 	struct request *rq = scsi_cmd_to_rq(sc);
 	struct fnic *fnic;

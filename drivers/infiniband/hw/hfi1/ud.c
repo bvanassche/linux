@@ -433,6 +433,7 @@ void hfi1_make_ud_req_16B(struct rvt_qp *qp, struct hfi1_pkt_state *ps,
  * Return 1 if constructed; otherwise, return 0.
  */
 int hfi1_make_ud_req(struct rvt_qp *qp, struct hfi1_pkt_state *ps)
+	__must_hold(&qp->s_lock)
 {
 	struct hfi1_qp_priv *priv = qp->priv;
 	struct rdma_ah_attr *ah_attr;

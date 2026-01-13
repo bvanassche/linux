@@ -537,6 +537,7 @@ static inline int ns83820_add_rx_skb(struct ns83820 *dev, struct sk_buff *skb)
 }
 
 static inline int rx_refill(struct net_device *ndev, gfp_t gfp)
+	__no_context_analysis /* conditional locking */
 {
 	struct ns83820 *dev = PRIV(ndev);
 	unsigned i;

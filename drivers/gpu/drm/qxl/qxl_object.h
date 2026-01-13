@@ -28,6 +28,7 @@
 #include "qxl_drv.h"
 
 static inline int qxl_bo_reserve(struct qxl_bo *bo)
+	__no_context_analysis /*__cond_acquires(0, &bo->tbo.base.resv->lock)*/
 {
 	int r;
 
@@ -44,6 +45,7 @@ static inline int qxl_bo_reserve(struct qxl_bo *bo)
 }
 
 static inline void qxl_bo_unreserve(struct qxl_bo *bo)
+	__no_context_analysis /*__releases(&bo->tbo.base.resv->lock)*/
 {
 	ttm_bo_unreserve(&bo->tbo);
 }

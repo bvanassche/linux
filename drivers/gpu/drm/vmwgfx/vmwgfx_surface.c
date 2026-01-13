@@ -1506,6 +1506,7 @@ vmw_gb_surface_define_internal(struct drm_device *dev,
 			       struct drm_vmw_gb_surface_create_ext_req *req,
 			       struct drm_vmw_gb_surface_create_rep *rep,
 			       struct drm_file *file_priv)
+	__no_context_analysis
 {
 	struct ttm_object_file *tfile = vmw_fpriv(file_priv)->tfile;
 	struct vmw_private *dev_priv = vmw_priv(dev);

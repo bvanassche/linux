@@ -28,6 +28,7 @@ static int clk_pll_out_is_enabled(struct clk_hw *hw)
 }
 
 static int clk_pll_out_enable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll_out *pll_out = to_clk_pll_out(hw);
 	unsigned long flags = 0;
@@ -50,6 +51,7 @@ static int clk_pll_out_enable(struct clk_hw *hw)
 }
 
 static void clk_pll_out_disable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll_out *pll_out = to_clk_pll_out(hw);
 	unsigned long flags = 0;

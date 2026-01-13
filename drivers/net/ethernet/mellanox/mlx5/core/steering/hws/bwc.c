@@ -23,6 +23,7 @@ hws_bwc_get_queue_lock(struct mlx5hws_context *ctx, u16 idx)
 }
 
 static void hws_bwc_lock_all_queues(struct mlx5hws_context *ctx)
+	__no_context_analysis /* loop */
 {
 	u16 bwc_queues = mlx5hws_bwc_queues(ctx);
 	struct mutex *queue_lock; /* Protect the queue */
@@ -35,6 +36,7 @@ static void hws_bwc_lock_all_queues(struct mlx5hws_context *ctx)
 }
 
 static void hws_bwc_unlock_all_queues(struct mlx5hws_context *ctx)
+	__no_context_analysis /* loop */
 {
 	u16 bwc_queues = mlx5hws_bwc_queues(ctx);
 	struct mutex *queue_lock; /* Protect the queue */
@@ -595,6 +597,7 @@ hws_bwc_matcher_rehash_shrink(struct mlx5hws_bwc_matcher *bwc_matcher)
 
 static int hws_bwc_rule_cnt_dec_with_shrink(struct mlx5hws_bwc_rule *bwc_rule,
 					    u16 bwc_queue_idx)
+	__must_hold(hws_bwc_get_queue_lock(bwc_rule->bwc_matcher->matcher->tbl->ctx, bwc_queue_idx))
 {
 	struct mlx5hws_bwc_matcher *bwc_matcher = bwc_rule->bwc_matcher;
 	struct mlx5hws_context *ctx = bwc_matcher->matcher->tbl->ctx;
@@ -921,6 +924,7 @@ hws_bwc_matcher_rehash_size(struct mlx5hws_bwc_matcher *bwc_matcher)
 static int hws_bwc_rule_get_at_idx(struct mlx5hws_bwc_rule *bwc_rule,
 				   struct mlx5hws_rule_action rule_actions[],
 				   u16 bwc_queue_idx)
+	__must_hold(hws_bwc_get_queue_lock(bwc_rule->bwc_matcher->matcher->tbl->ctx, bwc_queue_idx))
 {
 	struct mlx5hws_bwc_matcher *bwc_matcher = bwc_rule->bwc_matcher;
 	struct mlx5hws_context *ctx = bwc_matcher->matcher->tbl->ctx;
@@ -987,6 +991,7 @@ static void hws_bwc_rule_cnt_inc(struct mlx5hws_bwc_rule *bwc_rule)
 
 static int hws_bwc_rule_cnt_inc_with_rehash(struct mlx5hws_bwc_rule *bwc_rule,
 					    u16 bwc_queue_idx)
+	__must_hold(hws_bwc_get_queue_lock(bwc_rule->bwc_matcher->matcher->tbl->ctx, bwc_queue_idx))
 {
 	struct mlx5hws_bwc_matcher *bwc_matcher = bwc_rule->bwc_matcher;
 	struct mlx5hws_context *ctx = bwc_matcher->matcher->tbl->ctx;

@@ -552,6 +552,7 @@ static void meson_console_putchar(struct uart_port *port, unsigned char ch)
 
 static void meson_serial_port_write(struct uart_port *port, const char *s,
 				    u_int count)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long flags;
 	int locked = 1;

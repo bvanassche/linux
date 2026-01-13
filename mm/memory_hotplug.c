@@ -209,11 +209,13 @@ static DEFINE_MUTEX(online_page_callback_lock);
 DEFINE_STATIC_PERCPU_RWSEM(mem_hotplug_lock);
 
 void get_online_mems(void)
+	__acquires_shared(&mem_hotplug_lock)
 {
 	percpu_down_read(&mem_hotplug_lock);
 }
 
 void put_online_mems(void)
+	__releases_shared(&mem_hotplug_lock)
 {
 	percpu_up_read(&mem_hotplug_lock);
 }
@@ -257,12 +259,14 @@ static int __init setup_memhp_default_state(char *str)
 __setup("memhp_default_state=", setup_memhp_default_state);
 
 void mem_hotplug_begin(void)
+	__acquires(&mem_hotplug_lock)
 {
 	cpus_read_lock();
 	percpu_down_write(&mem_hotplug_lock);
 }
 
 void mem_hotplug_done(void)
+	__releases(&mem_hotplug_lock)
 {
 	percpu_up_write(&mem_hotplug_lock);
 	cpus_read_unlock();

@@ -58,6 +58,7 @@ static void __vlv_punit_put(struct drm_i915_private *i915)
 }
 
 void vlv_iosf_sb_get(struct drm_device *drm, unsigned long unit_mask)
+	__acquires(to_i915(drm)->vlv_iosf_sb.lock)
 {
 	struct drm_i915_private *i915 = to_i915(drm);
 
@@ -70,6 +71,7 @@ void vlv_iosf_sb_get(struct drm_device *drm, unsigned long unit_mask)
 }
 
 void vlv_iosf_sb_put(struct drm_device *drm, unsigned long unit_mask)
+	__releases(to_i915(drm)->vlv_iosf_sb.lock)
 {
 	struct drm_i915_private *i915 = to_i915(drm);
 

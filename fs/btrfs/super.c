@@ -2038,6 +2038,7 @@ static int btrfs_reconfigure_for_mount(struct fs_context *fc)
 }
 
 static int btrfs_get_tree_subvol(struct fs_context *fc)
+	__no_context_analysis
 {
 	struct btrfs_fs_info *fs_info = NULL;
 	struct btrfs_fs_context *ctx = fc->fs_private;
@@ -2122,6 +2123,7 @@ static int btrfs_get_tree(struct fs_context *fc)
 }
 
 static void btrfs_kill_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct btrfs_fs_info *fs_info = btrfs_sb(sb);
 	kill_anon_super(sb);

@@ -40,16 +40,11 @@ static void once_disable_jump(struct static_key_true *key, struct module *mod)
 static DEFINE_SPINLOCK(once_lock);
 
 bool __do_once_start(bool *done, unsigned long *flags)
-	__acquires(once_lock)
+	__cond_acquires(true, once_lock)
 {
 	spin_lock_irqsave(&once_lock, *flags);
 	if (*done) {
 		spin_unlock_irqrestore(&once_lock, *flags);
-		/* Keep sparse happy by restoring an even lock count on
-		 * this lock. In case we return here, we don't call into
-		 * __do_once_done but return early in the DO_ONCE() macro.
-		 */
-		__acquire(once_lock);
 		return false;
 	}
 
@@ -70,16 +65,12 @@ EXPORT_SYMBOL(__do_once_done);
 static DEFINE_MUTEX(once_mutex);
 
 bool __do_once_sleepable_start(bool *done)
-	__acquires(once_mutex)
+	__cond_acquires(true, &once_mutex)
+	__no_context_analysis
 {
 	mutex_lock(&once_mutex);
 	if (*done) {
 		mutex_unlock(&once_mutex);
-		/* Keep sparse happy by restoring an even lock count on
-		 * this mutex. In case we return here, we don't call into
-		 * __do_once_done but return early in the DO_ONCE_SLEEPABLE() macro.
-		 */
-		__acquire(once_mutex);
 		return false;
 	}
 
@@ -90,6 +81,7 @@ EXPORT_SYMBOL(__do_once_sleepable_start);
 void __do_once_sleepable_done(bool *done, struct static_key_true *once_key,
 			 struct module *mod)
 	__releases(once_mutex)
+	__no_context_analysis
 {
 	*done = true;
 	mutex_unlock(&once_mutex);

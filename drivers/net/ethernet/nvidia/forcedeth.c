@@ -1752,8 +1752,7 @@ static void nv_get_stats(int cpu, struct fe_priv *np,
  */
 static void
 nv_get_stats64(struct net_device *dev, struct rtnl_link_stats64 *storage)
-	__acquires(&netdev_priv(dev)->hwstats_lock)
-	__releases(&netdev_priv(dev)->hwstats_lock)
+	__must_not_hold(&((struct fe_priv *)netdev_priv(dev))->hwstats_lock)
 {
 	struct fe_priv *np = netdev_priv(dev);
 	int cpu;
@@ -4256,8 +4255,6 @@ static void nv_poll_controller(struct net_device *dev)
 #endif
 
 static void nv_do_stats_poll(struct timer_list *t)
-	__acquires(&netdev_priv(dev)->hwstats_lock)
-	__releases(&netdev_priv(dev)->hwstats_lock)
 {
 	struct fe_priv *np = timer_container_of(np, t, stats_poll);
 	struct net_device *dev = np->dev;
@@ -4655,6 +4652,7 @@ static int nv_set_ringparam(struct net_device *dev,
 			    struct ethtool_ringparam *ring,
 			    struct kernel_ethtool_ringparam *kernel_ring,
 			    struct netlink_ext_ack *extack)
+	__no_context_analysis /* conditional locking */
 {
 	struct fe_priv *np = netdev_priv(dev);
 	u8 __iomem *base = get_hwbase(dev);
@@ -5002,8 +5000,6 @@ static int nv_get_sset_count(struct net_device *dev, int sset)
 
 static void nv_get_ethtool_stats(struct net_device *dev,
 				 struct ethtool_stats *estats, u64 *buffer)
-	__acquires(&netdev_priv(dev)->hwstats_lock)
-	__releases(&netdev_priv(dev)->hwstats_lock)
 {
 	struct fe_priv *np = netdev_priv(dev);
 

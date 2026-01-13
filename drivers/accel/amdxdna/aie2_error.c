@@ -328,6 +328,7 @@ static void aie2_error_worker(struct work_struct *err_work)
 }
 
 void aie2_error_async_events_free(struct amdxdna_dev_hdl *ndev)
+	__must_hold(ndev->xdna->dev_lock)
 {
 	struct amdxdna_dev *xdna = ndev->xdna;
 	struct async_events *events;
@@ -401,6 +402,7 @@ free_events:
 }
 
 int aie2_get_array_async_error(struct amdxdna_dev_hdl *ndev, struct amdxdna_drm_get_array *args)
+	__must_hold(&ndev->xdna->dev_lock)
 {
 	struct amdxdna_dev *xdna = ndev->xdna;
 

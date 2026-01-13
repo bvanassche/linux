@@ -63,6 +63,7 @@ static int get_busid_idx(const char *busid)
 
 /* Returns holding busid_lock. Should call put_busid_priv() to unlock */
 struct bus_id_priv *get_busid_priv(const char *busid)
+	__cond_acquires(nonnull, &busid_table[get_busid_idx(busid)].busid_lock)
 {
 	int idx;
 	struct bus_id_priv *bid = NULL;
@@ -196,6 +197,7 @@ static ssize_t match_busid_store(struct device_driver *dev, const char *buf,
 static DRIVER_ATTR_RW(match_busid);
 
 static int do_rebind(char *busid, struct bus_id_priv *busid_priv)
+	__no_context_analysis /* conditional locking */
 {
 	int ret = 0;
 
@@ -240,6 +242,7 @@ static void stub_device_rebind(void)
 
 static ssize_t rebind_store(struct device_driver *dev, const char *buf,
 				 size_t count)
+	__no_context_analysis
 {
 	int ret;
 	int len;

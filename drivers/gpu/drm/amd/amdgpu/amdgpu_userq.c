@@ -627,6 +627,7 @@ amdgpu_userq_destroy(struct amdgpu_userq_mgr *uq_mgr, struct amdgpu_usermode_que
 	amdgpu_bo_unreserve(vm->root.bo);
 
 	mutex_lock(&uq_mgr->userq_mutex);
+	__assume_ctx_lock(&queue->userq_mgr->userq_mutex);
 	amdgpu_userq_wait_for_last_fence(queue);
 
 #if defined(CONFIG_DEBUG_FS)
@@ -754,6 +755,7 @@ amdgpu_userq_create(struct drm_file *filp, union drm_amdgpu_userq *args)
 
 	queue->userq_mgr = uq_mgr;
 
+	__assume_ctx_lock(&queue->userq_mgr->userq_mutex);
 	/* Validate the userq virtual address.*/
 	r = amdgpu_bo_reserve(fpriv->vm.root.bo, false);
 	if (r)
@@ -1244,6 +1246,7 @@ amdgpu_userq_evict_all(struct amdgpu_userq_mgr *uq_mgr)
 
 	/* Try to unmap all the queues in this process ctx */
 	xa_for_each(&uq_mgr->userq_xa, queue_id, queue) {
+		__assume_ctx_lock(&queue->userq_mgr->userq_mutex);
 		r = amdgpu_userq_preempt_helper(queue);
 		if (r)
 			ret = r;

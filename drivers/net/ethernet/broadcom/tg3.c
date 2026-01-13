@@ -6137,8 +6137,9 @@ static void tg3_refclk_write(struct tg3 *tp, u64 newval)
 	tw32_f(TG3_EAV_REF_CLCK_CTL, clock_ctl | TG3_EAV_REF_CLCK_CTL_RESUME);
 }
 
-static inline void tg3_full_lock(struct tg3 *tp, int irq_sync);
-static inline void tg3_full_unlock(struct tg3 *tp);
+static inline void tg3_full_lock(struct tg3 *tp, int irq_sync)
+	__acquires(&tp->lock);
+static inline void tg3_full_unlock(struct tg3 *tp) __releases(&tp->lock);
 static int tg3_get_ts_info(struct net_device *dev, struct kernel_ethtool_ts_info *info)
 {
 	struct tg3 *tp = netdev_priv(dev);
@@ -7486,8 +7487,7 @@ static inline void tg3_netif_start(struct tg3 *tp)
 }
 
 static void tg3_irq_quiesce(struct tg3 *tp)
-	__releases(tp->lock)
-	__acquires(tp->lock)
+	__must_hold(tp->lock)
 {
 	int i;
 
@@ -7510,6 +7510,7 @@ static void tg3_irq_quiesce(struct tg3 *tp)
  * shutting down the device.
  */
 static inline void tg3_full_lock(struct tg3 *tp, int irq_sync)
+	__acquires(&tp->lock)
 {
 	spin_lock_bh(&tp->lock);
 	if (irq_sync)
@@ -7517,6 +7518,7 @@ static inline void tg3_full_lock(struct tg3 *tp, int irq_sync)
 }
 
 static inline void tg3_full_unlock(struct tg3 *tp)
+	__releases(&tp->lock)
 {
 	spin_unlock_bh(&tp->lock);
 }
@@ -9148,8 +9150,7 @@ static void tg3_restore_clk(struct tg3 *tp)
 
 /* tp->lock is held. */
 static int tg3_chip_reset(struct tg3 *tp)
-	__releases(tp->lock)
-	__acquires(tp->lock)
+	__must_hold(tp->lock)
 {
 	u32 val;
 	void (*write_op)(struct tg3 *, u32, u32);
@@ -9430,6 +9431,7 @@ static void __tg3_set_rx_mode(struct net_device *);
 
 /* tp->lock is held. */
 static int tg3_halt(struct tg3 *tp, int kind, bool silent)
+	__no_context_analysis
 {
 	int err, i;
 
@@ -9942,6 +9944,7 @@ static inline u32 tg3_lso_rd_dma_workaround_bit(struct tg3 *tp)
 
 /* tp->lock is held. */
 static int tg3_reset_hw(struct tg3 *tp, bool reset_phy)
+	__no_context_analysis
 {
 	u32 val, rdmac_mode;
 	int i, err, limit;
@@ -11236,10 +11239,8 @@ static void tg3_timer_stop(struct tg3 *tp)
  * Invoked with tp->lock held.
  */
 static int tg3_restart_hw(struct tg3 *tp, bool reset_phy)
-	__releases(tp->lock)
-	__acquires(tp->lock)
-	__releases(tp->dev->lock)
-	__acquires(tp->dev->lock)
+	__must_hold(tp->lock)
+	__must_hold(tp->dev->lock)
 {
 	int err;
 
@@ -12558,6 +12559,7 @@ static int tg3_set_ringparam(struct net_device *dev,
 	}
 
 	netdev_lock(dev);
+	__assume_ctx_lock(&((struct tg3 *)netdev_priv(dev))->dev->lock);
 	tg3_full_lock(tp, irq_sync);
 
 	tp->rx_pending = ering->rx_pending;
@@ -12669,6 +12671,7 @@ static int tg3_set_pauseparam(struct net_device *dev, struct ethtool_pauseparam 
 		}
 
 		netdev_lock(dev);
+		__assume_ctx_lock(&((struct tg3 *)netdev_priv(dev))->dev->lock);
 		tg3_full_lock(tp, irq_sync);
 
 		if (epause->autoneg)
@@ -13892,6 +13895,7 @@ static void tg3_self_test(struct net_device *dev, struct ethtool_test *etest,
 		}
 
 		netdev_lock(dev);
+		__assume_ctx_lock(&((struct tg3 *)netdev_priv(dev))->dev->lock);
 		tg3_full_lock(tp, 0);
 
 		tg3_halt(tp, RESET_KIND_SHUTDOWN, 1);
@@ -14338,6 +14342,7 @@ static int tg3_change_mtu(struct net_device *dev, int new_mtu)
 	tg3_set_mtu(dev, tp, new_mtu);
 
 	netdev_lock(dev);
+	__assume_ctx_lock(&((struct tg3 *)netdev_priv(dev))->dev->lock);
 	tg3_full_lock(tp, 1);
 
 	tg3_halt(tp, RESET_KIND_SHUTDOWN, 1);
@@ -18152,6 +18157,7 @@ static int tg3_resume(struct device *device)
 	netif_device_attach(dev);
 
 	netdev_lock(dev);
+	__assume_ctx_lock(&((struct tg3 *)netdev_priv(dev))->dev->lock);
 	tg3_full_lock(tp, 0);
 
 	tg3_ape_driver_state_change(tp, RESET_KIND_INIT);
@@ -18390,6 +18396,7 @@ static void tg3_io_resume(struct pci_dev *pdev)
 		goto done;
 
 	netdev_lock(netdev);
+	__assume_ctx_lock(&((struct tg3 *)netdev_priv(netdev))->dev->lock);
 	tg3_full_lock(tp, 0);
 	tg3_ape_driver_state_change(tp, RESET_KIND_INIT);
 	tg3_flag_set(tp, INIT_COMPLETE);

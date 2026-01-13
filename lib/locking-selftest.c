@@ -278,7 +278,7 @@ static void init_shared_classes(void)
 
 #define GENERATE_TESTCASE(name)			\
 						\
-static void name(void) { E(); }
+static void name(void) __no_context_analysis { E(); }
 
 #define GENERATE_PERMUTATIONS_2_EVENTS(name)	\
 						\
@@ -331,24 +331,28 @@ GENERATE_TESTCASE(AA_rtmutex);
  * allowed to recurse on the same lock class:
  */
 static void rlock_AA1(void)
+	__no_context_analysis
 {
 	RL(X1);
 	RL(X1); // this one should NOT fail
 }
 
 static void rlock_AA1B(void)
+	__no_context_analysis
 {
 	RL(X1);
 	RL(X2); // this one should NOT fail
 }
 
 static void rsem_AA1(void)
+	__no_context_analysis
 {
 	RSL(X1);
 	RSL(X1); // this one should fail
 }
 
 static void rsem_AA1B(void)
+	__no_context_analysis
 {
 	RSL(X1);
 	RSL(X2); // this one should fail
@@ -357,24 +361,28 @@ static void rsem_AA1B(void)
  * The mixing of read and write locks is not allowed:
  */
 static void rlock_AA2(void)
+	__no_context_analysis
 {
 	RL(X1);
 	WL(X2); // this one should fail
 }
 
 static void rsem_AA2(void)
+	__no_context_analysis
 {
 	RSL(X1);
 	WSL(X2); // this one should fail
 }
 
 static void rlock_AA3(void)
+	__no_context_analysis
 {
 	WL(X1);
 	RL(X2); // this one should fail
 }
 
 static void rsem_AA3(void)
+	__no_context_analysis
 {
 	WSL(X1);
 	RSL(X2); // this one should fail
@@ -1428,6 +1436,7 @@ static int expected_testcase_failures;
 static int unexpected_testcase_failures;
 
 static void dotest(void (*testcase_fn)(void), int expected, int lockclass_mask)
+	__no_context_analysis
 {
 	int saved_preempt_count = preempt_count();
 #ifdef CONFIG_PREEMPT_RT
@@ -1667,6 +1676,7 @@ static inline void print_testname(const char *testname)
 	DO_TESTCASE_6IRW(desc, name, 321);
 
 static void ww_test_fail_acquire(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -1717,6 +1727,7 @@ static void ww_test_fail_acquire(void)
 #endif
 
 static void ww_test_normal(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -1778,12 +1789,14 @@ static void ww_test_normal(void)
 }
 
 static void ww_test_two_contexts(void)
+	__no_context_analysis
 {
 	WWAI(&t);
 	WWAI(&t2);
 }
 
 static void ww_test_diff_class(void)
+	__no_context_analysis
 {
 	WWAI(&t);
 #ifdef DEBUG_WW_MUTEXES
@@ -1793,6 +1806,7 @@ static void ww_test_diff_class(void)
 }
 
 static void ww_test_context_done_twice(void)
+	__no_context_analysis
 {
 	WWAI(&t);
 	WWAD(&t);
@@ -1801,6 +1815,7 @@ static void ww_test_context_done_twice(void)
 }
 
 static void ww_test_context_unlock_twice(void)
+	__no_context_analysis
 {
 	WWAI(&t);
 	WWAD(&t);
@@ -1809,6 +1824,7 @@ static void ww_test_context_unlock_twice(void)
 }
 
 static void ww_test_context_fini_early(void)
+	__no_context_analysis
 {
 	WWAI(&t);
 	WWL(&o, &t);
@@ -1817,6 +1833,7 @@ static void ww_test_context_fini_early(void)
 }
 
 static void ww_test_context_lock_after_done(void)
+	__no_context_analysis
 {
 	WWAI(&t);
 	WWAD(&t);
@@ -1824,6 +1841,7 @@ static void ww_test_context_lock_after_done(void)
 }
 
 static void ww_test_object_unlock_twice(void)
+	__no_context_analysis
 {
 	WWL1(&o);
 	WWU(&o);
@@ -1831,6 +1849,7 @@ static void ww_test_object_unlock_twice(void)
 }
 
 static void ww_test_object_lock_unbalanced(void)
+	__no_context_analysis
 {
 	WWAI(&t);
 	WWL(&o, &t);
@@ -1840,6 +1859,7 @@ static void ww_test_object_lock_unbalanced(void)
 }
 
 static void ww_test_object_lock_stale_context(void)
+	__no_context_analysis
 {
 	WWAI(&t);
 	o.ctx = &t2;
@@ -1847,6 +1867,7 @@ static void ww_test_object_lock_stale_context(void)
 }
 
 static void ww_test_edeadlk_normal(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -1873,6 +1894,7 @@ static void ww_test_edeadlk_normal(void)
 }
 
 static void ww_test_edeadlk_normal_slow(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -1899,6 +1921,7 @@ static void ww_test_edeadlk_normal_slow(void)
 }
 
 static void ww_test_edeadlk_no_unlock(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -1924,6 +1947,7 @@ static void ww_test_edeadlk_no_unlock(void)
 }
 
 static void ww_test_edeadlk_no_unlock_slow(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -1949,6 +1973,7 @@ static void ww_test_edeadlk_no_unlock_slow(void)
 }
 
 static void ww_test_edeadlk_acquire_more(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -1970,6 +1995,7 @@ static void ww_test_edeadlk_acquire_more(void)
 }
 
 static void ww_test_edeadlk_acquire_more_slow(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -1991,6 +2017,7 @@ static void ww_test_edeadlk_acquire_more_slow(void)
 }
 
 static void ww_test_edeadlk_acquire_more_edeadlk(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -2017,6 +2044,7 @@ static void ww_test_edeadlk_acquire_more_edeadlk(void)
 }
 
 static void ww_test_edeadlk_acquire_more_edeadlk_slow(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -2042,6 +2070,7 @@ static void ww_test_edeadlk_acquire_more_edeadlk_slow(void)
 }
 
 static void ww_test_edeadlk_acquire_wrong(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -2067,6 +2096,7 @@ static void ww_test_edeadlk_acquire_wrong(void)
 }
 
 static void ww_test_edeadlk_acquire_wrong_slow(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -2092,6 +2122,7 @@ static void ww_test_edeadlk_acquire_wrong_slow(void)
 }
 
 static void ww_test_spin_nest_unlocked(void)
+	__no_context_analysis
 {
 	spin_lock_nest_lock(&lock_A, &o.base);
 	U(A);
@@ -2099,6 +2130,7 @@ static void ww_test_spin_nest_unlocked(void)
 
 /* This is not a deadlock, because we have X1 to serialize Y1 and Y2 */
 static void ww_test_spin_nest_lock(void)
+	__no_context_analysis
 {
 	spin_lock(&lock_X1);
 	spin_lock_nest_lock(&lock_Y1, &lock_X1);
@@ -2111,6 +2143,7 @@ static void ww_test_spin_nest_lock(void)
 }
 
 static void ww_test_unneeded_slow(void)
+	__no_context_analysis
 {
 	WWAI(&t);
 
@@ -2118,6 +2151,7 @@ static void ww_test_unneeded_slow(void)
 }
 
 static void ww_test_context_block(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -2129,6 +2163,7 @@ static void ww_test_context_block(void)
 }
 
 static void ww_test_context_try(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -2144,6 +2179,7 @@ static void ww_test_context_try(void)
 }
 
 static void ww_test_context_context(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -2160,6 +2196,7 @@ static void ww_test_context_context(void)
 }
 
 static void ww_test_try_block(void)
+	__no_context_analysis
 {
 	bool ret;
 
@@ -2172,6 +2209,7 @@ static void ww_test_try_block(void)
 }
 
 static void ww_test_try_try(void)
+	__no_context_analysis
 {
 	bool ret;
 
@@ -2184,6 +2222,7 @@ static void ww_test_try_try(void)
 }
 
 static void ww_test_try_context(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -2197,12 +2236,14 @@ static void ww_test_try_context(void)
 }
 
 static void ww_test_block_block(void)
+	__no_context_analysis
 {
 	WWL1(&o);
 	WWL1(&o2);
 }
 
 static void ww_test_block_try(void)
+	__no_context_analysis
 {
 	bool ret;
 
@@ -2212,6 +2253,7 @@ static void ww_test_block_try(void)
 }
 
 static void ww_test_block_context(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -2223,6 +2265,7 @@ static void ww_test_block_context(void)
 }
 
 static void ww_test_spin_block(void)
+	__no_context_analysis
 {
 	L(A);
 	U(A);
@@ -2239,6 +2282,7 @@ static void ww_test_spin_block(void)
 }
 
 static void ww_test_spin_try(void)
+	__no_context_analysis
 {
 	bool ret;
 
@@ -2259,6 +2303,7 @@ static void ww_test_spin_try(void)
 }
 
 static void ww_test_spin_context(void)
+	__no_context_analysis
 {
 	int ret;
 
@@ -2281,6 +2326,7 @@ static void ww_test_spin_context(void)
 }
 
 static void ww_tests(void)
+	__no_context_analysis
 {
 	printk("  --------------------------------------------------------------------------\n");
 	printk("  | Wound/wait tests |\n");

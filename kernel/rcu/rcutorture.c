@@ -450,6 +450,7 @@ static int torture_readlock_not_held(void)
 }
 
 static int rcu_torture_read_lock(void)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return 0;
@@ -490,6 +491,7 @@ rcu_read_delay(struct torture_random_state *rrsp, struct rt_read_seg *rtrsp)
 }
 
 static void rcu_torture_read_unlock(int idx)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }
@@ -721,6 +723,7 @@ static void srcu_get_gp_data(int *flags, unsigned long *gp_seq)
 }
 
 static int srcu_torture_read_lock(void)
+	__no_context_analysis
 {
 	int idx;
 	struct srcu_ctr __percpu *scp;
@@ -773,6 +776,7 @@ srcu_read_delay(struct torture_random_state *rrsp, struct rt_read_seg *rtrsp)
 }
 
 static void srcu_torture_read_unlock(int idx)
+	__no_context_analysis
 {
 	WARN_ON_ONCE((reader_flavor && (idx & ~reader_flavor)) || (!reader_flavor && (idx & ~0x1)));
 	if (reader_flavor & SRCU_READ_FLAVOR_FAST_UPDOWN)
@@ -801,6 +805,7 @@ static bool srcu_torture_have_up_down(void)
 }
 
 static int srcu_torture_down_read(void)
+	__no_context_analysis
 {
 	int idx;
 	struct srcu_ctr __percpu *scp;
@@ -824,6 +829,7 @@ static int srcu_torture_down_read(void)
 }
 
 static void srcu_torture_up_read(int idx)
+	__no_context_analysis
 {
 	WARN_ON_ONCE((reader_flavor && (idx & ~reader_flavor)) || (!reader_flavor && (idx & ~0x1)));
 	if (reader_flavor & SRCU_READ_FLAVOR_FAST_UPDOWN)
@@ -841,6 +847,7 @@ static unsigned long srcu_torture_completed(void)
 }
 
 static void srcu_torture_deferred_free(struct rcu_torture *rp)
+	__context_unsafe(conditional locking)
 {
 	unsigned long flags;
 	bool lockit = jiffies & 0x1;
@@ -2171,6 +2178,7 @@ static void rcutorture_one_extend_check(char *s, int curstate, int new, int old)
  */
 static void rcutorture_one_extend(int *readstate, int newstate, struct torture_random_state *trsp,
 				  struct rt_read_seg *rtrsp)
+	__no_context_analysis
 {
 	bool first;
 	unsigned long flags;
@@ -4367,6 +4375,7 @@ static int srcu_lockdep_next(const char *f, const char *fl, const char *fs, cons
 
 // Test lockdep on SRCU-based deadlock scenarios.
 static void rcu_torture_init_srcu_lockdep(void)
+	__no_context_analysis
 {
 	int cyclelen;
 	int deadlock;

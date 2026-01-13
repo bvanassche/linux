@@ -527,6 +527,7 @@ static int mcp23s08_irq_set_type(struct irq_data *data, unsigned int type)
 }
 
 static void mcp23s08_irq_bus_lock(struct irq_data *data)
+	__acquires(&((struct mcp23s08 *)gpiochip_get_data(irq_data_get_irq_chip_data(data)))->lock)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(data);
 	struct mcp23s08 *mcp = gpiochip_get_data(gc);
@@ -536,6 +537,7 @@ static void mcp23s08_irq_bus_lock(struct irq_data *data)
 }
 
 static void mcp23s08_irq_bus_unlock(struct irq_data *data)
+	__releases(&((struct mcp23s08 *)gpiochip_get_data(irq_data_get_irq_chip_data(data)))->lock)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(data);
 	struct mcp23s08 *mcp = gpiochip_get_data(gc);

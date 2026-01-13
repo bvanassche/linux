@@ -1135,6 +1135,7 @@ static enum ice_ddp_state ice_map_aq_err_to_ddp_state(enum libie_aq_err aq_err)
  */
 static int ice_acquire_global_cfg_lock(struct ice_hw *hw,
 				       enum ice_aq_res_access_type access)
+	__cond_acquires(0, ice_global_cfg_lock_sw)
 {
 	int status;
 
@@ -1157,6 +1158,7 @@ static int ice_acquire_global_cfg_lock(struct ice_hw *hw,
  * This function will release the global config lock.
  */
 static void ice_release_global_cfg_lock(struct ice_hw *hw)
+	__releases(ice_global_cfg_lock_sw)
 {
 	mutex_unlock(&ice_global_cfg_lock_sw);
 	ice_release_res(hw, ICE_GLOBAL_CFG_LOCK_RES_ID);

@@ -421,7 +421,7 @@ static void ip6mr_free_table(struct mr_table *mrt)
  */
 
 static void *ip6mr_vif_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__no_context_analysis /* returns ERR_PTR() */
 {
 	struct mr_vif_iter *iter = seq->private;
 	struct net *net = seq_file_net(seq);
@@ -440,7 +440,7 @@ static void *ip6mr_vif_seq_start(struct seq_file *seq, loff_t *pos)
 }
 
 static void ip6mr_vif_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__no_context_analysis
 {
 	rcu_read_unlock();
 }

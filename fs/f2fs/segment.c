@@ -3969,6 +3969,7 @@ static int log_type_to_seg_type(enum log_type type)
 }
 
 static void do_write_page(struct f2fs_summary *sum, struct f2fs_io_info *fio)
+	__no_context_analysis /* conditional locking */
 {
 	struct folio *folio = fio->folio;
 	enum log_type type = __get_segment_type(fio);
@@ -4688,6 +4689,7 @@ static void remove_sits_in_journal(struct f2fs_sb_info *sbi)
  * and moves prefree segs to free segs.
  */
 void f2fs_flush_sit_entries(struct f2fs_sb_info *sbi, struct cp_control *cpc)
+	__no_context_analysis /* conditional locking */
 {
 	struct sit_info *sit_i = SIT_I(sbi);
 	unsigned long *bitmap = sit_i->dirty_sentries_bitmap;

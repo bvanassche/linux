@@ -216,6 +216,7 @@ ib_umem_dmabuf_get_pinned_and_lock(struct ib_device *device,
 				   unsigned long offset,
 				   size_t size, int fd, int access,
 				   const struct dma_buf_attach_ops *ops)
+	__context_unsafe(TO DO)
 {
 	struct ib_umem_dmabuf *umem_dmabuf;
 	int err;
@@ -252,6 +253,7 @@ ib_umem_dmabuf_get_pinned_with_dma_device(struct ib_device *device,
 					  struct device *dma_device,
 					  unsigned long offset, size_t size,
 					  int fd, int access)
+	__context_unsafe(conditional release)
 {
 	struct ib_umem_dmabuf *umem_dmabuf =
 		ib_umem_dmabuf_get_pinned_and_lock(device, dma_device, offset,
@@ -328,6 +330,7 @@ struct ib_umem_dmabuf *ib_umem_dmabuf_get_pinned(struct ib_device *device,
 EXPORT_SYMBOL(ib_umem_dmabuf_get_pinned);
 
 void ib_umem_dmabuf_revoke_lock(struct ib_umem_dmabuf *umem_dmabuf)
+	__acquires(umem_dmabuf->attach->dmabuf->resv->lock)
 {
 	struct dma_buf *dmabuf = umem_dmabuf->attach->dmabuf;
 	int ret;
@@ -338,6 +341,7 @@ void ib_umem_dmabuf_revoke_lock(struct ib_umem_dmabuf *umem_dmabuf)
 EXPORT_SYMBOL(ib_umem_dmabuf_revoke_lock);
 
 void ib_umem_dmabuf_revoke_unlock(struct ib_umem_dmabuf *umem_dmabuf)
+	__releases(umem_dmabuf->attach->dmabuf->resv->lock)
 {
 	struct dma_buf *dmabuf = umem_dmabuf->attach->dmabuf;
 

@@ -928,7 +928,7 @@ void sta_info_free(struct ieee80211_local *local, struct sta_info *sta);
  * without it held.
  */
 int sta_info_insert(struct sta_info *sta);
-int sta_info_insert_rcu(struct sta_info *sta) __acquires(RCU);
+int sta_info_insert_rcu(struct sta_info *sta) __acquires_shared(RCU);
 
 int __must_check __sta_info_destroy(struct sta_info *sta);
 int sta_info_destroy_addr(struct ieee80211_sub_if_data *sdata,

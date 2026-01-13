@@ -66,6 +66,7 @@ static int hi6220_clkdiv_determine_rate(struct clk_hw *hw,
 
 static int hi6220_clkdiv_set_rate(struct clk_hw *hw, unsigned long rate,
 					unsigned long parent_rate)
+	__no_context_analysis /* conditional locking */
 {
 	int value;
 	unsigned long flags = 0;

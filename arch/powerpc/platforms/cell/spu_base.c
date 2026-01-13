@@ -169,6 +169,7 @@ static int __spu_trap_data_seg(struct spu *spu, unsigned long ea)
 extern int hash_page(unsigned long ea, unsigned long access,
 		     unsigned long trap, unsigned long dsisr); //XXX
 static int __spu_trap_data_map(struct spu *spu, unsigned long ea, u64 dsisr)
+	__must_hold(&spu->register_lock)
 {
 	int ret;
 

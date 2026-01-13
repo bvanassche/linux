@@ -1252,6 +1252,7 @@ bool file_seek_cur_needs_f_lock(struct file *file)
 }
 
 struct fd fdget_pos(unsigned int fd)
+	__no_context_analysis
 {
 	struct fd f = fdget(fd);
 	struct file *file = fd_file(f);
@@ -1264,6 +1265,7 @@ struct fd fdget_pos(unsigned int fd)
 }
 
 void __f_unlock_pos(struct file *f)
+	__no_context_analysis
 {
 	mutex_unlock(&f->f_pos_lock);
 }

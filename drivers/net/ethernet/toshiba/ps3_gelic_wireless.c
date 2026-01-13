@@ -2049,6 +2049,7 @@ static void gelic_wl_connected_event(struct gelic_wl_info *wl,
  */
 static void gelic_wl_disconnect_event(struct gelic_wl_info *wl,
 				      u64 event)
+	__no_context_analysis /* conditional locking */
 {
 	struct gelic_eurus_cmd *cmd;
 	int lock;

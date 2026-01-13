@@ -34,6 +34,7 @@ static void *key_data(struct key *key)
 }
 
 static void nvdimm_put_key(struct key *key)
+	__no_context_analysis /* conditional locking */
 {
 	if (!key)
 		return;
@@ -48,6 +49,7 @@ static void nvdimm_put_key(struct key *key)
  * nvdimm_put_key() before the usage goes out of scope.
  */
 static struct key *nvdimm_request_key(struct nvdimm *nvdimm)
+	__no_context_analysis /* __cond_acquires(nonnull, &key->sem) */
 {
 	struct key *key = NULL;
 	static const char NVDIMM_PREFIX[] = "nvdimm:";
@@ -89,6 +91,7 @@ static const void *nvdimm_get_key_payload(struct nvdimm *nvdimm,
 
 static struct key *nvdimm_lookup_user_key(struct nvdimm *nvdimm,
 		key_serial_t id, int subclass)
+	__no_context_analysis /* __cond_acquires(nonnull, &key->sem) */
 {
 	key_ref_t keyref;
 	struct key *key;

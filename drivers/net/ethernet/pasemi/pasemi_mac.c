@@ -688,6 +688,7 @@ static inline void pasemi_mac_tx_error(const struct pasemi_mac *mac,
 
 static int pasemi_mac_clean_rx(struct pasemi_mac_rxring *rx,
 			       const int limit)
+	__no_context_analysis
 {
 	const struct pasemi_dmachan *chan = &rx->chan;
 	struct pasemi_mac *mac = rx->mac;

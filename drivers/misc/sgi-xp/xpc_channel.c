@@ -25,6 +25,7 @@
  */
 static void
 xpc_process_connect(struct xpc_channel *ch, unsigned long *irq_flags)
+	__must_hold(&ch->lock)
 {
 	enum xp_retval ret;
 
@@ -78,6 +79,7 @@ xpc_process_connect(struct xpc_channel *ch, unsigned long *irq_flags)
  */
 static void
 xpc_process_disconnect(struct xpc_channel *ch, unsigned long *irq_flags)
+	__must_hold(&ch->lock)
 {
 	struct xpc_partition *part = &xpc_partitions[ch->partid];
 	u32 channel_was_connected = (ch->flags & XPC_C_WASCONNECTED);
@@ -752,6 +754,7 @@ xpc_initiate_disconnect(int ch_number)
 void
 xpc_disconnect_channel(const int line, struct xpc_channel *ch,
 		       enum xp_retval reason, unsigned long *irq_flags)
+	__must_hold(&ch->lock)
 {
 	u32 channel_was_connected = (ch->flags & XPC_C_CONNECTED);
 

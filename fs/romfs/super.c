@@ -575,6 +575,7 @@ static int romfs_init_fs_context(struct fs_context *fc)
  * destroy a romfs superblock in the appropriate manner
  */
 static void romfs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	generic_shutdown_super(sb);
 

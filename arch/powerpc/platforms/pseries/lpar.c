@@ -461,6 +461,7 @@ static void reset_global_dtl_mask(void)
 }
 
 static int dtl_worker_enable(unsigned long *time_limit)
+	__cond_acquires(0, &dtl_access_lock)
 {
 	int rc = 0, state;
 
@@ -491,6 +492,7 @@ out:
 }
 
 static void dtl_worker_disable(unsigned long *time_limit)
+	__releases(&dtl_access_lock)
 {
 	cpuhp_remove_state(dtl_worker_state);
 	free_dtl_buffers(time_limit);
@@ -500,6 +502,7 @@ static void dtl_worker_disable(unsigned long *time_limit)
 
 static ssize_t vcpudispatch_stats_write(struct file *file, const char __user *p,
 		size_t count, loff_t *ppos)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long time_limit = jiffies + HZ;
 	struct vcpu_dispatch_data *disp;
@@ -1229,6 +1232,7 @@ static inline void __pSeries_lpar_hugepage_invalidate(unsigned long *slot,
 						      unsigned long *vpn,
 						      int count, int psize,
 						      int ssize)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long flags = 0;
 	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
@@ -1524,6 +1528,7 @@ void __init pseries_lpar_read_hblkrm_characteristics(void)
  * lock.
  */
 static void pSeries_lpar_flush_hash_range(unsigned long number, int local)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long vpn;
 	unsigned long i, pix, rc;

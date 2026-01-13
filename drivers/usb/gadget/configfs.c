@@ -1290,6 +1290,7 @@ static ssize_t ext_prop_type_show(struct config_item *item, char *page)
 
 static ssize_t ext_prop_type_store(struct config_item *item,
 				   const char *page, size_t len)
+	__no_context_analysis /* conditional locking */
 {
 	struct usb_os_desc_ext_prop *ext_prop = to_usb_os_desc_ext_prop(item);
 	struct usb_os_desc *desc = to_usb_os_desc(ext_prop->item.ci_parent);
@@ -1343,6 +1344,7 @@ static ssize_t ext_prop_data_show(struct config_item *item, char *page)
 
 static ssize_t ext_prop_data_store(struct config_item *item,
 				   const char *page, size_t len)
+	__no_context_analysis /* conditional locking */
 {
 	struct usb_os_desc_ext_prop *ext_prop = to_usb_os_desc_ext_prop(item);
 	struct usb_os_desc *desc = to_usb_os_desc(ext_prop->item.ci_parent);
@@ -1398,6 +1400,7 @@ static const struct configfs_item_operations ext_prop_ops = {
 static struct config_item *ext_prop_make(
 		struct config_group *group,
 		const char *name)
+	__no_context_analysis /* conditional locking */
 {
 	struct usb_os_desc_ext_prop *ext_prop;
 	struct config_item_type *ext_prop_type;
@@ -1441,6 +1444,7 @@ static struct config_item *ext_prop_make(
 }
 
 static void ext_prop_drop(struct config_group *group, struct config_item *item)
+	__no_context_analysis /* conditional locking */
 {
 	struct usb_os_desc_ext_prop *ext_prop = to_usb_os_desc_ext_prop(item);
 	struct usb_os_desc *desc = to_usb_os_desc(&group->cg_item);
@@ -1470,6 +1474,7 @@ static ssize_t interf_grp_compatible_id_show(struct config_item *item,
 
 static ssize_t interf_grp_compatible_id_store(struct config_item *item,
 					      const char *page, size_t len)
+	__no_context_analysis /* conditional locking */
 {
 	struct usb_os_desc *desc = to_usb_os_desc(item);
 	int l;
@@ -1496,6 +1501,7 @@ static ssize_t interf_grp_sub_compatible_id_show(struct config_item *item,
 
 static ssize_t interf_grp_sub_compatible_id_store(struct config_item *item,
 						  const char *page, size_t len)
+	__no_context_analysis /* conditional locking */
 {
 	struct usb_os_desc *desc = to_usb_os_desc(item);
 	int l;

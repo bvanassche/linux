@@ -1503,6 +1503,7 @@ static int __allocate_data_block(struct dnode_of_data *dn, int seg_type)
 static void f2fs_map_lock(struct f2fs_sb_info *sbi,
 				struct f2fs_lock_context *lc,
 				int flag)
+	__no_context_analysis /* conditional locking */
 {
 	if (flag == F2FS_GET_BLOCK_PRE_AIO)
 		f2fs_down_read_trace(&sbi->node_change, lc);
@@ -1513,6 +1514,7 @@ static void f2fs_map_lock(struct f2fs_sb_info *sbi,
 static void f2fs_map_unlock(struct f2fs_sb_info *sbi,
 				struct f2fs_lock_context *lc,
 				int flag)
+	__no_context_analysis /* conditional locking */
 {
 	if (flag == F2FS_GET_BLOCK_PRE_AIO)
 		f2fs_up_read_trace(&sbi->node_change, lc);
@@ -2942,6 +2944,7 @@ static inline bool need_inplace_update(struct f2fs_io_info *fio)
 }
 
 int f2fs_do_write_data_page(struct f2fs_io_info *fio)
+	__no_context_analysis /* conditional locking */
 {
 	struct folio *folio = fio->folio;
 	struct inode *inode = folio->mapping->host;
@@ -3075,6 +3078,7 @@ int f2fs_write_single_data_page(struct folio *folio, int *submitted,
 				enum iostat_type io_type,
 				int compr_blocks,
 				bool allow_balance)
+	__no_context_analysis /* conditional locking */
 {
 	struct inode *inode = folio->mapping->host;
 	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
@@ -3565,6 +3569,7 @@ static inline void update_skipped_write(struct f2fs_sb_info *sbi,
 static int __f2fs_write_data_pages(struct address_space *mapping,
 						struct writeback_control *wbc,
 						enum iostat_type io_type)
+	__no_context_analysis /* conditional locking */
 {
 	struct inode *inode = mapping->host;
 	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);

@@ -86,6 +86,7 @@ static inline int sctp_rcv_checksum(struct net *net, struct sk_buff *skb)
  * This is the routine which IP calls when receiving an SCTP packet.
  */
 int sctp_rcv(struct sk_buff *skb)
+	__no_context_analysis /* clang bug? */
 {
 	struct sock *sk;
 	struct sctp_association *asoc;
@@ -521,6 +522,11 @@ struct sock *sctp_err_lookup(struct net *net, int family, struct sk_buff *skb,
 	}
 
 	bh_lock_sock(sk);
+	/*
+	 * Fake __release() because we can't annotate this function with
+	 * __cond_acquires().
+	 */
+	__release(&sk->sk_lock.slock);
 
 	/* If too many ICMPs get dropped on busy
 	 * servers this needs to be solved differently.
@@ -539,7 +545,7 @@ out:
 
 /* Common cleanup code for icmp/icmpv6 error handler. */
 void sctp_err_finish(struct sock *sk, struct sctp_transport *t)
-	__releases(&((__sk)->sk_lock.slock))
+	__releases(&sk->sk_lock.slock)
 {
 	bh_unlock_sock(sk);
 	sctp_transport_put(t);
@@ -629,6 +635,7 @@ int sctp_v4_err(struct sk_buff *skb, __u32 info)
 		return -ENOENT;
 	}
 
+	__acquire(&sk->sk_lock.slock);
 	sctp_v4_err_handle(transport, skb, type, code, info);
 	sctp_err_finish(sk, transport);
 
@@ -650,6 +657,7 @@ int sctp_udp_v4_err(struct sock *sk, struct sk_buff *skb)
 		return -ENOENT;
 	}
 
+	__acquire(&sk->sk_lock.slock);
 	skb->transport_header -= sizeof(struct udphdr);
 	hdr = (struct icmphdr *)(skb_network_header(skb) - sizeof(struct icmphdr));
 	if (hdr->type == ICMP_REDIRECT) {
@@ -997,6 +1005,7 @@ struct sctp_transport *sctp_addrs_lookup_transport(
 				const union sctp_addr *laddr,
 				const union sctp_addr *paddr,
 				int dif, int sdif)
+	__must_hold_shared(RCU)
 {
 	struct rhlist_head *tmp, *list;
 	struct sctp_transport *t;
@@ -1029,6 +1038,7 @@ struct sctp_transport *sctp_addrs_lookup_transport(
 struct sctp_transport *sctp_epaddr_lookup_transport(
 				const struct sctp_endpoint *ep,
 				const union sctp_addr *paddr)
+	__must_hold_shared(RCU)
 {
 	struct rhlist_head *tmp, *list;
 	struct sctp_transport *t;
@@ -1055,6 +1065,7 @@ static struct sctp_association *__sctp_lookup_association(
 					const union sctp_addr *peer,
 					struct sctp_transport **pt,
 					int dif, int sdif)
+	__must_hold_shared(RCU)
 {
 	struct sctp_transport *t;
 	struct sctp_association *asoc = NULL;
@@ -1125,6 +1136,7 @@ static struct sctp_association *__sctp_rcv_init_lookup(struct net *net,
 	struct sk_buff *skb,
 	const union sctp_addr *laddr, struct sctp_transport **transportp,
 	int dif, int sdif)
+	__must_hold_shared(RCU)
 {
 	struct sctp_association *asoc;
 	union sctp_addr addr;
@@ -1192,6 +1204,7 @@ static struct sctp_association *__sctp_rcv_asconf_lookup(
 					__be16 peer_port,
 					struct sctp_transport **transportp,
 					int dif, int sdif)
+	__must_hold_shared(RCU)
 {
 	struct sctp_addip_chunk *asconf = (struct sctp_addip_chunk *)ch;
 	struct sctp_af *af;
@@ -1229,6 +1242,7 @@ static struct sctp_association *__sctp_rcv_walk_lookup(struct net *net,
 				      const union sctp_addr *laddr,
 				      struct sctp_transport **transportp,
 				      int dif, int sdif)
+	__must_hold_shared(RCU)
 {
 	struct sctp_association *asoc = NULL;
 	struct sctp_chunkhdr *ch;
@@ -1298,6 +1312,7 @@ static struct sctp_association *__sctp_rcv_lookup_harder(struct net *net,
 				      const union sctp_addr *laddr,
 				      struct sctp_transport **transportp,
 				      int dif, int sdif)
+	__must_hold_shared(RCU)
 {
 	struct sctp_chunkhdr *ch;
 
@@ -1333,6 +1348,7 @@ static struct sctp_association *__sctp_rcv_lookup(struct net *net,
 				      const union sctp_addr *laddr,
 				      struct sctp_transport **transportp,
 				      int dif, int sdif)
+	__must_hold_shared(RCU)
 {
 	struct sctp_association *asoc;
 

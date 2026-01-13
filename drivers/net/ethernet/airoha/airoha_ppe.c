@@ -1043,6 +1043,8 @@ static int airoha_ppe_flow_offload_replace(struct airoha_eth *eth,
 	u16 addr_type = 0;
 	u8 l4proto = 0;
 
+	__assume_ctx_lock(RCU);
+
 	if (rhashtable_lookup(&eth->flow_table, &f->cookie,
 			      airoha_flow_table_params))
 		return -EEXIST;
@@ -1235,6 +1237,8 @@ static int airoha_ppe_flow_offload_destroy(struct airoha_eth *eth,
 {
 	struct airoha_flow_table_entry *e;
 
+	__assume_ctx_lock(RCU);
+
 	e = rhashtable_lookup(&eth->flow_table, &f->cookie,
 			      airoha_flow_table_params);
 	if (!e)
@@ -1288,6 +1292,8 @@ static int airoha_ppe_flow_offload_stats(struct airoha_eth *eth,
 {
 	struct airoha_flow_table_entry *e;
 	u32 idle;
+
+	__assume_ctx_lock(RCU);
 
 	e = rhashtable_lookup(&eth->flow_table, &f->cookie,
 			      airoha_flow_table_params);

@@ -34,6 +34,7 @@ void io_fallback_req_func(struct work_struct *work)
 }
 
 static void ctx_flush_and_put(struct io_ring_ctx *ctx, io_tw_token_t tw)
+	__no_context_analysis /* conditional locking */
 {
 	if (!ctx)
 		return;
@@ -53,6 +54,7 @@ static void ctx_flush_and_put(struct io_ring_ctx *ctx, io_tw_token_t tw)
 struct llist_node *io_handle_tw_list(struct llist_node *node,
 				     unsigned int *count,
 				     unsigned int max_entries)
+	__no_context_analysis /* conditional locking */
 {
 	struct io_ring_ctx *ctx = NULL;
 	struct io_tw_state ts = { };

@@ -367,6 +367,7 @@ int drm_open_helper(struct file *filp, struct drm_minor *minor)
  * 0 on success or negative errno value on failure.
  */
 int drm_open(struct inode *inode, struct file *filp)
+	__no_context_analysis /* conditional locking */
 {
 	struct drm_device *dev;
 	struct drm_minor *minor;
@@ -425,6 +426,7 @@ static void drm_lastclose(struct drm_device *dev)
  * Always succeeds and returns 0.
  */
 int drm_release(struct inode *inode, struct file *filp)
+	__no_context_analysis /* conditional locking */
 {
 	struct drm_file *file_priv = filp->private_data;
 	struct drm_minor *minor = file_priv->minor;

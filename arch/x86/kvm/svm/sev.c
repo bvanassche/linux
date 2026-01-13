@@ -1972,6 +1972,8 @@ static bool is_cmd_allowed_from_mirror(u32 cmd_id)
 }
 
 static int sev_lock_two_vms(struct kvm *dst_kvm, struct kvm *src_kvm)
+	__cond_acquires(0, dst_kvm->lock)
+	__cond_acquires(0, src_kvm->lock)
 {
 	struct kvm_sev_info *dst_sev = to_kvm_sev_info(dst_kvm);
 	struct kvm_sev_info *src_sev = to_kvm_sev_info(src_kvm);
@@ -2007,6 +2009,8 @@ release_dst:
 }
 
 static void sev_unlock_two_vms(struct kvm *dst_kvm, struct kvm *src_kvm)
+	__releases(&dst_kvm->lock)
+	__releases(&src_kvm->lock)
 {
 	struct kvm_sev_info *dst_sev = to_kvm_sev_info(dst_kvm);
 	struct kvm_sev_info *src_sev = to_kvm_sev_info(src_kvm);

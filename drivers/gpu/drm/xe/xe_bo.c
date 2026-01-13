@@ -1654,6 +1654,7 @@ static void __xe_bo_vunmap(struct xe_bo *bo);
  * locking, thereby abusing TTM internals.
  */
 static bool xe_ttm_bo_lock_in_destructor(struct ttm_buffer_object *ttm_bo)
+	__cond_acquires(true, &ttm_bo->base._resv.lock)
 {
 	struct xe_device *xe = ttm_to_xe_device(ttm_bo->bdev);
 	bool locked;
@@ -1675,6 +1676,7 @@ static bool xe_ttm_bo_lock_in_destructor(struct ttm_buffer_object *ttm_bo)
 }
 
 static void xe_ttm_bo_release_notify(struct ttm_buffer_object *ttm_bo)
+	__no_context_analysis
 {
 	struct dma_resv_iter cursor;
 	struct dma_fence *fence;
@@ -2062,6 +2064,7 @@ out_pm:
 }
 
 static vm_fault_t xe_bo_cpu_fault(struct vm_fault *vmf)
+	__no_context_analysis
 {
 	struct ttm_buffer_object *tbo = vmf->vma->vm_private_data;
 	struct drm_device *ddev = tbo->base.dev;
@@ -2302,6 +2305,7 @@ struct xe_bo *xe_bo_init_locked(struct xe_device *xe, struct xe_bo *bo,
 				struct ttm_lru_bulk_move *bulk, size_t size,
 				u16 cpu_caching, enum ttm_bo_type type,
 				u32 flags, struct drm_exec *exec)
+	__no_context_analysis
 {
 	struct ttm_operation_ctx ctx = {
 		.interruptible = true,
@@ -3576,6 +3580,7 @@ int xe_bo_decompress(struct xe_bo *bo)
  * function always returns 0.
  */
 int xe_bo_lock(struct xe_bo *bo, bool intr)
+	__no_context_analysis
 {
 	if (intr)
 		return dma_resv_lock_interruptible(bo->ttm.base.resv, NULL);
@@ -3590,6 +3595,7 @@ int xe_bo_lock(struct xe_bo *bo, bool intr)
  * Unlock a buffer object lock that was locked by xe_bo_lock().
  */
 void xe_bo_unlock(struct xe_bo *bo)
+	__no_context_analysis
 {
 	dma_resv_unlock(bo->ttm.base.resv);
 }

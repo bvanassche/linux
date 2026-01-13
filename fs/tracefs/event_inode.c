@@ -890,12 +890,16 @@ void eventfs_remove_events_dir(struct eventfs_inode *ei)
 }
 
 int eventfs_remount_lock(void)
+	__acquires(&eventfs_mutex)
+	__acquires_shared(&eventfs_srcu)
 {
 	mutex_lock(&eventfs_mutex);
 	return srcu_read_lock(&eventfs_srcu);
 }
 
 void eventfs_remount_unlock(int srcu_idx)
+	__releases_shared(&eventfs_srcu)
+	__releases(&eventfs_mutex)
 {
 	srcu_read_unlock(&eventfs_srcu, srcu_idx);
 	mutex_unlock(&eventfs_mutex);

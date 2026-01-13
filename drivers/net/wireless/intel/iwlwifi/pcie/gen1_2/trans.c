@@ -2328,6 +2328,7 @@ EXPORT_SYMBOL(iwl_trans_pcie_reset);
  * already disabled.
  */
 bool _iwl_trans_pcie_grab_nic_access(struct iwl_trans *trans, bool silent)
+	__cond_acquires(true, &IWL_TRANS_GET_PCIE_TRANS(trans)->reg_lock)
 {
 	int ret;
 	struct iwl_trans_pcie *trans_pcie = IWL_TRANS_GET_PCIE_TRANS(trans);
@@ -2402,15 +2403,11 @@ bool _iwl_trans_pcie_grab_nic_access(struct iwl_trans *trans, bool silent)
 	}
 
 out:
-	/*
-	 * Fool sparse by faking we release the lock - sparse will
-	 * track nic_access anyway.
-	 */
-	__release(&trans_pcie->reg_lock);
 	return true;
 }
 
 bool iwl_trans_pcie_grab_nic_access(struct iwl_trans *trans)
+	__cond_acquires(true, &IWL_TRANS_GET_PCIE_TRANS(trans)->reg_lock)
 {
 	bool ret;
 
@@ -2424,18 +2421,12 @@ bool iwl_trans_pcie_grab_nic_access(struct iwl_trans *trans)
 	return false;
 }
 
-void __releases(nic_access_nobh)
-iwl_trans_pcie_release_nic_access(struct iwl_trans *trans)
+void iwl_trans_pcie_release_nic_access(struct iwl_trans *trans)
+	__releases(&IWL_TRANS_GET_PCIE_TRANS(trans)->reg_lock)
 {
 	struct iwl_trans_pcie *trans_pcie = IWL_TRANS_GET_PCIE_TRANS(trans);
 
 	lockdep_assert_held(&trans_pcie->reg_lock);
-
-	/*
-	 * Fool sparse by faking we acquiring the lock - sparse will
-	 * track nic_access anyway.
-	 */
-	__acquire(&trans_pcie->reg_lock);
 
 	if (trans_pcie->cmd_hold_nic_awake)
 		goto out;
@@ -2452,7 +2443,7 @@ iwl_trans_pcie_release_nic_access(struct iwl_trans *trans)
 	 * scheduled on different CPUs (after we drop reg_lock).
 	 */
 out:
-	__release(nic_access_nobh);
+	__release(trans);
 	spin_unlock_bh(&trans_pcie->reg_lock);
 }
 

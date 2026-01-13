@@ -231,10 +231,7 @@ gs_send_packet(struct gs_port *port, char *packet, unsigned size)
  * Context: caller owns port_lock; port_usb is non-null.
  */
 static int gs_start_tx(struct gs_port *port)
-/*
-__releases(&port->port_lock)
-__acquires(&port->port_lock)
-*/
+	__must_hold(&port->port_lock)
 {
 	struct list_head	*pool = &port->write_pool;
 	struct usb_ep		*in;
@@ -304,10 +301,7 @@ __acquires(&port->port_lock)
  * Context: caller owns port_lock, and port_usb is set
  */
 static unsigned gs_start_rx(struct gs_port *port)
-/*
-__releases(&port->port_lock)
-__acquires(&port->port_lock)
-*/
+	__must_hold(&port->port_lock)
 {
 	struct list_head	*pool = &port->read_pool;
 	struct usb_ep		*out = port->port_usb->out;
@@ -542,6 +536,7 @@ static int gs_alloc_requests(struct usb_ep *ep, struct list_head *head,
  * be pointlessly filling up our TX buffers and FIFO.
  */
 static int gs_start_io(struct gs_port *port)
+	__must_hold(&port->port_lock)
 {
 	struct list_head	*head = &port->read_pool;
 	struct usb_ep		*ep = port->port_usb->out;
@@ -952,6 +947,7 @@ static void gs_console_complete_out(struct usb_ep *ep, struct usb_request *req)
 }
 
 static void __gs_console_push(struct gs_console *cons)
+	__must_hold(&cons->lock)
 {
 	struct usb_request *req = cons->req;
 	struct usb_ep *ep;

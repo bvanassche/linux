@@ -25,6 +25,8 @@ int kvm_irq_map_gsi(struct kvm *kvm,
 	struct kvm_kernel_irq_routing_entry *e;
 	int n = 0;
 
+	__assume_shared_ctx_lock(&kvm->irq_srcu);
+
 	irq_rt = srcu_dereference_check(kvm->irq_routing, &kvm->irq_srcu,
 					lockdep_is_held(&kvm->irq_lock));
 	if (irq_rt && gsi < irq_rt->nr_rt_entries) {
@@ -40,6 +42,8 @@ int kvm_irq_map_gsi(struct kvm *kvm,
 int kvm_irq_map_chip_pin(struct kvm *kvm, unsigned irqchip, unsigned pin)
 {
 	struct kvm_irq_routing_table *irq_rt;
+
+	__assume_shared_ctx_lock(&kvm->irq_srcu);
 
 	irq_rt = srcu_dereference(kvm->irq_routing, &kvm->irq_srcu);
 	return irq_rt->chip[irqchip][pin];

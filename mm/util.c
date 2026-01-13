@@ -1131,22 +1131,26 @@ EXPORT_SYMBOL_GPL(mem_dump_obj);
 static DECLARE_RWSEM(page_offline_rwsem);
 
 void page_offline_freeze(void)
+	__acquires_shared(&page_offline_rwsem)
 {
 	down_read(&page_offline_rwsem);
 }
 
 void page_offline_thaw(void)
+	__releases_shared(&page_offline_rwsem)
 {
 	up_read(&page_offline_rwsem);
 }
 
 void page_offline_begin(void)
+	__acquires(&page_offline_rwsem)
 {
 	down_write(&page_offline_rwsem);
 }
 EXPORT_SYMBOL(page_offline_begin);
 
 void page_offline_end(void)
+	__releases(&page_offline_rwsem)
 {
 	up_write(&page_offline_rwsem);
 }

@@ -290,7 +290,10 @@ int tcp_sigpool_start(unsigned int id, struct tcp_sigpool *c) __cond_acquires(0,
 }
 EXPORT_SYMBOL_GPL(tcp_sigpool_start);
 
-void tcp_sigpool_end(struct tcp_sigpool *c) __releases(RCU_BH)
+void tcp_sigpool_end(struct tcp_sigpool *c)
+	__releases(&sigpool_scratch.bh_lock)
+	__releases_shared(RCU_BH)
+	__releases_shared(RCU)
 {
 	struct crypto_ahash *hash = crypto_ahash_reqtfm(c->req);
 

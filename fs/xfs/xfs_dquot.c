@@ -803,6 +803,7 @@ xfs_qm_dqget_cache_lookup(
 	struct xfs_mount	*mp,
 	xfs_dqid_t		id,
 	xfs_dqtype_t		type)
+	__no_context_analysis
 {
 	struct xfs_quotainfo	*qi = mp->m_quotainfo;
 	struct radix_tree_root	*tree = xfs_dquot_tree(qi, type);
@@ -847,6 +848,7 @@ xfs_qm_dqget_cache_insert(
 	xfs_dqid_t		id,
 	xfs_dqtype_t		type,
 	struct xfs_dquot	*dqp)
+	__no_context_analysis
 {
 	struct xfs_quotainfo	*qi = mp->m_quotainfo;
 	struct radix_tree_root	*tree = xfs_dquot_tree(qi, type);
@@ -994,6 +996,7 @@ xfs_qm_dqget_inode(
 	xfs_dqtype_t		type,
 	bool			can_alloc,
 	struct xfs_dquot	**dqpp)
+	__no_context_analysis
 {
 	struct xfs_mount	*mp = ip->i_mount;
 	struct xfs_dquot	*dqp;
@@ -1114,6 +1117,7 @@ xfs_qm_dqget_next(
 void
 xfs_qm_dqrele(
 	struct xfs_dquot	*dqp)
+	__no_context_analysis
 {
 	if (!dqp)
 		return;
@@ -1462,6 +1466,7 @@ void
 xfs_dqlock2(
 	struct xfs_dquot	*d1,
 	struct xfs_dquot	*d2)
+	__no_context_analysis
 {
 	if (d1 && d2) {
 		ASSERT(d1 != d2);
@@ -1497,6 +1502,7 @@ xfs_dqtrx_cmp(
 void
 xfs_dqlockn(
 	struct xfs_dqtrx	*q)
+	__no_context_analysis
 {
 	unsigned int		i;
 

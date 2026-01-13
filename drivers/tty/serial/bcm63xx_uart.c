@@ -702,6 +702,7 @@ static void bcm_console_putchar(struct uart_port *port, unsigned char ch)
  */
 static void bcm_console_write(struct console *co, const char *s,
 			      unsigned int count)
+	__no_context_analysis /* conditional locking */
 {
 	struct uart_port *port;
 	unsigned long flags;

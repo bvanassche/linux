@@ -322,8 +322,6 @@ struct rxrpc_call *rxrpc_new_client_call(struct rxrpc_sock *rx,
 					 struct rxrpc_call_params *p,
 					 gfp_t gfp,
 					 unsigned int debug_id)
-	__releases(&rx->sk.sk_lock)
-	__acquires(&call->user_mutex)
 {
 	struct rxrpc_call *call, *xcall;
 	struct rxrpc_net *rxnet;
@@ -400,6 +398,7 @@ struct rxrpc_call *rxrpc_new_client_call(struct rxrpc_sock *rx,
 		goto error_attached_to_socket;
 
 	_leave(" = %p [new]", call);
+	__release(&call->user_mutex);
 	return call;
 
 	/* We unexpectedly found the user ID in the list after taking
@@ -428,6 +427,7 @@ error_attached_to_socket:
 			 rxrpc_call_see_connect_failed);
 	rxrpc_set_call_completion(call, RXRPC_CALL_LOCAL_ERROR, 0, ret);
 	_leave(" = c=%08x [err]", call->debug_id);
+	__release(&call->user_mutex);
 	return call;
 }
 

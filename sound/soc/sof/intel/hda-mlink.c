@@ -678,6 +678,7 @@ EXPORT_SYMBOL_NS(hdac_bus_eml_sdw_check_cmdsync_unlocked, "SND_SOC_SOF_HDA_MLINK
 
 static int hdac_bus_eml_power_up_base(struct hdac_bus *bus, bool alt, int elid, int sublink,
 				      bool eml_lock)
+	__no_context_analysis /* conditional locking */
 {
 	struct hdac_ext2_link *h2link;
 	struct hdac_ext_link *hlink;
@@ -740,6 +741,7 @@ EXPORT_SYMBOL_NS(hdac_bus_eml_power_up_unlocked, "SND_SOC_SOF_HDA_MLINK");
 
 static int hdac_bus_eml_power_down_base(struct hdac_bus *bus, bool alt, int elid, int sublink,
 					bool eml_lock)
+	__no_context_analysis /* conditional locking */
 {
 	struct hdac_ext2_link *h2link;
 	struct hdac_ext_link *hlink;

@@ -541,6 +541,7 @@ static int process_add_new_disk(struct mddev *mddev, struct cluster_msg *cmsg)
 
 
 static void process_metadata_update(struct mddev *mddev, struct cluster_msg *msg)
+	__no_context_analysis /* conditional locking */
 {
 	int got_lock = 0;
 	struct md_thread *thread;
@@ -695,6 +696,7 @@ out:
  * node can communicate while the operation is underway.
  */
 static int lock_token(struct md_cluster_info *cinfo)
+	__cond_acquires(0, cinfo->recv_mutex)
 {
 	int error;
 
@@ -713,6 +715,7 @@ static int lock_token(struct md_cluster_info *cinfo)
  * Sets the MD_CLUSTER_SEND_LOCK bit to lock the send channel.
  */
 static int lock_comm(struct md_cluster_info *cinfo, bool mddev_locked)
+	__cond_acquires(0, cinfo->recv_mutex)
 {
 	int rv, set_bit = 0;
 	struct mddev *mddev = cinfo->mddev;
@@ -741,6 +744,7 @@ static int lock_comm(struct md_cluster_info *cinfo, bool mddev_locked)
 }
 
 static void unlock_comm(struct md_cluster_info *cinfo)
+	__releases(cinfo->recv_mutex)
 {
 	WARN_ON(cinfo->token_lockres->mode != DLM_LOCK_EX);
 	mutex_unlock(&cinfo->recv_mutex);
@@ -1099,6 +1103,7 @@ static int metadata_update_start(struct mddev *mddev)
 }
 
 static int metadata_update_finish(struct mddev *mddev)
+	__no_context_analysis /* conditional unlock */
 {
 	struct md_cluster_info *cinfo = mddev->cluster_info;
 	struct cluster_msg cmsg;
@@ -1126,10 +1131,11 @@ static int metadata_update_finish(struct mddev *mddev)
 }
 
 static void metadata_update_cancel(struct mddev *mddev)
+	__releases(mddev->cluster_info->recv_mutex)
 {
 	struct md_cluster_info *cinfo = mddev->cluster_info;
 	clear_bit(MD_CLUSTER_SEND_LOCKED_ALREADY, &cinfo->state);
-	unlock_comm(cinfo);
+	unlock_comm(mddev->cluster_info);
 }
 
 static int update_bitmap_size(struct mddev *mddev, sector_t size)
@@ -1459,6 +1465,7 @@ static int area_resyncing(struct mddev *mddev, int direction,
  * add_new_disk_cancel() must be called to release token lock
  */
 static int add_new_disk(struct mddev *mddev, struct md_rdev *rdev)
+	__cond_acquires(0, mddev->cluster_info->recv_mutex)
 {
 	struct md_cluster_info *cinfo = mddev->cluster_info;
 	struct cluster_msg cmsg;
@@ -1506,10 +1513,11 @@ static int add_new_disk(struct mddev *mddev, struct md_rdev *rdev)
 }
 
 static void add_new_disk_cancel(struct mddev *mddev)
+	__releases(mddev->cluster_info->recv_mutex)
 {
 	struct md_cluster_info *cinfo = mddev->cluster_info;
 	clear_bit(MD_CLUSTER_SEND_LOCKED_ALREADY, &cinfo->state);
-	unlock_comm(cinfo);
+	unlock_comm(mddev->cluster_info);
 }
 
 static int new_disk_ack(struct mddev *mddev, bool ack)

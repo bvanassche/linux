@@ -2500,6 +2500,7 @@ static int ptrace_stop(int exit_code, int why, unsigned long message,
 }
 
 static int ptrace_do_notify(int signr, int exit_code, int why, unsigned long message)
+	__no_context_analysis
 {
 	kernel_siginfo_t info;
 
@@ -2550,7 +2551,7 @@ int ptrace_notify(int exit_code, unsigned long message)
  * %true if participated in group stop.
  */
 static bool do_signal_stop(int signr)
-	__releases(&current->sighand->siglock)
+	__no_context_analysis
 {
 	struct signal_struct *sig = current->signal;
 
@@ -2668,6 +2669,7 @@ static bool do_signal_stop(int signr)
  * released and re-acquired before returning with intervening sleep.
  */
 static void do_jobctl_trap(void)
+	__no_context_analysis
 {
 	struct signal_struct *signal = current->signal;
 	int signr = current->jobctl & JOBCTL_STOP_SIGMASK;
@@ -2731,6 +2733,7 @@ static void do_freezer_trap(void)
 }
 
 static int ptrace_signal(int signr, kernel_siginfo_t *info, enum pid_type type)
+	__no_context_analysis
 {
 	/*
 	 * We do not check sig_kernel_stop(signr) but set this marker
@@ -2799,6 +2802,7 @@ static void hide_si_addr_tag_bits(struct ksignal *ksig)
 }
 
 bool get_signal(struct ksignal *ksig)
+	__no_context_analysis
 {
 	struct sighand_struct *sighand = current->sighand;
 	struct signal_struct *signal = current->signal;

@@ -30,6 +30,7 @@ struct clkgate_separated {
 };
 
 static int clkgate_separated_enable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct clkgate_separated *sclk;
 	unsigned long flags = 0;
@@ -47,6 +48,7 @@ static int clkgate_separated_enable(struct clk_hw *hw)
 }
 
 static void clkgate_separated_disable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct clkgate_separated *sclk;
 	unsigned long flags = 0;

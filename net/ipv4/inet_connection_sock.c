@@ -315,6 +315,7 @@ static struct inet_bind_hashbucket *
 inet_csk_find_open_port(const struct sock *sk, struct inet_bind_bucket **tb_ret,
 			struct inet_bind2_bucket **tb2_ret,
 			struct inet_bind_hashbucket **head2_ret, int *port_ret)
+	__no_context_analysis
 {
 	struct inet_hashinfo *hinfo = tcp_get_hashinfo(sk);
 	int i, low, high, attempt_half, port, l3mdev;
@@ -498,6 +499,7 @@ void inet_csk_update_fastreuse(const struct sock *sk,
  * We try to allocate an odd port (and leave even ports for connect())
  */
 int inet_csk_get_port(struct sock *sk, unsigned short snum)
+	__no_context_analysis
 {
 	bool reuse = sk->sk_reuse && sk->sk_state != TCP_LISTEN;
 	bool found_port = false, check_bind_conflict = true;
@@ -599,6 +601,7 @@ EXPORT_SYMBOL_GPL(inet_csk_get_port);
  * with the socket locked.
  */
 static int inet_csk_wait_for_connect(struct sock *sk, long timeo)
+	__must_hold(sk)
 {
 	struct inet_connection_sock *icsk = inet_csk(sk);
 	DEFINE_WAIT(wait);
@@ -1403,6 +1406,7 @@ EXPORT_SYMBOL(inet_csk_reqsk_queue_add);
 
 struct sock *inet_csk_complete_hashdance(struct sock *sk, struct sock *child,
 					 struct request_sock *req, bool own_req)
+	__no_context_analysis
 {
 	if (own_req) {
 		inet_csk_reqsk_queue_drop(req->rsk_listener, req);

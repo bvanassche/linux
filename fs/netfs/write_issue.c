@@ -618,6 +618,7 @@ EXPORT_SYMBOL(netfs_writepages);
  * Begin a write operation for writing through the pagecache.
  */
 struct netfs_io_request *netfs_begin_writethrough(struct kiocb *iocb, size_t len)
+	__no_context_analysis
 {
 	struct netfs_io_request *wreq = NULL;
 	struct netfs_inode *ictx = netfs_inode(file_inode(iocb->ki_filp));
@@ -676,6 +677,7 @@ int netfs_advance_writethrough(struct netfs_io_request *wreq, struct writeback_c
  */
 ssize_t netfs_end_writethrough(struct netfs_io_request *wreq, struct writeback_control *wbc,
 			       struct folio *writethrough_cache)
+	__no_context_analysis
 {
 	struct netfs_inode *ictx = netfs_inode(wreq->inode);
 	ssize_t ret;

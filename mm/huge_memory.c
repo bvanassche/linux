@@ -1179,6 +1179,7 @@ static struct deferred_split *memcg_split_queue(int nid, struct mem_cgroup *memc
 #endif
 
 static struct deferred_split *split_queue_lock(int nid, struct mem_cgroup *memcg)
+	__acquires(&memcg_split_queue(nid, memcg)->split_queue_lock)
 {
 	struct deferred_split *queue;
 
@@ -1201,6 +1202,7 @@ retry:
 
 static struct deferred_split *
 split_queue_lock_irqsave(int nid, struct mem_cgroup *memcg, unsigned long *flags)
+	__acquires(&memcg_split_queue(nid, memcg)->split_queue_lock)
 {
 	struct deferred_split *queue;
 
@@ -1217,6 +1219,7 @@ retry:
 }
 
 static struct deferred_split *folio_split_queue_lock(struct folio *folio)
+	__acquires(&memcg_split_queue(folio_nid(folio), folio_memcg(folio))->split_queue_lock)
 {
 	struct deferred_split *queue;
 
@@ -1233,6 +1236,7 @@ static struct deferred_split *folio_split_queue_lock(struct folio *folio)
 
 static struct deferred_split *
 folio_split_queue_lock_irqsave(struct folio *folio, unsigned long *flags)
+	__acquires(&memcg_split_queue(folio_nid(folio), folio_memcg(folio))->split_queue_lock)
 {
 	struct deferred_split *queue;
 
@@ -1244,12 +1248,14 @@ folio_split_queue_lock_irqsave(struct folio *folio, unsigned long *flags)
 }
 
 static inline void split_queue_unlock(struct deferred_split *queue)
+	__releases(&queue->split_queue_lock)
 {
 	spin_unlock(&queue->split_queue_lock);
 }
 
 static inline void split_queue_unlock_irqrestore(struct deferred_split *queue,
 						 unsigned long flags)
+	__releases(&queue->split_queue_lock)
 {
 	spin_unlock_irqrestore(&queue->split_queue_lock, flags);
 }
@@ -1930,6 +1936,7 @@ static void copy_huge_non_present_pmd(
 int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		  pmd_t *dst_pmd, pmd_t *src_pmd, unsigned long addr,
 		  struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma)
+	__no_context_analysis /* conditional locking */
 {
 	spinlock_t *dst_ptl, *src_ptl;
 	struct page *src_page;
@@ -2268,6 +2275,7 @@ static inline bool can_change_pmd_writable(struct vm_area_struct *vma,
 
 /* NUMA hinting page fault entry point for trans huge pmds */
 vm_fault_t do_huge_pmd_numa_page(struct vm_fault *vmf)
+	__context_unsafe(Clang bug?)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct folio *folio;
@@ -2365,6 +2373,7 @@ bool madvise_free_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	if (!ptl)
 		goto out_unlocked;
 
+	__acquire(ptl);
 	orig_pmd = *pmd;
 	if (is_huge_zero_pmd(orig_pmd))
 		goto out;
@@ -2510,6 +2519,7 @@ bool zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	ptl = __pmd_trans_huge_lock(pmd, vma);
 	if (!ptl)
 		return false;
+	__acquire(ptl);
 	/*
 	 * For architectures like ppc64 we look at deposited pgtable
 	 * when calling pmdp_huge_get_and_clear. So do the
@@ -2598,9 +2608,12 @@ bool move_huge_pmd(struct vm_area_struct *vma, unsigned long old_addr,
 	 */
 	old_ptl = __pmd_trans_huge_lock(old_pmd, vma);
 	if (old_ptl) {
+		__acquire(old_ptl);
 		new_ptl = pmd_lockptr(mm, new_pmd);
 		if (new_ptl != old_ptl)
 			spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
+		else
+			__acquire(new_ptl);
 		pmd = pmdp_huge_get_and_clear(mm, old_addr, old_pmd);
 		if (pmd_present(pmd))
 			force_flush = true;
@@ -2619,6 +2632,8 @@ bool move_huge_pmd(struct vm_area_struct *vma, unsigned long old_addr,
 			flush_pmd_tlb_range(vma, old_addr, old_addr + PMD_SIZE);
 		if (new_ptl != old_ptl)
 			spin_unlock(new_ptl);
+		else
+			__release(new_ptl);
 		spin_unlock(old_ptl);
 		return true;
 	}
@@ -2688,6 +2703,8 @@ int change_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	ptl = __pmd_trans_huge_lock(pmd, vma);
 	if (!ptl)
 		return 0;
+
+	__acquire(ptl);
 
 	if (thp_migration_supported() && pmd_is_valid_softleaf(*pmd)) {
 		change_non_present_huge_pmd(mm, addr, pmd, uffd_wp,
@@ -2794,6 +2811,7 @@ int change_huge_pud(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	if (!ptl)
 		return 0;
 
+	__acquire(ptl);
 	/*
 	 * Can't clear PUD or it can race with concurrent zapping.  See
 	 * change_huge_pmd().
@@ -2819,6 +2837,7 @@ int change_huge_pud(struct mmu_gather *tlb, struct vm_area_struct *vma,
 int move_pages_huge_pmd(struct mm_struct *mm, pmd_t *dst_pmd, pmd_t *src_pmd, pmd_t dst_pmdval,
 			struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
 			unsigned long dst_addr, unsigned long src_addr)
+	__releases(pmd_lockptr(mm, src_pmd))
 {
 	pmd_t _dst_pmd, src_pmdval;
 	struct page *src_page;
@@ -2936,6 +2955,7 @@ unlock_ptls:
  * unlocking page table lock. So callers must unlock it.
  */
 spinlock_t *__pmd_trans_huge_lock(pmd_t *pmd, struct vm_area_struct *vma)
+	__cond_acquires(nonnull, pmd_lock(vma->vm_mm, pmd))
 {
 	spinlock_t *ptl;
 
@@ -2953,6 +2973,7 @@ spinlock_t *__pmd_trans_huge_lock(pmd_t *pmd, struct vm_area_struct *vma)
  * unlocking page table lock. So callers must unlock it.
  */
 spinlock_t *__pud_trans_huge_lock(pud_t *pud, struct vm_area_struct *vma)
+	__cond_acquires(nonnull, pud_lock(vma->vm_mm, pud))
 {
 	spinlock_t *ptl;
 
@@ -2966,6 +2987,7 @@ spinlock_t *__pud_trans_huge_lock(pud_t *pud, struct vm_area_struct *vma)
 #ifdef CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD
 int zap_huge_pud(struct mmu_gather *tlb, struct vm_area_struct *vma,
 		 pud_t *pud, unsigned long addr)
+	__cond_acquires(true, __pud_trans_huge_lock(pud, vma))
 {
 	spinlock_t *ptl;
 	pud_t orig_pud;
@@ -2973,6 +2995,8 @@ int zap_huge_pud(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	ptl = __pud_trans_huge_lock(pud, vma);
 	if (!ptl)
 		return 0;
+
+	__acquire(ptl);
 
 	orig_pud = pudp_huge_get_and_clear_full(vma, addr, pud, tlb->fullmm);
 	arch_check_zapped_pud(vma, orig_pud);
@@ -3894,6 +3918,7 @@ static int __folio_freeze_and_split_unmapped(struct folio *folio, unsigned int n
 					     struct address_space *mapping, bool do_lru,
 					     struct list_head *list, enum split_type split_type,
 					     pgoff_t end, int *nr_shmem_dropped)
+	__no_context_analysis
 {
 	struct folio *end_folio = folio_next(folio);
 	struct folio *new_folio, *next;
@@ -4057,6 +4082,7 @@ static int __folio_freeze_and_split_unmapped(struct folio *folio, unsigned int n
 static int __folio_split(struct folio *folio, unsigned int new_order,
 		struct page *split_at, struct page *lock_at,
 		struct list_head *list, enum split_type split_type)
+	__no_context_analysis
 {
 	XA_STATE(xas, &folio->mapping->i_pages, folio->index);
 	struct folio *end_folio = folio_next(folio);
@@ -4400,6 +4426,7 @@ int split_folio_to_list(struct folio *folio, struct list_head *list)
  * therefore important to unqueue deferred split before changing folio memcg.
  */
 bool __folio_unqueue_deferred_split(struct folio *folio)
+	__no_context_analysis
 {
 	struct deferred_split *ds_queue;
 	unsigned long flags;
@@ -4426,6 +4453,7 @@ bool __folio_unqueue_deferred_split(struct folio *folio)
 
 /* partially_mapped=false won't clear PG_partially_mapped folio flag */
 void deferred_split_folio(struct folio *folio, bool partially_mapped)
+	__no_context_analysis
 {
 	struct deferred_split *ds_queue;
 	unsigned long flags;
@@ -4519,6 +4547,7 @@ static bool thp_underused(struct folio *folio)
 
 static unsigned long deferred_split_scan(struct shrinker *shrink,
 		struct shrink_control *sc)
+	__no_context_analysis
 {
 	struct deferred_split *ds_queue;
 	unsigned long flags;

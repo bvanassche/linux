@@ -86,6 +86,7 @@ void snd_pcm_group_init(struct snd_pcm_group *group)
 /* define group lock helpers */
 #define DEFINE_PCM_GROUP_LOCK(action, bh_lock, bh_unlock, mutex_action) \
 static void snd_pcm_group_ ## action(struct snd_pcm_group *group, bool nonatomic) \
+	__no_context_analysis /* conditional locking */		\
 { \
 	if (nonatomic) { \
 		mutex_ ## mutex_action(&group->mutex); \
@@ -145,6 +146,7 @@ void snd_pcm_stream_lock_irq(struct snd_pcm_substream *substream)
 EXPORT_SYMBOL_GPL(snd_pcm_stream_lock_irq);
 
 static void snd_pcm_stream_lock_nested(struct snd_pcm_substream *substream)
+	__no_context_analysis /* conditional locking */
 {
 	struct snd_pcm_group *group = &substream->self_group;
 
@@ -168,6 +170,7 @@ void snd_pcm_stream_unlock_irq(struct snd_pcm_substream *substream)
 EXPORT_SYMBOL_GPL(snd_pcm_stream_unlock_irq);
 
 unsigned long _snd_pcm_stream_lock_irqsave(struct snd_pcm_substream *substream)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long flags = 0;
 	if (substream->pcm->nonatomic)
@@ -179,6 +182,7 @@ unsigned long _snd_pcm_stream_lock_irqsave(struct snd_pcm_substream *substream)
 EXPORT_SYMBOL_GPL(_snd_pcm_stream_lock_irqsave);
 
 unsigned long _snd_pcm_stream_lock_irqsave_nested(struct snd_pcm_substream *substream)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long flags = 0;
 	if (substream->pcm->nonatomic)
@@ -200,6 +204,7 @@ EXPORT_SYMBOL_GPL(_snd_pcm_stream_lock_irqsave_nested);
  */
 void snd_pcm_stream_unlock_irqrestore(struct snd_pcm_substream *substream,
 				      unsigned long flags)
+	__no_context_analysis /* conditional locking */
 {
 	if (substream->pcm->nonatomic)
 		mutex_unlock(&substream->self_group.mutex);
@@ -734,6 +739,7 @@ static int snd_pcm_hw_params_choose(struct snd_pcm_substream *pcm,
  * block the further r/w operations
  */
 static int snd_pcm_buffer_access_lock(struct snd_pcm_runtime *runtime)
+	__cond_acquires(0, &runtime->buffer_mutex)
 {
 	if (!atomic_dec_unless_positive(&runtime->buffer_accessing))
 		return -EBUSY;
@@ -743,6 +749,7 @@ static int snd_pcm_buffer_access_lock(struct snd_pcm_runtime *runtime)
 
 /* release buffer_mutex and clear r/w access flag */
 static void snd_pcm_buffer_access_unlock(struct snd_pcm_runtime *runtime)
+	__releases(&runtime->buffer_mutex)
 {
 	mutex_unlock(&runtime->buffer_mutex);
 	atomic_inc(&runtime->buffer_accessing);
@@ -754,7 +761,7 @@ int snd_pcm_runtime_buffer_set_silence(struct snd_pcm_runtime *runtime)
 	int err;
 
 	err = snd_pcm_buffer_access_lock(runtime);
-	if (err < 0)
+	if (err)
 		return err;
 	if (runtime->dma_area)
 		snd_pcm_format_set_silence(runtime->format, runtime->dma_area,
@@ -782,7 +789,7 @@ static int snd_pcm_hw_params(struct snd_pcm_substream *substream,
 		return -ENXIO;
 	runtime = substream->runtime;
 	err = snd_pcm_buffer_access_lock(runtime);
-	if (err < 0)
+	if (err)
 		return err;
 	scoped_guard(pcm_stream_lock_irq, substream) {
 		switch (runtime->state) {
@@ -945,7 +952,7 @@ static int snd_pcm_hw_free(struct snd_pcm_substream *substream)
 		return -ENXIO;
 	runtime = substream->runtime;
 	result = snd_pcm_buffer_access_lock(runtime);
-	if (result < 0)
+	if (result)
 		return result;
 	scoped_guard(pcm_stream_lock_irq, substream) {
 		switch (runtime->state) {
@@ -1266,6 +1273,7 @@ static int snd_pcm_action_group(const struct action_ops *ops,
 				struct snd_pcm_substream *substream,
 				snd_pcm_state_t state,
 				bool stream_lock)
+	__no_context_analysis /* conditional locking */
 {
 	struct snd_pcm_substream *s = NULL;
 	struct snd_pcm_substream *s1;
@@ -1441,7 +1449,7 @@ static int snd_pcm_action_nonatomic(const struct action_ops *ops,
 	/* Guarantee the group members won't change during non-atomic action */
 	guard(rwsem_read)(&snd_pcm_link_rwsem);
 	res = snd_pcm_buffer_access_lock(substream->runtime);
-	if (res < 0)
+	if (res)
 		return res;
 	if (snd_pcm_stream_linked(substream))
 		res = snd_pcm_action_group(ops, substream, state, false);

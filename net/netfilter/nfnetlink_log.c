@@ -1080,7 +1080,7 @@ static struct hlist_node *get_idx(struct net *net, struct iter_state *st,
 }
 
 static void *seq_start(struct seq_file *s, loff_t *pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return get_idx(seq_file_net(s), s->private, *pos);
@@ -1093,7 +1093,7 @@ static void *seq_next(struct seq_file *s, void *v, loff_t *pos)
 }
 
 static void seq_stop(struct seq_file *s, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

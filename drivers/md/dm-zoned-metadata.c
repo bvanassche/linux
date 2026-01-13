@@ -354,11 +354,13 @@ bool dmz_dev_is_dying(struct dmz_metadata *zmd)
  * The map lock also protects all the zone lists.
  */
 void dmz_lock_map(struct dmz_metadata *zmd)
+	__acquires(zmd->map_lock)
 {
 	mutex_lock(&zmd->map_lock);
 }
 
 void dmz_unlock_map(struct dmz_metadata *zmd)
+	__releases(zmd->map_lock)
 {
 	mutex_unlock(&zmd->map_lock);
 }
@@ -371,11 +373,13 @@ void dmz_unlock_map(struct dmz_metadata *zmd)
  * mutually exclusive).
  */
 void dmz_lock_metadata(struct dmz_metadata *zmd)
+	__acquires_shared(&zmd->mblk_sem)
 {
 	down_read(&zmd->mblk_sem);
 }
 
 void dmz_unlock_metadata(struct dmz_metadata *zmd)
+	__releases_shared(&zmd->mblk_sem)
 {
 	up_read(&zmd->mblk_sem);
 }
@@ -386,11 +390,13 @@ void dmz_unlock_metadata(struct dmz_metadata *zmd)
  * while flush is being executed.
  */
 void dmz_lock_flush(struct dmz_metadata *zmd)
+	__acquires(zmd->mblk_flush_lock)
 {
 	mutex_lock(&zmd->mblk_flush_lock);
 }
 
 void dmz_unlock_flush(struct dmz_metadata *zmd)
+	__releases(zmd->mblk_flush_lock)
 {
 	mutex_unlock(&zmd->mblk_flush_lock);
 }
@@ -1874,6 +1880,8 @@ static void dmz_lru_zone(struct dmz_metadata *zmd, struct dm_zone *zone)
  * Wait for any zone to be freed.
  */
 static void dmz_wait_for_free_zones(struct dmz_metadata *zmd)
+	__must_hold(zmd->map_lock)
+	__must_hold_shared(zmd->mblk_sem)
 {
 	DEFINE_WAIT(wait);
 
@@ -1919,6 +1927,8 @@ void dmz_unlock_zone_reclaim(struct dm_zone *zone)
  * Wait for a zone reclaim to complete.
  */
 static void dmz_wait_for_reclaim(struct dmz_metadata *zmd, struct dm_zone *zone)
+	__must_hold(zmd->map_lock)
+	__must_hold_shared(zmd->mblk_sem)
 {
 	dmz_unlock_map(zmd);
 	dmz_unlock_metadata(zmd);
@@ -2040,6 +2050,7 @@ struct dm_zone *dmz_get_zone_for_reclaim(struct dmz_metadata *zmd,
  */
 struct dm_zone *dmz_get_chunk_mapping(struct dmz_metadata *zmd,
 				      unsigned int chunk, enum req_op op)
+	__must_hold_shared(zmd->mblk_sem)
 {
 	struct dmz_mblock *dmap_mblk = zmd->map_mblk[chunk >> DMZ_MAP_ENTRIES_SHIFT];
 	struct dmz_map *dmap = dmap_mblk->data;
@@ -2157,6 +2168,7 @@ void dmz_put_chunk_mapping(struct dmz_metadata *zmd, struct dm_zone *dzone)
  */
 struct dm_zone *dmz_get_chunk_buffer(struct dmz_metadata *zmd,
 				     struct dm_zone *dzone)
+	__must_hold_shared(zmd->mblk_sem)
 {
 	struct dm_zone *bzone;
 	int alloc_flags = zmd->nr_cache ? DMZ_ALLOC_CACHE : DMZ_ALLOC_RND;

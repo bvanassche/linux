@@ -737,6 +737,7 @@ static void qla1280_mailbox_timeout(struct timer_list *t)
 static int
 _qla1280_wait_for_single_command(struct scsi_qla_host *ha, struct srb *sp,
 				 struct completion *wait)
+	__must_hold(ha->host->host_lock)
 {
 	int	status = FAILED;
 	struct scsi_cmnd *cmd = sp->cmd;
@@ -754,6 +755,7 @@ _qla1280_wait_for_single_command(struct scsi_qla_host *ha, struct srb *sp,
 
 static int
 qla1280_wait_for_single_command(struct scsi_qla_host *ha, struct srb *sp)
+	__must_hold(ha->host->host_lock)
 {
 	DECLARE_COMPLETION_ONSTACK(wait);
 
@@ -763,6 +765,7 @@ qla1280_wait_for_single_command(struct scsi_qla_host *ha, struct srb *sp)
 
 static int
 qla1280_wait_for_pending_commands(struct scsi_qla_host *ha, int bus, int target)
+	__must_hold(ha->host->host_lock)
 {
 	int		cnt;
 	int		status;
@@ -809,6 +812,7 @@ qla1280_wait_for_pending_commands(struct scsi_qla_host *ha, int bus, int target)
  **************************************************************************/
 static int
 qla1280_error_action(struct scsi_cmnd *cmd, enum action action)
+	__must_hold(cmd->device->host->host_lock)
 {
 	struct scsi_qla_host *ha;
 	int bus, target, lun;
@@ -820,6 +824,10 @@ qla1280_error_action(struct scsi_cmnd *cmd, enum action action)
 	DECLARE_COMPLETION_ONSTACK(wait);
 
 	ENTER("qla1280_error_action");
+
+	/* Tell the compiler that the two locks mentioned below are the same. */
+	__release(cmd->device->host->host_lock);
+	__acquire(((struct scsi_qla_host *)(CMD_HOST(cmd)->hostdata))->host->host_lock);
 
 	ha = (struct scsi_qla_host *)(CMD_HOST(cmd)->hostdata);
 	sp = scsi_cmd_priv(cmd);
@@ -939,6 +947,9 @@ qla1280_error_action(struct scsi_cmnd *cmd, enum action action)
 	}
 
 	dprintk(1, "RESET returning %d\n", result);
+
+	__release(((struct scsi_qla_host *)(CMD_HOST(cmd)->hostdata))->host->host_lock);
+	__acquire(cmd->device->host->host_lock);
 
 	LEAVE("qla1280_error_action");
 	return result;
@@ -1490,6 +1501,7 @@ qla1280_initialize_adapter(struct scsi_qla_host *ha)
  */
 static const struct firmware *
 qla1280_request_firmware(struct scsi_qla_host *ha)
+	__must_hold(ha->host->host_lock)
 {
 	const struct firmware *fw;
 	int err;
@@ -1655,6 +1667,7 @@ qla1280_chip_diag(struct scsi_qla_host *ha)
 
 static int
 qla1280_load_firmware_pio(struct scsi_qla_host *ha)
+	__must_hold(ha->host->host_lock)
 {
 	/* enter with host_lock acquired */
 
@@ -1705,6 +1718,7 @@ qla1280_load_firmware_pio(struct scsi_qla_host *ha)
 #define DUMP_IT_BACK 0		/* for debug of RISC loading */
 static int
 qla1280_load_firmware_dma(struct scsi_qla_host *ha)
+	__must_hold(ha->host->host_lock)
 {
 	/* enter with host_lock acquired */
 	const struct firmware *fw;
@@ -1844,6 +1858,7 @@ qla1280_start_firmware(struct scsi_qla_host *ha)
 
 static int
 qla1280_load_firmware(struct scsi_qla_host *ha)
+	__must_hold(ha->host->host_lock)
 {
 	/* enter with host_lock taken */
 	int err;
@@ -2413,6 +2428,7 @@ qla1280_nv_write(struct scsi_qla_host *ha, uint16_t data)
  */
 static int
 qla1280_mailbox_command(struct scsi_qla_host *ha, uint8_t mr, uint16_t *mb)
+	__must_hold(ha->host->host_lock)
 {
 	struct device_reg __iomem *reg = ha->iobase;
 	int status = 0;
@@ -2538,6 +2554,7 @@ qla1280_poll(struct scsi_qla_host *ha)
  */
 static int
 qla1280_bus_reset(struct scsi_qla_host *ha, int bus)
+	__must_hold(ha->host->host_lock)
 {
 	uint16_t mb[MAILBOX_REGISTER_COUNT];
 	uint16_t reset_delay;
@@ -2598,6 +2615,7 @@ qla1280_bus_reset(struct scsi_qla_host *ha, int bus)
  */
 static int
 qla1280_device_reset(struct scsi_qla_host *ha, int bus, int target)
+	__must_hold(ha->host->host_lock)
 {
 	uint16_t mb[MAILBOX_REGISTER_COUNT];
 	int status;
@@ -2632,6 +2650,7 @@ qla1280_device_reset(struct scsi_qla_host *ha, int bus, int target)
  */
 static int
 qla1280_abort_command(struct scsi_qla_host *ha, struct srb * sp, int handle)
+	__must_hold(ha->host->host_lock)
 {
 	uint16_t mb[MAILBOX_REGISTER_COUNT];
 	unsigned int bus, target, lun;
@@ -3749,6 +3768,7 @@ qla1280_error_entry(struct scsi_qla_host *ha, struct response *pkt,
  */
 static int
 qla1280_abort_isp(struct scsi_qla_host *ha)
+	__must_hold(ha->host->host_lock)
 {
 	struct device_reg __iomem *reg = ha->iobase;
 	struct srb *sp;
@@ -3881,6 +3901,7 @@ qla1280_check_for_dead_scsi_bus(struct scsi_qla_host *ha, unsigned int bus)
 static void
 qla1280_get_target_parameters(struct scsi_qla_host *ha,
 			      struct scsi_device *device)
+	__must_hold(ha->host->host_lock)
 {
 	uint16_t mb[MAILBOX_REGISTER_COUNT];
 	int bus, target, lun;

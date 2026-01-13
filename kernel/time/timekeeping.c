@@ -154,6 +154,7 @@ static inline void tk_aux_advance(void) { }
 #endif
 
 unsigned long timekeeper_lock_irqsave(void)
+	__acquires(&tk_core.lock)
 {
 	unsigned long flags;
 
@@ -162,6 +163,7 @@ unsigned long timekeeper_lock_irqsave(void)
 }
 
 void timekeeper_unlock_irqrestore(unsigned long flags)
+	__releases(&tk_core.lock)
 {
 	raw_spin_unlock_irqrestore(&tk_core.lock, flags);
 }

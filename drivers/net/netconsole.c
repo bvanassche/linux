@@ -224,11 +224,13 @@ static void netconsole_target_put(struct netconsole_target *nt)
 }
 
 static void dynamic_netconsole_mutex_lock(void)
+	__acquires(&dynamic_netconsole_mutex)
 {
 	mutex_lock(&dynamic_netconsole_mutex);
 }
 
 static void dynamic_netconsole_mutex_unlock(void)
+	__releases(&dynamic_netconsole_mutex)
 {
 	mutex_unlock(&dynamic_netconsole_mutex);
 }

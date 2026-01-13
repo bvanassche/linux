@@ -539,6 +539,7 @@ static void kvm_ioapic_update_eoi_one(struct kvm_vcpu *vcpu,
 				      struct kvm_ioapic *ioapic,
 				      int trigger_mode,
 				      int pin)
+	__must_hold(&ioapic->lock)
 {
 	struct kvm_lapic *apic = vcpu->arch.apic;
 	union kvm_ioapic_redirect_entry *ent = &ioapic->redirtbl[pin];

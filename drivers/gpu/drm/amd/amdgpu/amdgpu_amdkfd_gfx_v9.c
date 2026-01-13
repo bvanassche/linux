@@ -49,12 +49,14 @@ enum hqd_dequeue_request_type {
 
 static void kgd_gfx_v9_lock_srbm(struct amdgpu_device *adev, uint32_t mec, uint32_t pipe,
 			uint32_t queue, uint32_t vmid, uint32_t inst)
+	__acquires(adev->srbm_mutex)
 {
 	mutex_lock(&adev->srbm_mutex);
 	soc15_grbm_select(adev, mec, pipe, queue, vmid, GET_INST(GC, inst));
 }
 
 static void kgd_gfx_v9_unlock_srbm(struct amdgpu_device *adev, uint32_t inst)
+	__releases(adev->srbm_mutex)
 {
 	soc15_grbm_select(adev, 0, 0, 0, 0, GET_INST(GC, inst));
 	mutex_unlock(&adev->srbm_mutex);
@@ -925,6 +927,8 @@ void kgd_gfx_v9_set_vm_context_page_table_base(struct amdgpu_device *adev,
 }
 
 static void lock_spi_csq_mutexes(struct amdgpu_device *adev)
+	__acquires(adev->srbm_mutex)
+	__acquires(adev->grbm_idx_mutex)
 {
 	mutex_lock(&adev->srbm_mutex);
 	mutex_lock(&adev->grbm_idx_mutex);
@@ -932,6 +936,8 @@ static void lock_spi_csq_mutexes(struct amdgpu_device *adev)
 }
 
 static void unlock_spi_csq_mutexes(struct amdgpu_device *adev)
+	__releases(adev->grbm_idx_mutex)
+	__releases(adev->srbm_mutex)
 {
 	mutex_unlock(&adev->grbm_idx_mutex);
 	mutex_unlock(&adev->srbm_mutex);

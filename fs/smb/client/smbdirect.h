@@ -36,7 +36,7 @@ const struct smbdirect_socket_parameters *smbd_get_parameters(struct smbd_connec
 /* Reconnect SMBDirect session */
 int smbd_reconnect(struct TCP_Server_Info *server);
 /* Destroy SMBDirect session */
-void smbd_destroy(struct TCP_Server_Info *server);
+void smbd_destroy(struct TCP_Server_Info *server) __must_hold(server->_srv_mutex);
 
 /* Interface for carrying upper layer I/O through send/recv */
 int smbd_recv(struct smbd_connection *info, struct msghdr *msg);

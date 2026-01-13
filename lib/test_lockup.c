@@ -167,6 +167,7 @@ static struct task_struct *main_task;
 static int master_cpu;
 
 static void test_lock(bool master, bool verbose)
+	__no_context_analysis
 {
 	u64 wait_start;
 
@@ -244,6 +245,7 @@ static void test_lock(bool master, bool verbose)
 }
 
 static void test_unlock(bool master, bool verbose)
+	__no_context_analysis
 {
 	if (lock_rwlock_ptr && master) {
 		if (lock_read)

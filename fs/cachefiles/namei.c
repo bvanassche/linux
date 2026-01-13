@@ -817,6 +817,7 @@ error:
  */
 int cachefiles_check_in_use(struct cachefiles_cache *cache, struct dentry *dir,
 			    char *filename)
+	__no_context_analysis
 {
 	struct dentry *victim;
 	int ret = 0;

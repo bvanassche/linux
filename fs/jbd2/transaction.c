@@ -136,7 +136,7 @@ static inline void update_t_max_wait(transaction_t *transaction,
  * running transaction to exist and releases j_state_lock.
  */
 static void wait_transaction_locked(journal_t *journal)
-	__releases(journal->j_state_lock)
+	__releases_shared(journal->j_state_lock)
 {
 	DEFINE_WAIT(wait);
 	int need_to_start;
@@ -159,7 +159,7 @@ static void wait_transaction_locked(journal_t *journal)
  * j_state_lock.
  */
 static void wait_transaction_switching(journal_t *journal)
-	__releases(journal->j_state_lock)
+	__releases_shared(journal->j_state_lock)
 {
 	DEFINE_WAIT(wait);
 
@@ -199,15 +199,11 @@ static int jbd2_max_user_trans_buffers(journal_t *journal)
  * with j_state_lock held for reading. Returns 0 if handle joined the running
  * transaction. Returns 1 if we had to wait, j_state_lock is dropped, and
  * caller must retry.
- *
- * Note: because j_state_lock may be dropped depending on the return
- * value, we need to fake out sparse so ti doesn't complain about a
- * locking imbalance.  Callers of add_transaction_credits will need to
- * make a similar accomodation.
  */
 static int add_transaction_credits(journal_t *journal, int blocks,
 				   int rsv_blocks)
-__must_hold(&journal->j_state_lock)
+	__releases_shared(&journal->j_state_lock)
+	__cond_acquires_shared(0, &journal->j_state_lock)
 {
 	transaction_t *t = journal->j_running_transaction;
 	int needed;
@@ -220,7 +216,6 @@ __must_hold(&journal->j_state_lock)
 	if (t->t_state != T_RUNNING) {
 		WARN_ON_ONCE(t->t_state >= T_FLUSH);
 		wait_transaction_locked(journal);
-		__acquire(&journal->j_state_lock); /* fake out sparse */
 		return 1;
 	}
 
@@ -249,12 +244,10 @@ __must_hold(&journal->j_state_lock)
 			wait_event(journal->j_wait_reserved,
 				   atomic_read(&journal->j_reserved_credits) + total <=
 				   jbd2_max_user_trans_buffers(journal));
-			__acquire(&journal->j_state_lock); /* fake out sparse */
 			return 1;
 		}
 
 		wait_transaction_locked(journal);
-		__acquire(&journal->j_state_lock); /* fake out sparse */
 		return 1;
 	}
 
@@ -278,7 +271,6 @@ __must_hold(&journal->j_state_lock)
 					journal->j_max_transaction_buffers)
 			__jbd2_log_wait_for_space(journal);
 		write_unlock(&journal->j_state_lock);
-		__acquire(&journal->j_state_lock); /* fake out sparse */
 		return 1;
 	}
 
@@ -296,7 +288,6 @@ __must_hold(&journal->j_state_lock)
 		wait_event(journal->j_wait_reserved,
 			 atomic_read(&journal->j_reserved_credits) + rsv_blocks
 			 <= jbd2_max_user_trans_buffers(journal) / 2);
-		__acquire(&journal->j_state_lock); /* fake out sparse */
 		return 1;
 	}
 	return 0;
@@ -405,7 +396,6 @@ repeat:
 			 * add_transaction_credits releases
 			 * j_state_lock on a non-zero return
 			 */
-			__release(&journal->j_state_lock);
 			goto repeat;
 		}
 	} else {
@@ -815,6 +805,7 @@ EXPORT_SYMBOL(jbd2_journal_restart);
  * This is called with write j_state_lock held.
  */
 void jbd2_journal_wait_updates(journal_t *journal)
+	__must_hold(&journal->j_state_lock)
 {
 	DEFINE_WAIT(wait);
 
@@ -858,6 +849,7 @@ void jbd2_journal_wait_updates(journal_t *journal)
  * The journal lock should not be held on entry.
  */
 void jbd2_journal_lock_updates(journal_t *journal)
+	__acquires(journal->j_barrier)
 {
 	jbd2_might_wait_for_commit(journal);
 
@@ -895,6 +887,7 @@ void jbd2_journal_lock_updates(journal_t *journal)
  * Should be called without the journal lock held.
  */
 void jbd2_journal_unlock_updates (journal_t *journal)
+	__releases(journal->j_barrier)
 {
 	J_ASSERT(journal->j_barrier_count != 0);
 

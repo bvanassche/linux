@@ -1568,6 +1568,7 @@ out:
 }
 
 static int _intel_gt_reset_lock(struct intel_gt *gt, int *srcu, bool retry)
+	__cond_acquires_shared(0, &gt->reset.backoff_srcu)
 {
 	might_lock(&gt->reset.backoff_srcu);
 	if (retry)
@@ -1604,7 +1605,7 @@ int intel_gt_reset_lock_interruptible(struct intel_gt *gt, int *srcu)
 }
 
 void intel_gt_reset_unlock(struct intel_gt *gt, int tag)
-__releases(&gt->reset.backoff_srcu)
+	__releases_shared(&gt->reset.backoff_srcu)
 {
 	srcu_read_unlock(&gt->reset.backoff_srcu, tag);
 }

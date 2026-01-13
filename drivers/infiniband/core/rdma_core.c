@@ -374,6 +374,7 @@ struct ib_uobject *rdma_lookup_get_uobject(const struct uverbs_api_object *obj,
 					   struct ib_uverbs_file *ufile, s64 id,
 					   enum rdma_lookup_mode mode,
 					   struct uverbs_attr_bundle *attrs)
+	__must_hold(&ufile->device->disassociate_srcu)
 {
 	struct ib_uobject *uobj;
 	int ret;
@@ -500,6 +501,7 @@ err_fd:
 
 struct ib_uobject *rdma_alloc_begin_uobject(const struct uverbs_api_object *obj,
 					    struct uverbs_attr_bundle *attrs)
+	__no_context_analysis /* returns ERR_PTR() */
 {
 	struct ib_uverbs_file *ufile = attrs->ufile;
 	struct ib_uobject *ret;
@@ -650,6 +652,7 @@ static void alloc_commit_fd_uobject(struct ib_uobject *uobj)
  */
 void rdma_alloc_commit_uobject(struct ib_uobject *uobj,
 			       struct uverbs_attr_bundle *attrs)
+	__releases_shared(attrs->ufile->hw_destroy_rwsem)
 {
 	struct ib_uverbs_file *ufile = attrs->ufile;
 
@@ -705,6 +708,7 @@ void rdma_assign_uobject(struct ib_uobject *to_uobj, struct ib_uobject *new_uobj
 void rdma_alloc_abort_uobject(struct ib_uobject *uobj,
 			      struct uverbs_attr_bundle *attrs,
 			      bool hw_obj_valid)
+	__no_context_analysis /* conditional locking */
 {
 	struct ib_uverbs_file *ufile = uobj->ufile;
 	int ret;
@@ -976,6 +980,7 @@ EXPORT_SYMBOL(uverbs_fd_class);
 struct ib_uobject *
 uverbs_get_uobject_from_file(u16 object_id, enum uverbs_obj_access access,
 			     s64 id, struct uverbs_attr_bundle *attrs)
+	__must_hold(&attrs->ufile->device->disassociate_srcu)
 {
 	const struct uverbs_api_object *obj =
 		uapi_get_object(attrs->ufile->device->uapi, object_id);
@@ -1002,6 +1007,7 @@ uverbs_get_uobject_from_file(u16 object_id, enum uverbs_obj_access access,
 void uverbs_finalize_object(struct ib_uobject *uobj,
 			    enum uverbs_obj_access access, bool hw_obj_valid,
 			    bool commit, struct uverbs_attr_bundle *attrs)
+	__no_context_analysis /* conditional locking */
 {
 	/*
 	 * refcounts should be handled at the object level and not at the

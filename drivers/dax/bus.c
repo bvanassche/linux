@@ -716,6 +716,7 @@ static void unregister_dax_mapping(void *data)
 }
 
 static struct dev_dax_range *get_dax_range(struct device *dev)
+	__cond_acquires(nonnull, &dax_region_rwsem)
 {
 	struct dax_mapping *mapping = to_dax_mapping(dev);
 	struct dev_dax *dev_dax = to_dev_dax(dev->parent);
@@ -733,6 +734,7 @@ static struct dev_dax_range *get_dax_range(struct device *dev)
 }
 
 static void put_dax_range(void)
+	__releases(&dax_region_rwsem)
 {
 	up_write(&dax_region_rwsem);
 }

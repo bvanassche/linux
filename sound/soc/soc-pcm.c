@@ -1046,6 +1046,7 @@ static int soc_pcm_hw_clean(struct snd_soc_pcm_runtime *rtd,
  */
 static int __soc_pcm_hw_free(struct snd_soc_pcm_runtime *rtd,
 			     struct snd_pcm_substream *substream)
+	__must_hold(rtd->card->pcm_mutex)
 {
 	return soc_pcm_hw_clean(rtd, substream, 0);
 }
@@ -1557,6 +1558,7 @@ static int dpcm_prune_paths(struct snd_soc_pcm_runtime *fe, int stream,
 
 int dpcm_add_paths(struct snd_soc_pcm_runtime *fe, int stream,
 		   struct snd_soc_dapm_widget_list **list_)
+	__must_hold(fe->card->pcm_mutex)
 {
 	struct snd_soc_card *card = fe->card;
 	struct snd_soc_dapm_widget_list *list = *list_;
@@ -1634,6 +1636,7 @@ void dpcm_clear_pending_state(struct snd_soc_pcm_runtime *fe, int stream)
 
 void dpcm_be_dai_stop(struct snd_soc_pcm_runtime *fe, int stream,
 		      int do_hw_free, struct snd_soc_dpcm *last)
+	__no_context_analysis
 {
 	struct snd_soc_dpcm *dpcm;
 
@@ -2006,6 +2009,7 @@ static int dpcm_fe_dai_shutdown(struct snd_pcm_substream *substream)
 }
 
 void dpcm_be_dai_hw_free(struct snd_soc_pcm_runtime *fe, int stream)
+	__no_context_analysis
 {
 	struct snd_soc_dpcm *dpcm;
 
@@ -2071,6 +2075,7 @@ static int dpcm_fe_dai_hw_free(struct snd_pcm_substream *substream)
 }
 
 int dpcm_be_dai_hw_params(struct snd_soc_pcm_runtime *fe, int stream)
+	__no_context_analysis
 {
 	struct snd_soc_pcm_runtime *be;
 	struct snd_pcm_substream *be_substream;
@@ -2543,6 +2548,7 @@ out:
 }
 
 static int dpcm_run_update_shutdown(struct snd_soc_pcm_runtime *fe, int stream)
+	__must_hold(fe->card->pcm_mutex)
 {
 	int err;
 
@@ -2562,6 +2568,7 @@ static int dpcm_run_update_shutdown(struct snd_soc_pcm_runtime *fe, int stream)
 }
 
 static int dpcm_run_update_startup(struct snd_soc_pcm_runtime *fe, int stream)
+	__must_hold(fe->card->pcm_mutex)
 {
 	struct snd_soc_dpcm *dpcm;
 	int ret = 0;
@@ -2635,6 +2642,7 @@ disconnect:
 }
 
 static int soc_dpcm_fe_runtime_update(struct snd_soc_pcm_runtime *fe, int new)
+	__must_hold(fe->card->pcm_mutex)
 {
 	struct snd_soc_dapm_widget_list *list;
 	int stream;
@@ -2709,6 +2717,7 @@ int snd_soc_dpcm_runtime_update(struct snd_soc_card *card)
 	snd_soc_dpcm_mutex_lock(card);
 	/* shutdown all old paths first */
 	for_each_card_rtds(card, fe) {
+		__assume_ctx_lock(&fe->card->pcm_mutex);
 		ret = soc_dpcm_fe_runtime_update(fe, 0);
 		if (ret)
 			goto out;
@@ -2716,6 +2725,7 @@ int snd_soc_dpcm_runtime_update(struct snd_soc_card *card)
 
 	/* bring new paths up */
 	for_each_card_rtds(card, fe) {
+		__assume_ctx_lock(&fe->card->pcm_mutex);
 		ret = soc_dpcm_fe_runtime_update(fe, 1);
 		if (ret)
 			goto out;

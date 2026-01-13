@@ -1064,6 +1064,7 @@ static int bpf_init_fs_context(struct fs_context *fc)
 }
 
 static void bpf_kill_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct bpf_mount_opts *opts = sb->s_fs_info;
 

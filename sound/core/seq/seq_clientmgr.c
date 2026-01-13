@@ -671,6 +671,7 @@ static int snd_seq_deliver_single_event(struct snd_seq_client *client,
 static int __deliver_to_subscribers(struct snd_seq_client *client,
 				    struct snd_seq_event *event,
 				    int port, int atomic, int hop)
+	__no_context_analysis /* conditional locking */
 {
 	struct snd_seq_subscribers *subs;
 	int err, result = 0, num_ev = 0;

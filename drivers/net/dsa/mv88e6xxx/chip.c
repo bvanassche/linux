@@ -208,6 +208,7 @@ static irqreturn_t mv88e6xxx_g1_irq_thread_fn(int irq, void *dev_id)
 }
 
 static void mv88e6xxx_g1_irq_bus_lock(struct irq_data *d)
+	__acquires(&((struct mv88e6xxx_chip *)irq_data_get_irq_chip_data(d))->reg_lock)
 {
 	struct mv88e6xxx_chip *chip = irq_data_get_irq_chip_data(d);
 
@@ -215,6 +216,7 @@ static void mv88e6xxx_g1_irq_bus_lock(struct irq_data *d)
 }
 
 static void mv88e6xxx_g1_irq_bus_sync_unlock(struct irq_data *d)
+	__releases(&((struct mv88e6xxx_chip *)irq_data_get_irq_chip_data(d))->reg_lock)
 {
 	struct mv88e6xxx_chip *chip = irq_data_get_irq_chip_data(d);
 	u16 mask = GENMASK(chip->g1_irq.nirqs, 0);
@@ -344,6 +346,7 @@ out_mapping:
 }
 
 static int mv88e6xxx_g1_irq_setup(struct mv88e6xxx_chip *chip)
+	__must_hold(chip->reg_lock)
 {
 	static struct lock_class_key lock_key;
 	static struct lock_class_key request_key;

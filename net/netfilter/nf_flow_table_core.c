@@ -396,6 +396,7 @@ EXPORT_SYMBOL_GPL(flow_offload_teardown);
 struct flow_offload_tuple_rhash *
 flow_offload_lookup(struct nf_flowtable *flow_table,
 		    struct flow_offload_tuple *tuple)
+	__must_hold_shared(RCU)
 {
 	struct flow_offload_tuple_rhash *tuplehash;
 	struct flow_offload *flow;

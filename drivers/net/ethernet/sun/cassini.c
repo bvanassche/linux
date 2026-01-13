@@ -230,6 +230,7 @@ MODULE_DEVICE_TABLE(pci, cas_pci_tbl);
 static void cas_set_link_modes(struct cas *cp);
 
 static inline void cas_lock_tx(struct cas *cp)
+	__no_context_analysis
 {
 	int i;
 
@@ -253,6 +254,7 @@ do { \
 } while (0)
 
 static inline void cas_unlock_tx(struct cas *cp)
+	__no_context_analysis
 {
 	int i;
 

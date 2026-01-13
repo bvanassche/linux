@@ -3439,7 +3439,7 @@ LIBETH_XDP_DEFINE_START();
 LIBETH_XDP_DEFINE_RUN(static idpf_xdp_run_pass, idpf_xdp_run_prog,
 		      idpf_xdp_tx_flush_bulk, idpf_rx_process_skb_fields);
 LIBETH_XDP_DEFINE_FINALIZE(static idpf_xdp_finalize_rx, idpf_xdp_tx_flush_bulk,
-			   idpf_xdp_tx_finalize);
+			   idpf_xdp_tx_finalize, __releases_shared(RCU));
 LIBETH_XDP_DEFINE_END();
 
 /**

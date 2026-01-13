@@ -205,7 +205,7 @@ int afs_dir_search(struct afs_vnode *dvnode, const struct qstr *name,
 			break;
 		}
 		ret = afs_read_dir(dvnode, NULL);
-		if (ret < 0) {
+		if (ret) {
 			if (ret != -ESTALE)
 				break;
 			if (test_bit(AFS_VNODE_DELETED, &dvnode->flags)) {

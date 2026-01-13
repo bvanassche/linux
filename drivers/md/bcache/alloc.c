@@ -374,6 +374,7 @@ out:
 /* Allocation */
 
 long bch_bucket_alloc(struct cache *ca, unsigned int reserve, bool wait)
+	__must_hold(ca->set->bucket_lock)
 {
 	DEFINE_WAIT(w);
 	struct bucket *b;
@@ -475,6 +476,7 @@ void bch_bucket_free(struct cache_set *c, struct bkey *k)
 
 int __bch_bucket_alloc_set(struct cache_set *c, unsigned int reserve,
 			   struct bkey *k, bool wait)
+	__must_hold(&c->bucket_lock)
 {
 	struct cache *ca;
 	long b;
@@ -484,6 +486,7 @@ int __bch_bucket_alloc_set(struct cache_set *c, unsigned int reserve,
 		return -1;
 
 	lockdep_assert_held(&c->bucket_lock);
+	__assume_ctx_lock(&c->cache->set->bucket_lock);
 
 	bkey_init(k);
 

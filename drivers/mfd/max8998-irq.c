@@ -98,6 +98,7 @@ irq_to_max8998_irq(struct max8998_dev *max8998, struct irq_data *data)
 }
 
 static void max8998_irq_lock(struct irq_data *data)
+	__acquires(&((struct max8998_dev *)irq_data_get_irq_chip_data(data))->irqlock)
 {
 	struct max8998_dev *max8998 = irq_data_get_irq_chip_data(data);
 
@@ -105,6 +106,7 @@ static void max8998_irq_lock(struct irq_data *data)
 }
 
 static void max8998_irq_sync_unlock(struct irq_data *data)
+	__releases(&((struct max8998_dev *)irq_data_get_irq_chip_data(data))->irqlock)
 {
 	struct max8998_dev *max8998 = irq_data_get_irq_chip_data(data);
 	int i;

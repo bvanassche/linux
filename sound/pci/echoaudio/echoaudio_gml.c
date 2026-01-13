@@ -83,6 +83,8 @@ static int set_input_auto_mute(struct echoaudio *chip, int automute)
 
 	chip->digital_in_automute = automute;
 
+	__assume_ctx_lock(&chip->lock);
+
 	/* Re-set the input clock to the current value - indirectly causes
 	the auto-mute flag to be sent to the DSP */
 	return set_input_clock(chip, chip->input_clock);

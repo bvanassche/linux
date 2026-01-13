@@ -53,6 +53,7 @@ unlock:
 }
 
 static void ____intel_wakeref_put_last(struct intel_wakeref *wf)
+	__releases(wf->mutex)
 {
 	intel_wakeref_t wakeref = NULL;
 

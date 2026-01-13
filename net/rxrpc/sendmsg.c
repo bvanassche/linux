@@ -322,6 +322,7 @@ static int rxrpc_send_data(struct rxrpc_sock *rx,
 			   struct msghdr *msg, size_t len,
 			   rxrpc_notify_end_tx_t notify_end_tx,
 			   bool *_dropped_lock)
+	__no_context_analysis
 {
 	struct rxrpc_txbuf *txb;
 	struct sock *sk = &rx->sk;
@@ -607,8 +608,7 @@ static int rxrpc_sendmsg_cmsg(struct msghdr *msg, struct rxrpc_send_params *p)
 static struct rxrpc_call *
 rxrpc_new_client_call_for_sendmsg(struct rxrpc_sock *rx, struct msghdr *msg,
 				  struct rxrpc_send_params *p)
-	__releases(&rx->sk.sk_lock)
-	__acquires(&call->user_mutex)
+	__releases(&rx->sk)
 {
 	struct rxrpc_conn_parameters cp;
 	struct rxrpc_peer *peer;
@@ -776,8 +776,10 @@ int rxrpc_do_sendmsg(struct rxrpc_sock *rx, struct msghdr *msg, size_t len)
 	}
 
 out_put_unlock:
-	if (!dropped_lock)
+	if (!dropped_lock) {
+		__acquire(&call->user_mutex);
 		mutex_unlock(&call->user_mutex);
+	}
 error_put:
 	rxrpc_put_call(call, rxrpc_call_put_sendmsg);
 	_leave(" = %d", ret);
@@ -824,6 +826,8 @@ int rxrpc_kernel_send_data(struct socket *sock, struct rxrpc_call *call,
 
 	if (!dropped_lock)
 		mutex_unlock(&call->user_mutex);
+	else
+		__release(&call->user_mutex);
 	_leave(" = %d", ret);
 	return ret;
 }

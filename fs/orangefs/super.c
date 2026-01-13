@@ -596,6 +596,7 @@ int orangefs_init_fs_context(struct fs_context *fc)
 }
 
 void orangefs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	int r;
 	gossip_debug(GOSSIP_SUPER_DEBUG, "orangefs_kill_sb: called\n");

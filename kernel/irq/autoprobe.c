@@ -28,6 +28,7 @@ static DEFINE_MUTEX(probing_active);
  *
  */
 unsigned long probe_irq_on(void)
+	__acquires(probing_active)
 {
 	struct irq_desc *desc;
 	unsigned long mask = 0;
@@ -110,6 +111,7 @@ EXPORT_SYMBOL(probe_irq_on);
  *	them all to a known state.
  */
 unsigned int probe_irq_mask(unsigned long val)
+	__releases(probing_active)
 {
 	unsigned int mask = 0;
 	struct irq_desc *desc;
@@ -149,6 +151,7 @@ EXPORT_SYMBOL(probe_irq_mask);
  *	results of this are non-optimal.
  */
 int probe_irq_off(unsigned long val)
+	__releases(probing_active)
 {
 	int i, irq_found = 0, nr_of_irqs = 0;
 	struct irq_desc *desc;

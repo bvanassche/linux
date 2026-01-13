@@ -129,6 +129,7 @@ static struct i915_sched_engine *
 lock_sched_engine(struct i915_sched_node *node,
 		  struct i915_sched_engine *locked,
 		  struct sched_cache *cache)
+	__no_context_analysis /* TODO */
 {
 	const struct i915_request *rq = node_to_request(node);
 	struct i915_sched_engine *sched_engine;
@@ -154,6 +155,7 @@ lock_sched_engine(struct i915_sched_node *node,
 
 static void __i915_schedule(struct i915_sched_node *node,
 			    const struct i915_sched_attr *attr)
+	__no_context_analysis /* container_of() */
 {
 	const int prio = max(attr->priority, node->attr.priority);
 	struct i915_sched_engine *sched_engine;

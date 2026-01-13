@@ -128,6 +128,7 @@ static int rtas_ibm_get_indices(struct rtas_get_indices_params *params)
  * Context: May sleep.
  */
 static void indices_sequence_begin(struct papr_rtas_sequence *seq)
+	__acquires(&rtas_ibm_get_indices_lock)
 {
 	struct rtas_get_indices_params  *param;
 
@@ -150,6 +151,7 @@ static void indices_sequence_begin(struct papr_rtas_sequence *seq)
  * Releases resources obtained by indices_sequence_begin().
  */
 static void indices_sequence_end(struct papr_rtas_sequence *seq)
+	__releases(&rtas_ibm_get_indices_lock)
 {
 	struct rtas_get_indices_params *param;
 

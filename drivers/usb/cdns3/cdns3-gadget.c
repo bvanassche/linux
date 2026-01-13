@@ -792,6 +792,7 @@ static void cdns3_wa2_check_outq_status(struct cdns3_device *priv_dev)
 void cdns3_gadget_giveback(struct cdns3_endpoint *priv_ep,
 			   struct cdns3_request *priv_req,
 			   int status)
+	__no_context_analysis
 {
 	struct cdns3_device *priv_dev = priv_ep->cdns3_dev;
 	struct usb_request *request = &priv_req->request;

@@ -361,6 +361,7 @@ static void register_prot_hook(struct sock *sk)
  * callers responsibility to take care of this.
  */
 static void __unregister_prot_hook(struct sock *sk, bool sync)
+	__no_context_analysis /* conditional locking */
 {
 	struct packet_sock *po = pkt_sk(sk);
 
@@ -974,7 +975,7 @@ static int prb_queue_frozen(struct tpacket_kbdq_core *pkc)
 }
 
 static void prb_clear_blk_fill_status(struct packet_ring_buffer *rb)
-	__releases(&pkc->blk_fill_in_prog_lock)
+	__releases_shared(&GET_PBDQC_FROM_RB(rb)->blk_fill_in_prog_lock)
 {
 	struct tpacket_kbdq_core *pkc  = GET_PBDQC_FROM_RB(rb);
 
@@ -1029,7 +1030,7 @@ static void prb_fill_curr_block(char *curr,
 				struct tpacket_kbdq_core *pkc,
 				struct tpacket_block_desc *pbd,
 				unsigned int len)
-	__acquires(&pkc->blk_fill_in_prog_lock)
+	__acquires_shared(&pkc->blk_fill_in_prog_lock)
 {
 	struct tpacket3_hdr *ppd;
 
@@ -1048,6 +1049,7 @@ static void *__packet_lookup_frame_in_block(struct packet_sock *po,
 					    struct sk_buff *skb,
 					    unsigned int len
 					    )
+	__no_context_analysis
 {
 	struct tpacket_kbdq_core *pkc;
 	struct tpacket_block_desc *pbd;
@@ -2227,6 +2229,7 @@ drop:
 
 static int tpacket_rcv(struct sk_buff *skb, struct net_device *dev,
 		       struct packet_type *pt, struct net_device *orig_dev)
+	__no_context_analysis
 {
 	enum skb_drop_reason drop_reason = SKB_CONSUMED;
 	struct sock *sk = NULL;
@@ -4695,7 +4698,7 @@ static struct notifier_block packet_netdev_notifier = {
 #ifdef CONFIG_PROC_FS
 
 static void *packet_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	struct net *net = seq_file_net(seq);
 
@@ -4710,7 +4713,7 @@ static void *packet_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void packet_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

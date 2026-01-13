@@ -1647,6 +1647,7 @@ done:
  * CTCM_PROTO_MPC only
  */
 static void mpc_action_side_xid(fsm_instance *fsm, void *arg, int side)
+	__context_unsafe(conditional locking)
 {
 	struct channel *ch = arg;
 	int rc = 0;

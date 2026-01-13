@@ -61,6 +61,7 @@ struct net_rate_estimator {
 
 static void est_fetch_counters(struct net_rate_estimator *e,
 			       struct gnet_stats_basic_sync *b)
+	__no_context_analysis /* conditional locking */
 {
 	gnet_stats_basic_sync_init(b);
 	if (e->stats_lock)
@@ -135,6 +136,7 @@ int gen_new_estimator(struct gnet_stats_basic_sync *bstats,
 		      spinlock_t *lock,
 		      bool running,
 		      struct nlattr *opt)
+	__no_context_analysis /* conditional locking */
 {
 	struct gnet_estimator *parm = nla_data(opt);
 	struct net_rate_estimator *old, *est;

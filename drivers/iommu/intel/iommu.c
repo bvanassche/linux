@@ -1609,6 +1609,7 @@ out_unmap:
 }
 
 static int __init init_dmars(void)
+	__must_hold(&dmar_global_lock)
 {
 	struct dmar_drhd_unit *drhd;
 	struct intel_iommu *iommu;
@@ -2499,6 +2500,7 @@ static int __init platform_optin_force_iommu(void)
 }
 
 static int __init probe_acpi_namespace_devices(void)
+	__must_hold_shared(&dmar_global_lock)
 {
 	struct dmar_drhd_unit *drhd;
 	/* To avoid a -Wunused-but-set-variable warning. */

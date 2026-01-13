@@ -7,6 +7,7 @@
 #include "gem/i915_gem_object.h"
 
 void i915_gem_ww_ctx_init(struct i915_gem_ww_ctx *ww, bool intr)
+	__acquires(&ww->ctx)
 {
 	ww_acquire_init(&ww->ctx, &reservation_ww_class);
 	INIT_LIST_HEAD(&ww->obj_list);
@@ -33,6 +34,7 @@ void i915_gem_ww_unlock_single(struct drm_i915_gem_object *obj)
 }
 
 void i915_gem_ww_ctx_fini(struct i915_gem_ww_ctx *ww)
+	__releases(&ww->ctx)
 {
 	i915_gem_ww_ctx_unlock_all(ww);
 	WARN_ON(ww->contended);
@@ -40,6 +42,7 @@ void i915_gem_ww_ctx_fini(struct i915_gem_ww_ctx *ww)
 }
 
 int __must_check i915_gem_ww_ctx_backoff(struct i915_gem_ww_ctx *ww)
+	__no_context_analysis /* TODO */
 {
 	int ret = 0;
 

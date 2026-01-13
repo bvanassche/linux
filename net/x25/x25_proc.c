@@ -23,7 +23,7 @@
 #ifdef CONFIG_PROC_FS
 
 static void *x25_seq_route_start(struct seq_file *seq, loff_t *pos)
-	__acquires(x25_route_list_lock)
+	__acquires_shared(&x25_route_list_lock)
 {
 	read_lock_bh(&x25_route_list_lock);
 	return seq_list_start_head(&x25_route_list, *pos);
@@ -35,7 +35,7 @@ static void *x25_seq_route_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void x25_seq_route_stop(struct seq_file *seq, void *v)
-	__releases(x25_route_list_lock)
+	__releases_shared(&x25_route_list_lock)
 {
 	read_unlock_bh(&x25_route_list_lock);
 }
@@ -58,7 +58,7 @@ out:
 }
 
 static void *x25_seq_socket_start(struct seq_file *seq, loff_t *pos)
-	__acquires(x25_list_lock)
+	__acquires_shared(&x25_list_lock)
 {
 	read_lock_bh(&x25_list_lock);
 	return seq_hlist_start_head(&x25_list, *pos);
@@ -70,7 +70,7 @@ static void *x25_seq_socket_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void x25_seq_socket_stop(struct seq_file *seq, void *v)
-	__releases(x25_list_lock)
+	__releases_shared(&x25_list_lock)
 {
 	read_unlock_bh(&x25_list_lock);
 }
@@ -110,7 +110,7 @@ out:
 }
 
 static void *x25_seq_forward_start(struct seq_file *seq, loff_t *pos)
-	__acquires(x25_forward_list_lock)
+	__acquires_shared(&x25_forward_list_lock)
 {
 	read_lock_bh(&x25_forward_list_lock);
 	return seq_list_start_head(&x25_forward_list, *pos);
@@ -122,7 +122,7 @@ static void *x25_seq_forward_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void x25_seq_forward_stop(struct seq_file *seq, void *v)
-	__releases(x25_forward_list_lock)
+	__releases_shared(&x25_forward_list_lock)
 {
 	read_unlock_bh(&x25_forward_list_lock);
 }

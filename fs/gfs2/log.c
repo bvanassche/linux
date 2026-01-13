@@ -1068,6 +1068,7 @@ void gfs2_remove_from_journal(struct buffer_head *bh, int meta)
 
 static void __gfs2_log_flush(struct gfs2_sbd *sdp, struct gfs2_glock *gl,
 			     u32 flags)
+	__context_unsafe(conditional locking)
 {
 	struct gfs2_trans *tr = NULL;
 	unsigned int reserved_blocks = 0, used_blocks = 0;

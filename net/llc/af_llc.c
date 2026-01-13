@@ -581,6 +581,7 @@ out:
 }
 
 static int llc_ui_wait_for_disc(struct sock *sk, long timeout)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	int rc = 0;
@@ -603,6 +604,7 @@ static int llc_ui_wait_for_disc(struct sock *sk, long timeout)
 }
 
 static bool llc_ui_wait_for_conn(struct sock *sk, long timeout)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 
@@ -619,6 +621,7 @@ static bool llc_ui_wait_for_conn(struct sock *sk, long timeout)
 }
 
 static int llc_ui_wait_for_busy_core(struct sock *sk, long timeout)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct llc_sock *llc = llc_sk(sk);
@@ -645,6 +648,7 @@ static int llc_ui_wait_for_busy_core(struct sock *sk, long timeout)
 }
 
 static int llc_wait_data(struct sock *sk, long timeo)
+	__must_hold(sk)
 {
 	int rc;
 

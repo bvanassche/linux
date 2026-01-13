@@ -565,6 +565,7 @@ static bool check_bo_args_are_sane(struct xe_vm *vm, struct xe_vma **vmas,
  * Return: 0 on success or a negative error code on failure.
  */
 int xe_vm_madvise_ioctl(struct drm_device *dev, void *data, struct drm_file *file)
+	__no_context_analysis
 {
 	struct xe_device *xe = to_xe_device(dev);
 	struct xe_file *xef = to_xe_file(file);

@@ -1873,7 +1873,6 @@ mshv_partition *mshv_partition_get(struct mshv_partition *partition)
 
 struct
 mshv_partition *mshv_partition_find(u64 partition_id)
-	__must_hold(RCU)
 {
 	struct mshv_partition *p;
 

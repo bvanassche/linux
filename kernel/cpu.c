@@ -464,11 +464,13 @@ EXPORT_SYMBOL_GPL(cpuhp_tasks_frozen);
  * attempting to serialize the updates to cpu_online_mask & cpu_present_mask.
  */
 void cpu_maps_update_begin(void)
+	__acquires(cpu_add_remove_lock)
 {
 	mutex_lock(&cpu_add_remove_lock);
 }
 
 void cpu_maps_update_done(void)
+	__releases(cpu_add_remove_lock)
 {
 	mutex_unlock(&cpu_add_remove_lock);
 }
@@ -486,29 +488,34 @@ DEFINE_STATIC_PERCPU_RWSEM(cpu_hotplug_lock);
 static bool cpu_hotplug_offline_disabled __ro_after_init;
 
 void cpus_read_lock(void)
+	__acquires_shared(&cpu_hotplug_lock)
 {
 	percpu_down_read(&cpu_hotplug_lock);
 }
 EXPORT_SYMBOL_GPL(cpus_read_lock);
 
 int cpus_read_trylock(void)
+	__cond_acquires_shared(0, &cpu_hotplug_lock)
 {
 	return percpu_down_read_trylock(&cpu_hotplug_lock);
 }
 EXPORT_SYMBOL_GPL(cpus_read_trylock);
 
 void cpus_read_unlock(void)
+	__releases_shared(&cpu_hotplug_lock)
 {
 	percpu_up_read(&cpu_hotplug_lock);
 }
 EXPORT_SYMBOL_GPL(cpus_read_unlock);
 
 void cpus_write_lock(void)
+	__acquires(&cpu_hotplug_lock)
 {
 	percpu_down_write(&cpu_hotplug_lock);
 }
 
 void cpus_write_unlock(void)
+	__releases(&cpu_hotplug_lock)
 {
 	percpu_up_write(&cpu_hotplug_lock);
 }
@@ -1243,6 +1250,7 @@ void __init cpuhp_threads_init(void)
  * be called only for an already offlined CPU.
  */
 void clear_tasks_mm_cpumask(int cpu)
+	__no_context_analysis
 {
 	struct task_struct *p;
 

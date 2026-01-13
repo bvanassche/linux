@@ -1605,6 +1605,7 @@ void nfsd4_shutdown_callback(struct nfs4_client *clp)
 }
 
 static struct nfsd4_conn * __nfsd4_find_backchannel(struct nfs4_client *clp)
+	__must_hold(&clp->cl_lock)
 {
 	struct nfsd4_session *s;
 	struct nfsd4_conn *c;

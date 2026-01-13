@@ -416,6 +416,7 @@ xfs_qm_dquot_isolate(
 	struct list_lru_one	*lru,
 	void			*arg)
 		__releases(&lru->lock) __acquires(&lru->lock)
+	__no_context_analysis
 {
 	struct xfs_dquot	*dqp = container_of(item,
 						struct xfs_dquot, q_lru);
@@ -1853,6 +1854,7 @@ xfs_qm_vop_dqalloc(
 	struct xfs_dquot	**O_udqpp,
 	struct xfs_dquot	**O_gdqpp,
 	struct xfs_dquot	**O_pdqpp)
+	__no_context_analysis
 {
 	struct xfs_mount	*mp = ip->i_mount;
 	struct inode		*inode = VFS_I(ip);

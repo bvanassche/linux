@@ -138,6 +138,7 @@ struct message_header {
  * the bs_kgts_sema for READ. Will steal user contexts if necessary.
  */
 static void gru_load_kernel_context(struct gru_blade_state *bs, int blade_id)
+	__must_hold_shared(&bs->bs_kgts_sema)
 {
 	struct gru_state *gru;
 	struct gru_thread_state *kgts;
@@ -214,6 +215,7 @@ static int gru_free_kernel_contexts(void)
  * Lock & load the kernel context for the specified blade.
  */
 static struct gru_blade_state *gru_lock_kernel_context(int blade_id)
+	__no_context_analysis /* __acquires(&gru_base[blade_id < 0 ? uv_numa_blade_id() : blade_id]->bs_kgts_sema) */
 {
 	struct gru_blade_state *bs;
 	int bid;
@@ -240,6 +242,7 @@ again:
  * unloaded but may be stolen before next use.
  */
 static void gru_unlock_kernel_context(int blade_id)
+	__no_context_analysis
 {
 	struct gru_blade_state *bs;
 

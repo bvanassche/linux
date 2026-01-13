@@ -206,6 +206,7 @@ static inline bool skip_eb_logging(const struct extent_buffer *eb)
  * write unlock fs_info::tree_mod_log_lock.
  */
 static bool tree_mod_dont_log(struct btrfs_fs_info *fs_info, const struct extent_buffer *eb)
+	__no_context_analysis
 {
 	if (!test_bit(BTRFS_FS_TREE_MOD_LOG_USERS, &fs_info->flags))
 		return true;
@@ -260,6 +261,7 @@ static struct tree_mod_elem *alloc_tree_mod_elem(const struct extent_buffer *eb,
 
 int btrfs_tree_mod_log_insert_key(const struct extent_buffer *eb, int slot,
 				  enum btrfs_mod_log_op op)
+	__no_context_analysis
 {
 	struct tree_mod_elem *tm;
 	int ret = 0;
@@ -318,6 +320,7 @@ static struct tree_mod_elem *tree_mod_log_alloc_move(const struct extent_buffer 
 int btrfs_tree_mod_log_insert_move(const struct extent_buffer *eb,
 				   int dst_slot, int src_slot,
 				   int nr_items)
+	__no_context_analysis
 {
 	struct tree_mod_elem *tm = NULL;
 	struct tree_mod_elem **tm_list = NULL;
@@ -426,6 +429,7 @@ static int tree_mod_log_free_eb(struct btrfs_fs_info *fs_info,
 int btrfs_tree_mod_log_insert_root(struct extent_buffer *old_root,
 				   struct extent_buffer *new_root,
 				   bool log_removal)
+	__no_context_analysis
 {
 	struct btrfs_fs_info *fs_info = old_root->fs_info;
 	struct tree_mod_elem *tm = NULL;
@@ -576,6 +580,7 @@ int btrfs_tree_mod_log_eb_copy(struct extent_buffer *dst,
 			       unsigned long dst_offset,
 			       unsigned long src_offset,
 			       int nr_items)
+	__no_context_analysis
 {
 	struct btrfs_fs_info *fs_info = dst->fs_info;
 	int ret = 0;
@@ -703,6 +708,7 @@ free_tms:
 }
 
 int btrfs_tree_mod_log_free_eb(struct extent_buffer *eb)
+	__no_context_analysis
 {
 	struct tree_mod_elem **tm_list = NULL;
 	int nritems = 0;

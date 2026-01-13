@@ -75,6 +75,7 @@ struct ks8851_net_spi {
  * Claim chip register access lock
  */
 static void ks8851_lock_spi(struct ks8851_net *ks)
+	__no_context_analysis /* container_of() */
 {
 	struct ks8851_net_spi *kss = to_ks8851_spi(ks);
 
@@ -88,6 +89,7 @@ static void ks8851_lock_spi(struct ks8851_net *ks)
  * Release chip register access lock
  */
 static void ks8851_unlock_spi(struct ks8851_net *ks)
+	__no_context_analysis /* container_of() */
 {
 	struct ks8851_net_spi *kss = to_ks8851_spi(ks);
 

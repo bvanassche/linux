@@ -1971,6 +1971,7 @@ int rvu_mbox_handler_npc_delete_flow(struct rvu *rvu,
 static int npc_update_dmac_value(struct rvu *rvu, int npcblkaddr,
 				 struct rvu_npc_mcam_rule *rule,
 				 struct rvu_pfvf *pfvf)
+	__no_context_analysis /* __must_hold(rvu->hw->mcam.lock) */
 {
 	struct npc_cn20k_mcam_write_entry_req cn20k_wreq = { 0 };
 	struct npc_mcam_write_entry_req write_req = { 0 };

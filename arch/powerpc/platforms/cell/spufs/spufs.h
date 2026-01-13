@@ -250,7 +250,8 @@ void spu_gang_remove_ctx(struct spu_gang *gang, struct spu_context *ctx);
 void spu_gang_add_ctx(struct spu_gang *gang, struct spu_context *ctx);
 
 /* fault handling */
-int spufs_handle_class1(struct spu_context *ctx);
+int spufs_handle_class1(struct spu_context *ctx)
+	__must_hold(&ctx->state_mutex);
 int spufs_handle_class0(struct spu_context *ctx);
 
 /* affinity */
@@ -259,11 +260,13 @@ struct spu *affinity_check(struct spu_context *ctx);
 /* context management */
 extern atomic_t nr_spu_contexts;
 static inline int __must_check spu_acquire(struct spu_context *ctx)
+	__cond_acquires(0, &ctx->state_mutex)
 {
 	return mutex_lock_interruptible(&ctx->state_mutex);
 }
 
 static inline void spu_release(struct spu_context *ctx)
+	__releases(&ctx->state_mutex)
 {
 	mutex_unlock(&ctx->state_mutex);
 }
@@ -275,16 +278,21 @@ int put_spu_context(struct spu_context *ctx);
 void spu_unmap_mappings(struct spu_context *ctx);
 
 void spu_forget(struct spu_context *ctx);
-int __must_check spu_acquire_saved(struct spu_context *ctx);
-void spu_release_saved(struct spu_context *ctx);
+int __must_check spu_acquire_saved(struct spu_context *ctx)
+	__cond_acquires(0, &ctx->state_mutex);
+void spu_release_saved(struct spu_context *ctx)
+	__releases(&ctx->state_mutex);
 
 int spu_stopped(struct spu_context *ctx, u32 * stat);
 void spu_del_from_rq(struct spu_context *ctx);
-int spu_activate(struct spu_context *ctx, unsigned long flags);
-void spu_deactivate(struct spu_context *ctx);
+int spu_activate(struct spu_context *ctx, unsigned long flags)
+	__must_hold(&ctx->state_mutex);
+void spu_deactivate(struct spu_context *ctx)
+	__must_hold(&ctx->state_mutex);
 void spu_yield(struct spu_context *ctx);
 void spu_switch_log_notify(struct spu *spu, struct spu_context *ctx,
-		u32 type, u32 val);
+		u32 type, u32 val)
+	__must_hold(&ctx->state_mutex);
 void spu_set_timeslice(struct spu_context *ctx);
 void spu_update_sched_info(struct spu_context *ctx);
 void __spu_update_sched_info(struct spu_context *ctx);
@@ -353,6 +361,7 @@ extern int spu_alloc_lscsa(struct spu_state *csa);
 extern void spu_free_lscsa(struct spu_state *csa);
 
 extern void spuctx_switch_state(struct spu_context *ctx,
-		enum spu_utilization_state new_state);
+		enum spu_utilization_state new_state)
+	__must_hold(&ctx->state_mutex);
 
 #endif

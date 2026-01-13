@@ -246,6 +246,7 @@ static inline void bch_btree_op_init(struct btree_op *op, int write_lock_level)
 }
 
 static inline void rw_lock(bool w, struct btree *b, int level)
+	__no_context_analysis /* conditional locking */
 {
 	w ? down_write(&b->lock)
 	  : down_read(&b->lock);
@@ -254,6 +255,7 @@ static inline void rw_lock(bool w, struct btree *b, int level)
 }
 
 static inline void rw_unlock(bool w, struct btree *b)
+	__no_context_analysis /* conditional locking */
 {
 	if (w)
 		b->seq++;

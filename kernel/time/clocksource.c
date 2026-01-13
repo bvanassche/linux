@@ -158,11 +158,13 @@ static atomic_t watchdog_reset_pending;
 #define WATCHDOG_REMOTE_MAX_SEQ		10
 
 static inline void clocksource_watchdog_lock(unsigned long *flags)
+	__acquires(&watchdog_lock)
 {
 	spin_lock_irqsave(&watchdog_lock, *flags);
 }
 
 static inline void clocksource_watchdog_unlock(unsigned long *flags)
+	__releases(&watchdog_lock)
 {
 	spin_unlock_irqrestore(&watchdog_lock, *flags);
 }

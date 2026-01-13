@@ -2665,6 +2665,7 @@ void drain_local_pages(struct zone *zone)
  * optimizing racy check.
  */
 static void __drain_all_pages(struct zone *zone, bool force_all_cpus)
+	__no_context_analysis
 {
 	int cpu;
 
@@ -2825,6 +2826,8 @@ static int nr_pcp_high(struct per_cpu_pages *pcp, struct zone *zone,
 static bool free_frozen_page_commit(struct zone *zone,
 		struct per_cpu_pages *pcp, struct page *page, int migratetype,
 		unsigned int order, fpi_t fpi_flags)
+	__releases(&pcp->lock)
+	__cond_acquires(true, &pcp->lock)
 {
 	int high, batch;
 	int to_free, to_free_batched;
@@ -2929,6 +2932,7 @@ static bool free_frozen_page_commit(struct zone *zone,
  */
 static void __free_frozen_pages(struct page *page, unsigned int order,
 				fpi_t fpi_flags)
+	__no_context_analysis
 {
 	struct per_cpu_pages *pcp;
 	struct zone *zone;
@@ -2990,6 +2994,7 @@ void free_frozen_pages_nolock(struct page *page, unsigned int order)
  * Free a batch of folios
  */
 void free_unref_folios(struct folio_batch *folios)
+	__no_context_analysis
 {
 	struct per_cpu_pages *pcp = NULL;
 	struct zone *locked_zone = NULL;
@@ -3352,6 +3357,7 @@ struct page *__rmqueue_pcplist(struct zone *zone, unsigned int order,
 static struct page *rmqueue_pcplist(struct zone *preferred_zone,
 			struct zone *zone, unsigned int order,
 			int migratetype, unsigned int alloc_flags)
+	__no_context_analysis
 {
 	struct per_cpu_pages *pcp;
 	struct list_head *list;
@@ -4046,6 +4052,7 @@ __alloc_pages_cpuset_fallback(gfp_t gfp_mask, unsigned int order,
 static inline struct page *
 __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
 	const struct alloc_context *ac, unsigned long *did_some_progress)
+	__no_context_analysis
 {
 	struct oom_control oc = {
 		.zonelist = ac->zonelist,
@@ -4368,6 +4375,7 @@ EXPORT_SYMBOL_GPL(fs_reclaim_release);
 static DEFINE_SEQLOCK(zonelist_update_seq);
 
 static unsigned int zonelist_iter_begin(void)
+	__no_context_analysis
 {
 	if (IS_ENABLED(CONFIG_MEMORY_HOTREMOVE))
 		return read_seqbegin(&zonelist_update_seq);
@@ -4376,6 +4384,7 @@ static unsigned int zonelist_iter_begin(void)
 }
 
 static unsigned int check_retry_zonelist(unsigned int seq)
+	__no_context_analysis
 {
 	if (IS_ENABLED(CONFIG_MEMORY_HOTREMOVE))
 		return read_seqretry(&zonelist_update_seq, seq);
@@ -5042,6 +5051,7 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 unsigned long alloc_pages_bulk_noprof(gfp_t gfp, int preferred_nid,
 			nodemask_t *nodemask, int nr_pages,
 			struct page **page_array)
+	__no_context_analysis
 {
 	struct page *page;
 	struct zone *zone;
@@ -7324,6 +7334,7 @@ EXPORT_SYMBOL(free_contig_range);
  * Must be paired with a call to zone_pcp_enable().
  */
 void zone_pcp_disable(struct zone *zone)
+	__acquires(pcp_batch_high_lock)
 {
 	mutex_lock(&pcp_batch_high_lock);
 	__zone_set_pageset_high_and_batch(zone, 0, 0, 1);
@@ -7331,6 +7342,7 @@ void zone_pcp_disable(struct zone *zone)
 }
 
 void zone_pcp_enable(struct zone *zone)
+	__releases(pcp_batch_high_lock)
 {
 	__zone_set_pageset_high_and_batch(zone, zone->pageset_high_min,
 		zone->pageset_high_max, zone->pageset_batch);
@@ -7571,6 +7583,7 @@ static bool page_contains_unaccepted(struct page *page, unsigned int order)
 
 static void __accept_page(struct zone *zone, unsigned long *flags,
 			  struct page *page)
+	__releases(&zone->lock)
 {
 	list_del(&page->lru);
 	account_freepages(zone, -MAX_ORDER_NR_PAGES, MIGRATE_MOVABLE);

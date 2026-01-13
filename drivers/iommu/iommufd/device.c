@@ -1070,6 +1070,7 @@ EXPORT_SYMBOL_NS_GPL(iommufd_device_detach, "IOMMUFD");
  */
 static int iommufd_access_change_ioas(struct iommufd_access *access,
 				      struct iommufd_ioas *new_ioas)
+	__must_hold(access->ioas_lock)
 {
 	u32 iopt_access_list_id = access->iopt_access_list_id;
 	struct iommufd_ioas *cur_ioas = access->ioas;
@@ -1116,6 +1117,7 @@ static int iommufd_access_change_ioas(struct iommufd_access *access,
 }
 
 static int iommufd_access_change_ioas_id(struct iommufd_access *access, u32 id)
+	__must_hold(access->ioas_lock)
 {
 	struct iommufd_ioas *ioas = iommufd_get_ioas(access->ictx, id);
 	int rc;

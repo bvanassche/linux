@@ -4471,7 +4471,7 @@ static struct inet6_ifaddr *if6_get_next(struct seq_file *seq,
 }
 
 static void *if6_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return if6_get_first(seq, *pos);
@@ -4487,7 +4487,7 @@ static void *if6_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void if6_seq_stop(struct seq_file *seq, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

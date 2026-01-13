@@ -1515,8 +1515,7 @@ done:
  */
 static void uhci_giveback_urb(struct uhci_hcd *uhci, struct uhci_qh *qh,
 		struct urb *urb, int status)
-__releases(uhci->lock)
-__acquires(uhci->lock)
+	__no_context_analysis
 {
 	struct urb_priv *urbp = (struct urb_priv *) urb->hcpriv;
 

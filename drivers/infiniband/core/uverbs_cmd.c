@@ -193,6 +193,7 @@ _ib_uverbs_lookup_comp_file(s32 fd, struct uverbs_attr_bundle *attrs)
 	_ib_uverbs_lookup_comp_file((_fd)*typecheck(s32, _fd), _ufile)
 
 int ib_alloc_ucontext(struct uverbs_attr_bundle *attrs)
+	__no_context_analysis
 {
 	struct ib_uverbs_file *ufile = attrs->ufile;
 	struct ib_ucontext *ucontext;

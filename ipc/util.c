@@ -170,6 +170,8 @@ void __init ipc_init_proc_interface(const char *path, const char *header,
  * Called with writer ipc_ids.rwsem held.
  */
 static struct kern_ipc_perm *ipc_findkey(struct ipc_ids *ids, key_t key)
+	__cond_acquires_shared(nonnull, RCU)
+	__cond_acquires(nonnull, &((struct kern_ipc_perm *)rhashtable_lookup_fast(&ids->key_ht, &key, ipc_kht_params))->lock)
 {
 	struct kern_ipc_perm *ipcp;
 
@@ -276,6 +278,7 @@ static inline int ipc_idr_alloc(struct ipc_ids *ids, struct kern_ipc_perm *new)
  * Called with writer ipc_ids.rwsem held.
  */
 int ipc_addid(struct ipc_ids *ids, struct kern_ipc_perm *new, int limit)
+	__no_context_analysis
 {
 	kuid_t euid;
 	kgid_t egid;
@@ -396,6 +399,7 @@ static int ipc_check_perms(struct ipc_namespace *ns,
  */
 static int ipcget_public(struct ipc_namespace *ns, struct ipc_ids *ids,
 		const struct ipc_ops *ops, struct ipc_params *params)
+	__no_context_analysis
 {
 	struct kern_ipc_perm *ipcp;
 	int flg = params->flg;
@@ -795,6 +799,7 @@ struct pid_namespace *ipc_seq_pid_ns(struct seq_file *s)
  * The function returns the found ipc structure, or NULL at EOF.
  */
 static struct kern_ipc_perm *sysvipc_find_ipc(struct ipc_ids *ids, loff_t *pos)
+	__no_context_analysis
 {
 	int tmpidx;
 	struct kern_ipc_perm *ipc;
@@ -814,6 +819,7 @@ static struct kern_ipc_perm *sysvipc_find_ipc(struct ipc_ids *ids, loff_t *pos)
 }
 
 static void *sysvipc_proc_next(struct seq_file *s, void *it, loff_t *pos)
+	__no_context_analysis
 {
 	struct ipc_proc_iter *iter = s->private;
 	struct ipc_proc_iface *iface = iter->iface;
@@ -833,6 +839,7 @@ static void *sysvipc_proc_next(struct seq_file *s, void *it, loff_t *pos)
  * SeqFile iterator: iterator value locked ipc pointer or SEQ_TOKEN_START.
  */
 static void *sysvipc_proc_start(struct seq_file *s, loff_t *pos)
+	__no_context_analysis
 {
 	struct ipc_proc_iter *iter = s->private;
 	struct ipc_proc_iface *iface = iter->iface;
@@ -859,6 +866,7 @@ static void *sysvipc_proc_start(struct seq_file *s, loff_t *pos)
 }
 
 static void sysvipc_proc_stop(struct seq_file *s, void *it)
+	__no_context_analysis
 {
 	struct kern_ipc_perm *ipc = it;
 	struct ipc_proc_iter *iter = s->private;

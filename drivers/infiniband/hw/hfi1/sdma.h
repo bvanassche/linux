@@ -878,6 +878,7 @@ static inline u32 sdma_build_ahg_descriptor(
  */
 static inline unsigned sdma_progress(struct sdma_engine *sde, unsigned seq,
 				     struct sdma_txreq *tx)
+	__no_context_analysis
 {
 	if (read_seqretry(&sde->head_lock, seq)) {
 		sde->desc_avail = sdma_descq_freecnt(sde);

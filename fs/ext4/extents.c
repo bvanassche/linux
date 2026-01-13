@@ -88,6 +88,7 @@ static struct ext4_ext_path *ext4_split_extent_at(handle_t *handle,
 						  ext4_lblk_t split, int flags);
 
 static int ext4_ext_trunc_restart_fn(struct inode *inode, int *dropped)
+	__releases(&EXT4_I(inode)->i_data_sem)
 {
 	/*
 	 * Drop i_data_sem to avoid deadlock with ext4_map_blocks.  At this
@@ -138,6 +139,7 @@ void ext4_free_ext_path(struct ext4_ext_path *path)
 int ext4_datasem_ensure_credits(handle_t *handle, struct inode *inode,
 				int check_cred, int restart_cred,
 				int revoke_cred)
+	__no_context_analysis /* conditional unlocking */
 {
 	int ret;
 	int dropped = 0;

@@ -2672,7 +2672,7 @@ static struct key_vector *fib_trie_get_idx(struct seq_file *seq, loff_t pos)
 }
 
 static void *fib_trie_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return fib_trie_get_idx(seq, *pos);
@@ -2719,7 +2719,7 @@ found:
 }
 
 static void fib_trie_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }
@@ -2861,7 +2861,7 @@ static struct key_vector *fib_route_get_idx(struct fib_route_iter *iter,
 }
 
 static void *fib_route_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	struct fib_route_iter *iter = seq->private;
 	struct fib_table *tb;
@@ -2909,7 +2909,7 @@ static void *fib_route_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void fib_route_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

@@ -731,6 +731,7 @@ struct aa_profile *aa_alloc_null(struct aa_profile *parent, const char *name,
  */
 struct aa_profile *aa_new_learning_profile(struct aa_profile *parent, bool hat,
 					   const char *base, gfp_t gfp)
+	__no_context_analysis /* too complex for static analysis */
 {
 	struct aa_profile *p, *profile;
 	const char *bname;

@@ -559,6 +559,7 @@ static void mipspmu_read(struct perf_event *event)
 }
 
 static void mipspmu_enable(struct pmu *pmu)
+	__releases(&pmuint_rwlock)
 {
 #ifdef CONFIG_MIPS_PERF_SHARED_TC_COUNTERS
 	write_unlock(&pmuint_rwlock);
@@ -578,6 +579,7 @@ static void mipspmu_enable(struct pmu *pmu)
  * CPU after pausing local counters and before grabbing the lock.
  */
 static void mipspmu_disable(struct pmu *pmu)
+	__acquires(&pmuint_rwlock)
 {
 	pause_local_counters();
 #ifdef CONFIG_MIPS_PERF_SHARED_TC_COUNTERS
@@ -1468,6 +1470,7 @@ static const struct mips_perf_event octeon_cache_map
 };
 
 static int __hw_perf_event_init(struct perf_event *event)
+	__no_context_analysis /* conditional locking */
 {
 	struct perf_event_attr *attr = &event->attr;
 	struct hw_perf_event *hwc = &event->hw;

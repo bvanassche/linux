@@ -162,6 +162,7 @@ static int create_dyn_event(const char *raw_command)
 LIST_HEAD(dyn_event_list);
 
 void *dyn_event_seq_start(struct seq_file *m, loff_t *pos)
+	__acquires(event_mutex)
 {
 	mutex_lock(&event_mutex);
 	return seq_list_start(&dyn_event_list, *pos);
@@ -173,6 +174,7 @@ void *dyn_event_seq_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 void dyn_event_seq_stop(struct seq_file *m, void *v)
+	__releases(event_mutex)
 {
 	mutex_unlock(&event_mutex);
 }

@@ -477,6 +477,7 @@ out:
 int ocfs2_begin_local_alloc_recovery(struct ocfs2_super *osb,
 				     int slot_num,
 				     struct ocfs2_dinode **alloc_copy)
+	__no_context_analysis /* conditional locking */
 {
 	int status = 0;
 	struct buffer_head *alloc_bh = NULL;
@@ -615,6 +616,7 @@ out:
 int ocfs2_reserve_local_alloc_bits(struct ocfs2_super *osb,
 				   u32 bits_wanted,
 				   struct ocfs2_alloc_context *ac)
+	__no_context_analysis /* conditional locking */
 {
 	int status;
 	struct ocfs2_dinode *alloc;

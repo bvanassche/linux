@@ -560,6 +560,7 @@ struct ttm_device_funcs vmw_bo_driver = {
 int vmw_bo_create_and_populate(struct vmw_private *dev_priv,
 			       size_t bo_size, u32 domain,
 			       struct vmw_bo **bo_p)
+	__no_context_analysis /* conditional locking */
 {
 	struct ttm_operation_ctx ctx = {
 		.interruptible = false,

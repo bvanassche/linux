@@ -494,6 +494,7 @@ busy:
  */
 void ice_finalize_xdp_rx(struct ice_tx_ring *xdp_ring, unsigned int xdp_res,
 			 u32 first_idx)
+	__no_context_analysis /* conditional locking */
 {
 	struct ice_tx_buf *tx_buf = &xdp_ring->tx_buf[first_idx];
 

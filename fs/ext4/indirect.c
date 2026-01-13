@@ -688,6 +688,7 @@ int ext4_ind_trans_blocks(struct inode *inode, int nrblocks)
 
 static int ext4_ind_trunc_restart_fn(handle_t *handle, struct inode *inode,
 				     struct buffer_head *bh, int *dropped)
+	__no_context_analysis /* conditional unlocking */
 {
 	int err;
 
@@ -725,6 +726,7 @@ static int ext4_ind_truncate_ensure_credits(handle_t *handle,
 					    struct inode *inode,
 					    struct buffer_head *bh,
 					    int revoke_creds)
+	__no_context_analysis /* conditional locking */
 {
 	int ret;
 	int dropped = 0;

@@ -716,6 +716,8 @@ static int pagefault_real_mr(struct mlx5_ib_mr *mr, struct ib_umem_odp *odp,
 	if (np < 0)
 		return np;
 
+	__acquire(&odp->umem_mutex);
+
 	/*
 	 * No need to check whether the MTTs really belong to this MR, since
 	 * ib_umem_odp_map_dma_and_lock already checks this.

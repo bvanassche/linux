@@ -54,6 +54,7 @@ void iris_helper_buffers_done(struct iris_inst *inst, unsigned int type,
 }
 
 int iris_wait_for_session_response(struct iris_inst *inst, bool is_flush)
+	__must_hold(&inst->lock)
 {
 	struct iris_core *core = inst->core;
 	u32 hw_response_timeout_val;

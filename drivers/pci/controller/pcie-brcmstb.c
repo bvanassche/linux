@@ -352,6 +352,7 @@ static inline bool is_bmips(const struct brcm_pcie *pcie)
 }
 
 static int brcm_pcie_bridge_sw_init_set(struct brcm_pcie *pcie, u32 val)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long flags;
 	int ret;

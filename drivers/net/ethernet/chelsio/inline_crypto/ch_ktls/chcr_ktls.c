@@ -413,6 +413,7 @@ static int chcr_ktls_dev_add(struct net_device *netdev, struct sock *sk,
 			     enum tls_offload_ctx_dir direction,
 			     struct tls_crypto_info *crypto_info,
 			     u32 start_offload_tcp_sn)
+	__no_context_analysis /* conditional locking */
 {
 	struct tls_context *tls_ctx = tls_get_ctx(sk);
 	struct ch_ktls_port_stats_debug *port_stats;

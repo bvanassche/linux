@@ -124,6 +124,7 @@ void device_pm_sleep_init(struct device *dev)
  * device_pm_lock - Lock the list of active devices used by the PM core.
  */
 void device_pm_lock(void)
+	__acquires(&dpm_list_mtx)
 {
 	mutex_lock(&dpm_list_mtx);
 }
@@ -132,6 +133,7 @@ void device_pm_lock(void)
  * device_pm_unlock - Unlock the list of active devices used by the PM core.
  */
 void device_pm_unlock(void)
+	__releases(&dpm_list_mtx)
 {
 	mutex_unlock(&dpm_list_mtx);
 }

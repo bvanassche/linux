@@ -229,6 +229,7 @@ static void ttm_transfered_destroy(struct ttm_buffer_object *bo)
 
 static int ttm_buffer_object_transfer(struct ttm_buffer_object *bo,
 				      struct ttm_buffer_object **new_obj)
+	__no_context_analysis /* __cond_acquires for an allocated object */
 {
 	struct ttm_transfer_obj *fbo;
 	int ret;
@@ -256,7 +257,10 @@ static int ttm_buffer_object_transfer(struct ttm_buffer_object *bo,
 	dma_resv_init(&fbo->base.base._resv);
 	fbo->base.base.dev = NULL;
 	ret = dma_resv_trylock(&fbo->base.base._resv);
-	WARN_ON(!ret);
+	if (!ret) {
+		WARN_ON_ONCE(true);
+		return -EDEADLK;
+	}
 
 	ret = dma_resv_reserve_fences(&fbo->base.base._resv, TTM_NUM_MOVE_FENCES);
 	if (ret) {
@@ -601,6 +605,7 @@ static int ttm_bo_wait_free_node(struct ttm_buffer_object *bo,
 static int ttm_bo_move_to_ghost(struct ttm_buffer_object *bo,
 				struct dma_fence *fence,
 				bool dst_use_tt)
+	__no_context_analysis
 {
 	struct ttm_buffer_object *ghost_obj;
 	int ret;
@@ -761,6 +766,7 @@ EXPORT_SYMBOL(ttm_bo_move_sync_cleanup);
  * Return: 0 if successful, negative error code on failure.
  */
 int ttm_bo_pipeline_gutting(struct ttm_buffer_object *bo)
+	__no_context_analysis
 {
 	struct ttm_buffer_object *ghost;
 	struct ttm_tt *ttm;
@@ -820,6 +826,7 @@ error_destroy_tt:
 
 static bool ttm_lru_walk_trylock(struct ttm_bo_lru_cursor *curs,
 				 struct ttm_buffer_object *bo)
+	__no_context_analysis /* conditional locking */
 {
 	struct ttm_operation_ctx *ctx = curs->arg->ctx;
 
@@ -921,6 +928,7 @@ s64 ttm_lru_walk_for_evict(struct ttm_lru_walk *walk, struct ttm_device *bdev,
 EXPORT_SYMBOL(ttm_lru_walk_for_evict);
 
 static void ttm_bo_lru_cursor_cleanup_bo(struct ttm_bo_lru_cursor *curs)
+	__no_context_analysis /* conditional locking */
 {
 	struct ttm_buffer_object *bo = curs->bo;
 
@@ -973,6 +981,7 @@ EXPORT_SYMBOL(ttm_bo_lru_cursor_init);
 
 static struct ttm_buffer_object *
 __ttm_bo_lru_cursor_next(struct ttm_bo_lru_cursor *curs)
+	__no_context_analysis /* conditional locking */
 {
 	spinlock_t *lru_lock = &curs->res_curs.man->bdev->lru_lock;
 	struct ttm_resource *res = NULL;

@@ -714,6 +714,8 @@ int efx_siena_try_recovery(struct efx_nic *efx)
  * before reset.
  */
 void efx_siena_reset_down(struct efx_nic *efx, enum reset_type method)
+	__acquires(&efx->mac_lock)
+	__acquires(&efx->filter_sem)
 {
 	EFX_ASSERT_RESET_SERIALISED(efx);
 
@@ -747,6 +749,8 @@ void efx_siena_watchdog(struct net_device *net_dev, unsigned int txqueue)
  * engines are not restarted, pending a RESET_DISABLE.
  */
 int efx_siena_reset_up(struct efx_nic *efx, enum reset_type method, bool ok)
+	__releases(efx->mac_lock)
+	__releases(&efx->filter_sem)
 {
 	int rc;
 
@@ -814,6 +818,7 @@ fail:
  * Caller must hold the rtnl_lock.
  */
 int efx_siena_reset(struct efx_nic *efx, enum reset_type method)
+	__no_context_analysis /* conditional locking */
 {
 	int rc, rc2 = 0;
 	bool disabled;

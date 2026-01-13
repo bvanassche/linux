@@ -365,6 +365,7 @@ static void cs_hsi_free_data(struct cs_hsi_iface *hi)
 static inline void __cs_hsi_error_pre(struct cs_hsi_iface *hi,
 					struct hsi_msg *msg, const char *info,
 					unsigned int *state)
+	__acquires(&hi->lock)
 {
 	spin_lock(&hi->lock);
 	dev_err(&hi->cl->device, "HSI %s error, msg %d, state %u\n",
@@ -372,6 +373,7 @@ static inline void __cs_hsi_error_pre(struct cs_hsi_iface *hi,
 }
 
 static inline void __cs_hsi_error_post(struct cs_hsi_iface *hi)
+	__releases(&hi->lock)
 {
 	spin_unlock(&hi->lock);
 }

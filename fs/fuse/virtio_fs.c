@@ -1653,6 +1653,7 @@ static void virtio_fs_conn_destroy(struct fuse_mount *fm)
 }
 
 static void virtio_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct fuse_mount *fm = get_fuse_mount_super(sb);
 	bool last;

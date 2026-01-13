@@ -165,7 +165,7 @@ int cifs_unlock_range(struct cifsFileInfo *cfile, struct file_lock *flock,
 		      unsigned int xid);
 int cifs_push_mandatory_locks(struct cifsFileInfo *cfile);
 
-void cifs_down_write(struct rw_semaphore *sem);
+void cifs_down_write(struct rw_semaphore *sem) __acquires(sem);
 struct cifsFileInfo *cifs_new_fileinfo(struct cifs_fid *fid, struct file *file,
 				       struct tcon_link *tlink, __u32 oplock,
 				       const char *symlink_target);

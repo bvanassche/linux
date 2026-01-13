@@ -1276,6 +1276,7 @@ static void remove_range(struct dm_integrity_c *ic, struct dm_integrity_range *r
 }
 
 static void wait_and_add_new_range(struct dm_integrity_c *ic, struct dm_integrity_range *new_range)
+	__must_hold(&ic->endio_wait.lock)
 {
 	new_range->waiting = true;
 	list_add_tail(&new_range->wait_entry, &ic->wait_list);
@@ -1289,6 +1290,7 @@ static void wait_and_add_new_range(struct dm_integrity_c *ic, struct dm_integrit
 }
 
 static void add_new_range_and_wait(struct dm_integrity_c *ic, struct dm_integrity_range *new_range)
+	__must_hold(&ic->endio_wait.lock)
 {
 	if (unlikely(!add_new_range(ic, new_range, true)))
 		wait_and_add_new_range(ic, new_range);
@@ -1537,6 +1539,7 @@ static void dm_integrity_flush_buffers(struct dm_integrity_c *ic, bool flush_dat
 }
 
 static void sleep_on_endio_wait(struct dm_integrity_c *ic)
+	__must_hold(&ic->endio_wait.lock)
 {
 	DECLARE_WAITQUEUE(wait, current);
 

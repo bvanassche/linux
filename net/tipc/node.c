@@ -370,13 +370,13 @@ static struct tipc_node *tipc_node_find_by_id(struct net *net, u8 *id)
 }
 
 static void tipc_node_read_lock(struct tipc_node *n)
-	__acquires(n->lock)
+	__acquires_shared(&n->lock)
 {
 	read_lock_bh(&n->lock);
 }
 
 static void tipc_node_read_unlock(struct tipc_node *n)
-	__releases(n->lock)
+	__releases_shared(&n->lock)
 {
 	read_unlock_bh(&n->lock);
 }

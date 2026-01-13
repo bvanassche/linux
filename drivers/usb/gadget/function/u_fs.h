@@ -54,11 +54,13 @@ struct ffs_dev {
 extern struct mutex ffs_lock;
 
 static inline void ffs_dev_lock(void)
+	__acquires(ffs_lock)
 {
 	mutex_lock(&ffs_lock);
 }
 
 static inline void ffs_dev_unlock(void)
+	__releases(ffs_lock)
 {
 	mutex_unlock(&ffs_lock);
 }

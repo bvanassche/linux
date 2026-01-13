@@ -365,6 +365,7 @@ done:
  */
 int rxrpc_recvmsg(struct socket *sock, struct msghdr *msg, size_t len,
 		  int flags)
+	__no_context_analysis /* needs to be reviewed */
 {
 	struct rxrpc_call *call;
 	struct rxrpc_sock *rx = rxrpc_sk(sock->sk);

@@ -42,6 +42,7 @@ static int psp_nl_reply_send(struct sk_buff *rsp, struct genl_info *info)
 
 static struct psp_dev *
 psp_device_get_and_lock(struct net *net, struct nlattr *dev_id)
+	__no_context_analysis
 {
 	struct psp_dev *psd;
 	int err;
@@ -79,6 +80,7 @@ int psp_device_get_locked(const struct genl_split_ops *ops,
 void
 psp_device_unlock(const struct genl_split_ops *ops, struct sk_buff *skb,
 		  struct genl_info *info)
+	__releases(&((struct psp_dev *)info->user_ptr[0])->lock)
 {
 	struct socket *socket = info->user_ptr[1];
 	struct psp_dev *psd = info->user_ptr[0];
@@ -281,6 +283,7 @@ err_free_rsp:
 
 int psp_assoc_device_get_locked(const struct genl_split_ops *ops,
 				struct sk_buff *skb, struct genl_info *info)
+	__no_context_analysis
 {
 	struct socket *socket;
 	struct psp_dev *psd;

@@ -553,7 +553,8 @@ void iwl_trans_pcie_free(struct iwl_trans *trans);
 void iwl_trans_pcie_free_pnvm_dram_regions(struct iwl_dram_regions *dram_regions,
 					   struct device *dev);
 
-bool _iwl_trans_pcie_grab_nic_access(struct iwl_trans *trans, bool silent);
+bool _iwl_trans_pcie_grab_nic_access(struct iwl_trans *trans, bool silent)
+	__cond_acquires(true, trans);
 
 void iwl_trans_pcie_check_product_reset_status(struct pci_dev *pdev);
 void iwl_trans_pcie_check_product_reset_mode(struct pci_dev *pdev);
@@ -1100,9 +1101,10 @@ void iwl_trans_pcie_set_bits_mask(struct iwl_trans *trans, u32 reg,
 				  u32 mask, u32 value);
 int iwl_trans_pcie_read_config32(struct iwl_trans *trans, u32 ofs,
 				 u32 *val);
-bool iwl_trans_pcie_grab_nic_access(struct iwl_trans *trans);
-void __releases(nic_access_nobh)
-iwl_trans_pcie_release_nic_access(struct iwl_trans *trans);
+bool iwl_trans_pcie_grab_nic_access(struct iwl_trans *trans)
+	__cond_acquires(true, trans);
+void iwl_trans_pcie_release_nic_access(struct iwl_trans *trans)
+	__releases(trans);
 void iwl_pcie_alloc_fw_monitor(struct iwl_trans *trans, u8 max_power);
 int iwl_pci_gen1_2_probe(struct pci_dev *pdev,
 			 const struct pci_device_id *ent,

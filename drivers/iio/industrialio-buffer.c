@@ -1613,6 +1613,7 @@ static int iio_buffer_chrdev_release(struct inode *inode, struct file *filep)
 }
 
 static int iio_dma_resv_lock(struct dma_buf *dmabuf, bool nonblock)
+	__cond_acquires(0, &dmabuf->resv->lock)
 {
 	if (!nonblock)
 		return dma_resv_lock_interruptible(dmabuf->resv, NULL);

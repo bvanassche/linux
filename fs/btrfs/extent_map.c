@@ -1205,6 +1205,7 @@ next:
 
 static struct btrfs_inode *find_first_inode_to_shrink(struct btrfs_root *root,
 						      u64 min_ino)
+	__no_context_analysis /* acquires lock on return value */
 {
 	struct btrfs_inode *inode;
 	unsigned long from = min_ino;
@@ -1262,6 +1263,7 @@ static long btrfs_scan_root(struct btrfs_root *root, struct btrfs_em_shrink_ctx 
 
 	inode = find_first_inode_to_shrink(root, min_ino);
 	while (inode) {
+		__acquire(&inode->extent_tree.lock);
 		nr_dropped += btrfs_scan_inode(inode, ctx);
 		write_unlock(&inode->extent_tree.lock);
 

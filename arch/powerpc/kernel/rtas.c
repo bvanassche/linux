@@ -1848,6 +1848,7 @@ err:
 
 /* We assume to be passed big endian arguments */
 SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
+	__no_context_analysis /* conditional locking */
 {
 	const struct rtas_function *func;
 	struct pin_cookie cookie;

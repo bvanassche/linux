@@ -411,6 +411,7 @@ static inline struct buffer_tree *cache_get_tree(struct dm_buffer_cache *bc,
 /* Lock the given buffer tree in the cache for reading. */
 static inline void cache_read_lock(struct dm_buffer_cache *bc,
 				   struct buffer_tree *tree)
+	__no_context_analysis /* conditional locking */
 {
 	if (static_branch_unlikely(&no_sleep_enabled) && bc->no_sleep)
 		read_lock_bh(&tree->u.spinlock);
@@ -421,6 +422,7 @@ static inline void cache_read_lock(struct dm_buffer_cache *bc,
 /* Unlock the given buffer tree in the cache for reading. */
 static inline void cache_read_unlock(struct dm_buffer_cache *bc,
 				     struct buffer_tree *tree)
+	__no_context_analysis /* conditional locking */
 {
 	if (static_branch_unlikely(&no_sleep_enabled) && bc->no_sleep)
 		read_unlock_bh(&tree->u.spinlock);
@@ -431,6 +433,7 @@ static inline void cache_read_unlock(struct dm_buffer_cache *bc,
 /* Lock the given buffer tree in the cache for writing. */
 static inline void cache_write_lock(struct dm_buffer_cache *bc,
 				    struct buffer_tree *tree)
+	__no_context_analysis /* conditional locking */
 {
 	if (static_branch_unlikely(&no_sleep_enabled) && bc->no_sleep)
 		write_lock_bh(&tree->u.spinlock);
@@ -441,6 +444,7 @@ static inline void cache_write_lock(struct dm_buffer_cache *bc,
 /* Unlock the given buffer tree in the cache for writing. */
 static inline void cache_write_unlock(struct dm_buffer_cache *bc,
 				      struct buffer_tree *tree)
+	__no_context_analysis /* conditional locking */
 {
 	if (static_branch_unlikely(&no_sleep_enabled) && bc->no_sleep)
 		write_unlock_bh(&tree->u.spinlock);
@@ -468,6 +472,7 @@ static void lh_init(struct lock_history *lh, struct dm_buffer_cache *cache, bool
 }
 
 static void __lh_lock(struct lock_history *lh, unsigned int index)
+	__no_context_analysis /* conditional locking */
 {
 	if (lh->write) {
 		if (static_branch_unlikely(&no_sleep_enabled) && lh->cache->no_sleep)
@@ -483,6 +488,7 @@ static void __lh_lock(struct lock_history *lh, unsigned int index)
 }
 
 static void __lh_unlock(struct lock_history *lh, unsigned int index)
+	__no_context_analysis /* conditional locking */
 {
 	if (lh->write) {
 		if (static_branch_unlikely(&no_sleep_enabled) && lh->cache->no_sleep)
@@ -1017,6 +1023,7 @@ struct dm_bufio_client {
 #define dm_bufio_in_request()	(!!current->bio_list)
 
 static void dm_bufio_lock(struct dm_bufio_client *c)
+	__no_context_analysis /* conditional locking */
 {
 	if (static_branch_unlikely(&no_sleep_enabled) && c->no_sleep)
 		spin_lock_bh(&c->spinlock);
@@ -1025,6 +1032,7 @@ static void dm_bufio_lock(struct dm_bufio_client *c)
 }
 
 static void dm_bufio_unlock(struct dm_bufio_client *c)
+	__no_context_analysis /* conditional locking */
 {
 	if (static_branch_unlikely(&no_sleep_enabled) && c->no_sleep)
 		spin_unlock_bh(&c->spinlock);

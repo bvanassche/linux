@@ -140,6 +140,7 @@ void
 xfs_ilock(
 	xfs_inode_t		*ip,
 	uint			lock_flags)
+	__no_context_analysis /* conditional locking */
 {
 	trace_xfs_ilock(ip, lock_flags, _RET_IP_);
 
@@ -183,6 +184,7 @@ int
 xfs_ilock_nowait(
 	xfs_inode_t		*ip,
 	uint			lock_flags)
+	__no_context_analysis /* conditional locking */
 {
 	trace_xfs_ilock_nowait(ip, lock_flags, _RET_IP_);
 
@@ -243,6 +245,7 @@ void
 xfs_iunlock(
 	xfs_inode_t		*ip,
 	uint			lock_flags)
+	__no_context_analysis /* conditional locking */
 {
 	xfs_lock_flags_assert(lock_flags);
 
@@ -272,6 +275,7 @@ void
 xfs_ilock_demote(
 	xfs_inode_t		*ip,
 	uint			lock_flags)
+	__no_context_analysis /* conditional locking */
 {
 	ASSERT(lock_flags & (XFS_IOLOCK_EXCL|XFS_MMAPLOCK_EXCL|XFS_ILOCK_EXCL));
 	ASSERT((lock_flags &
@@ -2690,6 +2694,7 @@ static int
 xfs_iolock_two_inodes_and_break_layout(
 	struct inode		*src,
 	struct inode		*dest)
+	__no_context_analysis /* conditional locking */
 {
 	int			error;
 
@@ -2781,6 +2786,7 @@ int
 xfs_ilock2_io_mmap(
 	struct xfs_inode	*ip1,
 	struct xfs_inode	*ip2)
+	__no_context_analysis /* conditional locking */
 {
 	int			ret;
 
@@ -2808,6 +2814,7 @@ void
 xfs_iunlock2_io_mmap(
 	struct xfs_inode	*ip1,
 	struct xfs_inode	*ip2)
+	__no_context_analysis /* conditional locking */
 {
 	if (IS_DAX(VFS_I(ip1)) && IS_DAX(VFS_I(ip2))) {
 		xfs_iunlock(ip2, XFS_MMAPLOCK_EXCL);
@@ -2827,6 +2834,7 @@ void
 xfs_iunlock2_remapping(
 	struct xfs_inode	*ip1,
 	struct xfs_inode	*ip2)
+	__no_context_analysis /* conditional locking */
 {
 	xfs_iflags_clear(ip1, XFS_IREMAPPING);
 

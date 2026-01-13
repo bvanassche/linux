@@ -613,7 +613,8 @@ int amdgpu_vm_pde_update(struct amdgpu_vm_update_params *params,
 			 struct amdgpu_vm_bo_base *entry);
 int amdgpu_vm_ptes_update(struct amdgpu_vm_update_params *params,
 			  uint64_t start, uint64_t end,
-			  uint64_t dst, uint64_t flags);
+			  uint64_t dst, uint64_t flags)
+	__must_hold(params->vm->eviction_lock);
 void amdgpu_vm_pt_free_work(struct work_struct *work);
 void amdgpu_vm_pt_free_list(struct amdgpu_device *adev,
 			    struct amdgpu_vm_update_params *params);
@@ -659,12 +660,14 @@ static inline uint64_t amdgpu_vm_tlb_seq(struct amdgpu_vm *vm)
  * an MMU notifier runs in reclaim-FS context.
  */
 static inline void amdgpu_vm_eviction_lock(struct amdgpu_vm *vm)
+	__acquires(vm->eviction_lock)
 {
 	mutex_lock(&vm->eviction_lock);
 	vm->saved_flags = memalloc_noreclaim_save();
 }
 
 static inline bool amdgpu_vm_eviction_trylock(struct amdgpu_vm *vm)
+	__cond_acquires(true, vm->eviction_lock)
 {
 	if (mutex_trylock(&vm->eviction_lock)) {
 		vm->saved_flags = memalloc_noreclaim_save();
@@ -674,6 +677,7 @@ static inline bool amdgpu_vm_eviction_trylock(struct amdgpu_vm *vm)
 }
 
 static inline void amdgpu_vm_eviction_unlock(struct amdgpu_vm *vm)
+	__releases(vm->eviction_lock)
 {
 	memalloc_noreclaim_restore(vm->saved_flags);
 	mutex_unlock(&vm->eviction_lock);

@@ -776,6 +776,7 @@ static void af_alg_free_areq_sgls(struct af_alg_async_req *areq)
  * Return: 0 when writable memory is available, < 0 upon error
  */
 static int af_alg_wait_for_wmem(struct sock *sk, unsigned int flags)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	int err = -ERESTARTSYS;
@@ -833,6 +834,7 @@ EXPORT_SYMBOL_GPL(af_alg_wmem_wakeup);
  * Return: 0 when writable memory is available, < 0 upon error
  */
 int af_alg_wait_for_data(struct sock *sk, unsigned flags, unsigned min)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct alg_sock *ask = alg_sk(sk);

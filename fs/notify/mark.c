@@ -525,7 +525,6 @@ static void fsnotify_put_mark_wake(struct fsnotify_mark *mark)
 }
 
 bool fsnotify_prepare_user_wait(struct fsnotify_iter_info *iter_info)
-	__releases(&fsnotify_mark_srcu)
 {
 	int type;
 
@@ -534,10 +533,8 @@ bool fsnotify_prepare_user_wait(struct fsnotify_iter_info *iter_info)
 
 		/* This can fail if mark is being removed */
 		while (mark && !fsnotify_get_mark_safe(mark)) {
-			if (mark->group == iter_info->current_group) {
-				__release(&fsnotify_mark_srcu);
+			if (mark->group == iter_info->current_group)
 				goto fail;
-			}
 			/* This is a mark in an unrelated group, skip */
 			mark = fsnotify_next_mark(mark);
 			iter_info->marks[type] = mark;
@@ -560,7 +557,6 @@ fail:
 }
 
 void fsnotify_finish_user_wait(struct fsnotify_iter_info *iter_info)
-	__acquires(&fsnotify_mark_srcu)
 {
 	int type;
 
@@ -836,6 +832,7 @@ static int fsnotify_attach_connector_to_object(fsnotify_connp_t *connp,
  */
 static struct fsnotify_mark_connector *fsnotify_grab_connector(
 						fsnotify_connp_t *connp)
+	/*__cond_acquires(nonnull, &(*connp)->lock)*/
 {
 	struct fsnotify_mark_connector *conn;
 	int idx;
@@ -850,6 +847,7 @@ static struct fsnotify_mark_connector *fsnotify_grab_connector(
 		srcu_read_unlock(&fsnotify_mark_srcu, idx);
 		return NULL;
 	}
+	__release(&conn->lock);
 out:
 	srcu_read_unlock(&fsnotify_mark_srcu, idx);
 	return conn;
@@ -895,6 +893,8 @@ restart:
 			return err;
 		goto restart;
 	}
+
+	__acquire(&conn->lock);
 
 	/* is mark the first mark? */
 	if (hlist_empty(&conn->list)) {
@@ -1014,6 +1014,8 @@ struct fsnotify_mark *fsnotify_find_mark(void *obj, unsigned int obj_type,
 	if (!conn)
 		return NULL;
 
+	__acquire(&conn->lock);
+
 	hlist_for_each_entry(mark, &conn->list, obj_list) {
 		if (mark->group == group &&
 		    (mark->flags & FSNOTIFY_MARK_FLAG_ATTACHED)) {
@@ -1083,6 +1085,9 @@ void fsnotify_destroy_marks(fsnotify_connp_t *connp)
 	conn = fsnotify_grab_connector(connp);
 	if (!conn)
 		return;
+
+	__acquire(&conn->lock);
+
 	/*
 	 * We have to be careful since we can race with e.g.
 	 * fsnotify_clear_marks_by_group() and once we drop the conn->lock, the

@@ -570,6 +570,7 @@ static struct lm78_data *lm78_data_if_isa(void)
 
 static int lm78_i2c_detect(struct i2c_client *client,
 			   struct i2c_board_info *info)
+	__no_context_analysis /* conditional locking */
 {
 	int i;
 	struct lm78_data *isa = lm78_data_if_isa();

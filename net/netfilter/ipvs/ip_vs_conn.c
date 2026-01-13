@@ -78,6 +78,7 @@ static __always_inline void
 conn_tab_lock(struct ip_vs_rht *t, struct ip_vs_conn *cp, u32 hash_key,
 	      u32 hash_key2, bool use2, bool new_hash,
 	      struct hlist_bl_head **head_ret, struct hlist_bl_head **head2_ret)
+	__context_unsafe(conditional locking)
 {
 	struct hlist_bl_head *head, *head2;
 	u32 hash_key_new, hash_key_new2;
@@ -151,6 +152,7 @@ retry:
 
 static inline void conn_tab_unlock(struct hlist_bl_head *head,
 				   struct hlist_bl_head *head2)
+	__context_unsafe(conditional locking)
 {
 	if (head != head2)
 		hlist_bl_unlock(head2);
@@ -618,6 +620,7 @@ void ip_vs_conn_put(struct ip_vs_conn *cp)
  *	Fill a no_client_port connection with a client port number
  */
 void ip_vs_conn_fill_cport(struct ip_vs_conn *cp, __be16 cport)
+	__context_unsafe(conditional locking)
 {
 	struct hlist_bl_head *head, *head2, *head_new;
 	bool use2 = ip_vs_conn_use_hash2(cp);
@@ -1471,6 +1474,7 @@ struct ip_vs_iter_state {
 };
 
 static void *ip_vs_conn_array(struct seq_file *seq)
+	__must_hold_shared(RCU)
 {
 	struct ip_vs_iter_state *iter = seq->private;
 	struct net *net = seq_file_net(seq);
@@ -1515,7 +1519,7 @@ static void *ip_vs_conn_array(struct seq_file *seq)
 }
 
 static void *ip_vs_conn_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	struct ip_vs_iter_state *iter = seq->private;
 	struct net *net = seq_file_net(seq);
@@ -1535,6 +1539,7 @@ static void *ip_vs_conn_seq_start(struct seq_file *seq, loff_t *pos)
 }
 
 static void *ip_vs_conn_seq_next(struct seq_file *seq, void *v, loff_t *pos)
+	__must_hold_shared(RCU)
 {
 	struct ip_vs_iter_state *iter = seq->private;
 	struct ip_vs_conn_hnode *hn = v;
@@ -1567,7 +1572,7 @@ static void *ip_vs_conn_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void ip_vs_conn_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

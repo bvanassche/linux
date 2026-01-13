@@ -2109,6 +2109,7 @@ static struct ubi_wl_entry *get_peb_for_wl(struct ubi_device *ubi)
  * of failure.
  */
 static int produce_free_peb(struct ubi_device *ubi)
+	__must_hold(&ubi->wl_lock)
 {
 	int err;
 
@@ -2135,6 +2136,7 @@ static int produce_free_peb(struct ubi_device *ubi)
  * Returns with ubi->fm_eba_sem held in read mode!
  */
 int ubi_wl_get_peb(struct ubi_device *ubi)
+	__acquires_shared(&ubi->fm_eba_sem)
 {
 	int err;
 	struct ubi_wl_entry *e;

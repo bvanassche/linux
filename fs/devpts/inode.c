@@ -441,6 +441,7 @@ static int devpts_init_fs_context(struct fs_context *fc)
 }
 
 static void devpts_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct pts_fs_info *fsi = DEVPTS_SB(sb);
 

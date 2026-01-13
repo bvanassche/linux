@@ -111,6 +111,7 @@ static int keystone_clk_is_enabled(struct clk_hw *hw)
 }
 
 static int keystone_clk_enable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct clk_psc *psc = to_clk_psc(hw);
 	struct clk_psc_data *data = psc->psc_data;
@@ -129,6 +130,7 @@ static int keystone_clk_enable(struct clk_hw *hw)
 }
 
 static void keystone_clk_disable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct clk_psc *psc = to_clk_psc(hw);
 	struct clk_psc_data *data = psc->psc_data;

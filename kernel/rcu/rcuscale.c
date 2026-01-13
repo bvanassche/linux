@@ -161,13 +161,15 @@ static struct rcu_scale_ops *cur_ops;
  * Definitions for rcu scalability testing.
  */
 
-static int rcu_scale_read_lock(void) __acquires(RCU)
+static int rcu_scale_read_lock(void)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return 0;
 }
 
-static void rcu_scale_read_unlock(int idx) __releases(RCU)
+static void rcu_scale_read_unlock(int idx)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }
@@ -203,12 +205,14 @@ static struct rcu_scale_ops rcu_ops = {
 DEFINE_STATIC_SRCU(srcu_ctl_scale);
 static struct srcu_struct *srcu_ctlp = &srcu_ctl_scale;
 
-static int srcu_scale_read_lock(void) __acquires(srcu_ctlp)
+static int srcu_scale_read_lock(void)
+	__acquires_shared(srcu_ctlp)
 {
 	return srcu_read_lock(srcu_ctlp);
 }
 
-static void srcu_scale_read_unlock(int idx) __releases(srcu_ctlp)
+static void srcu_scale_read_unlock(int idx)
+	__releases_shared(srcu_ctlp)
 {
 	srcu_read_unlock(srcu_ctlp, idx);
 }

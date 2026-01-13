@@ -1597,6 +1597,7 @@ static void sci_dma_tx_release(struct sci_port *s)
 }
 
 static int sci_dma_rx_submit(struct sci_port *s, bool port_lock_held)
+	__no_context_analysis /* conditional locking */
 {
 	struct dma_chan *chan = s->chan_rx;
 	struct uart_port *port = &s->port;
@@ -3405,6 +3406,7 @@ static void serial_console_putchar(struct uart_port *port, unsigned char ch)
  */
 static void serial_console_write(struct console *co, const char *s,
 				 unsigned count)
+	__no_context_analysis /* conditional locking */
 {
 	struct sci_port *sci_port = &sci_ports[co->index];
 	struct uart_port *port = &sci_port->port;

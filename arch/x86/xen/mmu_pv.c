@@ -711,6 +711,7 @@ static void xen_pgd_walk(struct mm_struct *mm,
 /* If we're using split pte locks, then take the page's lock and
    return a pointer to it.  Otherwise return NULL. */
 static spinlock_t *xen_pte_lock(struct page *page, struct mm_struct *mm)
+	__no_context_analysis /* calls are inside if-statement */
 {
 	spinlock_t *ptl = NULL;
 
@@ -723,6 +724,7 @@ static spinlock_t *xen_pte_lock(struct page *page, struct mm_struct *mm)
 }
 
 static void xen_pte_unlock(void *v)
+	__releases((spinlock_t *)v)
 {
 	spinlock_t *ptl = v;
 	spin_unlock(ptl);

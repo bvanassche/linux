@@ -97,6 +97,7 @@ static struct tracefs_dir_ops {
 static struct dentry *tracefs_syscall_mkdir(struct mnt_idmap *idmap,
 					    struct inode *inode, struct dentry *dentry,
 					    umode_t mode)
+	__must_hold(&inode->i_rwsem)
 {
 	struct tracefs_inode *ti;
 	struct name_snapshot name;
@@ -126,6 +127,8 @@ static struct dentry *tracefs_syscall_mkdir(struct mnt_idmap *idmap,
 }
 
 static int tracefs_syscall_rmdir(struct inode *inode, struct dentry *dentry)
+	__must_hold(&inode->i_rwsem)
+	__must_hold(&d_inode(dentry)->i_rwsem)
 {
 	struct name_snapshot name;
 	int ret;

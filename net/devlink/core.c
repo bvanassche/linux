@@ -288,18 +288,21 @@ EXPORT_SYMBOL_GPL(devl_lock_is_held);
 #endif
 
 void devl_lock(struct devlink *devlink)
+	__no_context_analysis
 {
 	mutex_lock(&devlink->lock);
 }
 EXPORT_SYMBOL_GPL(devl_lock);
 
 int devl_trylock(struct devlink *devlink)
+	__no_context_analysis
 {
 	return mutex_trylock(&devlink->lock);
 }
 EXPORT_SYMBOL_GPL(devl_trylock);
 
 void devl_unlock(struct devlink *devlink)
+	__no_context_analysis
 {
 	mutex_unlock(&devlink->lock);
 }

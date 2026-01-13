@@ -964,6 +964,7 @@ static void binder_inc_node_tmpref_ilocked(struct binder_node *node)
  * print nodes)
  */
 static void binder_inc_node_tmpref(struct binder_node *node)
+	__no_context_analysis /* conditional locking */
 {
 	binder_node_lock(node);
 	if (node->proc)
@@ -1065,6 +1066,7 @@ static u32 slow_desc_lookup_olocked(struct binder_proc *proc, u32 offset)
 static int get_ref_desc_olocked(struct binder_proc *proc,
 				struct binder_node *node,
 				u32 *desc)
+	__must_hold(&proc->outer_lock)
 {
 	struct dbitmap *dmap = &proc->dmap;
 	unsigned int nbits, offset;
@@ -1118,6 +1120,7 @@ static struct binder_ref *binder_get_ref_for_node_olocked(
 					struct binder_proc *proc,
 					struct binder_node *node,
 					struct binder_ref *new_ref)
+	__must_hold(&proc->outer_lock)
 {
 	struct binder_ref *ref;
 	struct rb_node *parent;
@@ -1599,22 +1602,21 @@ static struct binder_thread *binder_get_txn_from(
  */
 static struct binder_thread *binder_get_txn_from_and_acq_inner(
 		struct binder_transaction *t)
-	__acquires(&t->from->proc->inner_lock)
 {
 	struct binder_thread *from;
 
 	from = binder_get_txn_from(t);
 	if (!from) {
-		__acquire(&from->proc->inner_lock);
 		return NULL;
 	}
 	binder_inner_proc_lock(from->proc);
 	if (t->from) {
 		BUG_ON(from != t->from);
+		/* Fake __release() -- annotate callers with __acquire(). */
+		__release(&from->proc->inner_lock);
 		return from;
 	}
 	binder_inner_proc_unlock(from->proc);
-	__acquire(&from->proc->inner_lock);
 	binder_thread_dec_tmpref(from);
 	return NULL;
 }
@@ -1693,6 +1695,7 @@ static void binder_send_failed_reply(struct binder_transaction *t,
 	while (1) {
 		target_thread = binder_get_txn_from_and_acq_inner(t);
 		if (target_thread) {
+			__acquire(&target_thread->proc->inner_lock);
 			binder_debug(BINDER_DEBUG_FAILED_TRANSACTION,
 				     "send failed reply for transaction %d to %d:%d\n",
 				      t->debug_id,
@@ -1721,7 +1724,6 @@ static void binder_send_failed_reply(struct binder_transaction *t,
 			binder_free_transaction(t);
 			return;
 		}
-		__release(&target_thread->proc->inner_lock);
 		next = t->from_parent;
 
 		binder_debug(BINDER_DEBUG_FAILED_TRANSACTION,
@@ -2972,12 +2974,11 @@ static void binder_set_txn_from_error(struct binder_transaction *t, int id,
 {
 	struct binder_thread *from = binder_get_txn_from_and_acq_inner(t);
 
-	if (!from) {
-		/* annotation for sparse */
-		__release(&from->proc->inner_lock);
+	if (!from)
 		return;
-	}
 
+	__acquire(&from->proc->inner_lock);
+	
 	/* don't override existing errors */
 	if (from->ee.command == BR_OK)
 		binder_set_extended_error(&from->ee, id, command, param);
@@ -3160,14 +3161,13 @@ static void binder_transaction(struct binder_proc *proc,
 		binder_set_nice(in_reply_to->saved_priority);
 		target_thread = binder_get_txn_from_and_acq_inner(in_reply_to);
 		if (target_thread == NULL) {
-			/* annotation for sparse */
-			__release(&target_thread->proc->inner_lock);
 			binder_txn_error("%d:%d reply target not found\n",
 				thread->pid, proc->pid);
 			return_error = BR_DEAD_REPLY;
 			return_error_line = __LINE__;
 			goto err_dead_binder;
 		}
+		__acquire(&target_thread->proc->inner_lock);
 		if (target_thread->transaction_stack != in_reply_to) {
 			binder_user_error("%d:%d got reply transaction with bad target transaction stack %d, expected %d\n",
 				proc->pid, thread->pid,
@@ -5338,6 +5338,7 @@ static void binder_free_thread(struct binder_thread *thread)
 
 static int binder_thread_release(struct binder_proc *proc,
 				 struct binder_thread *thread)
+	__no_context_analysis /* conditional locking */
 {
 	struct binder_transaction *t;
 	struct binder_transaction *send_reply = NULL;
@@ -5363,8 +5364,6 @@ static int binder_thread_release(struct binder_proc *proc,
 		spin_lock(&t->lock);
 		if (t->to_thread == thread)
 			send_reply = t;
-	} else {
-		__acquire(&t->lock);
 	}
 	thread->is_dead = true;
 
@@ -5394,11 +5393,7 @@ static int binder_thread_release(struct binder_proc *proc,
 		spin_unlock(&last_t->lock);
 		if (t)
 			spin_lock(&t->lock);
-		else
-			__acquire(&t->lock);
 	}
-	/* annotation for sparse, lock not acquired in last iteration above */
-	__release(&t->lock);
 
 	/*
 	 * If this thread used poll, make sure we remove the waitqueue from any
@@ -6591,6 +6586,7 @@ static struct binder_node *
 print_next_binder_node_ilocked(struct seq_file *m, struct binder_proc *proc,
 			       struct binder_node *node,
 			       struct binder_node *prev_node, bool hash_ptrs)
+	__no_context_analysis /* conditional locking */
 {
 	/*
 	 * Take a temporary reference on the node so that isn't freed while

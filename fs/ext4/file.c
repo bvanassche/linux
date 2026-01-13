@@ -352,6 +352,7 @@ static ssize_t ext4_handle_inode_extension(struct inode *inode, loff_t offset,
  * inode size has been updated using ext4_handle_inode_extension().
  */
 static void ext4_inode_extension_cleanup(struct inode *inode, bool need_trunc)
+	__must_hold(&inode->i_rwsem)
 {
 	lockdep_assert_held_write(&inode->i_rwsem);
 	if (need_trunc) {
@@ -442,6 +443,7 @@ static const struct iomap_dio_ops ext4_dio_write_ops = {
 static ssize_t ext4_dio_write_checks(struct kiocb *iocb, struct iov_iter *from,
 				     bool *ilock_shared, bool *extend,
 				     int *dio_flags)
+	__no_context_analysis /* conditional locking */
 {
 	struct file *file = iocb->ki_filp;
 	struct inode *inode = file_inode(file);
@@ -517,6 +519,7 @@ out:
 }
 
 static ssize_t ext4_dio_write_iter(struct kiocb *iocb, struct iov_iter *from)
+	__no_context_analysis /* conditional locking */
 {
 	ssize_t ret;
 	handle_t *handle;
@@ -737,6 +740,7 @@ ext4_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 
 #ifdef CONFIG_FS_DAX
 static vm_fault_t ext4_dax_huge_fault(struct vm_fault *vmf, unsigned int order)
+	__no_context_analysis /* conditional locking */
 {
 	int error = 0;
 	vm_fault_t result;

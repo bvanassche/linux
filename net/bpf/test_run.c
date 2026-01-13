@@ -34,14 +34,14 @@ struct bpf_test_timer {
 };
 
 static void bpf_test_timer_enter(struct bpf_test_timer *t)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock_dont_migrate();
 	t->time_start = ktime_get_ns();
 }
 
 static void bpf_test_timer_leave(struct bpf_test_timer *t)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	t->time_start = 0;
 	rcu_read_unlock_migrate();
@@ -49,7 +49,7 @@ static void bpf_test_timer_leave(struct bpf_test_timer *t)
 
 static bool bpf_test_timer_continue(struct bpf_test_timer *t, int iterations,
 				    u32 repeat, int *err, u32 *duration)
-	__must_hold(rcu)
+	__must_hold_shared(RCU)
 {
 	t->i += iterations;
 	if (t->i >= repeat) {

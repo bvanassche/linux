@@ -677,6 +677,7 @@ static unsigned long do_h_register_vpa(struct kvm_vcpu *vcpu,
 
 static void kvmppc_update_vpa(struct kvm_vcpu *vcpu, struct kvmppc_vpa *vpap,
 			       struct kvmppc_vpa *old_vpap)
+	__must_hold(&vcpu->arch.vpa_update_lock)
 {
 	struct kvm *kvm = vcpu->kvm;
 	void *va;
@@ -3597,6 +3598,7 @@ static void prepare_threads(struct kvmppc_vcore *vc)
 }
 
 static void collect_piggybacks(struct core_info *cip, int target_threads)
+	__no_context_analysis /* may acquire multiple spinlocks */
 {
 	struct preempted_vcore_list *lp = this_cpu_ptr(&preempted_vcores);
 	struct kvmppc_vcore *pvc, *vcnext;
@@ -3774,6 +3776,7 @@ static void set_irq_happened(int trap)
  * Called with vc->lock held.
  */
 static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
+	__no_context_analysis /* locking inside loop */
 {
 	struct kvm_vcpu *vcpu;
 	int i;
@@ -4519,6 +4522,7 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
  */
 static void kvmppc_wait_for_exec(struct kvmppc_vcore *vc,
 				 struct kvm_vcpu *vcpu, int wait_state)
+	__must_hold(&vc->lock)
 {
 	DEFINE_WAIT(wait);
 
@@ -4602,6 +4606,7 @@ static int kvmppc_vcore_check_block(struct kvmppc_vcore *vc)
  * or external interrupt to one of the vcpus.  vc->lock is held.
  */
 static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
+	__must_hold(&vc->lock)
 {
 	ktime_t cur, start_poll, start_wait;
 	int do_sleep = 1;

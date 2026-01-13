@@ -114,7 +114,10 @@ struct a6xx_gpu {
 	u32 slice_mask;
 };
 
-#define to_a6xx_gpu(x) container_of(x, struct a6xx_gpu, base)
+static inline struct a6xx_gpu* to_a6xx_gpu(struct adreno_gpu *base)
+{
+	return container_of(base, struct a6xx_gpu, base);
+}
 
 /*
  * In order to do lockless preemption we use a simple state machine to progress

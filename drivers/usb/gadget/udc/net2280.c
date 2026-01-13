@@ -943,6 +943,7 @@ queue_dma(struct net2280_ep *ep, struct net2280_request *req, int valid)
 
 static void
 done(struct net2280_ep *ep, struct net2280_request *req, int status)
+	__no_context_analysis
 {
 	struct net2280		*dev;
 	unsigned		stopped = ep->stopped;
@@ -2055,6 +2056,7 @@ static void defect7374_enable_data_eps_zero(struct net2280 *dev)
  */
 
 static void usb_reset_228x(struct net2280 *dev)
+	__no_context_analysis
 {
 	u32	tmp;
 
@@ -2091,6 +2093,7 @@ static void usb_reset_228x(struct net2280 *dev)
 }
 
 static void usb_reset_338x(struct net2280 *dev)
+	__no_context_analysis
 {
 	u32 tmp;
 
@@ -2453,6 +2456,7 @@ err_unbind:
 }
 
 static void stop_activity(struct net2280 *dev, struct usb_gadget_driver *driver)
+	__no_context_analysis
 {
 	int			i;
 
@@ -2862,6 +2866,7 @@ static void ep_clear_seqnum(struct net2280_ep *ep)
 
 static void handle_stat0_irqs_superspeed(struct net2280 *dev,
 		struct net2280_ep *ep, struct usb_ctrlrequest r)
+	__no_context_analysis
 {
 	struct net2280_ep *e;
 	u16 status;
@@ -3070,6 +3075,7 @@ next_endpoints3:
 }
 
 static void usb338x_handle_ep_intr(struct net2280 *dev, u32 stat0)
+	__no_context_analysis
 {
 	u32 index;
 	u32 bit;
@@ -3090,6 +3096,7 @@ static void usb338x_handle_ep_intr(struct net2280 *dev, u32 stat0)
 }
 
 static void handle_stat0_irqs(struct net2280 *dev, u32 stat)
+	__no_context_analysis
 {
 	struct net2280_ep	*ep;
 	u32			num, scratch;
@@ -3356,8 +3363,7 @@ next_endpoints:
 		BIT(PCI_RETRY_ABORT_INTERRUPT))
 
 static void handle_stat1_irqs(struct net2280 *dev, u32 stat)
-__releases(dev->lock)
-__acquires(dev->lock)
+	__no_context_analysis
 {
 	struct net2280_ep	*ep;
 	u32			tmp, num, mask, scratch;

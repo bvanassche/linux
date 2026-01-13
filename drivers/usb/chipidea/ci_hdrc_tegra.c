@@ -172,6 +172,7 @@ static int tegra_usb_notify_event(struct ci_hdrc *ci, unsigned int event)
 static int tegra_usb_internal_port_reset(struct ehci_hcd *ehci,
 					 u32 __iomem *portsc_reg,
 					 unsigned long *flags)
+	__must_hold(&ehci->lock)
 {
 	u32 saved_usbintr, temp;
 	unsigned int i, tries;
@@ -240,6 +241,8 @@ static int tegra_ehci_hub_control(struct ci_hdrc *ci, u16 typeReq, u16 wValue,
 	struct ehci_hcd *ehci = hcd_to_ehci(ci->hcd);
 	u32 __iomem *status_reg;
 	int retval = 0;
+
+	__assume_ctx_lock(&ehci->lock);
 
 	status_reg = &ehci->regs->port_status[(wIndex & 0xff) - 1];
 

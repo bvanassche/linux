@@ -488,6 +488,7 @@ out_free_mem:
  * Called with desc->iuspin locked
  */
 static int service_outstanding_interrupt(struct wdm_device *desc)
+	__must_hold(&desc->iuspin)
 {
 	int rv = 0;
 
@@ -1252,6 +1253,7 @@ static void wdm_disconnect(struct usb_interface *intf)
 
 #ifdef CONFIG_PM
 static int wdm_suspend(struct usb_interface *intf, pm_message_t message)
+	__no_context_analysis /* conditional locking */
 {
 	struct wdm_device *desc = wdm_find_device(intf);
 	int rv = 0;
@@ -1318,6 +1320,7 @@ static int wdm_resume(struct usb_interface *intf)
 #endif
 
 static int wdm_pre_reset(struct usb_interface *intf)
+	__no_context_analysis
 {
 	struct wdm_device *desc = wdm_find_device(intf);
 
@@ -1343,6 +1346,7 @@ static int wdm_pre_reset(struct usb_interface *intf)
 }
 
 static int wdm_post_reset(struct usb_interface *intf)
+	__no_context_analysis
 {
 	struct wdm_device *desc = wdm_find_device(intf);
 	int rv;

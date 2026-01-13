@@ -1379,6 +1379,7 @@ static int ftgmac100_init_all(struct ftgmac100 *priv, bool ignore_alloc_err)
 }
 
 static void ftgmac100_reset(struct ftgmac100 *priv)
+	__no_context_analysis /* conditional locking */
 {
 	struct net_device *netdev = priv->netdev;
 	int err;
@@ -1434,6 +1435,7 @@ static void ftgmac100_reset_task(struct work_struct *work)
 }
 
 static void ftgmac100_adjust_link(struct net_device *netdev)
+	__no_context_analysis /* conditional locking */
 {
 	struct ftgmac100 *priv = netdev_priv(netdev);
 	struct phy_device *phydev = netdev->phydev;

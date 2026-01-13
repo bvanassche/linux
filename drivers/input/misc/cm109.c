@@ -835,6 +835,7 @@ static int cm109_usb_resume(struct usb_interface *intf)
 }
 
 static int cm109_usb_pre_reset(struct usb_interface *intf)
+	__acquires(&((struct cm109_dev *)usb_get_intfdata(intf))->pm_mutex)
 {
 	struct cm109_dev *dev = usb_get_intfdata(intf);
 
@@ -853,6 +854,7 @@ static int cm109_usb_pre_reset(struct usb_interface *intf)
 }
 
 static int cm109_usb_post_reset(struct usb_interface *intf)
+	__releases(&((struct cm109_dev *)usb_get_intfdata(intf))->pm_mutex)
 {
 	struct cm109_dev *dev = usb_get_intfdata(intf);
 

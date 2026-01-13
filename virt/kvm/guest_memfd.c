@@ -160,6 +160,7 @@ static enum kvm_gfn_range_filter kvm_gmem_get_invalidate_filter(struct inode *in
 static void __kvm_gmem_invalidate_begin(struct gmem_file *f, pgoff_t start,
 					pgoff_t end,
 					enum kvm_gfn_range_filter attr_filter)
+	__no_context_analysis /* conditional locking */
 {
 	bool flush = false, found_memslot = false;
 	struct kvm_memory_slot *slot;

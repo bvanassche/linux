@@ -2293,6 +2293,7 @@ int bnx2x_vf_release(struct bnx2x *bp, struct bnx2x_virtf *vf)
 
 void bnx2x_lock_vf_pf_channel(struct bnx2x *bp, struct bnx2x_virtf *vf,
 			      enum channel_tlvs tlv)
+	__no_context_analysis /* conditional locking */
 {
 	/* we don't lock the channel for unsupported tlvs */
 	if (!bnx2x_tlv_supported(tlv)) {
@@ -2313,6 +2314,7 @@ void bnx2x_lock_vf_pf_channel(struct bnx2x *bp, struct bnx2x_virtf *vf,
 
 void bnx2x_unlock_vf_pf_channel(struct bnx2x *bp, struct bnx2x_virtf *vf,
 				enum channel_tlvs expected_tlv)
+	__no_context_analysis /* conditional locking */
 {
 	enum channel_tlvs current_tlv;
 

@@ -33,6 +33,7 @@ static void a8xx_aperture_slice_set(struct msm_gpu *gpu, enum adreno_pipe pipe, 
 }
 
 static void a8xx_aperture_acquire(struct msm_gpu *gpu, enum adreno_pipe pipe, unsigned long *flags)
+	__acquires(&to_a6xx_gpu(to_adreno_gpu(gpu))->aperture_lock)
 {
 	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
 	struct a6xx_gpu *a6xx_gpu = to_a6xx_gpu(adreno_gpu);
@@ -43,6 +44,7 @@ static void a8xx_aperture_acquire(struct msm_gpu *gpu, enum adreno_pipe pipe, un
 }
 
 static void a8xx_aperture_release(struct msm_gpu *gpu, unsigned long flags)
+	__releases(&to_a6xx_gpu(to_adreno_gpu(gpu))->aperture_lock)
 {
 	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
 	struct a6xx_gpu *a6xx_gpu = to_a6xx_gpu(adreno_gpu);

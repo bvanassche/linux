@@ -92,12 +92,14 @@ static struct nfnl_net *nfnl_pernet(struct net *net)
 }
 
 void nfnl_lock(__u8 subsys_id)
+	__no_context_analysis
 {
 	mutex_lock(&table[subsys_id].mutex);
 }
 EXPORT_SYMBOL_GPL(nfnl_lock);
 
 void nfnl_unlock(__u8 subsys_id)
+	__no_context_analysis
 {
 	mutex_unlock(&table[subsys_id].mutex);
 }

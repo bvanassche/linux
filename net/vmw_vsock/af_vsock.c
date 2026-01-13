@@ -1158,6 +1158,7 @@ out:
 }
 
 void vsock_linger(struct sock *sk)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	ssize_t (*unsent)(struct vsock_sock *vsk);
@@ -2318,6 +2319,7 @@ static int vsock_connectible_wait_data(struct sock *sk,
 				       long timeout,
 				       struct vsock_transport_recv_notify_data *recv_data,
 				       size_t target)
+	__must_hold(sk)
 {
 	const struct vsock_transport *transport;
 	struct vsock_sock *vsk;
@@ -2382,6 +2384,7 @@ static int vsock_connectible_wait_data(struct sock *sk,
 
 static int __vsock_stream_recvmsg(struct sock *sk, struct msghdr *msg,
 				  size_t len, int flags)
+	__must_hold(sk)
 {
 	struct vsock_transport_recv_notify_data recv_data;
 	const struct vsock_transport *transport;
@@ -2461,6 +2464,7 @@ out:
 
 static int __vsock_seqpacket_recvmsg(struct sock *sk, struct msghdr *msg,
 				     size_t len, int flags)
+	__must_hold(sk)
 {
 	const struct vsock_transport *transport;
 	struct vsock_sock *vsk;

@@ -79,6 +79,7 @@ static int autofs_write(struct autofs_sb_info *sbi,
 static void autofs_notify_daemon(struct autofs_sb_info *sbi,
 				 struct autofs_wait_queue *wq,
 				 int type)
+	__releases(sbi->wq_mutex)
 {
 	union {
 		struct autofs_packet_hdr hdr;
@@ -203,6 +204,7 @@ static int validate_request(struct autofs_wait_queue **wait,
 			    struct autofs_sb_info *sbi,
 			    const struct qstr *qstr,
 			    const struct path *path, enum autofs_notify notify)
+	__no_context_analysis /* __cond_acquires() does not support the values returned by this function */
 {
 	struct dentry *dentry = path->dentry;
 	struct autofs_wait_queue *wq;
@@ -302,6 +304,7 @@ static int validate_request(struct autofs_wait_queue **wait,
 
 int autofs_wait(struct autofs_sb_info *sbi,
 		 const struct path *path, enum autofs_notify notify)
+	__no_context_analysis /* too complex */
 {
 	struct dentry *dentry = path->dentry;
 	struct autofs_wait_queue *wq;

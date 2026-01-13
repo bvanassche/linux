@@ -64,6 +64,7 @@ struct vm_area_struct *gru_find_vma(unsigned long vaddr)
  */
 
 static struct gru_thread_state *gru_find_lock_gts(unsigned long vaddr)
+	__no_context_analysis /* conditional locking */
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
@@ -81,6 +82,7 @@ static struct gru_thread_state *gru_find_lock_gts(unsigned long vaddr)
 }
 
 static struct gru_thread_state *gru_alloc_locked_gts(unsigned long vaddr)
+	__no_context_analysis /* __cond_acquires() does not support pointers */
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
@@ -107,6 +109,7 @@ err:
  * Unlock a GTS that was previously locked with gru_find_lock_gts().
  */
 static void gru_unlock_gts(struct gru_thread_state *gts)
+	__no_context_analysis /* to match the above function */
 {
 	mutex_unlock(&gts->ts_ctxlock);
 	mmap_read_unlock(current->mm);

@@ -173,6 +173,7 @@ static int ntfs_decompress(struct page *dest_pages[], int completed_pages[],
 		const int dest_max_ofs, const int xpage, char *xpage_done,
 		u8 *const cb_start, const u32 cb_size, const loff_t i_size,
 		const s64 initialized_size)
+	__context_unsafe(conditional locking)
 {
 	/*
 	 * Pointers into the compressed data, i.e. the compression block (cb),
@@ -461,6 +462,7 @@ return_overflow:
  * them with the out-of-date uncompressed data.
  */
 int ntfs_read_compressed_block(struct folio *folio)
+	__context_unsafe(conditional locking)
 {
 	struct page *page = &folio->page;
 	loff_t i_size;

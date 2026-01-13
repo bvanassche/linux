@@ -986,6 +986,7 @@ static bool stop_waiting_barrier(struct r10conf *conf)
 }
 
 static bool wait_barrier_nolock(struct r10conf *conf)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned int seq = read_seqbegin(&conf->resync_lock);
 

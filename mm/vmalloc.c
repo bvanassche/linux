@@ -1126,6 +1126,7 @@ __find_vmap_area_exceed_addr(unsigned long addr, struct rb_root *root)
  */
 static struct vmap_node *
 find_vmap_area_exceed_addr_lock(unsigned long addr, struct vmap_area **va)
+	__no_context_analysis /* acquires lock on return value */
 {
 	unsigned long va_start_lowest;
 	struct vmap_node *vn;
@@ -1886,6 +1887,7 @@ static void free_vmap_area(struct vmap_area *va)
 
 static inline void
 preload_this_cpu_lock(spinlock_t *lock, gfp_t gfp_mask, int node)
+	__acquires(lock)
 {
 	struct vmap_area *va = NULL, *tmp;
 
@@ -2025,6 +2027,7 @@ static struct vmap_area *alloc_vmap_area(unsigned long size,
 				unsigned long vstart, unsigned long vend,
 				int node, gfp_t gfp_mask,
 				unsigned long va_flags, struct vm_struct *vm)
+	__no_context_analysis /* conditional locking */
 {
 	struct vmap_node *vn;
 	struct vmap_area *va;
@@ -4593,6 +4596,7 @@ finished:
  * include any intersection with valid vmalloc area
  */
 long vread_iter(struct iov_iter *iter, const char *addr, size_t count)
+	__no_context_analysis /* conditional locking */
 {
 	struct vmap_node *vn;
 	struct vmap_area *va;

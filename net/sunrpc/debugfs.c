@@ -40,7 +40,7 @@ tasks_show(struct seq_file *f, void *v)
 
 static void *
 tasks_start(struct seq_file *f, loff_t *ppos)
-	__acquires(&clnt->cl_lock)
+	__acquires(&((struct rpc_clnt *)f->private)->cl_lock)
 {
 	struct rpc_clnt *clnt = f->private;
 	loff_t pos = *ppos;
@@ -70,7 +70,7 @@ tasks_next(struct seq_file *f, void *v, loff_t *pos)
 
 static void
 tasks_stop(struct seq_file *f, void *v)
-	__releases(&clnt->cl_lock)
+	__releases(&((struct rpc_clnt *)f->private)->cl_lock)
 {
 	struct rpc_clnt *clnt = f->private;
 	spin_unlock(&clnt->cl_lock);

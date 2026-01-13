@@ -3247,6 +3247,7 @@ static inline u8 iommu_get_int_tablen(struct iommu_dev_data *dev_data)
 
 static void set_dte_irq_entry(struct amd_iommu *iommu, u16 devid,
 			      struct irq_remap_table *table)
+	__no_context_analysis /* conditional locking */
 {
 	u64 new;
 	struct dev_table_entry *dte = &get_dev_table(iommu)[devid];

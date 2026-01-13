@@ -91,16 +91,16 @@ void iwl_construct_mld(struct iwl_mld *mld, struct iwl_trans *trans,
 }
 EXPORT_SYMBOL_IF_IWLWIFI_KUNIT(iwl_construct_mld);
 
-static void __acquires(&mld->wiphy->mtx)
-iwl_mld_fwrt_dump_start(void *ctx)
+static void iwl_mld_fwrt_dump_start(void *ctx)
+	__acquires(((struct iwl_mld *)ctx)->wiphy->mtx)
 {
 	struct iwl_mld *mld = ctx;
 
 	wiphy_lock(mld->wiphy);
 }
 
-static void __releases(&mld->wiphy->mtx)
-iwl_mld_fwrt_dump_end(void *ctx)
+static void iwl_mld_fwrt_dump_end(void *ctx)
+	__releases(((struct iwl_mld *)ctx)->wiphy->mtx)
 {
 	struct iwl_mld *mld = ctx;
 

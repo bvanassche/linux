@@ -1335,6 +1335,7 @@ out:
 }
 
 static int gfs2_truncate_inode_pages(struct inode *inode)
+	__context_unsafe(conditional locking)
 {
 	struct gfs2_inode *ip = GFS2_I(inode);
 	struct gfs2_sbd *sdp = GFS2_SB(inode);
@@ -1367,6 +1368,7 @@ static int gfs2_truncate_inode_pages(struct inode *inode)
 }
 
 static void gfs2_truncate_inode_pages_final(struct inode *inode)
+	__context_unsafe(conditional locking)
 {
 	struct gfs2_inode *ip = GFS2_I(inode);
 	struct gfs2_sbd *sdp = GFS2_SB(inode);

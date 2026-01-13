@@ -918,6 +918,7 @@ void nd_region_advance_seeds(struct nd_region *nd_region, struct device *dev)
  * for the BTT metadata updates.
  */
 unsigned int nd_region_acquire_lane(struct nd_region *nd_region)
+	__no_context_analysis /* per_cpu_ptr() */
 {
 	unsigned int cpu, lane;
 
@@ -939,6 +940,7 @@ unsigned int nd_region_acquire_lane(struct nd_region *nd_region)
 EXPORT_SYMBOL(nd_region_acquire_lane);
 
 void nd_region_release_lane(struct nd_region *nd_region, unsigned int lane)
+	__no_context_analysis /* per_cpu_ptr() */
 {
 	if (nd_region->num_lanes < nr_cpu_ids) {
 		unsigned int cpu = smp_processor_id();

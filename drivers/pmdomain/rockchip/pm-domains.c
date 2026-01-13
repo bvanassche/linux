@@ -264,6 +264,8 @@ static struct rockchip_pmu *dmc_pmu;
  * Caller must unblock PMU transitions via rockchip_pmu_unblock().
  */
 int rockchip_pmu_block(void)
+	__cond_acquires(0, &dmc_pmu_mutex)
+	__cond_acquires(0, &dmc_pmu->mutex)
 {
 	struct rockchip_pmu *pmu;
 	struct generic_pm_domain *genpd;
@@ -273,8 +275,10 @@ int rockchip_pmu_block(void)
 	mutex_lock(&dmc_pmu_mutex);
 
 	/* No PMU (yet)? Then we just block rockchip_pmu_probe(). */
-	if (!dmc_pmu)
+	if (!dmc_pmu) {
+		__acquire(&dmc_pmu->mutex);
 		return 0;
+	}
 	pmu = dmc_pmu;
 
 	/*
@@ -327,6 +331,8 @@ EXPORT_SYMBOL_GPL(rockchip_pmu_block);
 
 /* Unblock PMU transitions. */
 void rockchip_pmu_unblock(void)
+	__releases(&dmc_pmu->mutex)
+	__releases(&dmc_pmu_mutex)
 {
 	struct rockchip_pmu *pmu;
 	struct generic_pm_domain *genpd;
@@ -344,6 +350,8 @@ void rockchip_pmu_unblock(void)
 		}
 
 		mutex_unlock(&pmu->mutex);
+	} else {
+		__release(&dmc_pmu->mutex);
 	}
 
 	mutex_unlock(&dmc_pmu_mutex);

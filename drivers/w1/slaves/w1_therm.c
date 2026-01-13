@@ -855,6 +855,7 @@ static struct w1_therm_family_converter *device_family(struct w1_slave *sl)
  * Return: true is mutex is acquired and lock, false otherwise
  */
 static inline bool bus_mutex_lock(struct mutex *lock)
+	__cond_acquires(true, *lock)
 {
 	int max_trying = W1_THERM_MAX_TRY;
 

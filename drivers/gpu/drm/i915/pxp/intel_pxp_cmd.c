@@ -81,6 +81,7 @@ static u32 *pxp_emit_wait(u32 *cs)
 #define WAIT_LEN 2
 
 static void pxp_request_commit(struct i915_request *rq)
+	__releases(&i915_request_timeline(rq)->mutex)
 {
 	struct i915_sched_attr attr = { .priority = I915_PRIORITY_MAX };
 	struct intel_timeline * const tl = i915_request_timeline(rq);
@@ -95,6 +96,7 @@ static void pxp_request_commit(struct i915_request *rq)
 }
 
 int intel_pxp_terminate_session(struct intel_pxp *pxp, u32 id)
+	__no_context_analysis
 {
 	struct i915_request *rq;
 	struct intel_context *ce = pxp->ce;

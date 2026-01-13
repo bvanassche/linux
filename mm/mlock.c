@@ -184,6 +184,7 @@ static inline struct folio *mlock_new(struct folio *folio)
  * batches first).
  */
 static void mlock_folio_batch(struct folio_batch *fbatch)
+	__no_context_analysis /* conditional locking */
 {
 	struct lruvec *lruvec = NULL;
 	unsigned long mlock;
@@ -349,7 +350,7 @@ static inline bool allow_mlock_munlock(struct folio *folio,
 
 static int mlock_pte_range(pmd_t *pmd, unsigned long addr,
 			   unsigned long end, struct mm_walk *walk)
-
+	__no_context_analysis /* clang bug? */
 {
 	struct vm_area_struct *vma = walk->vma;
 	spinlock_t *ptl;

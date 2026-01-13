@@ -62,22 +62,26 @@ struct genpd_lock_ops {
 };
 
 static void genpd_lock_mtx(struct generic_pm_domain *genpd)
+	__acquires(genpd->mlock)
 {
 	mutex_lock(&genpd->mlock);
 }
 
 static void genpd_lock_nested_mtx(struct generic_pm_domain *genpd,
 					int depth)
+	__acquires(genpd->mlock)
 {
 	mutex_lock_nested(&genpd->mlock, depth);
 }
 
 static int genpd_lock_interruptible_mtx(struct generic_pm_domain *genpd)
+	__cond_acquires(0, genpd->mlock)
 {
 	return mutex_lock_interruptible(&genpd->mlock);
 }
 
 static void genpd_unlock_mtx(struct generic_pm_domain *genpd)
+	__releases(genpd->mlock)
 {
 	return mutex_unlock(&genpd->mlock);
 }

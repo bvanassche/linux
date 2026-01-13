@@ -765,6 +765,7 @@ static int rtsx_usb_reset_resume(struct usb_interface *intf)
 
 
 static int rtsx_usb_pre_reset(struct usb_interface *intf)
+	__acquires(&((struct rtsx_ucr *)usb_get_intfdata(intf))->dev_mutex)
 {
 	struct rtsx_ucr *ucr = (struct rtsx_ucr *)usb_get_intfdata(intf);
 
@@ -773,6 +774,7 @@ static int rtsx_usb_pre_reset(struct usb_interface *intf)
 }
 
 static int rtsx_usb_post_reset(struct usb_interface *intf)
+	__releases(&((struct rtsx_ucr *)usb_get_intfdata(intf))->dev_mutex)
 {
 	struct rtsx_ucr *ucr = (struct rtsx_ucr *)usb_get_intfdata(intf);
 

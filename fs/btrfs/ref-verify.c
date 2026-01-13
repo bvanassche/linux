@@ -245,6 +245,7 @@ static void free_block_entry(struct block_entry *be)
 static struct block_entry *add_block_entry(struct btrfs_fs_info *fs_info,
 					   u64 bytenr, u64 len,
 					   u64 root_objectid)
+	__no_context_analysis /* may return ERR_PTR() */
 {
 	struct block_entry *be = NULL, *exist;
 	struct root_entry *re = NULL;
@@ -316,6 +317,7 @@ static int add_tree_block(struct btrfs_fs_info *fs_info, u64 ref_root,
 		kfree(ref);
 		return PTR_ERR(be);
 	}
+	__acquire(&fs_info->ref_verify_lock);
 	be->num_refs++;
 	be->from_disk = 1;
 	be->metadata = 1;
@@ -351,6 +353,7 @@ static int add_shared_data_ref(struct btrfs_fs_info *fs_info,
 		kfree(ref);
 		return PTR_ERR(be);
 	}
+	__acquire(&fs_info->ref_verify_lock);
 	be->num_refs += num_refs;
 
 	ref->parent = parent;
@@ -386,6 +389,7 @@ static int add_extent_data_ref(struct btrfs_fs_info *fs_info,
 		kfree(ref);
 		return PTR_ERR(be);
 	}
+	__acquire(&fs_info->ref_verify_lock);
 	be->num_refs += num_refs;
 
 	ref->parent = 0;
@@ -729,6 +733,7 @@ int btrfs_ref_tree_mod(struct btrfs_fs_info *fs_info,
 			ret = PTR_ERR(be);
 			goto out;
 		}
+		__acquire(&fs_info->ref_verify_lock);
 		be->num_refs++;
 		if (metadata)
 			be->metadata = 1;

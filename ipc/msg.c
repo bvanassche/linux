@@ -142,6 +142,7 @@ static void msg_rcu_free(struct rcu_head *head)
  * Called with msg_ids.rwsem held (writer)
  */
 static int newque(struct ipc_namespace *ns, struct ipc_params *params)
+	__no_context_analysis
 {
 	struct msg_queue *msq;
 	int retval;
@@ -271,8 +272,7 @@ static void expunge_all(struct msg_queue *msq, int res,
  * before freeque() is called. msg_ids.rwsem remains locked on exit.
  */
 static void freeque(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
-	__releases(RCU)
-	__releases(&msq->q_perm)
+	__no_context_analysis /* container_of() */
 {
 	struct msg_msg *msg, *t;
 	struct msg_queue *msq = container_of(ipcp, struct msg_queue, q_perm);
@@ -400,6 +400,7 @@ copy_msqid_from_user(struct msqid64_ds *out, void __user *buf, int version)
  */
 static int msgctl_down(struct ipc_namespace *ns, int msqid, int cmd,
 			struct ipc64_perm *perm, int msg_qbytes)
+	__no_context_analysis
 {
 	struct kern_ipc_perm *ipcp;
 	struct msg_queue *msq;

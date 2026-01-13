@@ -731,6 +731,7 @@ static int binderfs_init_fs_context(struct fs_context *fc)
 }
 
 static void binderfs_kill_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct binderfs_info *info = sb->s_fs_info;
 

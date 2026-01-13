@@ -431,12 +431,15 @@ static void __used test_rcu_lock_reentrant(void)
 static void __used test_rcu_assert_variants(void)
 {
 	lockdep_assert_in_rcu_read_lock();
+	__assume_shared_ctx_lock(RCU);
 	wants_rcu_held();
 
 	lockdep_assert_in_rcu_read_lock_bh();
+	__assume_shared_ctx_lock(RCU_BH);
 	wants_rcu_held_bh();
 
 	lockdep_assert_in_rcu_read_lock_sched();
+	__assume_shared_ctx_lock(RCU_SCHED);
 	wants_rcu_held_sched();
 }
 

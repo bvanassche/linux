@@ -1545,6 +1545,7 @@ static void pch_console_putchar(struct uart_port *port, unsigned char ch)
  */
 static void
 pch_console_write(struct console *co, const char *s, unsigned int count)
+	__no_context_analysis /* conditional locking */
 {
 	struct eg20t_port *priv;
 	unsigned long flags;

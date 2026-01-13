@@ -29,7 +29,7 @@ static const char *const rxrpc_conn_states[RXRPC_CONN__NR_STATES] = {
  * generate a list of extant and dead calls in /proc/net/rxrpc_calls
  */
 static void *rxrpc_call_seq_start(struct seq_file *seq, loff_t *_pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	struct rxrpc_net *rxnet = rxrpc_net(seq_file_net(seq));
 
@@ -45,7 +45,7 @@ static void *rxrpc_call_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void rxrpc_call_seq_stop(struct seq_file *seq, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }
@@ -117,7 +117,7 @@ const struct seq_operations rxrpc_call_seq_ops = {
  * generate a list of extant virtual connections in /proc/net/rxrpc_conns
  */
 static void *rxrpc_connection_seq_start(struct seq_file *seq, loff_t *_pos)
-	__acquires(rxnet->conn_lock)
+	__acquires_shared(rxrpc_net(seq_file_net(seq))->conn_lock)
 {
 	struct rxrpc_net *rxnet = rxrpc_net(seq_file_net(seq));
 
@@ -134,7 +134,7 @@ static void *rxrpc_connection_seq_next(struct seq_file *seq, void *v,
 }
 
 static void rxrpc_connection_seq_stop(struct seq_file *seq, void *v)
-	__releases(rxnet->conn_lock)
+	__releases_shared(rxrpc_net(seq_file_net(seq))->conn_lock)
 {
 	struct rxrpc_net *rxnet = rxrpc_net(seq_file_net(seq));
 
@@ -204,7 +204,7 @@ const struct seq_operations rxrpc_connection_seq_ops = {
  * generate a list of extant virtual bundles in /proc/net/rxrpc/bundles
  */
 static void *rxrpc_bundle_seq_start(struct seq_file *seq, loff_t *_pos)
-	__acquires(rxnet->conn_lock)
+	__acquires_shared(rxrpc_net(seq_file_net(seq))->conn_lock)
 {
 	struct rxrpc_net *rxnet = rxrpc_net(seq_file_net(seq));
 
@@ -221,7 +221,7 @@ static void *rxrpc_bundle_seq_next(struct seq_file *seq, void *v,
 }
 
 static void rxrpc_bundle_seq_stop(struct seq_file *seq, void *v)
-	__releases(rxnet->conn_lock)
+	__releases_shared(rxrpc_net(seq_file_net(seq))->conn_lock)
 {
 	struct rxrpc_net *rxnet = rxrpc_net(seq_file_net(seq));
 
@@ -314,7 +314,7 @@ static int rxrpc_peer_seq_show(struct seq_file *seq, void *v)
 }
 
 static void *rxrpc_peer_seq_start(struct seq_file *seq, loff_t *_pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	struct rxrpc_net *rxnet = rxrpc_net(seq_file_net(seq));
 	unsigned int bucket, n;
@@ -386,7 +386,7 @@ static void *rxrpc_peer_seq_next(struct seq_file *seq, void *v, loff_t *_pos)
 }
 
 static void rxrpc_peer_seq_stop(struct seq_file *seq, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }
@@ -429,7 +429,7 @@ static int rxrpc_local_seq_show(struct seq_file *seq, void *v)
 }
 
 static void *rxrpc_local_seq_start(struct seq_file *seq, loff_t *_pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	struct rxrpc_net *rxnet = rxrpc_net(seq_file_net(seq));
 	unsigned int n;
@@ -457,7 +457,7 @@ static void *rxrpc_local_seq_next(struct seq_file *seq, void *v, loff_t *_pos)
 }
 
 static void rxrpc_local_seq_stop(struct seq_file *seq, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

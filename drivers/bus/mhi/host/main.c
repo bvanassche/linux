@@ -568,6 +568,7 @@ static void mhi_recycle_ev_ring_element(struct mhi_controller *mhi_cntrl,
 static int parse_xfer_event(struct mhi_controller *mhi_cntrl,
 			    struct mhi_ring_element *event,
 			    struct mhi_chan *mhi_chan)
+	__no_context_analysis /* conditional locking */
 {
 	struct mhi_ring *buf_ring, *tre_ring;
 	struct device *dev = &mhi_cntrl->mhi_dev->dev;

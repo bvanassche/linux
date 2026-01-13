@@ -71,6 +71,7 @@ get_file_raw_ptr(struct task_struct *task, unsigned int idx)
 }
 
 static void kcmp_unlock(struct rw_semaphore *l1, struct rw_semaphore *l2)
+	__no_context_analysis
 {
 	if (likely(l2 != l1))
 		up_read(l2);
@@ -78,6 +79,7 @@ static void kcmp_unlock(struct rw_semaphore *l1, struct rw_semaphore *l2)
 }
 
 static int kcmp_lock(struct rw_semaphore *l1, struct rw_semaphore *l2)
+	__no_context_analysis
 {
 	int err;
 

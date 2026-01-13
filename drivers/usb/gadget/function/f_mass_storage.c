@@ -1362,6 +1362,7 @@ static int do_mode_sense(struct fsg_common *common, struct fsg_buffhd *bh)
 }
 
 static int do_start_stop(struct fsg_common *common)
+	__must_hold_shared(&common->filesem)
 {
 	struct fsg_lun	*curlun = common->curlun;
 	int		loej, start;

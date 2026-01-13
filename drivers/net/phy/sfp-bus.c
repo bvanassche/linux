@@ -416,6 +416,7 @@ static struct sfp_bus *sfp_bus_get(const struct fwnode_handle *fwnode)
 }
 
 static void sfp_bus_release(struct kref *kref)
+	__releases(sfp_mutex)
 {
 	struct sfp_bus *bus = container_of(kref, struct sfp_bus, kref);
 

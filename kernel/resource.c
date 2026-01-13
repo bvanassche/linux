@@ -93,7 +93,7 @@ static struct resource *next_resource(struct resource *p, bool skip_children,
 enum { MAX_IORES_LEVEL = 8 };
 
 static void *r_start(struct seq_file *m, loff_t *pos)
-	__acquires(resource_lock)
+	__acquires_shared(resource_lock)
 {
 	struct resource *root = pde_data(file_inode(m->file));
 	struct resource *p;
@@ -118,7 +118,7 @@ static void *r_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void r_stop(struct seq_file *m, void *v)
-	__releases(resource_lock)
+	__releases_shared(resource_lock)
 {
 	read_unlock(&resource_lock);
 }
@@ -1315,6 +1315,7 @@ struct address_space *iomem_get_mapping(void)
 static int __request_region_locked(struct resource *res, struct resource *parent,
 				   resource_size_t start, resource_size_t n,
 				   const char *name, int flags)
+	__must_hold(&resource_lock)
 {
 	DECLARE_WAITQUEUE(wait, current);
 

@@ -585,6 +585,7 @@ static int affs_get_tree(struct fs_context *fc)
 }
 
 static void affs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct affs_sb_info *sbi = AFFS_SB(sb);
 	kill_block_super(sb);

@@ -36,6 +36,7 @@ static DEFINE_MUTEX(pwm_lock);
 static DEFINE_IDR(pwm_chips);
 
 static void pwmchip_lock(struct pwm_chip *chip)
+	__no_context_analysis /* conditional locking */
 {
 	if (chip->atomic)
 		spin_lock(&chip->atomic_lock);
@@ -44,6 +45,7 @@ static void pwmchip_lock(struct pwm_chip *chip)
 }
 
 static void pwmchip_unlock(struct pwm_chip *chip)
+	__no_context_analysis /* conditional locking */
 {
 	if (chip->atomic)
 		spin_unlock(&chip->atomic_lock);
@@ -1463,6 +1465,7 @@ ATTRIBUTE_GROUPS(pwm_chip);
 static struct pwm_export *pwm_class_get_state(struct device *pwmchip_dev,
 					      struct pwm_device *pwm,
 					      struct pwm_state *state)
+	__no_context_analysis /* locks returned pointer */
 {
 	struct device *pwm_dev;
 	struct pwm_export *export;
@@ -1486,6 +1489,7 @@ static struct pwm_export *pwm_class_get_state(struct device *pwmchip_dev,
 static int pwm_class_apply_state(struct pwm_export *export,
 				 struct pwm_device *pwm,
 				 struct pwm_state *state)
+	__releases(&export->lock)
 {
 	int ret = pwm_apply_might_sleep(pwm, state);
 
@@ -1509,6 +1513,8 @@ static int pwm_class_resume_npwm(struct device *pwmchip_dev, unsigned int npwm)
 		export = pwm_class_get_state(pwmchip_dev, pwm, &state);
 		if (!export)
 			continue;
+
+		__acquire(&export->lock);
 
 		/* If pwmchip was not enabled before suspend, do nothing. */
 		if (!export->suspend.enabled) {
@@ -1540,6 +1546,8 @@ static int pwm_class_suspend(struct device *pwmchip_dev)
 		export = pwm_class_get_state(pwmchip_dev, pwm, &state);
 		if (!export)
 			continue;
+
+		__acquire(&export->lock);
 
 		/*
 		 * If pwmchip was not enabled before suspend, save
@@ -2682,6 +2690,7 @@ static void pwm_dbg_show(struct pwm_chip *chip, struct seq_file *s)
 }
 
 static void *pwm_seq_start(struct seq_file *s, loff_t *pos)
+	__acquires(pwm_lock)
 {
 	unsigned long id = *pos;
 	void *ret;
@@ -2707,6 +2716,7 @@ static void *pwm_seq_next(struct seq_file *s, void *v, loff_t *pos)
 }
 
 static void pwm_seq_stop(struct seq_file *s, void *v)
+	__releases(pwm_lock)
 {
 	mutex_unlock(&pwm_lock);
 }

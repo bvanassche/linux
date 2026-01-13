@@ -661,6 +661,8 @@ out:
 }
 
 static void btrfs_double_mmap_lock(struct btrfs_inode *inode1, struct btrfs_inode *inode2)
+	__acquires(&inode1->i_mmap_lock)
+	__acquires(&inode2->i_mmap_lock)
 {
 	if (inode1 < inode2)
 		swap(inode1, inode2);
@@ -669,6 +671,8 @@ static void btrfs_double_mmap_lock(struct btrfs_inode *inode1, struct btrfs_inod
 }
 
 static void btrfs_double_mmap_unlock(struct btrfs_inode *inode1, struct btrfs_inode *inode2)
+	__releases(&inode2->i_mmap_lock)
+	__releases(&inode1->i_mmap_lock)
 {
 	up_write(&inode1->i_mmap_lock);
 	up_write(&inode2->i_mmap_lock);
@@ -917,6 +921,7 @@ static bool file_sync_write(const struct file *file)
 loff_t btrfs_remap_file_range(struct file *src_file, loff_t off,
 		struct file *dst_file, loff_t destoff, loff_t len,
 		unsigned int remap_flags)
+	__no_context_analysis
 {
 	struct btrfs_inode *src_inode = BTRFS_I(file_inode(src_file));
 	struct btrfs_inode *dst_inode = BTRFS_I(file_inode(dst_file));

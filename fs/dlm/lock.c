@@ -202,16 +202,19 @@ void dlm_dump_rsb(struct dlm_rsb *r)
 /* Threads cannot use the lockspace while it's being recovered */
 
 void dlm_lock_recovery(struct dlm_ls *ls)
+	__acquires_shared(&ls->ls_in_recovery)
 {
 	down_read(&ls->ls_in_recovery);
 }
 
 void dlm_unlock_recovery(struct dlm_ls *ls)
+	__releases_shared(&ls->ls_in_recovery)
 {
 	up_read(&ls->ls_in_recovery);
 }
 
 int dlm_lock_recovery_try(struct dlm_ls *ls)
+	__cond_acquires_shared(0, &ls->ls_in_recovery)
 {
 	return down_read_trylock(&ls->ls_in_recovery);
 }
@@ -361,6 +364,7 @@ dlm_refcount_dec_and_write_lock_bh(refcount_t *r, rwlock_t *lock)
 static inline int dlm_kref_put_write_lock_bh(struct kref *kref,
 					     void (*release)(struct kref *kref),
 					     rwlock_t *lock)
+      __cond_acquires(true, lock)
 {
 	if (dlm_refcount_dec_and_write_lock_bh(&kref->refcount, lock)) {
 		release(kref);
@@ -1874,6 +1878,7 @@ static int remove_from_waiters(struct dlm_lkb *lkb, int mstype)
 
 static int remove_from_waiters_ms(struct dlm_lkb *lkb,
 				  const struct dlm_message *ms, bool local)
+	__no_context_analysis
 {
 	struct dlm_ls *ls = lkb->lkb_resource->res_ls;
 	int error;

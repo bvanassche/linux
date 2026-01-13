@@ -279,6 +279,7 @@ static int ocfs2_info_scan_inode_alloc(struct ocfs2_super *osb,
 				       struct inode *inode_alloc, u64 blkno,
 				       struct ocfs2_info_freeinode *fi,
 				       u32 slot)
+	__no_context_analysis /* conditional locking */
 {
 	int status = 0, unlock = 0;
 
@@ -550,6 +551,7 @@ bail:
 static int ocfs2_info_freefrag_scan_bitmap(struct ocfs2_super *osb,
 					   struct inode *gb_inode, u64 blkno,
 					   struct ocfs2_info_freefrag *ffg)
+	__no_context_analysis /* conditional locking */
 {
 	u32 chunks_in_group;
 	int status = 0, unlock = 0, i;

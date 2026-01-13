@@ -964,6 +964,7 @@ retry:
 }
 
 void futex_q_lockptr_lock(struct futex_q *q)
+	__no_context_analysis /* TODO: fix the aarch64 READ_ONCE() definition. */
 {
 	spinlock_t *lock_ptr;
 
@@ -1440,6 +1441,7 @@ static void futex_cleanup(struct task_struct *tsk)
  * block forever, but there is nothing which can be done about that.
  */
 void futex_exit_recursive(struct task_struct *tsk)
+	__no_context_analysis
 {
 	/* If the state is FUTEX_STATE_EXITING then futex_exit_mutex is held */
 	if (tsk->futex_state == FUTEX_STATE_EXITING) {

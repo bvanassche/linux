@@ -1322,8 +1322,7 @@ static void qtd_copy_status(struct oxu_hcd *oxu, struct urb *urb,
 }
 
 static void ehci_urb_done(struct oxu_hcd *oxu, struct urb *urb)
-__releases(oxu->lock)
-__acquires(oxu->lock)
+	__must_hold(oxu->lock)
 {
 	if (likely(urb->hcpriv != NULL)) {
 		struct ehci_qh	*qh = (struct ehci_qh *) urb->hcpriv;
@@ -1381,6 +1380,7 @@ static int qh_schedule(struct oxu_hcd *oxu, struct ehci_qh *qh);
  * indicating how much "real" work we did.
  */
 static unsigned qh_completions(struct oxu_hcd *oxu, struct ehci_qh *qh)
+	__must_hold(&oxu->lock)
 {
 	struct ehci_qtd *last = NULL, *end = qh->dummy;
 	struct ehci_qtd	*qtd, *tmp;
@@ -2056,6 +2056,7 @@ done:
 /* The async qh for the qtds being reclaimed are now unlinked from the HC */
 
 static void end_unlink_async(struct oxu_hcd *oxu)
+	__must_hold(&oxu->lock)
 {
 	struct ehci_qh *qh = oxu->reclaim;
 	struct ehci_qh *next;
@@ -2098,6 +2099,7 @@ static void end_unlink_async(struct oxu_hcd *oxu)
 /* caller must own oxu->lock */
 
 static void start_unlink_async(struct oxu_hcd *oxu, struct ehci_qh *qh)
+	__must_hold(&oxu->lock)
 {
 	int cmd = readl(&oxu->regs->command);
 	struct ehci_qh *prev;
@@ -2149,6 +2151,7 @@ static void start_unlink_async(struct oxu_hcd *oxu, struct ehci_qh *qh)
 }
 
 static void scan_async(struct oxu_hcd *oxu)
+	__must_hold(&oxu->lock)
 {
 	struct ehci_qh *qh;
 	enum ehci_timer_action action = TIMER_IO_WATCHDOG;
@@ -2646,6 +2649,7 @@ static inline int sitd_submit(struct oxu_hcd *oxu, struct urb *urb,
 }
 
 static void scan_periodic(struct oxu_hcd *oxu)
+	__must_hold(&oxu->lock)
 {
 	unsigned frame, clock, now_uframe, mod;
 	unsigned modified;
@@ -2774,6 +2778,7 @@ static void ehci_port_power(struct oxu_hcd *oxu, int is_on)
  * It calls driver completion functions, after dropping oxu->lock.
  */
 static void ehci_work(struct oxu_hcd *oxu)
+	__must_hold(&oxu->lock)
 {
 	timer_action_done(oxu, TIMER_IO_WATCHDOG);
 	if (oxu->reclaim_ready)
@@ -2802,6 +2807,7 @@ static void ehci_work(struct oxu_hcd *oxu)
 }
 
 static void unlink_async(struct oxu_hcd *oxu, struct ehci_qh *qh)
+	__must_hold(&oxu->lock)
 {
 	/* if we need to use IAA and it's busy, defer */
 	if (qh->qh_state == QH_STATE_LINKED

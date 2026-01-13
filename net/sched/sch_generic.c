@@ -97,6 +97,7 @@ static void qdisc_maybe_clear_missed(struct Qdisc *q,
 #define SKB_XOFF_MAGIC ((struct sk_buff *)1UL)
 
 static inline struct sk_buff *__skb_dequeue_bad_txq(struct Qdisc *q)
+	__no_context_analysis
 {
 	const struct netdev_queue *txq = q->dev_queue;
 	spinlock_t *lock = NULL;
@@ -144,6 +145,7 @@ static inline struct sk_buff *qdisc_dequeue_skb_bad_txq(struct Qdisc *q)
 
 static inline void qdisc_enqueue_skb_bad_txq(struct Qdisc *q,
 					     struct sk_buff *skb)
+	__no_context_analysis
 {
 	spinlock_t *lock = NULL;
 
@@ -167,6 +169,7 @@ static inline void qdisc_enqueue_skb_bad_txq(struct Qdisc *q,
 }
 
 static inline void dev_requeue_skb(struct sk_buff *skb, struct Qdisc *q)
+	__no_context_analysis
 {
 	spinlock_t *lock = NULL;
 
@@ -257,6 +260,7 @@ static void try_bulk_dequeue_skb_slow(struct Qdisc *q,
  */
 static struct sk_buff *dequeue_skb(struct Qdisc *q, bool *validate,
 				   int *packets, int budget)
+	__no_context_analysis
 {
 	const struct netdev_queue *txq = q->dev_queue;
 	struct sk_buff *skb = NULL;
@@ -344,6 +348,7 @@ trace:
 bool sch_direct_xmit(struct sk_buff *skb, struct Qdisc *q,
 		     struct net_device *dev, struct netdev_queue *txq,
 		     spinlock_t *root_lock, bool validate)
+	__no_context_analysis
 {
 	int ret = NETDEV_TX_BUSY;
 	bool again = false;

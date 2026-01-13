@@ -109,6 +109,7 @@ static int xe_exec_fn(struct drm_gpuvm_exec *vm_exec)
 }
 
 int xe_exec_ioctl(struct drm_device *dev, void *data, struct drm_file *file)
+	__no_context_analysis
 {
 	struct xe_device *xe = to_xe_device(dev);
 	struct xe_file *xef = to_xe_file(file);

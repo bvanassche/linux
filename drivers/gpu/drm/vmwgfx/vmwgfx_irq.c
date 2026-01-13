@@ -156,6 +156,7 @@ int vmw_fallback_wait(struct vmw_private *dev_priv,
 		      uint32_t seqno,
 		      bool interruptible,
 		      unsigned long timeout)
+	__no_context_analysis /* conditional locking */
 {
 	struct vmw_fifo_state *fifo_state = dev_priv->fifo;
 	bool fifo_down = false;

@@ -1208,6 +1208,7 @@ static unsigned long ctnetlink_get_id(const struct nf_conn *ct)
 
 static int
 ctnetlink_dump_table(struct sk_buff *skb, struct netlink_callback *cb)
+	__no_context_analysis
 {
 	unsigned int flags = cb->data ? NLM_F_DUMP_FILTERED : 0;
 	struct net *net = sock_net(skb->sk);
@@ -1849,7 +1850,7 @@ static int
 ctnetlink_parse_nat_setup(struct nf_conn *ct,
 			  enum nf_nat_manip_type manip,
 			  const struct nlattr *attr)
-	__must_hold(RCU)
+	__must_hold_shared(RCU)
 {
 	const struct nf_nat_hook *nat_hook;
 	int err;
@@ -1901,6 +1902,7 @@ ctnetlink_change_status(struct nf_conn *ct, const struct nlattr * const cda[])
 
 static int
 ctnetlink_setup_nat(struct nf_conn *ct, const struct nlattr * const cda[])
+	__must_hold_shared(RCU)
 {
 #if IS_ENABLED(CONFIG_NF_NAT)
 	int ret;

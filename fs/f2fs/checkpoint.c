@@ -150,6 +150,7 @@ static void restore_priority(struct f2fs_rwsem *sem, struct f2fs_lock_context *l
 }
 
 void f2fs_down_read_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc)
+	__acquires_shared(&sem->internal_rwsem)
 {
 	uplift_priority(sem, lc, false);
 	f2fs_down_read(sem);
@@ -157,6 +158,7 @@ void f2fs_down_read_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc)
 }
 
 int f2fs_down_read_trylock_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc)
+	__cond_acquires_shared(true, &sem->internal_rwsem)
 {
 	uplift_priority(sem, lc, false);
 	if (!f2fs_down_read_trylock(sem)) {
@@ -168,6 +170,7 @@ int f2fs_down_read_trylock_trace(struct f2fs_rwsem *sem, struct f2fs_lock_contex
 }
 
 void f2fs_up_read_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc)
+	__releases_shared(&sem->internal_rwsem)
 {
 	f2fs_up_read(sem);
 	restore_priority(sem, lc, false);
@@ -175,6 +178,7 @@ void f2fs_up_read_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc)
 }
 
 void f2fs_down_write_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc)
+	__acquires(&sem->internal_rwsem)
 {
 	uplift_priority(sem, lc, true);
 	f2fs_down_write(sem);
@@ -182,6 +186,7 @@ void f2fs_down_write_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc)
 }
 
 int f2fs_down_write_trylock_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc)
+	__cond_acquires(true, &sem->internal_rwsem)
 {
 	uplift_priority(sem, lc, true);
 	if (!f2fs_down_write_trylock(sem)) {
@@ -193,6 +198,7 @@ int f2fs_down_write_trylock_trace(struct f2fs_rwsem *sem, struct f2fs_lock_conte
 }
 
 void f2fs_up_write_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc)
+	__releases(&sem->internal_rwsem)
 {
 	f2fs_up_write(sem);
 	restore_priority(sem, lc, true);
@@ -218,11 +224,13 @@ void f2fs_unlock_op(struct f2fs_sb_info *sbi, struct f2fs_lock_context *lc)
 }
 
 static inline void f2fs_lock_all(struct f2fs_sb_info *sbi)
+	__acquires(&sbi->cp_rwsem.internal_rwsem)
 {
 	f2fs_down_write(&sbi->cp_rwsem);
 }
 
 static inline void f2fs_unlock_all(struct f2fs_sb_info *sbi)
+	__releases(&sbi->cp_rwsem.internal_rwsem)
 {
 	f2fs_up_write(&sbi->cp_rwsem);
 }
@@ -1407,6 +1415,8 @@ static bool __need_flush_quota(struct f2fs_sb_info *sbi)
  * Freeze all the FS-operations for checkpoint.
  */
 static int block_operations(struct f2fs_sb_info *sbi)
+	__cond_acquires(0, &sbi->cp_rwsem.internal_rwsem)
+	__cond_acquires(0, &sbi->node_write.internal_rwsem)
 {
 	struct writeback_control wbc = {
 		.sync_mode = WB_SYNC_ALL,
@@ -1496,6 +1506,8 @@ retry_flush_nodes:
 }
 
 static void unblock_operations(struct f2fs_sb_info *sbi)
+	__releases(&sbi->node_write.internal_rwsem)
+	__releases(&sbi->cp_rwsem.internal_rwsem)
 {
 	f2fs_up_write(&sbi->node_write);
 	f2fs_unlock_all(sbi);
@@ -1845,6 +1857,7 @@ static int do_checkpoint(struct f2fs_sb_info *sbi, struct cp_control *cpc)
 }
 
 int f2fs_write_checkpoint(struct f2fs_sb_info *sbi, struct cp_control *cpc)
+	__no_context_analysis /* conditional locking */
 {
 	struct f2fs_checkpoint *ckpt = F2FS_CKPT(sbi);
 	struct f2fs_lock_context lc;

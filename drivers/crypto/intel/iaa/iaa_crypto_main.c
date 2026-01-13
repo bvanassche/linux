@@ -1793,6 +1793,7 @@ err:
 }
 
 static void iaa_crypto_remove(struct idxd_dev *idxd_dev)
+	__no_context_analysis /* conditional locking */
 {
 	struct idxd_wq *wq = idxd_dev_to_wq(idxd_dev);
 	struct idxd_device *idxd = wq->idxd;

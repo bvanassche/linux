@@ -137,6 +137,7 @@ static void btrfs_set_eb_lock_owner(struct extent_buffer *eb, pid_t owner) { }
  * level for lockdep purposes.
  */
 void btrfs_tree_read_lock_nested(struct extent_buffer *eb, enum btrfs_lock_nesting nest)
+	__acquires_shared(&eb->lock)
 {
 	u64 start_ns = 0;
 
@@ -153,6 +154,7 @@ void btrfs_tree_read_lock_nested(struct extent_buffer *eb, enum btrfs_lock_nesti
  * Return true if the rwlock has been taken, false otherwise
  */
 bool btrfs_try_tree_read_lock(struct extent_buffer *eb)
+	__cond_acquires_shared(true, &eb->lock)
 {
 	if (down_read_trylock(&eb->lock)) {
 		trace_btrfs_try_tree_read_lock(eb);
@@ -165,6 +167,7 @@ bool btrfs_try_tree_read_lock(struct extent_buffer *eb)
  * Release read lock.
  */
 void btrfs_tree_read_unlock(struct extent_buffer *eb)
+	__releases_shared(&eb->lock)
 {
 	trace_btrfs_tree_read_unlock(eb);
 	up_read(&eb->lock);
@@ -195,6 +198,7 @@ void btrfs_tree_lock_nested(struct extent_buffer *eb, enum btrfs_lock_nesting ne
  * Release the write lock.
  */
 void btrfs_tree_unlock(struct extent_buffer *eb)
+	__releases(&eb->lock)
 {
 	trace_btrfs_tree_unlock(eb);
 	btrfs_set_eb_lock_owner(eb, 0);
@@ -234,6 +238,7 @@ void btrfs_unlock_up_safe(struct btrfs_path *path, int level)
  * Return: root extent buffer with write lock held
  */
 struct extent_buffer *btrfs_lock_root_node(struct btrfs_root *root)
+	__no_context_analysis
 {
 	struct extent_buffer *eb;
 
@@ -257,6 +262,7 @@ struct extent_buffer *btrfs_lock_root_node(struct btrfs_root *root)
  * Return: root extent buffer with read lock held
  */
 struct extent_buffer *btrfs_read_lock_root_node(struct btrfs_root *root)
+	__no_context_analysis
 {
 	struct extent_buffer *eb;
 
@@ -281,6 +287,7 @@ struct extent_buffer *btrfs_read_lock_root_node(struct btrfs_root *root)
  * Return: root extent buffer with read lock held or -EAGAIN.
  */
 struct extent_buffer *btrfs_try_read_lock_root_node(struct btrfs_root *root)
+	__no_context_analysis
 {
 	struct extent_buffer *eb;
 

@@ -510,6 +510,7 @@ struct task_struct *pick_task_idle(struct rq *rq, struct rq_flags *rf)
  */
 static bool
 dequeue_task_idle(struct rq *rq, struct task_struct *p, int flags)
+	__must_hold(rq_lockp(rq))
 {
 	raw_spin_rq_unlock_irq(rq);
 	printk(KERN_ERR "bad: scheduling from the idle thread!\n");

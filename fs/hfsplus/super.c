@@ -739,6 +739,7 @@ static int hfsplus_init_fs_context(struct fs_context *fc)
 }
 
 static void hfsplus_kill_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct hfsplus_sb_info *sbi = HFSPLUS_SB(sb);
 

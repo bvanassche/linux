@@ -551,6 +551,7 @@ static void ma35d1serial_console_putchar(struct uart_port *port, unsigned char c
  *  The console_lock must be held when we get here.
  */
 static void ma35d1serial_console_write(struct console *co, const char *s, u32 count)
+	__no_context_analysis /* conditional locking */
 {
 	struct uart_ma35d1_port *up;
 	unsigned long flags;

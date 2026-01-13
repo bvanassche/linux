@@ -2007,6 +2007,7 @@ static int lbmRead(struct jfs_log * log, int pn, struct lbuf ** bpp)
  */
 static void lbmWrite(struct jfs_log * log, struct lbuf * bp, int flag,
 		     int cant_block)
+	__must_hold(&log->gclock)
 {
 	struct lbuf *tail;
 	unsigned long flags;

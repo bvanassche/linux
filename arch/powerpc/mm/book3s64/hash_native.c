@@ -214,6 +214,7 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
 
 static inline void tlbie(unsigned long vpn, int psize, int apsize,
 			 int ssize, int local)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned int use_local = local && mmu_has_feature(MMU_FTR_TLBIEL);
 	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
@@ -773,6 +774,7 @@ static notrace void native_hpte_clear(void)
  * the lock all the time
  */
 static void native_flush_hash_range(unsigned long number, int local)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long vpn = 0;
 	unsigned long hash, index, hidx, shift, slot;

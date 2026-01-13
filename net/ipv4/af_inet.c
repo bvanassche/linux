@@ -477,6 +477,7 @@ EXPORT_SYMBOL(inet_bind);
 
 int __inet_bind(struct sock *sk, struct sockaddr_unsized *uaddr, int addr_len,
 		u32 flags)
+	__no_context_analysis
 {
 	struct sockaddr_in *addr = (struct sockaddr_in *)uaddr;
 	struct inet_sock *inet = inet_sk(sk);
@@ -601,6 +602,7 @@ int inet_dgram_connect(struct socket *sock, struct sockaddr_unsized *uaddr,
 EXPORT_SYMBOL(inet_dgram_connect);
 
 static long inet_wait_for_connect(struct sock *sk, long timeo, int writebias)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 
@@ -630,6 +632,7 @@ static long inet_wait_for_connect(struct sock *sk, long timeo, int writebias)
  */
 int __inet_stream_connect(struct socket *sock, struct sockaddr_unsized *uaddr,
 			  int addr_len, int flags, int is_sendmsg)
+	__must_hold(sock->sk)
 {
 	struct sock *sk = sock->sk;
 	int err;

@@ -818,6 +818,7 @@ static int choose_rate(struct snd_pcm_substream *substream,
 
 /* parameter locking: returns immediately if tried during streaming */
 static int lock_params(struct snd_pcm_runtime *runtime)
+	__cond_acquires(0, runtime->oss.params_lock)
 {
 	if (mutex_lock_interruptible(&runtime->oss.params_lock))
 		return -ERESTARTSYS;
@@ -829,6 +830,7 @@ static int lock_params(struct snd_pcm_runtime *runtime)
 }
 
 static void unlock_params(struct snd_pcm_runtime *runtime)
+	__releases(runtime->oss.params_lock)
 {
 	mutex_unlock(&runtime->oss.params_lock);
 }
@@ -1225,6 +1227,7 @@ static int snd_pcm_oss_capture_position_fixup(struct snd_pcm_substream *substrea
 }
 
 snd_pcm_sframes_t snd_pcm_oss_write3(struct snd_pcm_substream *substream, const char *ptr, snd_pcm_uframes_t frames, int in_kernel)
+	__must_hold(&substream->runtime->oss.params_lock)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	snd_pcm_state_t state;
@@ -1258,6 +1261,7 @@ snd_pcm_sframes_t snd_pcm_oss_write3(struct snd_pcm_substream *substream, const 
 }
 
 snd_pcm_sframes_t snd_pcm_oss_read3(struct snd_pcm_substream *substream, char *ptr, snd_pcm_uframes_t frames, int in_kernel)
+	__must_hold(&substream->runtime->oss.params_lock)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	snd_pcm_sframes_t delay;
@@ -1364,6 +1368,7 @@ snd_pcm_sframes_t snd_pcm_oss_readv3(struct snd_pcm_substream *substream, void *
 #endif /* CONFIG_SND_PCM_OSS_PLUGINS */
 
 static ssize_t snd_pcm_oss_write2(struct snd_pcm_substream *substream, const char *buf, size_t bytes, int in_kernel)
+	__must_hold(&substream->runtime->oss.params_lock)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	snd_pcm_sframes_t frames, frames1;
@@ -1474,6 +1479,7 @@ static ssize_t snd_pcm_oss_write1(struct snd_pcm_substream *substream, const cha
 }
 
 static ssize_t snd_pcm_oss_read2(struct snd_pcm_substream *substream, char *buf, size_t bytes, int in_kernel)
+	__must_hold(&substream->runtime->oss.params_lock)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	snd_pcm_sframes_t frames, frames1;
@@ -1608,6 +1614,7 @@ static int snd_pcm_oss_post(struct snd_pcm_oss_file *pcm_oss_file)
 }
 
 static int snd_pcm_oss_sync1(struct snd_pcm_substream *substream, size_t size)
+	__must_hold(&substream->runtime->oss.params_lock)
 {
 	struct snd_pcm_runtime *runtime;
 	ssize_t result = 0;
@@ -1768,7 +1775,7 @@ static int snd_pcm_oss_set_rate(struct snd_pcm_oss_file *pcm_oss_file, int rate)
 		else if (rate > 192000)
 			rate = 192000;
 		err = lock_params(runtime);
-		if (err < 0)
+		if (err)
 			return err;
 		if (runtime->oss.rate != rate) {
 			runtime->oss.params = 1;
@@ -1806,7 +1813,7 @@ static int snd_pcm_oss_set_channels(struct snd_pcm_oss_file *pcm_oss_file, unsig
 			continue;
 		runtime = substream->runtime;
 		err = lock_params(runtime);
-		if (err < 0)
+		if (err)
 			return err;
 		if (runtime->oss.channels != channels) {
 			runtime->oss.params = 1;
@@ -1902,7 +1909,7 @@ static int snd_pcm_oss_set_format(struct snd_pcm_oss_file *pcm_oss_file, int for
 				continue;
 			runtime = substream->runtime;
 			err = lock_params(runtime);
-			if (err < 0)
+			if (err)
 				return err;
 			if (runtime->oss.format != format) {
 				runtime->oss.params = 1;
@@ -1958,7 +1965,7 @@ static int snd_pcm_oss_set_subdivide(struct snd_pcm_oss_file *pcm_oss_file, int 
 			continue;
 		runtime = substream->runtime;
 		err = lock_params(runtime);
-		if (err < 0)
+		if (err)
 			return err;
 		err = snd_pcm_oss_set_subdivide1(substream, subdivide);
 		unlock_params(runtime);
@@ -2001,7 +2008,7 @@ static int snd_pcm_oss_set_fragment(struct snd_pcm_oss_file *pcm_oss_file, unsig
 			continue;
 		runtime = substream->runtime;
 		err = lock_params(runtime);
-		if (err < 0)
+		if (err)
 			return err;
 		err = snd_pcm_oss_set_fragment1(substream, val);
 		unlock_params(runtime);

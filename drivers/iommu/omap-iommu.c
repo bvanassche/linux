@@ -483,6 +483,7 @@ static void iopte_free(struct omap_iommu *obj, u32 *iopte, bool dma_valid)
 
 static u32 *iopte_alloc(struct omap_iommu *obj, u32 *iopgd,
 			dma_addr_t *pt_dma, u32 da)
+	__must_hold(&obj->page_table_lock)
 {
 	u32 *iopte;
 	unsigned long offset = iopgd_index(da) * sizeof(da);
@@ -576,6 +577,7 @@ static int iopgd_alloc_super(struct omap_iommu *obj, u32 da, u32 pa, u32 prot)
 }
 
 static int iopte_alloc_page(struct omap_iommu *obj, u32 da, u32 pa, u32 prot)
+	__must_hold(&obj->page_table_lock)
 {
 	u32 *iopgd = iopgd_offset(obj, da);
 	dma_addr_t pt_dma;
@@ -595,6 +597,7 @@ static int iopte_alloc_page(struct omap_iommu *obj, u32 da, u32 pa, u32 prot)
 }
 
 static int iopte_alloc_large(struct omap_iommu *obj, u32 da, u32 pa, u32 prot)
+	__must_hold(&obj->page_table_lock)
 {
 	u32 *iopgd = iopgd_offset(obj, da);
 	dma_addr_t pt_dma;

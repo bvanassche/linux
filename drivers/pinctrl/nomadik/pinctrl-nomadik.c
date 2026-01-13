@@ -871,6 +871,7 @@ static int nmk_pmx_get_func_groups(struct pinctrl_dev *pctldev,
 
 static int nmk_pmx_set(struct pinctrl_dev *pctldev, unsigned int function,
 		       unsigned int group)
+	__no_context_analysis /* conditional locking */
 {
 	struct nmk_pinctrl *npct = pinctrl_dev_get_drvdata(pctldev);
 	const struct nmk_pingroup *g;

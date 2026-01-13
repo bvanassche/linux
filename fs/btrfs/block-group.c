@@ -719,6 +719,8 @@ static void load_block_group_size_class(struct btrfs_caching_control *caching_ct
 }
 
 static int load_extent_tree_free(struct btrfs_caching_control *caching_ctl)
+	__must_hold(caching_ctl->mutex)
+	__no_context_analysis
 {
 	struct btrfs_block_group *block_group = caching_ctl->block_group;
 	const u64 block_group_end = btrfs_block_group_end(block_group);
@@ -3096,6 +3098,7 @@ struct btrfs_block_group *btrfs_make_block_group(struct btrfs_trans_handle *tran
  */
 int btrfs_inc_block_group_ro(struct btrfs_block_group *cache,
 			     bool do_chunk_alloc)
+	__no_context_analysis /* too complex for clang */
 {
 	struct btrfs_fs_info *fs_info = cache->fs_info;
 	struct btrfs_space_info *space_info = cache->space_info;

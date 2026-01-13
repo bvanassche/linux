@@ -2001,6 +2001,7 @@ static int search_leaf(struct btrfs_trans_handle *trans,
 int btrfs_search_slot(struct btrfs_trans_handle *trans, struct btrfs_root *root,
 		      const struct btrfs_key *key, struct btrfs_path *p,
 		      int ins_len, int cow)
+	__no_context_analysis
 {
 	struct btrfs_fs_info *fs_info;
 	struct extent_buffer *b;
@@ -4782,6 +4783,7 @@ next:
 
 int btrfs_next_old_leaf(struct btrfs_root *root, struct btrfs_path *path,
 			u64 time_seq)
+	__no_context_analysis
 {
 	int slot;
 	int level;

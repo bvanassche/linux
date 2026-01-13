@@ -549,6 +549,7 @@ static int xudc_eptxrx(struct xusb_ep *ep, struct xusb_req *req,
  * status.
  */
 static void xudc_done(struct xusb_ep *ep, struct xusb_req *req, int status)
+	__no_context_analysis
 {
 	struct xusb_udc *udc = ep->udc;
 
@@ -1471,6 +1472,7 @@ static void xudc_clear_stall_all_ep(struct xusb_udc *udc)
  * This function handles the RESET,SUSPEND,RESUME and DISCONNECT interrupts.
  */
 static void xudc_startup_handler(struct xusb_udc *udc, u32 intrstatus)
+	__no_context_analysis
 {
 	u32 intrreg;
 
@@ -1748,7 +1750,7 @@ static void xudc_set_clear_feature(struct xusb_udc *udc)
  * Process setup packet and delegate to gadget layer.
  */
 static void xudc_handle_setup(struct xusb_udc *udc)
-	__must_hold(&udc->lock)
+	__no_context_analysis
 {
 	struct xusb_ep *ep0 = &udc->ep[0];
 	struct usb_ctrlrequest setup;

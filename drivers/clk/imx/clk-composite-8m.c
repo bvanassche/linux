@@ -148,6 +148,7 @@ static u8 imx8m_clk_composite_mux_get_parent(struct clk_hw *hw)
 }
 
 static int imx8m_clk_composite_mux_set_parent(struct clk_hw *hw, u8 index)
+	__no_context_analysis /* conditional locking */
 {
 	struct clk_mux *mux = to_clk_mux(hw);
 	u32 val = clk_mux_index_to_val(mux->table, mux->flags, index);

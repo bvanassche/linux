@@ -1105,6 +1105,7 @@ int io_read_mshot(struct io_kiocb *req, unsigned int issue_flags)
 }
 
 static bool io_kiocb_start_write(struct io_kiocb *req, struct kiocb *kiocb)
+	__no_context_analysis /* conditional locking */
 {
 	struct inode *inode;
 	bool ret;

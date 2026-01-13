@@ -391,6 +391,7 @@ static void digicolor_uart_console_putchar(struct uart_port *port, unsigned char
 
 static void digicolor_uart_console_write(struct console *co, const char *c,
 					 unsigned n)
+	__no_context_analysis /* conditional locking */
 {
 	struct uart_port *port = digicolor_ports[co->index];
 	u8 status;

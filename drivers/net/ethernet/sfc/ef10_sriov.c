@@ -551,6 +551,7 @@ fail:
 
 int efx_ef10_sriov_set_vf_vlan(struct efx_nic *efx, int vf_i, u16 vlan,
 			       u8 qos)
+	__no_context_analysis /* conditional locking */
 {
 	struct efx_ef10_nic_data *nic_data = efx->nic_data;
 	struct ef10_vf *vf;

@@ -482,6 +482,7 @@ static void tasdevice_dspfw_init(void *context)
 }
 
 static void tasdev_fw_ready(const struct firmware *fmw, void *context)
+	__no_context_analysis /* different arguments to mutex_lock() and mutex_unlock() */
 {
 	struct tasdevice_priv *tas_priv = context;
 	struct tas2781_hda *tas_hda = dev_get_drvdata(tas_priv->dev);

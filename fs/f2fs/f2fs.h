@@ -2388,6 +2388,7 @@ static inline int f2fs_rwsem_is_contended(struct f2fs_rwsem *sem)
 }
 
 static inline void f2fs_down_read(struct f2fs_rwsem *sem)
+	__acquires_shared(&sem->internal_rwsem)
 {
 #ifdef CONFIG_F2FS_UNFAIR_RWSEM
 	wait_event(sem->read_waiters, down_read_trylock(&sem->internal_rwsem));
@@ -2397,27 +2398,32 @@ static inline void f2fs_down_read(struct f2fs_rwsem *sem)
 }
 
 static inline int f2fs_down_read_trylock(struct f2fs_rwsem *sem)
+	__cond_acquires_shared(true, &sem->internal_rwsem)
 {
 	return down_read_trylock(&sem->internal_rwsem);
 }
 
 static inline void f2fs_up_read(struct f2fs_rwsem *sem)
+	__releases_shared(&sem->internal_rwsem)
 {
 	up_read(&sem->internal_rwsem);
 }
 
 static inline void f2fs_down_write(struct f2fs_rwsem *sem)
+	__acquires(&sem->internal_rwsem)
 {
 	down_write(&sem->internal_rwsem);
 }
 
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
 static inline void f2fs_down_read_nested(struct f2fs_rwsem *sem, int subclass)
+	__acquires_shared(&sem->internal_rwsem)
 {
 	down_read_nested(&sem->internal_rwsem, subclass);
 }
 
 static inline void f2fs_down_write_nested(struct f2fs_rwsem *sem, int subclass)
+	__acquires(&sem->internal_rwsem)
 {
 	down_write_nested(&sem->internal_rwsem, subclass);
 }
@@ -2427,11 +2433,13 @@ static inline void f2fs_down_write_nested(struct f2fs_rwsem *sem, int subclass)
 #endif
 
 static inline int f2fs_down_write_trylock(struct f2fs_rwsem *sem)
+	__cond_acquires(true, &sem->internal_rwsem)
 {
 	return down_write_trylock(&sem->internal_rwsem);
 }
 
 static inline void f2fs_up_write(struct f2fs_rwsem *sem)
+	__releases(&sem->internal_rwsem)
 {
 	up_write(&sem->internal_rwsem);
 #ifdef CONFIG_F2FS_UNFAIR_RWSEM
@@ -2450,6 +2458,7 @@ int f2fs_down_write_trylock_trace(struct f2fs_rwsem *sem,
 void f2fs_up_write_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc);
 
 static inline void disable_nat_bits(struct f2fs_sb_info *sbi, bool lock)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long flags;
 	unsigned char *nat_bits;
@@ -3813,7 +3822,8 @@ void f2fs_update_inode_page(struct inode *inode);
 int f2fs_write_inode(struct inode *inode, struct writeback_control *wbc);
 void f2fs_remove_donate_inode(struct inode *inode);
 void f2fs_evict_inode(struct inode *inode);
-void f2fs_handle_failed_inode(struct inode *inode, struct f2fs_lock_context *lc);
+void f2fs_handle_failed_inode(struct inode *inode, struct f2fs_lock_context *lc)
+	__releases_shared(&F2FS_I_SB(inode)->cp_rwsem.internal_rwsem);
 
 /*
  * namei.c
@@ -4085,9 +4095,12 @@ static inline bool f2fs_need_rand_seg(struct f2fs_sb_info *sbi)
 /*
  * checkpoint.c
  */
-void f2fs_lock_op(struct f2fs_sb_info *sbi, struct f2fs_lock_context *lc);
-int f2fs_trylock_op(struct f2fs_sb_info *sbi, struct f2fs_lock_context *lc);
-void f2fs_unlock_op(struct f2fs_sb_info *sbi, struct f2fs_lock_context *lc);
+void f2fs_lock_op(struct f2fs_sb_info *sbi, struct f2fs_lock_context *lc)
+	__acquires_shared(&sbi->cp_rwsem.internal_rwsem);
+int f2fs_trylock_op(struct f2fs_sb_info *sbi, struct f2fs_lock_context *lc)
+	__cond_acquires_shared(true, &sbi->cp_rwsem.internal_rwsem);
+void f2fs_unlock_op(struct f2fs_sb_info *sbi, struct f2fs_lock_context *lc)
+	__releases_shared(&sbi->cp_rwsem.internal_rwsem);
 void f2fs_stop_checkpoint(struct f2fs_sb_info *sbi, bool end_io,
 							unsigned char reason);
 void f2fs_flush_ckpt_thread(struct f2fs_sb_info *sbi);

@@ -412,6 +412,7 @@ static irqreturn_t wm8350_irq(int irq, void *irq_data)
 }
 
 static void wm8350_irq_lock(struct irq_data *data)
+	__acquires(&((struct wm8350 *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct wm8350 *wm8350 = irq_data_get_irq_chip_data(data);
 
@@ -419,6 +420,7 @@ static void wm8350_irq_lock(struct irq_data *data)
 }
 
 static void wm8350_irq_sync_unlock(struct irq_data *data)
+	__releases(&((struct wm8350 *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct wm8350 *wm8350 = irq_data_get_irq_chip_data(data);
 	int i;

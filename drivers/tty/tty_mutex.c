@@ -13,6 +13,7 @@
  */
 
 void tty_lock(struct tty_struct *tty)
+	__acquires(tty->legacy_mutex)
 {
 	tty_kref_get(tty);
 	mutex_lock(&tty->legacy_mutex);
@@ -20,6 +21,7 @@ void tty_lock(struct tty_struct *tty)
 EXPORT_SYMBOL(tty_lock);
 
 int tty_lock_interruptible(struct tty_struct *tty)
+	__cond_acquires(0, tty->legacy_mutex)
 {
 	int ret;
 
@@ -31,6 +33,7 @@ int tty_lock_interruptible(struct tty_struct *tty)
 }
 
 void tty_unlock(struct tty_struct *tty)
+	__releases(tty->legacy_mutex)
 {
 	mutex_unlock(&tty->legacy_mutex);
 	tty_kref_put(tty);
@@ -38,12 +41,14 @@ void tty_unlock(struct tty_struct *tty)
 EXPORT_SYMBOL(tty_unlock);
 
 void tty_lock_slave(struct tty_struct *tty)
+	__no_context_analysis /* conditional locking */
 {
 	if (tty && tty != tty->link)
 		tty_lock(tty);
 }
 
 void tty_unlock_slave(struct tty_struct *tty)
+	__no_context_analysis /* conditional locking */
 {
 	if (tty && tty != tty->link)
 		tty_unlock(tty);

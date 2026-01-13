@@ -288,6 +288,7 @@ static void thermal_debugfs_cdev_clear(struct cdev_debugfs *cdev_dbg)
 }
 
 static void *cdev_seq_start(struct seq_file *s, loff_t *pos)
+	__acquires(&((struct thermal_debugfs *)s->private)->lock)
 {
 	struct thermal_debugfs *thermal_dbg = s->private;
 
@@ -304,6 +305,7 @@ static void *cdev_seq_next(struct seq_file *s, void *v, loff_t *pos)
 }
 
 static void cdev_seq_stop(struct seq_file *s, void *v)
+	__releases(&((struct thermal_debugfs *)s->private)->lock)
 {
 	struct thermal_debugfs *thermal_dbg = s->private;
 
@@ -759,6 +761,7 @@ out:
 }
 
 static void *tze_seq_start(struct seq_file *s, loff_t *pos)
+	__acquires(&((struct thermal_debugfs *)s->private)->lock)
 {
 	struct thermal_debugfs *thermal_dbg = s->private;
 	struct tz_debugfs *tz_dbg = &thermal_dbg->tz_dbg;
@@ -777,6 +780,7 @@ static void *tze_seq_next(struct seq_file *s, void *v, loff_t *pos)
 }
 
 static void tze_seq_stop(struct seq_file *s, void *v)
+	__releases(&((struct thermal_debugfs *)s->private)->lock)
 {
 	struct thermal_debugfs *thermal_dbg = s->private;
 

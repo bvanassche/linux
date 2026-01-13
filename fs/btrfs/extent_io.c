@@ -2898,6 +2898,7 @@ static bool folio_range_has_eb(struct folio *folio)
 }
 
 static void detach_extent_buffer_folio(const struct extent_buffer *eb, struct folio *folio)
+	__no_context_analysis
 {
 	struct btrfs_fs_info *fs_info = eb->fs_info;
 	struct address_space *mapping = folio->mapping;

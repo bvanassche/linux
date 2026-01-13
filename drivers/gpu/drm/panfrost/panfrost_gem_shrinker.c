@@ -36,6 +36,7 @@ panfrost_gem_shrinker_count(struct shrinker *shrinker, struct shrink_control *sc
 }
 
 static bool panfrost_gem_purge(struct drm_gem_object *obj)
+	__no_context_analysis
 {
 	struct drm_gem_shmem_object *shmem = to_drm_gem_shmem_obj(obj);
 	struct panfrost_gem_object *bo = to_panfrost_bo(obj);
@@ -63,6 +64,7 @@ unlock_mappings:
 
 static unsigned long
 panfrost_gem_shrinker_scan(struct shrinker *shrinker, struct shrink_control *sc)
+	__no_context_analysis
 {
 	struct panfrost_device *pfdev = shrinker->private_data;
 	struct drm_gem_shmem_object *shmem, *tmp;

@@ -163,6 +163,7 @@ static void throttle_work_start(struct throttle *t)
 }
 
 static void throttle_work_update(struct throttle *t)
+	__no_context_analysis /* conditional locking */
 {
 	if (!t->throttle_applied && time_is_before_jiffies(t->threshold)) {
 		down_write(&t->lock);
@@ -171,6 +172,7 @@ static void throttle_work_update(struct throttle *t)
 }
 
 static void throttle_work_complete(struct throttle *t)
+	__no_context_analysis /* conditional locking */
 {
 	if (t->throttle_applied) {
 		t->throttle_applied = false;
@@ -179,11 +181,13 @@ static void throttle_work_complete(struct throttle *t)
 }
 
 static void throttle_lock(struct throttle *t)
+	__acquires_shared(&t->lock)
 {
 	down_read(&t->lock);
 }
 
 static void throttle_unlock(struct throttle *t)
+	__releases_shared(&t->lock)
 {
 	up_read(&t->lock);
 }

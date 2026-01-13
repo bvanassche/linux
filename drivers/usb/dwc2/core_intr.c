@@ -80,6 +80,7 @@ static void dwc2_handle_mode_mismatch_intr(struct dwc2_hsotg *hsotg)
  * @hsotg: Programming view of DWC_otg controller
  */
 static void dwc2_handle_otg_intr(struct dwc2_hsotg *hsotg)
+	__no_context_analysis
 {
 	u32 gotgint;
 	u32 gotgctl;
@@ -339,6 +340,7 @@ static void dwc2_handle_session_req_intr(struct dwc2_hsotg *hsotg)
  *
  */
 void dwc2_wakeup_from_lpm_l1(struct dwc2_hsotg *hsotg, bool remotewakeup)
+	__no_context_analysis
 {
 	u32 glpmcfg;
 	u32 pcgctl;
@@ -412,6 +414,7 @@ fail:		dwc2_gadget_init_lpm(hsotg);
  * The handler schedules a time to stop resume signaling.
  */
 static void dwc2_handle_wakeup_detected_intr(struct dwc2_hsotg *hsotg)
+	__no_context_analysis
 {
 	int ret;
 
@@ -512,6 +515,7 @@ static void dwc2_handle_disconnect_intr(struct dwc2_hsotg *hsotg)
  * When power management is enabled the core will be put in low power mode.
  */
 static void dwc2_handle_usb_suspend_intr(struct dwc2_hsotg *hsotg)
+	__no_context_analysis
 {
 	u32 dsts;
 	int ret;
@@ -600,6 +604,7 @@ static void dwc2_handle_usb_suspend_intr(struct dwc2_hsotg *hsotg)
  *
  */
 static void dwc2_handle_lpm_intr(struct dwc2_hsotg *hsotg)
+	__no_context_analysis
 {
 	u32 glpmcfg;
 	u32 pcgcctl;
@@ -765,6 +770,7 @@ static inline void dwc_handle_gpwrdn_disc_det(struct dwc2_hsotg *hsotg,
  * Device mode while core is in hibernated state.
  */
 static int dwc2_handle_gpwrdn_intr(struct dwc2_hsotg *hsotg)
+	__no_context_analysis
 {
 	u32 gpwrdn;
 	int linestate;

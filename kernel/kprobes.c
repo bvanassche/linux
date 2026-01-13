@@ -704,6 +704,7 @@ static void kick_kprobe_optimizer(void)
 }
 
 static void wait_for_kprobe_optimizer_locked(void)
+	__must_hold(kprobe_mutex)
 {
 	lockdep_assert_held(&kprobe_mutex);
 
@@ -2887,6 +2888,7 @@ DEFINE_SEQ_ATTRIBUTE(kprobes);
 
 /* kprobes/blacklist -- shows which functions can not be probed */
 static void *kprobe_blacklist_seq_start(struct seq_file *m, loff_t *pos)
+	__acquires(kprobe_mutex)
 {
 	mutex_lock(&kprobe_mutex);
 	return seq_list_start(&kprobe_blacklist, *pos);
@@ -2916,6 +2918,7 @@ static int kprobe_blacklist_seq_show(struct seq_file *m, void *v)
 }
 
 static void kprobe_blacklist_seq_stop(struct seq_file *f, void *v)
+	__releases(kprobe_mutex)
 {
 	mutex_unlock(&kprobe_mutex);
 }

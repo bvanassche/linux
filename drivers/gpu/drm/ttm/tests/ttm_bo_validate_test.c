@@ -65,6 +65,7 @@ static struct dma_fence *alloc_mock_fence(struct kunit *test)
 static void dma_resv_kunit_active_fence_init(struct kunit *test,
 					     struct dma_resv *resv,
 					     enum dma_resv_usage usage)
+	__no_context_analysis
 {
 	struct dma_fence *fence;
 	int err;
@@ -104,6 +105,7 @@ KUNIT_ARRAY_PARAM(ttm_bo_types, ttm_bo_type_cases,
 		  ttm_bo_validate_case_desc);
 
 static void ttm_bo_init_reserved_sys_man(struct kunit *test)
+	__no_context_analysis
 {
 	const struct ttm_bo_validate_test_case *params = test->param_value;
 	struct ttm_test_devices *priv = test->priv;
@@ -126,7 +128,8 @@ static void ttm_bo_init_reserved_sys_man(struct kunit *test)
 	err = ttm_bo_init_reserved(priv->ttm_dev, bo, bo_type, placement,
 				   PAGE_SIZE, &ctx, NULL, NULL,
 				   &dummy_ttm_bo_destroy);
-	dma_resv_unlock(bo->base.resv);
+	if (err == 0)
+		dma_resv_unlock(bo->base.resv);
 
 	KUNIT_EXPECT_EQ(test, err, 0);
 	KUNIT_EXPECT_EQ(test, kref_read(&bo->kref), 1);
@@ -150,6 +153,7 @@ static void ttm_bo_init_reserved_sys_man(struct kunit *test)
 }
 
 static void ttm_bo_init_reserved_mock_man(struct kunit *test)
+	__no_context_analysis
 {
 	const struct ttm_bo_validate_test_case *params = test->param_value;
 	enum ttm_bo_type bo_type = params->bo_type;
@@ -193,6 +197,7 @@ static void ttm_bo_init_reserved_mock_man(struct kunit *test)
 }
 
 static void ttm_bo_init_reserved_resv(struct kunit *test)
+	__no_context_analysis
 {
 	enum ttm_bo_type bo_type = ttm_bo_type_device;
 	struct ttm_test_devices *priv = test->priv;
@@ -228,6 +233,7 @@ static void ttm_bo_init_reserved_resv(struct kunit *test)
 }
 
 static void ttm_bo_validate_basic(struct kunit *test)
+	__no_context_analysis
 {
 	const struct ttm_bo_validate_test_case *params = test->param_value;
 	u32 fst_mem = TTM_PL_SYSTEM, snd_mem = TTM_PL_VRAM;
@@ -273,6 +279,7 @@ static void ttm_bo_validate_basic(struct kunit *test)
 }
 
 static void ttm_bo_validate_invalid_placement(struct kunit *test)
+	__no_context_analysis
 {
 	enum ttm_bo_type bo_type = ttm_bo_type_device;
 	u32 unknown_mem_type = TTM_PL_PRIV + 1;
@@ -299,6 +306,7 @@ static void ttm_bo_validate_invalid_placement(struct kunit *test)
 }
 
 static void ttm_bo_validate_failed_alloc(struct kunit *test)
+	__no_context_analysis
 {
 	enum ttm_bo_type bo_type = ttm_bo_type_device;
 	struct ttm_test_devices *priv = test->priv;
@@ -329,6 +337,7 @@ static void ttm_bo_validate_failed_alloc(struct kunit *test)
 }
 
 static void ttm_bo_validate_pinned(struct kunit *test)
+	__no_context_analysis
 {
 	enum ttm_bo_type bo_type = ttm_bo_type_device;
 	u32 size = ALIGN(BO_SIZE, PAGE_SIZE);
@@ -374,6 +383,7 @@ KUNIT_ARRAY_PARAM(ttm_bo_validate_mem, ttm_mem_type_cases,
 		  ttm_bo_validate_case_desc);
 
 static void ttm_bo_validate_same_placement(struct kunit *test)
+	__no_context_analysis
 {
 	const struct ttm_bo_validate_test_case *params = test->param_value;
 	struct ttm_operation_ctx ctx_init = { }, ctx_val = { };
@@ -413,6 +423,7 @@ static void ttm_bo_validate_same_placement(struct kunit *test)
 }
 
 static void ttm_bo_validate_busy_placement(struct kunit *test)
+	__no_context_analysis
 {
 	u32 fst_mem = TTM_PL_VRAM, snd_mem = TTM_PL_VRAM + 1;
 	struct ttm_operation_ctx ctx_init = { }, ctx_val = { };
@@ -461,6 +472,7 @@ static void ttm_bo_validate_busy_placement(struct kunit *test)
 }
 
 static void ttm_bo_validate_multihop(struct kunit *test)
+	__no_context_analysis
 {
 	const struct ttm_bo_validate_test_case *params = test->param_value;
 	struct ttm_operation_ctx ctx_init = { }, ctx_val = { };
@@ -518,6 +530,7 @@ KUNIT_ARRAY_PARAM(ttm_bo_no_placement, ttm_bo_no_placement_cases,
 		  ttm_bo_validate_case_desc);
 
 static void ttm_bo_validate_no_placement_signaled(struct kunit *test)
+	__no_context_analysis
 {
 	const struct ttm_bo_validate_test_case *params = test->param_value;
 	enum ttm_bo_type bo_type = ttm_bo_type_device;
@@ -590,6 +603,7 @@ static int threaded_dma_resv_signal(void *arg)
 }
 
 static void ttm_bo_validate_no_placement_not_signaled(struct kunit *test)
+	__no_context_analysis
 {
 	const struct ttm_bo_validate_test_case *params = test->param_value;
 	enum dma_resv_usage usage = DMA_RESV_USAGE_BOOKKEEP;
@@ -642,6 +656,7 @@ static void ttm_bo_validate_no_placement_not_signaled(struct kunit *test)
 }
 
 static void ttm_bo_validate_move_fence_signaled(struct kunit *test)
+	__no_context_analysis
 {
 	enum ttm_bo_type bo_type = ttm_bo_type_device;
 	struct ttm_test_devices *priv = test->priv;
@@ -699,6 +714,7 @@ static int threaded_fence_signal(void *arg)
 }
 
 static void ttm_bo_validate_move_fence_not_signaled(struct kunit *test)
+	__no_context_analysis
 {
 	const struct ttm_bo_validate_test_case *params = test->param_value;
 	struct ttm_operation_ctx ctx_init = { },
@@ -763,6 +779,7 @@ static void ttm_bo_validate_move_fence_not_signaled(struct kunit *test)
 }
 
 static void ttm_bo_validate_swapout(struct kunit *test)
+	__no_context_analysis
 {
 	u32 mem_type = TTM_PL_TT;
 	struct ttm_test_devices *priv = test->priv;
@@ -803,6 +820,7 @@ static void ttm_bo_validate_swapout(struct kunit *test)
 }
 
 static void ttm_bo_validate_happy_evict(struct kunit *test)
+	__no_context_analysis
 {
 	u32 mem_type = TTM_PL_VRAM, mem_multihop = TTM_PL_TT,
 	    mem_type_evict = TTM_PL_SYSTEM;
@@ -859,6 +877,7 @@ static void ttm_bo_validate_happy_evict(struct kunit *test)
 }
 
 static void ttm_bo_validate_all_pinned_evict(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_operation_ctx ctx_init = { }, ctx_val  = { };
 	enum ttm_bo_type bo_type = ttm_bo_type_device;
@@ -908,6 +927,7 @@ static void ttm_bo_validate_all_pinned_evict(struct kunit *test)
 }
 
 static void ttm_bo_validate_allowed_only_evict(struct kunit *test)
+	__no_context_analysis
 {
 	u32 mem_type = TTM_PL_VRAM, mem_multihop = TTM_PL_TT,
 	    mem_type_evict = TTM_PL_SYSTEM;
@@ -973,6 +993,7 @@ static void ttm_bo_validate_allowed_only_evict(struct kunit *test)
 }
 
 static void ttm_bo_validate_deleted_evict(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_operation_ctx ctx_init = { }, ctx_val  = { };
 	u32 small = SZ_8K, big = MANAGER_SIZE - BO_SIZE;
@@ -1023,6 +1044,7 @@ static void ttm_bo_validate_deleted_evict(struct kunit *test)
 }
 
 static void ttm_bo_validate_busy_domain_evict(struct kunit *test)
+	__no_context_analysis
 {
 	u32 mem_type = TTM_PL_VRAM, mem_type_evict = TTM_PL_MOCK1;
 	struct ttm_operation_ctx ctx_init = { }, ctx_val  = { };
@@ -1077,6 +1099,7 @@ static void ttm_bo_validate_busy_domain_evict(struct kunit *test)
 }
 
 static void ttm_bo_validate_evict_gutting(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_operation_ctx ctx_init = { }, ctx_val  = { };
 	enum ttm_bo_type bo_type = ttm_bo_type_device;
@@ -1121,6 +1144,7 @@ static void ttm_bo_validate_evict_gutting(struct kunit *test)
 }
 
 static void ttm_bo_validate_recrusive_evict(struct kunit *test)
+	__no_context_analysis
 {
 	u32 mem_type = TTM_PL_TT, mem_type_evict = TTM_PL_MOCK2;
 	struct ttm_operation_ctx ctx_init = { }, ctx_val  = { };

@@ -1087,6 +1087,7 @@ static int cpc_read(int cpu, struct cpc_register_resource *reg_res, u64 *val)
 }
 
 static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
+	__no_context_analysis /* conditional locking */
 {
 	int ret_val = 0;
 	int size;
@@ -1349,6 +1350,7 @@ EXPORT_SYMBOL_GPL(cppc_get_epp_perf);
  * Return: 0 for success with perf_caps populated else -ERRNO.
  */
 int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+	__no_context_analysis /* conditional locking */
 {
 	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
 	struct cpc_register_resource *highest_reg, *lowest_reg,
@@ -1512,6 +1514,7 @@ EXPORT_SYMBOL_GPL(cppc_perf_ctrs_in_pcc);
  * Return: 0 for success with perf_fb_ctrs populated else -ERRNO.
  */
 int cppc_get_perf_ctrs(int cpunum, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
+	__no_context_analysis /* conditional locking */
 {
 	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
 	struct cpc_register_resource *delivered_reg, *reference_reg,
@@ -1796,6 +1799,7 @@ EXPORT_SYMBOL_GPL(cppc_set_enable);
  * Return: 0 for success with perf_ctrls, -ERRNO otherwise.
  */
 int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+	__context_unsafe(conditional locking)
 {
 	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
 	struct cpc_register_resource *desired_perf_reg,
@@ -1891,6 +1895,7 @@ EXPORT_SYMBOL_GPL(cppc_get_perf);
  * Return: 0 for success, -ERRNO otherwise.
  */
 int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+	__no_context_analysis /* conditional locking */
 {
 	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
 	struct cpc_register_resource *desired_reg, *min_perf_reg, *max_perf_reg;

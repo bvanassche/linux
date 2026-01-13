@@ -426,6 +426,7 @@ static int bnxt_dl_reload_down(struct devlink *dl, bool netns_change,
 			       enum devlink_reload_action action,
 			       enum devlink_reload_limit limit,
 			       struct netlink_ext_ack *extack)
+	__cond_acquires(0, &bnxt_get_bp_from_dl(dl)->dev->lock)
 {
 	struct bnxt *bp = bnxt_get_bp_from_dl(dl);
 	int rc = 0;
@@ -509,6 +510,7 @@ static int bnxt_dl_reload_down(struct devlink *dl, bool netns_change,
 static int bnxt_dl_reload_up(struct devlink *dl, enum devlink_reload_action action,
 			     enum devlink_reload_limit limit, u32 *actions_performed,
 			     struct netlink_ext_ack *extack)
+	__releases(&bnxt_get_bp_from_dl(dl)->dev->lock)
 {
 	struct bnxt *bp = bnxt_get_bp_from_dl(dl);
 	int rc = 0;

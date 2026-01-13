@@ -54,6 +54,7 @@
 
 /* Unlock all objects and drop references */
 static void drm_exec_unlock_all(struct drm_exec *exec)
+	__no_context_analysis /* objects decided at run-time */
 {
 	struct drm_gem_object *obj;
 	unsigned long index;
@@ -102,6 +103,7 @@ EXPORT_SYMBOL(drm_exec_init);
  * used for tracking the state.
  */
 void drm_exec_fini(struct drm_exec *exec)
+	__no_context_analysis /* conditional locking */
 {
 	drm_exec_unlock_all(exec);
 	kvfree(exec->objects);
@@ -121,6 +123,7 @@ EXPORT_SYMBOL(drm_exec_fini);
  * objects locked.
  */
 bool drm_exec_cleanup(struct drm_exec *exec)
+	__no_context_analysis /* conditional locking */
 {
 	if (likely(!exec->contended)) {
 		ww_acquire_done(&exec->ticket);
@@ -162,6 +165,7 @@ static int drm_exec_obj_locked(struct drm_exec *exec,
 
 /* Make sure the contended object is locked first */
 static int drm_exec_lock_contended(struct drm_exec *exec)
+	__cond_acquires(0, exec->contended->resv->lock)
 {
 	struct drm_gem_object *obj = exec->contended;
 	int ret;
@@ -207,6 +211,7 @@ error_dropref:
  * flag), -ENOMEM when memory allocation failed and zero for success.
  */
 int drm_exec_lock_obj(struct drm_exec *exec, struct drm_gem_object *obj)
+	__cond_acquires(0, &exec->contended->resv->lock)
 {
 	int ret;
 
@@ -260,6 +265,7 @@ EXPORT_SYMBOL(drm_exec_lock_obj);
  * efficient to unlock objects locked long ago.
  */
 void drm_exec_unlock_obj(struct drm_exec *exec, struct drm_gem_object *obj)
+	__no_context_analysis /* unlock inside a loop */
 {
 	unsigned int i;
 
@@ -290,6 +296,7 @@ EXPORT_SYMBOL(drm_exec_unlock_obj);
  */
 int drm_exec_prepare_obj(struct drm_exec *exec, struct drm_gem_object *obj,
 			 unsigned int num_fences)
+	__cond_acquires(0, &exec->contended->resv->lock)
 {
 	int ret;
 
@@ -324,6 +331,7 @@ int drm_exec_prepare_array(struct drm_exec *exec,
 			   struct drm_gem_object **objects,
 			   unsigned int num_objects,
 			   unsigned int num_fences)
+	__no_context_analysis /* lock inside loop */
 {
 	int ret;
 

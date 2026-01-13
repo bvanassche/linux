@@ -1925,6 +1925,7 @@ static void __maybe_unused stm32_usart_console_putchar(struct uart_port *port, u
 #ifdef CONFIG_SERIAL_STM32_CONSOLE
 static void stm32_usart_console_write(struct console *co, const char *s,
 				      unsigned int cnt)
+	__no_context_analysis /* conditional locking */
 {
 	struct uart_port *port = &stm32_ports[co->index].port;
 	struct stm32_port *stm32_port = to_stm32_port(port);

@@ -2167,6 +2167,7 @@ nv50_disp_atomic_commit_wndw(struct drm_atomic_state *state, u32 *interlock)
 
 static void
 nv50_disp_atomic_commit_tail(struct drm_atomic_state *state)
+	__no_context_analysis /* conditional locking */
 {
 	struct drm_device *dev = state->dev;
 	struct drm_crtc_state *new_crtc_state, *old_crtc_state;
@@ -2765,6 +2766,7 @@ nv50_display_read_hw_or_state(struct drm_device *dev, struct nv50_disp *disp,
 /* Read back the currently programmed display state */
 static void
 nv50_display_read_hw_state(struct nouveau_drm *drm)
+	__no_context_analysis /* DRM_MODESET_LOCK */
 {
 	struct drm_device *dev = drm->dev;
 	struct drm_encoder *encoder;

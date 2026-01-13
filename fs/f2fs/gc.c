@@ -1313,6 +1313,7 @@ put_folio:
  */
 static int move_data_block(struct inode *inode, block_t bidx,
 				int gc_type, unsigned int segno, int off)
+	__no_context_analysis /* conditional locking */
 {
 	struct address_space *mapping = f2fs_is_cow_file(inode) ?
 				F2FS_I(inode)->atomic_inode->i_mapping : inode->i_mapping;
@@ -1698,6 +1699,9 @@ next_step:
 
 				/* wait for all inflight aio data */
 				inode_dio_wait(inode);
+			} else {
+				__acquire(&fi->i_gc_rwsem[WRITE].internal_rwsem);
+				__acquire(&fi->i_gc_rwsem[READ].internal_rwsem);
 			}
 
 			start_bidx = f2fs_start_bidx_of_node(nofs, inode)
@@ -1716,6 +1720,9 @@ next_step:
 			if (locked) {
 				f2fs_up_write(&fi->i_gc_rwsem[READ]);
 				f2fs_up_write(&fi->i_gc_rwsem[WRITE]);
+			} else {
+				__release(&fi->i_gc_rwsem[READ].internal_rwsem);
+				__release(&fi->i_gc_rwsem[WRITE].internal_rwsem);
 			}
 
 			stat_inc_data_blk_count(sbi, 1, gc_type);

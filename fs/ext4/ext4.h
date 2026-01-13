@@ -1808,36 +1808,42 @@ static inline struct ext4_inode_info *EXT4_I(struct inode *inode)
 }
 
 static inline int ext4_writepages_down_read(struct super_block *sb)
+	__acquires_shared(&EXT4_SB(sb)->s_writepages_rwsem)
 {
 	percpu_down_read(&EXT4_SB(sb)->s_writepages_rwsem);
 	return memalloc_nofs_save();
 }
 
 static inline void ext4_writepages_up_read(struct super_block *sb, int ctx)
+	__releases_shared(&EXT4_SB(sb)->s_writepages_rwsem)
 {
 	memalloc_nofs_restore(ctx);
 	percpu_up_read(&EXT4_SB(sb)->s_writepages_rwsem);
 }
 
 static inline int ext4_writepages_down_write(struct super_block *sb)
+	__acquires(&EXT4_SB(sb)->s_writepages_rwsem)
 {
 	percpu_down_write(&EXT4_SB(sb)->s_writepages_rwsem);
 	return memalloc_nofs_save();
 }
 
 static inline void ext4_writepages_up_write(struct super_block *sb, int ctx)
+	__releases(&EXT4_SB(sb)->s_writepages_rwsem)
 {
 	memalloc_nofs_restore(ctx);
 	percpu_up_write(&EXT4_SB(sb)->s_writepages_rwsem);
 }
 
 static inline int ext4_fc_lock(struct super_block *sb)
+	__acquires(&EXT4_SB(sb)->s_fc_lock)
 {
 	mutex_lock(&EXT4_SB(sb)->s_fc_lock);
 	return memalloc_nofs_save();
 }
 
 static inline void ext4_fc_unlock(struct super_block *sb, int ctx)
+	__releases(&EXT4_SB(sb)->s_fc_lock)
 {
 	memalloc_nofs_restore(ctx);
 	mutex_unlock(&EXT4_SB(sb)->s_fc_lock);
@@ -3574,6 +3580,7 @@ static inline int ext4_fs_is_busy(struct ext4_sb_info *sbi)
 }
 
 static inline bool ext4_try_lock_group(struct super_block *sb, ext4_group_t group)
+	__cond_acquires(true, ext4_group_lock_ptr(sb, group))
 {
 	if (!spin_trylock(ext4_group_lock_ptr(sb, group)))
 		return false;
@@ -3586,6 +3593,7 @@ static inline bool ext4_try_lock_group(struct super_block *sb, ext4_group_t grou
 }
 
 static inline void ext4_lock_group(struct super_block *sb, ext4_group_t group)
+	__acquires(ext4_group_lock_ptr(sb, group))
 {
 	if (!ext4_try_lock_group(sb, group)) {
 		/*
@@ -3600,6 +3608,7 @@ static inline void ext4_lock_group(struct super_block *sb, ext4_group_t group)
 
 static inline void ext4_unlock_group(struct super_block *sb,
 					ext4_group_t group)
+	__releases(ext4_group_lock_ptr(sb, group))
 {
 	spin_unlock(ext4_group_lock_ptr(sb, group));
 }

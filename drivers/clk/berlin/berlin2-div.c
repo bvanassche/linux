@@ -63,6 +63,7 @@ struct berlin2_div {
 static u8 clk_div[] = { 1, 2, 4, 6, 8, 12, 1, 1 };
 
 static int berlin2_div_is_enabled(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct berlin2_div *div = to_berlin2_div(hw);
 	struct berlin2_div_map *map = &div->map;
@@ -81,6 +82,7 @@ static int berlin2_div_is_enabled(struct clk_hw *hw)
 }
 
 static int berlin2_div_enable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct berlin2_div *div = to_berlin2_div(hw);
 	struct berlin2_div_map *map = &div->map;
@@ -100,6 +102,7 @@ static int berlin2_div_enable(struct clk_hw *hw)
 }
 
 static void berlin2_div_disable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct berlin2_div *div = to_berlin2_div(hw);
 	struct berlin2_div_map *map = &div->map;
@@ -117,6 +120,7 @@ static void berlin2_div_disable(struct clk_hw *hw)
 }
 
 static int berlin2_div_set_parent(struct clk_hw *hw, u8 index)
+	__no_context_analysis /* conditional locking */
 {
 	struct berlin2_div *div = to_berlin2_div(hw);
 	struct berlin2_div_map *map = &div->map;
@@ -148,6 +152,7 @@ static int berlin2_div_set_parent(struct clk_hw *hw, u8 index)
 }
 
 static u8 berlin2_div_get_parent(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct berlin2_div *div = to_berlin2_div(hw);
 	struct berlin2_div_map *map = &div->map;
@@ -175,6 +180,7 @@ static u8 berlin2_div_get_parent(struct clk_hw *hw)
 
 static unsigned long berlin2_div_recalc_rate(struct clk_hw *hw,
 					     unsigned long parent_rate)
+	__no_context_analysis /* conditional locking */
 {
 	struct berlin2_div *div = to_berlin2_div(hw);
 	struct berlin2_div_map *map = &div->map;

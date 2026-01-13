@@ -550,6 +550,7 @@ static ssize_t amdgpu_ras_cper_debugfs_read(struct file *f, char __user *buf,
  */
 static ssize_t amdgpu_debugfs_ring_read(struct file *f, char __user *buf,
 					size_t size, loff_t *pos)
+	__no_context_analysis /* conditional locking */
 {
 	struct amdgpu_ring *ring = file_inode(f)->i_private;
 	u32 value, result, early[3] = { 0 };

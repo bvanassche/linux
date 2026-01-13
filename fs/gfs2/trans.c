@@ -40,6 +40,7 @@ static void gfs2_print_trans(struct gfs2_sbd *sdp, const struct gfs2_trans *tr)
 int __gfs2_trans_begin(struct gfs2_trans *tr, struct gfs2_sbd *sdp,
 		       unsigned int blocks, unsigned int revokes,
 		       unsigned long ip)
+	__cond_acquires_shared(0, &sdp->sd_log_flush_lock)
 {
 	unsigned int extra_revokes;
 
@@ -113,6 +114,7 @@ out_not_live:
 
 int gfs2_trans_begin(struct gfs2_sbd *sdp, unsigned int blocks,
 		     unsigned int revokes)
+	__cond_acquires_shared(0, &sdp->sd_log_flush_lock)
 {
 	struct gfs2_trans *tr;
 	int error;
@@ -127,6 +129,7 @@ int gfs2_trans_begin(struct gfs2_sbd *sdp, unsigned int blocks,
 }
 
 void gfs2_trans_end(struct gfs2_sbd *sdp)
+	__releases_shared(&sdp->sd_log_flush_lock)
 {
 	struct gfs2_trans *tr = current->journal_info;
 	s64 nbuf;

@@ -403,6 +403,7 @@ int mshv_region_get(struct mshv_mem_region *region)
  */
 static int mshv_region_hmm_fault_and_lock(struct mshv_mem_region *region,
 					  struct hmm_range *range)
+	__cond_acquires(0, &region->mutex)
 {
 	int ret;
 
@@ -438,6 +439,7 @@ static int mshv_region_hmm_fault_and_lock(struct mshv_mem_region *region,
  */
 static int mshv_region_range_fault(struct mshv_mem_region *region,
 				   u64 page_offset, u64 page_count)
+	__no_context_analysis /* conditional release */
 {
 	struct hmm_range range = {
 		.notifier = &region->mreg_mni,

@@ -912,6 +912,7 @@ static bool is_bpf_migration_disabled(const struct task_struct *p)
 static s32 select_cpu_from_kfunc(struct scx_sched *sch, struct task_struct *p,
 				 s32 prev_cpu, u64 wake_flags,
 				 const struct cpumask *allowed, u64 flags)
+	__no_context_analysis
 {
 	unsigned long irq_flags;
 	bool we_locked = false;

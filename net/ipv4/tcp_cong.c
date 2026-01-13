@@ -48,6 +48,7 @@ void tcp_set_ca_state(struct sock *sk, const u8 ca_state)
 
 /* Must be called with rcu lock held */
 static struct tcp_congestion_ops *tcp_ca_find_autoload(const char *name)
+	__must_hold_shared(RCU)
 {
 	struct tcp_congestion_ops *ca = tcp_ca_find(name);
 

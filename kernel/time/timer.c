@@ -986,7 +986,7 @@ static inline void forward_timer_base(struct timer_base *base)
  */
 static struct timer_base *lock_timer_base(struct timer_list *timer,
 					  unsigned long *flags)
-	__acquires(timer->base->lock)
+	__no_context_analysis
 {
 	for (;;) {
 		struct timer_base *base;
@@ -1016,6 +1016,7 @@ static struct timer_base *lock_timer_base(struct timer_list *timer,
 
 static inline int
 __mod_timer(struct timer_list *timer, unsigned long expires, unsigned int options)
+	__no_context_analysis
 {
 	unsigned long clk = 0, flags, bucket_expiry;
 	struct timer_base *base, *new_base;
@@ -1297,6 +1298,7 @@ EXPORT_SYMBOL(add_timer_global);
  * See add_timer() for further details.
  */
 void add_timer_on(struct timer_list *timer, int cpu)
+	__no_context_analysis
 {
 	struct timer_base *new_base, *base;
 	unsigned long flags;
@@ -1358,6 +1360,7 @@ EXPORT_SYMBOL_GPL(add_timer_on);
  * * %1 - The timer was pending and deactivated
  */
 static int __timer_delete(struct timer_list *timer, bool shutdown)
+	__no_context_analysis
 {
 	struct timer_base *base;
 	unsigned long flags;
@@ -1449,6 +1452,7 @@ EXPORT_SYMBOL_GPL(timer_shutdown);
  * * %-1 - The timer callback function is running on a different CPU
  */
 static int __try_to_del_timer_sync(struct timer_list *timer, bool shutdown)
+	__no_context_analysis
 {
 	struct timer_base *base;
 	unsigned long flags;
@@ -1498,11 +1502,13 @@ static __init void timer_base_init_expiry_lock(struct timer_base *base)
 }
 
 static inline void timer_base_lock_expiry(struct timer_base *base)
+	__acquires(&base->expiry_lock)
 {
 	spin_lock(&base->expiry_lock);
 }
 
 static inline void timer_base_unlock_expiry(struct timer_base *base)
+	__releases(&base->expiry_lock)
 {
 	spin_unlock(&base->expiry_lock);
 }
@@ -1764,6 +1770,7 @@ static void call_timer_fn(struct timer_list *timer,
 }
 
 static void expire_timers(struct timer_base *base, struct hlist_head *head)
+	__no_context_analysis
 {
 	/*
 	 * This value is required only for tracing. base->clk was
@@ -2078,8 +2085,7 @@ void fetch_next_timer_interrupt_remote(unsigned long basej, u64 basem,
  * Unlocks the remote timer bases.
  */
 void timer_unlock_remote_bases(unsigned int cpu)
-	__releases(timer_bases[BASE_LOCAL]->lock)
-	__releases(timer_bases[BASE_GLOBAL]->lock)
+	__no_context_analysis
 {
 	struct timer_base *base_local, *base_global;
 
@@ -2097,8 +2103,7 @@ void timer_unlock_remote_bases(unsigned int cpu)
  * Locks the remote timer bases.
  */
 void timer_lock_remote_bases(unsigned int cpu)
-	__acquires(timer_bases[BASE_LOCAL]->lock)
-	__acquires(timer_bases[BASE_GLOBAL]->lock)
+	__no_context_analysis
 {
 	struct timer_base *base_local, *base_global;
 

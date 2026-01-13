@@ -77,6 +77,7 @@ static void cdns2_ep0_enqueue(struct cdns2_device *pdev, dma_addr_t dma_addr,
 }
 
 static int cdns2_ep0_delegate_req(struct cdns2_device *pdev)
+	__no_context_analysis
 {
 	int ret;
 

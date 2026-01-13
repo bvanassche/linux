@@ -1424,6 +1424,7 @@ static ssize_t xillybus_write(struct file *filp, const char __user *userbuf,
 }
 
 static int xillybus_open(struct inode *inode, struct file *filp)
+	__no_context_analysis /* conditional locking */
 {
 	int rc;
 	unsigned long flags;

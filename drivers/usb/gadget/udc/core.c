@@ -1140,8 +1140,11 @@ EXPORT_SYMBOL_GPL(usb_gadget_set_state);
 /* ------------------------------------------------------------------------- */
 
 /* Acquire connect_lock before calling this function. */
-static int usb_udc_connect_control_locked(struct usb_udc *udc) __must_hold(&udc->connect_lock)
+static int usb_udc_connect_control_locked(struct usb_udc *udc)
+	__must_hold(&udc->connect_lock)
 {
+	__assume_ctx_lock(&udc->gadget->udc->connect_lock);
+
 	if (udc->vbus)
 		return usb_gadget_connect_locked(udc->gadget);
 	else
@@ -1783,11 +1786,13 @@ static ssize_t soft_connect_store(struct device *dev,
 
 	if (sysfs_streq(buf, "connect")) {
 		mutex_lock(&udc->connect_lock);
+		__assume_ctx_lock(&udc->gadget->udc->connect_lock);
 		usb_gadget_udc_start_locked(udc);
 		usb_gadget_connect_locked(udc->gadget);
 		mutex_unlock(&udc->connect_lock);
 	} else if (sysfs_streq(buf, "disconnect")) {
 		mutex_lock(&udc->connect_lock);
+		__assume_ctx_lock(&udc->gadget->udc->connect_lock);
 		usb_gadget_disconnect_locked(udc->gadget);
 		usb_gadget_udc_stop_locked(udc);
 		mutex_unlock(&udc->connect_lock);

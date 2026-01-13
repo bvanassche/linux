@@ -1471,6 +1471,7 @@ EXPORT_SYMBOL_GPL(svc_xprt_names);
 /*----------------------------------------------------------------------------*/
 
 static void *svc_pool_stats_start(struct seq_file *m, loff_t *pos)
+	__no_context_analysis
 {
 	unsigned int pidx = (unsigned int)*pos;
 	struct svc_info *si = m->private;
@@ -1511,6 +1512,7 @@ static void *svc_pool_stats_next(struct seq_file *m, void *p, loff_t *pos)
 }
 
 static void svc_pool_stats_stop(struct seq_file *m, void *p)
+	__no_context_analysis
 {
 	struct svc_info *si = m->private;
 

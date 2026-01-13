@@ -38,6 +38,7 @@ static const struct nla_policy nfnl_hook_nla_policy[NFNLA_HOOK_MAX + 1] = {
 static int nf_netlink_dump_start_rcu(struct sock *nlsk, struct sk_buff *skb,
 				     const struct nlmsghdr *nlh,
 				     struct netlink_dump_control *c)
+	__must_hold_shared(RCU)
 {
 	int err;
 
@@ -431,6 +432,7 @@ static int nfnl_hook_dump_stop(struct netlink_callback *cb)
 static int nfnl_hook_get(struct sk_buff *skb,
 			 const struct nfnl_info *info,
 			 const struct nlattr * const nla[])
+	__must_hold_shared(RCU)
 {
 	if (!nla[NFNLA_HOOK_HOOKNUM])
 		return -EINVAL;

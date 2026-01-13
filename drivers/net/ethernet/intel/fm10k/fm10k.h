@@ -392,16 +392,19 @@ struct fm10k_intfc {
 };
 
 static inline void fm10k_mbx_lock(struct fm10k_intfc *interface)
+	__acquires(&interface->mbx_lock)
 {
 	spin_lock(&interface->mbx_lock);
 }
 
 static inline void fm10k_mbx_unlock(struct fm10k_intfc *interface)
+	__releases(&interface->mbx_lock)
 {
 	spin_unlock(&interface->mbx_lock);
 }
 
 static inline int fm10k_mbx_trylock(struct fm10k_intfc *interface)
+	__cond_acquires(true, &interface->mbx_lock)
 {
 	return spin_trylock(&interface->mbx_lock);
 }

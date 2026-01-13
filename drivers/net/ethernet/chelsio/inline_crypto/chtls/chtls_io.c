@@ -903,6 +903,7 @@ static bool csk_mem_free(struct chtls_dev *cdev, struct sock *sk)
 
 static int csk_wait_memory(struct chtls_dev *cdev,
 			   struct sock *sk, long *timeo_p)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	int ret, err = 0;
@@ -1333,6 +1334,7 @@ static void chtls_cleanup_rbuf(struct sock *sk, int copied)
 
 static int chtls_pt_recvmsg(struct sock *sk, struct msghdr *msg, size_t len,
 			    int flags)
+	__releases(sk)
 {
 	struct chtls_sock *csk = rcu_dereference_sk_user_data(sk);
 	struct chtls_hws *hws = &csk->tlshws;

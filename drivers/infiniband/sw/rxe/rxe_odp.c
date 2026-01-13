@@ -42,6 +42,7 @@ const struct mmu_interval_notifier_ops rxe_mn_ops = {
 #define RXE_PAGEFAULT_RDONLY BIT(0)
 #define RXE_PAGEFAULT_SNAPSHOT BIT(1)
 static int rxe_odp_do_pagefault_and_lock(struct rxe_mr *mr, u64 user_va, int bcnt, u32 flags)
+	__no_context_analysis /* __cond_acquires() does not support >= 0 */
 {
 	struct ib_umem_odp *umem_odp = to_ib_umem_odp(mr->umem);
 	bool fault = !(flags & RXE_PAGEFAULT_SNAPSHOT);
@@ -62,6 +63,7 @@ static int rxe_odp_do_pagefault_and_lock(struct rxe_mr *mr, u64 user_va, int bcn
 }
 
 static int rxe_odp_init_pages(struct rxe_mr *mr)
+	__no_context_analysis /* __cond_acquires() does not support >= 0 */
 {
 	struct ib_umem_odp *umem_odp = to_ib_umem_odp(mr->umem);
 	int ret;
@@ -157,6 +159,7 @@ static unsigned long rxe_odp_iova_to_page_offset(struct ib_umem_odp *umem_odp, u
 }
 
 static int rxe_odp_map_range_and_lock(struct rxe_mr *mr, u64 iova, int length, u32 flags)
+	__cond_acquires(0, &to_ib_umem_odp(mr->umem)->umem_mutex)
 {
 	struct ib_umem_odp *umem_odp = to_ib_umem_odp(mr->umem);
 	bool need_fault;
@@ -312,6 +315,7 @@ static enum resp_states rxe_odp_do_atomic_op(struct rxe_mr *mr, u64 iova,
 
 enum resp_states rxe_odp_atomic_op(struct rxe_mr *mr, u64 iova, int opcode,
 				   u64 compare, u64 swap_add, u64 *orig_val)
+	__no_context_analysis /* __cond_acquires() does not support >= 0 */
 {
 	struct ib_umem_odp *umem_odp = to_ib_umem_odp(mr->umem);
 	int err;
@@ -420,6 +424,7 @@ struct prefetch_mr_work {
 };
 
 static void rxe_ib_prefetch_mr_work(struct work_struct *w)
+	__no_context_analysis /* __cond_acquires() does not support >= 0 */
 {
 	struct prefetch_mr_work *work =
 		container_of(w, struct prefetch_mr_work, work);
@@ -458,6 +463,7 @@ static int rxe_ib_prefetch_sg_list(struct ib_pd *ibpd,
 				   enum ib_uverbs_advise_mr_advice advice,
 				   u32 pf_flags, struct ib_sge *sg_list,
 				   u32 num_sge)
+	__no_context_analysis /* __cond_acquires() does not support >= 0 */
 {
 	struct rxe_pd *pd = container_of(ibpd, struct rxe_pd, ibpd);
 	int ret = 0;

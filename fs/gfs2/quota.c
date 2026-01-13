@@ -94,11 +94,13 @@ static unsigned int gfs2_qd_hash(const struct gfs2_sbd *sdp,
 }
 
 static inline void spin_lock_bucket(unsigned int hash)
+	__no_context_analysis
 {
         hlist_bl_lock(&qd_hash_table[hash]);
 }
 
 static inline void spin_unlock_bucket(unsigned int hash)
+	__no_context_analysis
 {
         hlist_bl_unlock(&qd_hash_table[hash]);
 }

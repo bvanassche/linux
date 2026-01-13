@@ -656,11 +656,13 @@ void mlx5e_reporter_icosq_cqe_err(struct mlx5e_icosq *icosq)
 }
 
 void mlx5e_reporter_icosq_suspend_recovery(struct mlx5e_channel *c)
+	__acquires(c->icosq_recovery_lock)
 {
 	mutex_lock(&c->icosq_recovery_lock);
 }
 
 void mlx5e_reporter_icosq_resume_recovery(struct mlx5e_channel *c)
+	__releases(c->icosq_recovery_lock)
 {
 	mutex_unlock(&c->icosq_recovery_lock);
 }

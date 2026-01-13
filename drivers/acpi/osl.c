@@ -744,6 +744,7 @@ int acpi_os_read_iomem(void __iomem *virt_addr, u64 *value, u32 width)
 
 acpi_status
 acpi_os_read_memory(acpi_physical_address phys_addr, u64 *value, u32 width)
+	__no_context_analysis /* conditional locking */
 {
 	void __iomem *virt_addr;
 	unsigned int size = width / 8;
@@ -777,6 +778,7 @@ acpi_os_read_memory(acpi_physical_address phys_addr, u64 *value, u32 width)
 
 acpi_status
 acpi_os_write_memory(acpi_physical_address phys_addr, u64 value, u32 width)
+	__no_context_analysis /* conditional locking */
 {
 	void __iomem *virt_addr;
 	unsigned int size = width / 8;

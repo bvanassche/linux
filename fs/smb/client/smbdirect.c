@@ -219,6 +219,7 @@ void smbd_destroy(struct TCP_Server_Info *server)
  * return value: 0 on success, or actual error code
  */
 int smbd_reconnect(struct TCP_Server_Info *server)
+	__must_hold(server->_srv_mutex)
 {
 	log_rdma_event(INFO, "reconnecting rdma session\n");
 
@@ -251,6 +252,7 @@ create_conn:
 /* Create a SMBD connection, called by upper layer */
 static struct smbd_connection *_smbd_get_connection(
 	struct TCP_Server_Info *server, struct sockaddr *dstaddr, int port)
+	__no_context_analysis
 {
 	struct net *net = cifs_net_ns(server);
 	struct smbd_connection *info;

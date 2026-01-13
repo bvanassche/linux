@@ -15,6 +15,7 @@ static inline bool not_found(struct page_vma_mapped_walk *pvmw)
 
 static bool map_pte(struct page_vma_mapped_walk *pvmw, pmd_t *pmdvalp,
 		    spinlock_t **ptlp)
+	__no_context_analysis /* conditional locking */
 {
 	bool is_migration;
 	pte_t ptent;
@@ -178,6 +179,7 @@ static void step_forward(struct page_vma_mapped_walk *pvmw, unsigned long size)
  * use page_vma_mapped_walk_done(). It will do the housekeeping.
  */
 bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
+	__no_context_analysis /* conditional locking */
 {
 	struct vm_area_struct *vma = pvmw->vma;
 	struct mm_struct *mm = vma->vm_mm;

@@ -246,6 +246,7 @@ static void pcf857x_irq_disable(struct irq_data *data)
 }
 
 static void pcf857x_irq_bus_lock(struct irq_data *data)
+	__acquires(&((struct pcf857x *)irq_data_get_irq_chip_data(data))->lock)
 {
 	struct pcf857x *gpio = irq_data_get_irq_chip_data(data);
 
@@ -253,6 +254,7 @@ static void pcf857x_irq_bus_lock(struct irq_data *data)
 }
 
 static void pcf857x_irq_bus_sync_unlock(struct irq_data *data)
+	__releases(&((struct pcf857x *)irq_data_get_irq_chip_data(data))->lock)
 {
 	struct pcf857x *gpio = irq_data_get_irq_chip_data(data);
 

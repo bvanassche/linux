@@ -286,7 +286,7 @@ EXPORT_SYMBOL(console_list_unlock);
  * Return: A cookie to pass to console_srcu_read_unlock().
  */
 int console_srcu_read_lock(void)
-	__acquires(&console_srcu)
+	__acquires_shared(&console_srcu)
 {
 	return srcu_read_lock_nmisafe(&console_srcu);
 }
@@ -300,7 +300,7 @@ EXPORT_SYMBOL(console_srcu_read_lock);
  * Counterpart to console_srcu_read_lock()
  */
 void console_srcu_read_unlock(int cookie)
-	__releases(&console_srcu)
+	__releases_shared(&console_srcu)
 {
 	srcu_read_unlock_nmisafe(&console_srcu, cookie);
 }
@@ -1919,6 +1919,7 @@ lockdep:
  * Return: 1 if the lock rights were passed, 0 otherwise.
  */
 int console_lock_spinning_disable_and_check(int cookie)
+	__no_context_analysis /* conditional locking */
 {
 	int waiter;
 
@@ -3233,6 +3234,7 @@ static inline void printk_kthreads_check_locked(void) { }
  */
 static bool console_flush_one_record(bool do_cond_resched, u64 *next_seq, bool *handover,
 				     bool *try_again)
+	__no_context_analysis /* conditional locking */
 {
 	struct console_flush_type ft;
 	bool any_usable = false;

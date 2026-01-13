@@ -636,6 +636,7 @@ out:
 
 int f2fs_add_inline_entry(struct inode *dir, const struct f2fs_filename *fname,
 			  struct inode *inode, nid_t ino, umode_t mode)
+	__no_context_analysis /* conditional locking */
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(dir);
 	struct folio *ifolio;

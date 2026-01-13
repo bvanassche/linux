@@ -795,6 +795,7 @@ static const struct file_operations pseudo_measure_fops = {
  * on failure. Descriptive error will be written to last_cmd_status buffer.
  */
 int rdtgroup_pseudo_lock_create(struct rdtgroup *rdtgrp)
+	__must_hold(&rdtgroup_mutex)
 {
 	struct pseudo_lock_region *plr = rdtgrp->plr;
 	struct task_struct *thread;

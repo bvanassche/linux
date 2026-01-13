@@ -704,8 +704,7 @@ static void m66592_start_xclock(struct m66592 *m66592)
 /*-------------------------------------------------------------------------*/
 static void transfer_complete(struct m66592_ep *ep,
 		struct m66592_request *req, int status)
-__releases(m66592->lock)
-__acquires(m66592->lock)
+	__no_context_analysis
 {
 	int restart = 0;
 
@@ -960,8 +959,7 @@ static void irq_pipe_empty(struct m66592 *m66592, u16 status, u16 enb)
 }
 
 static void get_status(struct m66592 *m66592, struct usb_ctrlrequest *ctrl)
-__releases(m66592->lock)
-__acquires(m66592->lock)
+	__no_context_analysis
 {
 	struct m66592_ep *ep;
 	u16 pid;

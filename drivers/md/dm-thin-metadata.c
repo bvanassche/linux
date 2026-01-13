@@ -417,12 +417,13 @@ static int subtree_equal(void *context, const void *value1_le, const void *value
  * shouldn't put the pool in service on its own (e.g. commit).
  */
 static inline void pmd_write_lock_in_core(struct dm_pool_metadata *pmd)
-	__acquires(pmd->root_lock)
+	__acquires(&pmd->root_lock)
 {
 	down_write(&pmd->root_lock);
 }
 
 static inline void pmd_write_lock(struct dm_pool_metadata *pmd)
+	__acquires(&pmd->root_lock)
 {
 	pmd_write_lock_in_core(pmd);
 	if (unlikely(!pmd->in_service))
@@ -430,7 +431,7 @@ static inline void pmd_write_lock(struct dm_pool_metadata *pmd)
 }
 
 static inline void pmd_write_unlock(struct dm_pool_metadata *pmd)
-	__releases(pmd->root_lock)
+	__releases(&pmd->root_lock)
 {
 	up_write(&pmd->root_lock);
 }

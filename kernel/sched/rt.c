@@ -764,6 +764,7 @@ static void __enable_runtime(struct rq *rq)
 }
 
 static void balance_runtime(struct rt_rq *rt_rq)
+	__must_hold(&rt_rq->rt_runtime_lock)
 {
 	if (!sched_feat(RT_RUNTIME_SHARE))
 		return;
@@ -861,6 +862,7 @@ static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun)
 }
 
 static int sched_rt_runtime_exceeded(struct rt_rq *rt_rq)
+	__must_hold(&rt_rq->rt_runtime_lock)
 {
 	u64 runtime = sched_rt_runtime(rt_rq);
 
@@ -1888,6 +1890,7 @@ static struct task_struct *pick_next_pushable_task(struct rq *rq)
 
 /* Will lock the rq it finds */
 static struct rq *find_lock_lowest_rq(struct task_struct *task, struct rq *rq)
+	__no_context_analysis /* too complex for static analysis */
 {
 	struct rq *lowest_rq = NULL;
 	int tries;
@@ -1951,6 +1954,7 @@ static struct rq *find_lock_lowest_rq(struct task_struct *task, struct rq *rq)
  * of lesser priority.
  */
 static int push_rt_task(struct rq *rq, bool pull)
+	__no_context_analysis /* too complex for static analysis */
 {
 	struct task_struct *next_task;
 	struct rq *lowest_rq;
@@ -2252,6 +2256,7 @@ void rto_push_irq_work_func(struct irq_work *work)
 #endif /* HAVE_RT_PUSH_IPI */
 
 static void pull_rt_task(struct rq *this_rq)
+	__must_hold(rq_lockp(this_rq))
 {
 	int this_cpu = this_rq->cpu, cpu;
 	bool resched = false;

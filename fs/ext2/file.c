@@ -92,6 +92,7 @@ out_unlock:
  * is sufficient because ext2 doesn't support hole punching.
  */
 static vm_fault_t ext2_dax_fault(struct vm_fault *vmf)
+	__no_context_analysis
 {
 	struct inode *inode = file_inode(vmf->vma->vm_file);
 	vm_fault_t ret;

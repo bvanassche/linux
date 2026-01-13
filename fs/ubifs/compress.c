@@ -151,6 +151,7 @@ no_compr:
  */
 void ubifs_compress(const struct ubifs_info *c, const void *in_buf,
 		    int in_len, void *out_buf, int *out_len, int *compr_type)
+	__no_context_analysis
 {
 	union ubifs_in_ptr in_ptr = { .buf = in_buf };
 
@@ -266,6 +267,7 @@ static int ubifs_decompress_common(const struct ubifs_info *c,
  */
 int ubifs_decompress(const struct ubifs_info *c, const void *in_buf,
 		     int in_len, void *out_buf, int *out_len, int compr_type)
+	__no_context_analysis
 {
 	return ubifs_decompress_common(c, in_buf, in_len, out_buf, 0, out_len,
 				       false, compr_type);

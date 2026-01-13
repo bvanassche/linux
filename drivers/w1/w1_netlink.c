@@ -346,6 +346,7 @@ static int w1_process_command_addremove(struct w1_master *dev,
 
 static int w1_process_command_master(struct w1_master *dev,
 	struct w1_netlink_cmd *req_cmd)
+	__must_hold(dev->bus_mutex)
 {
 	int err = -EINVAL;
 

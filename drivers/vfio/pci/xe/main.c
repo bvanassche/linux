@@ -63,6 +63,7 @@ static void xe_vfio_pci_reset(struct xe_vfio_pci_core_device *xe_vdev)
 }
 
 static void xe_vfio_pci_state_mutex_lock(struct xe_vfio_pci_core_device *xe_vdev)
+	__acquires(&xe_vdev->state_mutex)
 {
 	mutex_lock(&xe_vdev->state_mutex);
 }
@@ -72,6 +73,7 @@ static void xe_vfio_pci_state_mutex_lock(struct xe_vfio_pci_core_device *xe_vdev
  * handle a 'deferred_reset' if exists.
  */
 static void xe_vfio_pci_state_mutex_unlock(struct xe_vfio_pci_core_device *xe_vdev)
+	__releases(&xe_vdev->state_mutex)
 {
 again:
 	spin_lock(&xe_vdev->reset_lock);

@@ -368,6 +368,7 @@ static int __hwrm_to_stderr(u32 hwrm_err)
 
 static struct bnxt_hwrm_wait_token *
 __hwrm_acquire_token(struct bnxt *bp, enum bnxt_hwrm_chnl dst)
+	__no_context_analysis /* __cond_acquires() does not support pointers */
 {
 	struct bnxt_hwrm_wait_token *token;
 
@@ -391,6 +392,7 @@ __hwrm_acquire_token(struct bnxt *bp, enum bnxt_hwrm_chnl dst)
 
 static void
 __hwrm_release_token(struct bnxt *bp, struct bnxt_hwrm_wait_token *token)
+	__no_context_analysis /* to match the above function */
 {
 	if (token->dst == BNXT_HWRM_CHNL_CHIMP) {
 		hlist_del_rcu(&token->node);

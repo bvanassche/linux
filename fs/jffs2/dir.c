@@ -187,6 +187,8 @@ static int jffs2_create(struct mnt_idmap *idmap, struct inode *dir_i,
 		return PTR_ERR(inode);
 	}
 
+	__acquire(&JFFS2_INODE_INFO(inode)->sem);
+
 	inode->i_op = &jffs2_file_inode_operations;
 	inode->i_fop = &jffs2_file_operations;
 	inode->i_mapping->a_ops = &jffs2_file_address_operations;
@@ -329,6 +331,8 @@ static int jffs2_symlink (struct mnt_idmap *idmap, struct inode *dir_i,
 		jffs2_complete_reservation(c);
 		return PTR_ERR(inode);
 	}
+
+	__acquire(&JFFS2_INODE_INFO(inode)->sem);
 
 	inode->i_op = &jffs2_symlink_inode_operations;
 
@@ -489,6 +493,8 @@ static struct dentry *jffs2_mkdir (struct mnt_idmap *idmap, struct inode *dir_i,
 		jffs2_complete_reservation(c);
 		return ERR_CAST(inode);
 	}
+
+	__acquire(&JFFS2_INODE_INFO(inode)->sem);
 
 	inode->i_op = &jffs2_dir_inode_operations;
 	inode->i_fop = &jffs2_dir_operations;
@@ -666,6 +672,9 @@ static int jffs2_mknod (struct mnt_idmap *idmap, struct inode *dir_i,
 		jffs2_complete_reservation(c);
 		return PTR_ERR(inode);
 	}
+
+	__acquire(&JFFS2_INODE_INFO(inode)->sem);
+
 	inode->i_op = &jffs2_file_inode_operations;
 	init_special_inode(inode, inode->i_mode, rdev);
 

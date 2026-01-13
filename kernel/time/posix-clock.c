@@ -18,6 +18,7 @@
  * Returns NULL if the posix_clock instance attached to 'fp' is old and stale.
  */
 static struct posix_clock *get_posix_clock(struct file *fp)
+	__cond_acquires_shared(nonnull, &get_posix_clock(fp)->rwsem)
 {
 	struct posix_clock_context *pccontext = fp->private_data;
 	struct posix_clock *clk = pccontext->clk;
@@ -33,6 +34,7 @@ static struct posix_clock *get_posix_clock(struct file *fp)
 }
 
 static void put_posix_clock(struct posix_clock *clk)
+	__releases_shared(&clk->rwsem)
 {
 	up_read(&clk->rwsem);
 }
@@ -216,6 +218,7 @@ out:
 }
 
 static void put_clock_desc(struct posix_clock_desc *cd)
+	__no_context_analysis
 {
 	put_posix_clock(cd->clk);
 	fput(cd->fp);

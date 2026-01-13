@@ -442,11 +442,13 @@ static void strp_msg_timeout(struct work_struct *w)
 }
 
 static void strp_sock_lock(struct strparser *strp)
+	__acquires(strp->sk)
 {
 	lock_sock(strp->sk);
 }
 
 static void strp_sock_unlock(struct strparser *strp)
+	__releases(strp->sk)
 {
 	release_sock(strp->sk);
 }

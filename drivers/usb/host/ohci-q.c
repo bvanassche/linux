@@ -39,8 +39,7 @@ static void urb_free_priv (struct ohci_hcd *hc, urb_priv_t *urb_priv)
  */
 static void
 finish_urb(struct ohci_hcd *ohci, struct urb *urb, int status)
-__releases(ohci->lock)
-__acquires(ohci->lock)
+	__no_context_analysis
 {
 	struct device *dev = ohci_to_hcd(ohci)->self.controller;
 	struct usb_host_endpoint *ep = urb->ep;

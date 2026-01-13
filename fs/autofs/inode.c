@@ -39,6 +39,7 @@ void autofs_free_ino(struct autofs_info *ino)
 }
 
 void autofs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct autofs_sb_info *sbi = autofs_sbi(sb);
 

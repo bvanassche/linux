@@ -639,6 +639,7 @@ static void linflex_string_write(struct uart_port *sport, const char *s,
 
 static void
 linflex_console_write(struct console *co, const char *s, unsigned int count)
+	__no_context_analysis /* conditional locking */
 {
 	struct uart_port *sport = linflex_ports[co->index];
 	unsigned long flags;

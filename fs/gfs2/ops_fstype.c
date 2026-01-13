@@ -1768,6 +1768,7 @@ static void gfs2_evict_inodes(struct super_block *sb)
 }
 
 static void gfs2_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct gfs2_sbd *sdp = sb->s_fs_info;
 

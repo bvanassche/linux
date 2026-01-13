@@ -407,6 +407,7 @@ static int vmw_bo_init(struct vmw_private *dev_priv,
 		       struct vmw_bo *vmw_bo,
 		       struct vmw_bo_params *params,
 		       void (*destroy)(struct ttm_buffer_object *))
+	__cond_acquires(0, &vmw_bo->tbo.base.resv->lock)
 {
 	struct ttm_operation_ctx ctx = {
 		.interruptible = params->bo_type != ttm_bo_type_kernel,
@@ -446,6 +447,7 @@ static int vmw_bo_init(struct vmw_private *dev_priv,
 int vmw_bo_create(struct vmw_private *vmw,
 		  struct vmw_bo_params *params,
 		  struct vmw_bo **p_bo)
+	__no_context_analysis /* conditional locking */
 {
 	int ret;
 

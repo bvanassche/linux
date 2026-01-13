@@ -536,6 +536,7 @@ static int bdc_queue_xfr(struct bdc *bdc, struct bdc_req *req)
 /* callback to gadget layer when xfr completes */
 static void bdc_req_complete(struct bdc_ep *ep, struct bdc_req *req,
 						int status)
+	__no_context_analysis
 {
 	struct bdc *bdc = ep->bdc;
 
@@ -1428,6 +1429,7 @@ static int ep0_queue_zlp(struct bdc *bdc)
 
 /* Control request handler */
 static int handle_control_request(struct bdc *bdc)
+	__no_context_analysis
 {
 	enum usb_device_state state = bdc->gadget.state;
 	struct usb_ctrlrequest *setup_pkt;

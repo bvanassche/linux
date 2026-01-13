@@ -838,6 +838,7 @@ void bus_remove_driver(struct device_driver *drv)
 /* Helper for bus_rescan_devices's iter */
 static int __must_check bus_rescan_devices_helper(struct device *dev,
 						  void *data)
+	__no_context_analysis /* conditional locking */
 {
 	int ret = 0;
 

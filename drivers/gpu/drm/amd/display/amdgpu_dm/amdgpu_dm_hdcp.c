@@ -180,6 +180,7 @@ static void process_output(struct hdcp_workqueue *hdcp_work)
 }
 
 static void link_lock(struct hdcp_workqueue *work, bool lock)
+	__no_context_analysis /* conditional locking */
 {
 	int i = 0;
 

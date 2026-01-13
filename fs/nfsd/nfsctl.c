@@ -1358,6 +1358,7 @@ static int nfsd_init_fs_context(struct fs_context *fc)
 }
 
 static void nfsd_umount(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct net *net = sb->s_fs_info;
 

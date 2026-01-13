@@ -992,6 +992,7 @@ static enum scan_result check_pmd_still_valid(struct mm_struct *mm,
 static enum scan_result __collapse_huge_page_swapin(struct mm_struct *mm,
 		struct vm_area_struct *vma, unsigned long start_addr, pmd_t *pmd,
 		int referenced)
+	__no_context_analysis
 {
 	int swapped_in = 0;
 	vm_fault_t ret = 0;
@@ -1095,6 +1096,7 @@ static enum scan_result alloc_charge_folio(struct folio **foliop, struct mm_stru
 
 static enum scan_result collapse_huge_page(struct mm_struct *mm, unsigned long address,
 		int referenced, int unmapped, struct collapse_control *cc)
+	__no_context_analysis
 {
 	LIST_HEAD(compound_pagelist);
 	pmd_t *pmd, _pmd;
@@ -1495,6 +1497,7 @@ static enum scan_result set_huge_pmd(struct vm_area_struct *vma, unsigned long a
 
 static enum scan_result try_collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
 		bool install_pmd)
+	__no_context_analysis /* conditional locking */
 {
 	enum scan_result result = SCAN_FAIL;
 	int nr_mapped_ptes = 0;
@@ -1772,6 +1775,7 @@ static bool file_backed_vma_is_retractable(struct vm_area_struct *vma)
 }
 
 static void retract_page_tables(struct address_space *mapping, pgoff_t pgoff)
+	__no_context_analysis
 {
 	struct vm_area_struct *vma;
 
@@ -2424,6 +2428,7 @@ static enum scan_result collapse_scan_file(struct mm_struct *mm,
 static enum scan_result collapse_single_pmd(unsigned long addr,
 		struct vm_area_struct *vma, bool *lock_dropped,
 		struct collapse_control *cc)
+	__context_unsafe(conditional locking)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	bool triggered_wb = false;
@@ -2480,8 +2485,7 @@ end:
 
 static void collapse_scan_mm_slot(unsigned int progress_max,
 		enum scan_result *result, struct collapse_control *cc)
-	__releases(&khugepaged_mm_lock)
-	__acquires(&khugepaged_mm_lock)
+	__context_unsafe(conditional locking)
 {
 	struct vma_iterator vmi;
 	struct mm_slot *slot;
@@ -2822,6 +2826,7 @@ static int madvise_collapse_errno(enum scan_result r)
 
 int madvise_collapse(struct vm_area_struct *vma, unsigned long start,
 		     unsigned long end, bool *lock_dropped)
+	__no_context_analysis
 {
 	struct collapse_control *cc;
 	struct mm_struct *mm = vma->vm_mm;

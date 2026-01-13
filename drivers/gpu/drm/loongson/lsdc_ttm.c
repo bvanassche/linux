@@ -275,11 +275,13 @@ size_t lsdc_bo_size(struct lsdc_bo *lbo)
 }
 
 int lsdc_bo_reserve(struct lsdc_bo *lbo)
+	__no_context_analysis /*__cond_acquires(0, &lbo->tbo.base.resv->lock)*/
 {
 	return ttm_bo_reserve(&lbo->tbo, true, false, NULL);
 }
 
 void lsdc_bo_unreserve(struct lsdc_bo *lbo)
+	__no_context_analysis /*__releases(&lbo->tbo.base.resv->lock)*/
 {
 	return ttm_bo_unreserve(&lbo->tbo);
 }

@@ -2759,11 +2759,13 @@ void gfs2_rlist_free(struct gfs2_rgrp_list *rlist)
 }
 
 void rgrp_lock_local(struct gfs2_rgrpd *rgd)
+	__acquires(rgd->rd_mutex)
 {
 	mutex_lock(&rgd->rd_mutex);
 }
 
 void rgrp_unlock_local(struct gfs2_rgrpd *rgd)
+	__releases(rgd->rd_mutex)
 {
 	mutex_unlock(&rgd->rd_mutex);
 }

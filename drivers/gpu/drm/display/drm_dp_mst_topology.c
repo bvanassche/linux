@@ -1679,12 +1679,14 @@ save_port_topology_ref(struct drm_dp_mst_port *port,
 
 static inline void
 topology_ref_history_lock(struct drm_dp_mst_topology_mgr *mgr)
+	__acquires(mgr->topology_ref_history_lock)
 {
 	mutex_lock(&mgr->topology_ref_history_lock);
 }
 
 static inline void
 topology_ref_history_unlock(struct drm_dp_mst_topology_mgr *mgr)
+	__releases(mgr->topology_ref_history_lock)
 {
 	mutex_unlock(&mgr->topology_ref_history_lock);
 }

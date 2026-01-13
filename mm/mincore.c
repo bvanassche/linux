@@ -172,6 +172,7 @@ static int mincore_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 
 	ptl = pmd_trans_huge_lock(pmd, vma);
 	if (ptl) {
+		__acquire(ptl);
 		memset(vec, 1, nr);
 		spin_unlock(ptl);
 		goto out;

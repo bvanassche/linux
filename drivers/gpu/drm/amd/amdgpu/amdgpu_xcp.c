@@ -256,6 +256,7 @@ static bool __amdgpu_xcp_is_cached_mode_valid(struct amdgpu_xcp_mgr *xcp_mgr)
 }
 
 int amdgpu_xcp_query_partition_mode(struct amdgpu_xcp_mgr *xcp_mgr, u32 flags)
+	__no_context_analysis /* conditinal locking */
 {
 	int mode;
 

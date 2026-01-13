@@ -970,6 +970,7 @@ static void cached_dev_read(struct cached_dev *dc, struct search *s)
 /* Process writes */
 
 static CLOSURE_CALLBACK(cached_dev_write_complete)
+	__no_context_analysis
 {
 	closure_type(s, struct search, cl);
 	struct cached_dev *dc = container_of(s->d, struct cached_dev, disk);
@@ -979,6 +980,7 @@ static CLOSURE_CALLBACK(cached_dev_write_complete)
 }
 
 static void cached_dev_write(struct cached_dev *dc, struct search *s)
+	__no_context_analysis
 {
 	struct closure *cl = &s->cl;
 	struct bio *bio = &s->bio.bio;

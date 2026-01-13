@@ -3106,6 +3106,7 @@ static void __update_nat_bits(struct f2fs_sb_info *sbi, nid_t start_nid,
 
 static int __flush_nat_entry_set(struct f2fs_sb_info *sbi,
 		struct nat_entry_set *set, struct cp_control *cpc)
+	__no_context_analysis /* conditional locking */
 {
 	struct curseg_info *curseg = CURSEG_I(sbi, CURSEG_HOT_DATA);
 	struct f2fs_journal *journal = curseg->journal;

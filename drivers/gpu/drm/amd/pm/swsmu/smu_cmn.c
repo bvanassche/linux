@@ -413,6 +413,7 @@ static int __smu_msg_v1_ras_filter(struct smu_msg_ctl *ctl,
  */
 static int smu_msg_v1_send_msg(struct smu_msg_ctl *ctl,
 			       struct smu_msg_args *args)
+	__no_context_analysis /* conditional locking */
 {
 	struct smu_context *smu = ctl->smu;
 	struct amdgpu_device *adev = smu->adev;

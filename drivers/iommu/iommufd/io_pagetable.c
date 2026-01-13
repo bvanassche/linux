@@ -34,6 +34,7 @@ struct iopt_area *iopt_area_contig_init(struct iopt_area_contig_iter *iter,
 					struct io_pagetable *iopt,
 					unsigned long iova,
 					unsigned long last_iova)
+	__must_hold_shared(&iopt->iova_rwsem)
 {
 	lockdep_assert_held(&iopt->iova_rwsem);
 
@@ -119,6 +120,7 @@ static bool __alloc_iova_check_used(struct interval_tree_span_iter *span,
  */
 static int iopt_alloc_iova(struct io_pagetable *iopt, unsigned long *iova,
 			   unsigned long addr, unsigned long length)
+	__must_hold_shared(&iopt->iova_rwsem)
 {
 	unsigned long page_offset = addr % PAGE_SIZE;
 	struct interval_tree_double_span_iter used_span;
@@ -182,6 +184,7 @@ static int iopt_alloc_iova(struct io_pagetable *iopt, unsigned long *iova,
 
 static int iopt_check_iova(struct io_pagetable *iopt, unsigned long iova,
 			   unsigned long length)
+	__must_hold_shared(&iopt->iova_rwsem)
 {
 	unsigned long last;
 
@@ -210,6 +213,7 @@ static int iopt_insert_area(struct io_pagetable *iopt, struct iopt_area *area,
 			    struct iopt_pages *pages, unsigned long iova,
 			    unsigned long start_byte, unsigned long length,
 			    int iommu_prot)
+	__must_hold_shared(&iopt->iova_rwsem)
 {
 	lockdep_assert_held_write(&iopt->iova_rwsem);
 
@@ -536,6 +540,7 @@ struct iova_bitmap_fn_arg {
 static int __iommu_read_and_clear_dirty(struct iova_bitmap *bitmap,
 					unsigned long iova, size_t length,
 					void *opaque)
+	__must_hold_shared(&((struct iova_bitmap_fn_arg *)opaque)->iopt->iova_rwsem)
 {
 	struct iopt_area *area;
 	struct iopt_area_contig_iter iter;
@@ -645,6 +650,7 @@ int iopt_read_and_clear_dirty_data(struct io_pagetable *iopt,
 
 static int iopt_clear_dirty_data(struct io_pagetable *iopt,
 				 struct iommu_domain *domain)
+	__must_hold_shared(&iopt->iova_rwsem)
 {
 	const struct iommu_dirty_ops *ops = domain->dirty_ops;
 	struct iommu_iotlb_gather gather;
@@ -889,6 +895,7 @@ int iopt_set_allow_iova(struct io_pagetable *iopt,
 
 int iopt_reserve_iova(struct io_pagetable *iopt, unsigned long start,
 		      unsigned long last, void *owner)
+	__must_hold_shared(&iopt->iova_rwsem)
 {
 	struct iopt_reserved *reserved;
 
@@ -909,6 +916,7 @@ int iopt_reserve_iova(struct io_pagetable *iopt, unsigned long start,
 }
 
 static void __iopt_remove_reserved_iova(struct io_pagetable *iopt, void *owner)
+	__must_hold_shared(&iopt->iova_rwsem)
 {
 	struct iopt_reserved *reserved, *next;
 
@@ -981,6 +989,7 @@ void iopt_destroy_table(struct io_pagetable *iopt)
  */
 static void iopt_unfill_domain(struct io_pagetable *iopt,
 			       struct iommu_domain *domain)
+	__must_hold_shared(&iopt->iova_rwsem)
 {
 	struct iopt_area *area;
 
@@ -1049,6 +1058,7 @@ static void iopt_unfill_domain(struct io_pagetable *iopt,
  */
 static int iopt_fill_domain(struct io_pagetable *iopt,
 			    struct iommu_domain *domain)
+	__must_hold_shared(&iopt->iova_rwsem)
 {
 	struct iopt_area *end_area;
 	struct iopt_area *area;
@@ -1112,6 +1122,7 @@ out_unfill:
 /* All existing area's conform to an increased page size */
 static int iopt_check_iova_alignment(struct io_pagetable *iopt,
 				     unsigned long new_iova_alignment)
+	__must_hold_shared(&iopt->iova_rwsem)
 {
 	unsigned long align_mask = new_iova_alignment - 1;
 	struct iopt_area *area;
@@ -1217,6 +1228,7 @@ out_unlock:
 }
 
 static int iopt_calculate_iova_alignment(struct io_pagetable *iopt)
+	__must_hold_shared(&iopt->iova_rwsem)
 {
 	unsigned long new_iova_alignment;
 	struct iommufd_access *access;
@@ -1295,6 +1307,7 @@ out_unlock:
  * iopt_pages, just with different starting bytes.
  */
 static int iopt_area_split(struct iopt_area *area, unsigned long iova)
+	__must_hold_shared(&area->iopt->iova_rwsem)
 {
 	unsigned long alignment = area->iopt->iova_alignment;
 	unsigned long last_iova = iopt_area_last_iova(area);
@@ -1414,6 +1427,7 @@ int iopt_cut_iova(struct io_pagetable *iopt, unsigned long *iovas,
 		area = iopt_area_iter_first(iopt, iovas[i], iovas[i]);
 		if (!area)
 			continue;
+		__assume_ctx_lock(&area->iopt->iova_rwsem);
 		rc = iopt_area_split(area, iovas[i]);
 		if (rc)
 			break;

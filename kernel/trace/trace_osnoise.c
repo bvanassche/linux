@@ -2163,6 +2163,7 @@ static void osnoise_init_hotplug_support(void)
  * seq file functions for the osnoise/options file.
  */
 static void *s_options_start(struct seq_file *s, loff_t *pos)
+	__acquires(interface_lock)
 {
 	int option = *pos;
 
@@ -2210,6 +2211,7 @@ out:
 }
 
 static void s_options_stop(struct seq_file *s, void *v)
+	__releases(interface_lock)
 {
 	seq_puts(s, "\n");
 	mutex_unlock(&interface_lock);

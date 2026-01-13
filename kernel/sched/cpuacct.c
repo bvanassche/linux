@@ -108,10 +108,12 @@ static u64 cpuacct_cpuusage_read(struct cpuacct *ca, int cpu,
 		return 0;
 
 #ifndef CONFIG_64BIT
+	struct rq *this_cpu_rq = cpu_rq(cpu);
+
 	/*
 	 * Take rq->lock to make 64-bit read safe on 32-bit platforms.
 	 */
-	raw_spin_rq_lock_irq(cpu_rq(cpu));
+	raw_spin_rq_lock_irq(this_cpu_rq);
 #endif
 
 	switch (index) {
@@ -128,7 +130,7 @@ static u64 cpuacct_cpuusage_read(struct cpuacct *ca, int cpu,
 	}
 
 #ifndef CONFIG_64BIT
-	raw_spin_rq_unlock_irq(cpu_rq(cpu));
+	raw_spin_rq_unlock_irq(this_cpu_rq);
 #endif
 
 	return data;
@@ -144,10 +146,12 @@ static void cpuacct_cpuusage_write(struct cpuacct *ca, int cpu)
 		return;
 
 #ifndef CONFIG_64BIT
+	struct rq *this_cpu_rq = cpu_rq(cpu);
+
 	/*
 	 * Take rq->lock to make 64-bit write safe on 32-bit platforms.
 	 */
-	raw_spin_rq_lock_irq(cpu_rq(cpu));
+	raw_spin_rq_lock_irq(this_cpu_rq);
 #endif
 	*cpuusage = 0;
 	cpustat[CPUTIME_USER] = cpustat[CPUTIME_NICE] = 0;
@@ -155,7 +159,7 @@ static void cpuacct_cpuusage_write(struct cpuacct *ca, int cpu)
 	cpustat[CPUTIME_SOFTIRQ] = 0;
 
 #ifndef CONFIG_64BIT
-	raw_spin_rq_unlock_irq(cpu_rq(cpu));
+	raw_spin_rq_unlock_irq(this_cpu_rq);
 #endif
 }
 

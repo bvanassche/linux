@@ -1238,8 +1238,8 @@ static int keyring_detect_cycle(struct key *A, struct key *B)
  */
 int __key_link_lock(struct key *keyring,
 		    const struct keyring_index_key *index_key)
-	__acquires(&keyring->sem)
-	__acquires(&keyring_serialise_link_lock)
+	__cond_acquires(0, &keyring->sem)
+	__cond_acquires(0, &keyring_serialise_link_lock)
 {
 	if (keyring->type != &key_type_keyring)
 		return -ENOTDIR;
@@ -1260,9 +1260,9 @@ int __key_link_lock(struct key *keyring,
  */
 int __key_move_lock(struct key *l_keyring, struct key *u_keyring,
 		    const struct keyring_index_key *index_key)
-	__acquires(&l_keyring->sem)
-	__acquires(&u_keyring->sem)
-	__acquires(&keyring_serialise_link_lock)
+	__cond_acquires(0, &l_keyring->sem)
+	__cond_acquires(0, &u_keyring->sem)
+	__cond_acquires(0, &keyring_serialise_link_lock)
 {
 	if (l_keyring->type != &key_type_keyring ||
 	    u_keyring->type != &key_type_keyring)
@@ -1285,6 +1285,8 @@ int __key_move_lock(struct key *l_keyring, struct key *u_keyring,
 	 */
 	if (index_key->type == &key_type_keyring)
 		mutex_lock(&keyring_serialise_link_lock);
+	else
+		__acquire(&keyring_serialise_link_lock);
 
 	return 0;
 }
@@ -1402,6 +1404,8 @@ void __key_link_end(struct key *keyring,
 
 	if (index_key->type == &key_type_keyring)
 		mutex_unlock(&keyring_serialise_link_lock);
+	else
+		__release(&keyring_serialise_link_lock);
 }
 
 /*
@@ -1436,6 +1440,7 @@ static int __key_link_check_restriction(struct key *keyring, struct key *key)
  * permission).
  */
 int key_link(struct key *keyring, struct key *key)
+	__cond_acquires(0, &keyring->sem)
 {
 	struct assoc_array_edit *edit = NULL;
 	int ret;
@@ -1472,7 +1477,7 @@ EXPORT_SYMBOL(key_link);
  * Lock a keyring for unlink.
  */
 static int __key_unlink_lock(struct key *keyring)
-	__acquires(&keyring->sem)
+	__cond_acquires(0, &keyring->sem)
 {
 	if (keyring->type != &key_type_keyring)
 		return -ENOTDIR;
@@ -1554,7 +1559,7 @@ int key_unlink(struct key *keyring, struct key *key)
 	key_check(key);
 
 	ret = __key_unlink_lock(keyring);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	ret = __key_unlink_begin(keyring, key, &edit);
@@ -1608,7 +1613,7 @@ int key_move(struct key *key,
 	key_check(to_keyring);
 
 	ret = __key_move_lock(from_keyring, to_keyring, &key->index_key);
-	if (ret < 0)
+	if (ret)
 		goto out;
 	ret = __key_unlink_begin(from_keyring, key, &from_edit);
 	if (ret < 0)

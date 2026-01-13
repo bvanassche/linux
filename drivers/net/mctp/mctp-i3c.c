@@ -257,7 +257,7 @@ err:
 /* Adds a new MCTP i3c_device to a bus */
 static int mctp_i3c_add_device(struct mctp_i3c_bus *mbus,
 			       struct i3c_device *i3c)
-__must_hold(&busdevs_lock)
+	/*__must_hold(&busdevs_lock)*/
 {
 	struct mctp_i3c_device *mi = NULL;
 	int rc;
@@ -310,7 +310,7 @@ static int mctp_i3c_probe(struct i3c_device *i3c)
 }
 
 static void mctp_i3c_remove_device(struct mctp_i3c_device *mi)
-__must_hold(&busdevs_lock)
+	/*__must_hold(&busdevs_lock)*/
 {
 	/* Ensure the tx thread isn't using the device */
 	mutex_lock(&mi->lock);
@@ -346,6 +346,7 @@ static void mctp_i3c_remove(struct i3c_device *i3c)
 /* Returns the device for an address, with mi->lock held */
 static struct mctp_i3c_device *
 mctp_i3c_lookup(struct mctp_i3c_bus *mbus, u64 pid)
+	__no_context_analysis /* conditional locking */
 {
 	struct mctp_i3c_device *mi = NULL, *ret = NULL;
 
@@ -361,6 +362,7 @@ mctp_i3c_lookup(struct mctp_i3c_bus *mbus, u64 pid)
 }
 
 static void mctp_i3c_xmit(struct mctp_i3c_bus *mbus, struct sk_buff *skb)
+	__no_context_analysis /* conditional locking */
 {
 	struct net_device_stats *stats = &mbus->ndev->stats;
 	struct i3c_xfer xfer = { .rnw = false };
@@ -478,7 +480,7 @@ static netdev_tx_t mctp_i3c_start_xmit(struct sk_buff *skb,
 }
 
 static void mctp_i3c_bus_free(struct mctp_i3c_bus *mbus)
-__must_hold(&busdevs_lock)
+	/*__must_hold(&busdevs_lock)*/
 {
 	struct mctp_i3c_device *mi = NULL, *tmp = NULL;
 

@@ -516,6 +516,8 @@ ecryptfs_find_global_auth_tok_for_sig(
 				walker->global_auth_tok_key, auth_tok);
 		if (rc)
 			goto out_invalid_auth_tok_unlock;
+		else
+			__release(&(walker->global_auth_tok_key->sem));
 
 		(*auth_tok_key) = walker->global_auth_tok_key;
 		key_get(*auth_tok_key);
@@ -804,6 +806,7 @@ out_unlock:
 	mutex_unlock(s->tfm_mutex);
 out:
 	if (auth_tok_key) {
+		__acquire(&auth_tok_key->sem);
 		up_write(&(auth_tok_key->sem));
 		key_put(auth_tok_key);
 	}
@@ -1046,6 +1049,7 @@ out:
 		(*filename) = NULL;
 	}
 	if (auth_tok_key) {
+		__acquire(&auth_tok_key->sem);
 		up_write(&(auth_tok_key->sem));
 		key_put(auth_tok_key);
 	}
@@ -1572,6 +1576,7 @@ out:
 int ecryptfs_keyring_auth_tok_for_sig(struct key **auth_tok_key,
 				      struct ecryptfs_auth_tok **auth_tok,
 				      char *sig)
+	__cond_acquires(0, &(*auth_tok_key)->sem)
 {
 	int rc = 0;
 
@@ -1859,6 +1864,7 @@ found_matching_auth_tok:
 		memcpy(&(candidate_auth_tok->token.private_key),
 		       &(matching_auth_tok->token.private_key),
 		       sizeof(struct ecryptfs_private_key));
+		__acquire(&auth_tok_key->sem);
 		up_write(&(auth_tok_key->sem));
 		key_put(auth_tok_key);
 		rc = decrypt_pki_encrypted_session_key(candidate_auth_tok,
@@ -1867,11 +1873,13 @@ found_matching_auth_tok:
 		memcpy(&(candidate_auth_tok->token.password),
 		       &(matching_auth_tok->token.password),
 		       sizeof(struct ecryptfs_password));
+		__acquire(&auth_tok_key->sem);
 		up_write(&(auth_tok_key->sem));
 		key_put(auth_tok_key);
 		rc = decrypt_passphrase_encrypted_session_key(
 			candidate_auth_tok, crypt_stat);
 	} else {
+		__acquire(&auth_tok_key->sem);
 		up_write(&(auth_tok_key->sem));
 		key_put(auth_tok_key);
 		rc = -EINVAL;
@@ -1934,6 +1942,7 @@ pki_encrypt_session_key(struct key *auth_tok_key,
 					 crypt_stat->cipher,
 					 crypt_stat->key_size),
 				 crypt_stat, &payload, &payload_len);
+	__acquire(&auth_tok_key->sem);
 	up_write(&(auth_tok_key->sem));
 	key_put(auth_tok_key);
 	if (rc) {
@@ -1998,6 +2007,7 @@ write_tag_1_packet(char *dest, size_t *remaining_bytes,
 		memcpy(key_rec->enc_key,
 		       auth_tok->session_key.encrypted_key,
 		       auth_tok->session_key.encrypted_key_size);
+		__acquire(&auth_tok_key->sem);
 		up_write(&(auth_tok_key->sem));
 		key_put(auth_tok_key);
 		goto encrypted_session_key_set;
@@ -2396,6 +2406,7 @@ ecryptfs_generate_key_packet_set(char *dest_base,
 						&max, auth_tok,
 						crypt_stat, key_rec,
 						&written);
+			__acquire(&auth_tok_key->sem);
 			up_write(&(auth_tok_key->sem));
 			key_put(auth_tok_key);
 			if (rc) {
@@ -2425,6 +2436,7 @@ ecryptfs_generate_key_packet_set(char *dest_base,
 			}
 			(*len) += written;
 		} else {
+			__acquire(&auth_tok_key->sem);
 			up_write(&(auth_tok_key->sem));
 			key_put(auth_tok_key);
 			ecryptfs_printk(KERN_WARNING, "Unsupported "

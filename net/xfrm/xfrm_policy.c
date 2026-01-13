@@ -252,6 +252,7 @@ bool xfrm_selector_match(const struct xfrm_selector *sel, const struct flowi *fl
 }
 
 static const struct xfrm_policy_afinfo *xfrm_policy_get_afinfo(unsigned short family)
+	__cond_acquires_shared(nonnull, RCU)
 {
 	const struct xfrm_policy_afinfo *afinfo;
 
@@ -272,6 +273,7 @@ static const struct xfrm_if_cb *xfrm_if_get_cb(void)
 
 struct dst_entry *__xfrm_dst_lookup(int family,
 				    const struct xfrm_dst_lookup_params *params)
+	__no_context_analysis
 {
 	const struct xfrm_policy_afinfo *afinfo;
 	struct dst_entry *dst;
@@ -2061,6 +2063,7 @@ xfrm_policy_find_inexact_candidates(struct xfrm_pol_inexact_candidates *cand,
 static struct xfrm_pol_inexact_bin *
 xfrm_policy_inexact_lookup_rcu(struct net *net, u8 type, u16 family,
 			       u8 dir, u32 if_id)
+	__must_hold_shared(RCU)
 {
 	struct xfrm_pol_inexact_key k = {
 		.family = family,
@@ -2469,6 +2472,7 @@ int __xfrm_sk_clone_policy(struct sock *sk, const struct sock *osk)
 static int
 xfrm_get_saddr(unsigned short family, xfrm_address_t *saddr,
 	       const struct xfrm_dst_lookup_params *params)
+	__no_context_analysis
 {
 	int err;
 	const struct xfrm_policy_afinfo *afinfo = xfrm_policy_get_afinfo(family);

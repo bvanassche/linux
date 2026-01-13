@@ -388,6 +388,7 @@ static void complexmode_tryleave(struct sem_array *sma)
  */
 static inline int sem_lock(struct sem_array *sma, struct sembuf *sops,
 			      int nsops)
+	__no_context_analysis
 {
 	struct sem *sem;
 	int idx;
@@ -458,6 +459,7 @@ static inline int sem_lock(struct sem_array *sma, struct sembuf *sops,
 }
 
 static inline void sem_unlock(struct sem_array *sma, int locknum)
+	__no_context_analysis
 {
 	if (locknum == SEM_GLOBAL_LOCK) {
 		unmerge_queues(sma);
@@ -529,6 +531,7 @@ static struct sem_array *sem_alloc(size_t nsems)
  * Called with sem_ids.rwsem held (as a writer)
  */
 static int newary(struct ipc_namespace *ns, struct ipc_params *params)
+	__no_context_analysis
 {
 	int retval;
 	struct sem_array *sma;
@@ -1141,6 +1144,7 @@ static int count_semcnt(struct sem_array *sma, ushort semnum,
  * remains locked on exit.
  */
 static void freeary(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
+	__no_context_analysis
 {
 	struct sem_undo *un, *tu;
 	struct sem_queue *q, *tq;
@@ -1600,6 +1604,7 @@ copy_semid_from_user(struct semid64_ds *out, void __user *buf, int version)
  */
 static int semctl_down(struct ipc_namespace *ns, int semid,
 		       int cmd, struct semid64_ds *semid64)
+	__no_context_analysis
 {
 	struct sem_array *sma;
 	int err;
@@ -1904,6 +1909,7 @@ static struct sem_undo *lookup_undo(struct sem_undo_list *ulp, int semid)
  * performs a rcu_read_lock().
  */
 static struct sem_undo *find_alloc_undo(struct ipc_namespace *ns, int semid)
+	__no_context_analysis
 {
 	struct sem_array *sma;
 	struct sem_undo_list *ulp;
@@ -1983,6 +1989,7 @@ out:
 long __do_semtimedop(int semid, struct sembuf *sops,
 		unsigned nsops, const struct timespec64 *timeout,
 		struct ipc_namespace *ns)
+	__no_context_analysis
 {
 	int error = -EINVAL;
 	struct sem_array *sma;

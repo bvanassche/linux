@@ -1062,6 +1062,7 @@ static int hostfs_init_fs_context(struct fs_context *fc)
 }
 
 static void hostfs_kill_sb(struct super_block *s)
+	__releases(&sb->s_umount)
 {
 	kill_anon_super(s);
 	kfree(s->s_fs_info);

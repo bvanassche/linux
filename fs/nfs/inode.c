@@ -805,6 +805,7 @@ EXPORT_SYMBOL_GPL(nfs_setattr);
  * Note: must be called with inode->i_lock held!
  */
 static int nfs_vmtruncate(struct inode * inode, loff_t offset)
+	__must_hold(&inode->i_lock)
 {
 	int err;
 

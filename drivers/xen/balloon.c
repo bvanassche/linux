@@ -262,6 +262,7 @@ static struct resource *additional_memory_resource(phys_addr_t size)
 }
 
 static enum bp_state reserve_additional_memory(void)
+	__must_hold(balloon_mutex)
 {
 	long credit;
 	struct resource *resource;
@@ -573,6 +574,7 @@ void balloon_set_new_target(unsigned long target)
 EXPORT_SYMBOL_GPL(balloon_set_new_target);
 
 static int add_ballooned_pages(unsigned int nr_pages)
+	__must_hold(balloon_mutex)
 {
 	enum bp_state st;
 

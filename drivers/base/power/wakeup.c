@@ -250,6 +250,7 @@ EXPORT_SYMBOL_GPL(wakeup_source_unregister);
  * This index must be passed to the matching wakeup_sources_read_unlock().
  */
 int wakeup_sources_read_lock(void)
+	__acquires_shared(&wakeup_srcu)
 {
 	return srcu_read_lock(&wakeup_srcu);
 }
@@ -260,6 +261,7 @@ EXPORT_SYMBOL_GPL(wakeup_sources_read_lock);
  * @idx: return value from corresponding wakeup_sources_read_lock()
  */
 void wakeup_sources_read_unlock(int idx)
+	__releases_shared(&wakeup_srcu)
 {
 	srcu_read_unlock(&wakeup_srcu, idx);
 }
@@ -1088,6 +1090,7 @@ static int print_wakeup_source_stats(struct seq_file *m,
 
 static void *wakeup_sources_stats_seq_start(struct seq_file *m,
 					loff_t *pos)
+	__acquires_shared(&wakeup_srcu)
 {
 	struct wakeup_source *ws;
 	loff_t n = *pos;
@@ -1128,6 +1131,7 @@ static void *wakeup_sources_stats_seq_next(struct seq_file *m,
 }
 
 static void wakeup_sources_stats_seq_stop(struct seq_file *m, void *v)
+	__releases_shared(&wakeup_srcu)
 {
 	int *srcuidx = m->private;
 

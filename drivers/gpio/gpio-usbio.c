@@ -111,6 +111,7 @@ static int usbio_gpio_set(struct gpio_chip *gc, unsigned int offset, int value)
 
 static int usbio_gpio_update_config(struct gpio_chip *gc, unsigned int offset,
 				    u8 mask, u8 value)
+	__no_context_analysis /* TODO */
 {
 	struct usbio_gpio *gpio = gpiochip_get_data(gc);
 	struct usbio_gpio_bank *bank;

@@ -1905,6 +1905,7 @@ free_opts:
 }
 
 static void ntfs3_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct ntfs_sb_info *sbi = sb->s_fs_info;
 

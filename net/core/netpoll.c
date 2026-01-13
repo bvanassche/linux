@@ -308,6 +308,7 @@ static int netpoll_owner_active(struct net_device *dev)
 
 /* call with IRQ disabled */
 static netdev_tx_t __netpoll_send_skb(struct netpoll *np, struct sk_buff *skb)
+	__no_context_analysis /* too complex */
 {
 	netdev_tx_t status = NETDEV_TX_BUSY;
 	netdev_tx_t ret = NET_XMIT_DROP;

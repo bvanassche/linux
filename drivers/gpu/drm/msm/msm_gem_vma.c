@@ -266,6 +266,7 @@ vm_map_op(struct msm_gem_vm *vm, const struct msm_vm_map_op *op)
 
 /* Actually unmap memory for the vma */
 void msm_gem_vma_unmap(struct drm_gpuva *vma, const char *reason)
+	__no_context_analysis /* conditional locking */
 {
 	struct msm_gem_vm *vm = to_msm_vm(vma->vm);
 	struct msm_gem_vma *msm_vma = to_msm_vma(vma);
@@ -297,6 +298,7 @@ void msm_gem_vma_unmap(struct drm_gpuva *vma, const char *reason)
 /* Map and pin vma: */
 int
 msm_gem_vma_map(struct drm_gpuva *vma, int prot, struct sg_table *sgt)
+	__no_context_analysis /* conditional locking */
 {
 	struct msm_gem_vm *vm = to_msm_vm(vma->vm);
 	struct msm_gem_vma *msm_vma = to_msm_vma(vma);

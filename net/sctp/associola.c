@@ -1604,6 +1604,7 @@ int sctp_assoc_lookup_laddr(struct sctp_association *asoc,
 
 /* Set an association id for a given association */
 int sctp_assoc_set_id(struct sctp_association *asoc, gfp_t gfp)
+	__no_context_analysis /* conditional locking */
 {
 	bool preload = gfpflags_allow_blocking(gfp);
 	int ret;

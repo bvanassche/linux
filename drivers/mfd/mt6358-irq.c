@@ -91,6 +91,7 @@ static void pmic_irq_disable(struct irq_data *data)
 }
 
 static void pmic_irq_lock(struct irq_data *data)
+	__acquires(&((struct mt6397_chip *)irq_data_get_irq_chip_data(data))->irqlock)
 {
 	struct mt6397_chip *chip = irq_data_get_irq_chip_data(data);
 
@@ -98,6 +99,7 @@ static void pmic_irq_lock(struct irq_data *data)
 }
 
 static void pmic_irq_sync_unlock(struct irq_data *data)
+	__releases(&((struct mt6397_chip *)irq_data_get_irq_chip_data(data))->irqlock)
 {
 	unsigned int i, top_gp, gp_offset, en_reg, int_regs, shift;
 	struct mt6397_chip *chip = irq_data_get_irq_chip_data(data);

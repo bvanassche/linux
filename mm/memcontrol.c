@@ -255,6 +255,7 @@ static inline void reparent_state_local(struct mem_cgroup *memcg, struct mem_cgr
 #endif
 
 static inline void reparent_locks(struct mem_cgroup *memcg, struct mem_cgroup *parent, int nid)
+	__no_context_analysis
 {
 	spin_lock_irq(&objcg_lock);
 	spin_lock_nested(&mem_cgroup_lruvec(memcg, NODE_DATA(nid))->lru_lock, 1);
@@ -262,6 +263,7 @@ static inline void reparent_locks(struct mem_cgroup *memcg, struct mem_cgroup *p
 }
 
 static inline void reparent_unlocks(struct mem_cgroup *memcg, struct mem_cgroup *parent, int nid)
+	__no_context_analysis
 {
 	spin_unlock(&mem_cgroup_lruvec(parent, NODE_DATA(nid))->lru_lock);
 	spin_unlock(&mem_cgroup_lruvec(memcg, NODE_DATA(nid))->lru_lock);
@@ -807,6 +809,7 @@ static long memcg_state_val_in_pages(int idx, long val)
  */
 static inline struct mem_cgroup *get_non_dying_memcg_start(struct mem_cgroup *memcg,
 							   bool *rcu_locked)
+	__context_unsafe(conditional locking)
 {
 	/* Rebinding can cause this value to be changed at runtime */
 	if (cgroup_subsys_on_dfl(memory_cgrp_subsys)) {
@@ -824,6 +827,7 @@ static inline struct mem_cgroup *get_non_dying_memcg_start(struct mem_cgroup *me
 }
 
 static inline void get_non_dying_memcg_end(bool rcu_locked)
+	__context_unsafe(conditional locking)
 {
 	if (!rcu_locked)
 		return;
@@ -1386,7 +1390,7 @@ void mem_cgroup_scan_tasks(struct mem_cgroup *memcg,
 }
 
 /**
- * folio_lruvec_lock - Lock the lruvec for a folio.
+ * __folio_lruvec_lock - Lock the lruvec for a folio.
  * @folio: Pointer to the folio.
  *
  * These functions are safe to use under any of the following conditions:
@@ -1396,7 +1400,8 @@ void mem_cgroup_scan_tasks(struct mem_cgroup *memcg,
  *
  * Return: The lruvec this folio is on with its lock held and rcu read lock held.
  */
-struct lruvec *folio_lruvec_lock(struct folio *folio)
+struct lruvec *__folio_lruvec_lock(struct folio *folio)
+	__acquires(&folio_lruvec(folio)->lru_lock)
 {
 	struct lruvec *lruvec;
 
@@ -1413,7 +1418,7 @@ retry:
 }
 
 /**
- * folio_lruvec_lock_irq - Lock the lruvec for a folio.
+ * __folio_lruvec_lock_irq - Lock the lruvec for a folio.
  * @folio: Pointer to the folio.
  *
  * These functions are safe to use under any of the following conditions:
@@ -1424,7 +1429,8 @@ retry:
  * Return: The lruvec this folio is on with its lock held and interrupts
  * disabled and rcu read lock held.
  */
-struct lruvec *folio_lruvec_lock_irq(struct folio *folio)
+struct lruvec *__folio_lruvec_lock_irq(struct folio *folio)
+	__acquires(&folio_lruvec(folio)->lru_lock)
 {
 	struct lruvec *lruvec;
 
@@ -1453,8 +1459,9 @@ retry:
  * Return: The lruvec this folio is on with its lock held and interrupts
  * disabled and rcu read lock held.
  */
-struct lruvec *folio_lruvec_lock_irqsave(struct folio *folio,
+struct lruvec *__folio_lruvec_lock_irqsave(struct folio *folio,
 		unsigned long *flags)
+	__acquires(&folio_lruvec(folio)->lru_lock)
 {
 	struct lruvec *lruvec;
 
@@ -3139,6 +3146,7 @@ void __memcg_kmem_uncharge_page(struct page *page, int order)
 }
 
 static struct obj_stock_pcp *trylock_stock(void)
+	__no_context_analysis
 {
 	if (local_trylock(&obj_stock.lock))
 		return this_cpu_ptr(&obj_stock);
@@ -3147,6 +3155,7 @@ static struct obj_stock_pcp *trylock_stock(void)
 }
 
 static void unlock_stock(struct obj_stock_pcp *stock)
+	__no_context_analysis
 {
 	if (stock)
 		local_unlock(&obj_stock.lock);

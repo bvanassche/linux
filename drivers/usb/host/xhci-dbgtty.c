@@ -48,8 +48,7 @@ dbc_kfifo_to_req(struct dbc_port *port, char *packet)
 }
 
 static int dbc_do_start_tx(struct dbc_port *port)
-	__releases(&port->port_lock)
-	__acquires(&port->port_lock)
+	__no_context_analysis
 {
 	int			len;
 	struct dbc_request	*req;

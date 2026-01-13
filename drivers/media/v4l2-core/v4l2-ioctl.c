@@ -3063,6 +3063,7 @@ EXPORT_SYMBOL(v4l_printk_ioctl);
 
 static long __video_do_ioctl(struct file *file,
 		unsigned int cmd, void *arg)
+	__no_context_analysis /* conditional locking */
 {
 	struct video_device *vfd = video_devdata(file);
 	struct mutex *req_queue_lock = NULL;

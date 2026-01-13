@@ -557,6 +557,7 @@ EXPORT_SYMBOL(vga_switcheroo_client_fb_set);
  * which will be %NULL if DDC switching failed.
  */
 int vga_switcheroo_lock_ddc(struct pci_dev *pdev)
+	__no_context_analysis /* matches the release function */
 {
 	enum vga_switcheroo_client_id id;
 
@@ -589,6 +590,7 @@ EXPORT_SYMBOL(vga_switcheroo_lock_ddc);
  * first is not allowed and will result in %-EINVAL.
  */
 int vga_switcheroo_unlock_ddc(struct pci_dev *pdev)
+	__no_context_analysis /* conditional release */
 {
 	enum vga_switcheroo_client_id id;
 	int ret = vgasr_priv.old_ddc_owner;

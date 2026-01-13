@@ -350,6 +350,7 @@ static int dln2_irq_set_type(struct irq_data *irqd, unsigned type)
 }
 
 static void dln2_irq_bus_lock(struct irq_data *irqd)
+	__acquires(&((struct dln2_gpio *)gpiochip_get_data(irq_data_get_irq_chip_data(irqd)))->irq_lock)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
 	struct dln2_gpio *dln2 = gpiochip_get_data(gc);
@@ -358,6 +359,7 @@ static void dln2_irq_bus_lock(struct irq_data *irqd)
 }
 
 static void dln2_irq_bus_unlock(struct irq_data *irqd)
+	__releases(&((struct dln2_gpio *)gpiochip_get_data(irq_data_get_irq_chip_data(irqd)))->irq_lock)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
 	struct dln2_gpio *dln2 = gpiochip_get_data(gc);

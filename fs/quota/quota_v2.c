@@ -350,6 +350,7 @@ static int v2_read_dquot(struct dquot *dquot)
 }
 
 static int v2_write_dquot(struct dquot *dquot)
+	__no_context_analysis
 {
 	struct quota_info *dqopt = sb_dqopt(dquot->dq_sb);
 	int ret;

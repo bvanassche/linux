@@ -41,6 +41,7 @@
 #define VFIO_IOWRITE(size) \
 int vfio_pci_core_iowrite##size(struct vfio_pci_core_device *vdev,	\
 			bool test_mem, u##size val, void __iomem *io)	\
+	__no_context_analysis /* conditional locking */			\
 {									\
 	if (test_mem) {							\
 		down_read(&vdev->memory_lock);				\
@@ -67,6 +68,7 @@ VFIO_IOWRITE(64)
 #define VFIO_IOREAD(size) \
 int vfio_pci_core_ioread##size(struct vfio_pci_core_device *vdev,	\
 			bool test_mem, u##size *val, void __iomem *io)	\
+	__no_context_analysis /* conditional locking */			\
 {									\
 	if (test_mem) {							\
 		down_read(&vdev->memory_lock);				\
@@ -388,6 +390,7 @@ static void vfio_pci_ioeventfd_do_write(struct vfio_pci_ioeventfd *ioeventfd,
 }
 
 static int vfio_pci_ioeventfd_handler(void *opaque, void *unused)
+	__no_context_analysis /* conditional locking */
 {
 	struct vfio_pci_ioeventfd *ioeventfd = opaque;
 	struct vfio_pci_core_device *vdev = ioeventfd->vdev;

@@ -119,6 +119,7 @@ void ivtv_set_osd_alpha(struct ivtv *itv)
 }
 
 int ivtv_set_speed(struct ivtv *itv, int speed)
+	__must_hold(itv->serialize_lock)
 {
 	u32 data[CX2341X_MBOX_MAX_DATA];
 	int single_step = (speed == 1 || speed == -1);
@@ -1122,6 +1123,7 @@ void ivtv_s_std_enc(struct ivtv *itv, v4l2_std_id std)
 }
 
 void ivtv_s_std_dec(struct ivtv *itv, v4l2_std_id std)
+	__must_hold(itv->serialize_lock)
 {
 	struct yuv_playback_info *yi = &itv->yuv_info;
 	DEFINE_WAIT(wait);
@@ -1168,6 +1170,7 @@ void ivtv_s_std_dec(struct ivtv *itv, v4l2_std_id std)
 }
 
 static int ivtv_s_std(struct file *file, void *fh, v4l2_std_id std)
+	__no_context_analysis /* conditional locking */
 {
 	struct ivtv *itv = file2id(file)->itv;
 

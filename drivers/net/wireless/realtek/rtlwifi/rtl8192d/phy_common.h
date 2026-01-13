@@ -29,6 +29,7 @@ enum rf_content {
 
 static inline void rtl92d_acquire_cckandrw_pagea_ctl(struct ieee80211_hw *hw,
 						     unsigned long *flag)
+	__no_context_analysis /* conditional locking */
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
@@ -41,6 +42,7 @@ static inline void rtl92d_acquire_cckandrw_pagea_ctl(struct ieee80211_hw *hw,
 
 static inline void rtl92d_release_cckandrw_pagea_ctl(struct ieee80211_hw *hw,
 						     unsigned long *flag)
+	__no_context_analysis /* conditional locking */
 {
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 
@@ -94,12 +96,14 @@ void rtl92d_release_cckandrw_pagea_ctl(struct ieee80211_hw *hw,
  * context imbalance.
  */
 static inline void rtl92d_pci_lock(struct rtl_priv *rtlpriv)
+	__no_context_analysis /* conditional locking */
 {
 	if (rtlpriv->rtlhal.interface == INTF_PCI)
 		spin_lock(&rtlpriv->locks.rf_lock);
 }
 
 static inline void rtl92d_pci_unlock(struct rtl_priv *rtlpriv)
+	__no_context_analysis /* conditional locking */
 {
 	if (rtlpriv->rtlhal.interface == INTF_PCI)
 		spin_unlock(&rtlpriv->locks.rf_lock);

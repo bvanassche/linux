@@ -177,6 +177,7 @@ void wil_memcpy_toio_32(volatile void __iomem *dst, const void *src,
  * wil_mem_access_lock protects accessing device memory in these cases
  */
 int wil_mem_access_lock(struct wil6210_priv *wil)
+	__cond_acquires_shared(0, &wil->mem_lock)
 {
 	if (!down_read_trylock(&wil->mem_lock))
 		return -EBUSY;
@@ -191,6 +192,7 @@ int wil_mem_access_lock(struct wil6210_priv *wil)
 }
 
 void wil_mem_access_unlock(struct wil6210_priv *wil)
+	__releases_shared(&wil->mem_lock)
 {
 	up_read(&wil->mem_lock);
 }
@@ -241,7 +243,7 @@ static bool wil_vif_is_connected(struct wil6210_priv *wil, u8 mid)
 
 static void wil_disconnect_cid_complete(struct wil6210_vif *vif, int cid,
 					u16 reason_code)
-__acquires(&sta->tid_rx_lock) __releases(&sta->tid_rx_lock)
+	__no_context_analysis
 {
 	uint i;
 	struct wil6210_priv *wil = vif_to_wil(vif);
@@ -299,6 +301,7 @@ __acquires(&sta->tid_rx_lock) __releases(&sta->tid_rx_lock)
 
 static void _wil6210_disconnect_complete(struct wil6210_vif *vif,
 					 const u8 *bssid, u16 reason_code)
+	__no_context_analysis
 {
 	struct wil6210_priv *wil = vif_to_wil(vif);
 	int cid = -ENOENT;
@@ -1451,6 +1454,7 @@ static int wil_wait_for_fw_ready(struct wil6210_priv *wil)
 }
 
 void wil_abort_scan(struct wil6210_vif *vif, bool sync)
+	__no_context_analysis /* conditional locking */
 {
 	struct wil6210_priv *wil = vif_to_wil(vif);
 	int rc;

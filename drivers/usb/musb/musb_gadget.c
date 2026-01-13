@@ -124,8 +124,7 @@ void musb_g_giveback(
 	struct musb_ep		*ep,
 	struct usb_request	*request,
 	int			status)
-__releases(ep->musb->lock)
-__acquires(ep->musb->lock)
+	__no_context_analysis /* to_musb_request() uses container_of() */
 {
 	struct musb_request	*req;
 	struct musb		*musb;
@@ -1923,6 +1922,7 @@ static int musb_gadget_stop(struct usb_gadget *g)
 /* lifecycle operations called through plat_uds.c */
 
 void musb_g_resume(struct musb *musb)
+	__must_hold(&musb->lock)
 {
 	musb->is_suspended = 0;
 	switch (musb_get_state(musb)) {
@@ -1945,6 +1945,7 @@ void musb_g_resume(struct musb *musb)
 
 /* called when SOF packets stop for 3+ msec */
 void musb_g_suspend(struct musb *musb)
+	__must_hold(&musb->lock)
 {
 	u8	devctl;
 
@@ -1981,6 +1982,7 @@ void musb_g_wakeup(struct musb *musb)
 
 /* called when VBUS drops below session threshold, and in other cases */
 void musb_g_disconnect(struct musb *musb)
+	__must_hold(&musb->lock)
 {
 	void __iomem	*mregs = musb->mregs;
 	u8	devctl = musb_readb(mregs, MUSB_DEVCTL);

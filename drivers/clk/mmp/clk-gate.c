@@ -22,6 +22,7 @@
 #define to_clk_mmp_gate(hw)	container_of(hw, struct mmp_clk_gate, hw)
 
 static int mmp_clk_gate_enable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct mmp_clk_gate *gate = to_clk_mmp_gate(hw);
 	unsigned long flags = 0;
@@ -49,6 +50,7 @@ static int mmp_clk_gate_enable(struct clk_hw *hw)
 }
 
 static void mmp_clk_gate_disable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct mmp_clk_gate *gate = to_clk_mmp_gate(hw);
 	unsigned long flags = 0;
@@ -67,6 +69,7 @@ static void mmp_clk_gate_disable(struct clk_hw *hw)
 }
 
 static int mmp_clk_gate_is_enabled(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct mmp_clk_gate *gate = to_clk_mmp_gate(hw);
 	unsigned long flags = 0;

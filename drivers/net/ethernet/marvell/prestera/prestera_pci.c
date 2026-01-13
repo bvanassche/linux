@@ -359,11 +359,13 @@ static int prestera_fw_wait_reg32(struct prestera_fw *fw, u32 reg, u32 cmp,
 }
 
 static void prestera_fw_cmdq_lock(struct prestera_fw *fw, u8 qid)
+	__no_context_analysis /* array of mutexes */
 {
 	mutex_lock(&fw->cmd_queue[qid].cmd_mtx);
 }
 
 static void prestera_fw_cmdq_unlock(struct prestera_fw *fw, u8 qid)
+	__no_context_analysis /* array of mutexes */
 {
 	mutex_unlock(&fw->cmd_queue[qid].cmd_mtx);
 }

@@ -759,6 +759,7 @@ void tmigr_cpu_activate(void)
 static
 bool tmigr_update_events(struct tmigr_group *group, struct tmigr_group *child,
 			 struct tmigr_walk *data)
+	__no_context_analysis
 {
 	struct tmigr_event *evt, *first_childevt;
 	union tmigr_state childstate, groupstate;

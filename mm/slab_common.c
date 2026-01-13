@@ -1094,6 +1094,7 @@ static void print_slabinfo_header(struct seq_file *m)
 }
 
 static void *slab_start(struct seq_file *m, loff_t *pos)
+	__acquires(slab_mutex)
 {
 	mutex_lock(&slab_mutex);
 	return seq_list_start(&slab_caches, *pos);
@@ -1105,6 +1106,7 @@ static void *slab_next(struct seq_file *m, void *p, loff_t *pos)
 }
 
 static void slab_stop(struct seq_file *m, void *p)
+	__releases(slab_mutex)
 {
 	mutex_unlock(&slab_mutex);
 }
@@ -1421,6 +1423,7 @@ debug_rcu_bhead_unqueue(struct kvfree_rcu_bulk_data *bhead)
 
 static inline struct kfree_rcu_cpu *
 krc_this_cpu_lock(unsigned long *flags)
+	__no_context_analysis /* this_cpu_ptr() */
 {
 	struct kfree_rcu_cpu *krcp;
 
@@ -1433,6 +1436,7 @@ krc_this_cpu_lock(unsigned long *flags)
 
 static inline void
 krc_this_cpu_unlock(struct kfree_rcu_cpu *krcp, unsigned long flags)
+	__releases(&krcp->lock)
 {
 	raw_spin_unlock_irqrestore(&krcp->lock, flags);
 }
@@ -1837,8 +1841,9 @@ add_ptr_to_bulk_krc_lock(struct kfree_rcu_cpu **krcp,
 	int idx;
 
 	*krcp = krc_this_cpu_lock(flags);
+	__acquire(&(*krcp)->lock);
 	if (unlikely(!(*krcp)->initialized))
-		return false;
+		goto fail;
 
 	idx = !!is_vmalloc_addr(ptr);
 	bnode = list_first_entry_or_null(&(*krcp)->bulk_head[idx],
@@ -1867,7 +1872,7 @@ add_ptr_to_bulk_krc_lock(struct kfree_rcu_cpu **krcp,
 		}
 
 		if (!bnode)
-			return false;
+			goto fail;
 
 		// Initialize the new block and attach it.
 		bnode->nr_records = 0;
@@ -1880,7 +1885,14 @@ add_ptr_to_bulk_krc_lock(struct kfree_rcu_cpu **krcp,
 	get_state_synchronize_rcu_full(&bnode->gp_snap);
 	atomic_inc(&(*krcp)->bulk_count[idx]);
 
+	/* because we can't annotate this function with __acquires() */
+	__release(&(*krcp)->lock);
 	return true;
+
+fail:
+	/* because we can't annotate this function with __acquires() */
+	__release(&(*krcp)->lock);
+	return false;
 }
 
 static enum hrtimer_restart
@@ -1969,6 +1981,7 @@ void kvfree_call_rcu(struct rcu_head *head, void *ptr)
 
 	kasan_record_aux_stack(ptr);
 	success = add_ptr_to_bulk_krc_lock(&krcp, &flags, ptr, !head);
+	__acquire(&krcp->lock);
 	if (!success) {
 		run_page_cache_worker(krcp);
 

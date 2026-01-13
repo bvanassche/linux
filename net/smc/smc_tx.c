@@ -75,6 +75,7 @@ void smc_tx_sndbuf_nonfull(struct smc_sock *smc)
  * or urgent Byte was consumed
  */
 static int smc_tx_wait(struct smc_sock *smc, int flags)
+	__must_hold(&smc->sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct smc_connection *conn = &smc->conn;

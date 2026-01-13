@@ -278,6 +278,7 @@ EXPORT_SYMBOL_GPL(vhost_vq_work_queue);
  * The worker's flush_mutex must be held.
  */
 static void __vhost_worker_flush(struct vhost_worker *worker)
+	__must_hold(worker->mutex)
 {
 	struct vhost_flush_struct flush;
 
@@ -1506,6 +1507,7 @@ static inline int vhost_put_used_idx(struct vhost_virtqueue *vq)
 	vhost_get_user(vq, x, ptr, VHOST_ADDR_USED)
 
 static void vhost_dev_lock_vqs(struct vhost_dev *d)
+	__no_context_analysis /* conditional locking */
 {
 	int i = 0;
 	for (i = 0; i < d->nvqs; ++i)
@@ -1513,6 +1515,7 @@ static void vhost_dev_lock_vqs(struct vhost_dev *d)
 }
 
 static void vhost_dev_unlock_vqs(struct vhost_dev *d)
+	__no_context_analysis /* conditional locking */
 {
 	int i = 0;
 	for (i = 0; i < d->nvqs; ++i)

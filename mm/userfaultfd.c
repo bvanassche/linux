@@ -169,6 +169,7 @@ static void uffd_mfill_unlock(struct vm_area_struct *vma)
 static struct vm_area_struct *uffd_mfill_lock(struct mm_struct *dst_mm,
 					      unsigned long dst_start,
 					      unsigned long len)
+	__no_context_analysis /* may return ERR_PTR() */
 {
 	struct vm_area_struct *dst_vma;
 
@@ -187,12 +188,14 @@ out_unlock:
 }
 
 static void uffd_mfill_unlock(struct vm_area_struct *vma)
+	__no_context_analysis /* see also uffd_mfill_lock() */
 {
 	mmap_read_unlock(vma->vm_mm);
 }
 #endif
 
 static void mfill_put_vma(struct mfill_state *state)
+	__context_unsafe(conditional locking)
 {
 	if (!state->vma)
 		return;
@@ -203,6 +206,7 @@ static void mfill_put_vma(struct mfill_state *state)
 }
 
 static int mfill_get_vma(struct mfill_state *state)
+	__context_unsafe(conditional locking)
 {
 	struct userfaultfd_ctx *ctx = state->ctx;
 	uffd_flags_t flags = state->flags;
@@ -699,6 +703,7 @@ static __always_inline ssize_t mfill_atomic_hugetlb(
 					      unsigned long src_start,
 					      unsigned long len,
 					      uffd_flags_t flags)
+	__no_context_analysis /* conditional locking */
 {
 	struct mm_struct *dst_mm = dst_vma->vm_mm;
 	ssize_t err;
@@ -882,6 +887,7 @@ static __always_inline ssize_t mfill_atomic(struct userfaultfd_ctx *ctx,
 					    unsigned long src_start,
 					    unsigned long len,
 					    uffd_flags_t flags)
+	__no_context_analysis /* conditional locking */
 {
 	struct mfill_state state = (struct mfill_state){
 		.ctx = ctx,
@@ -1764,6 +1770,7 @@ static int uffd_move_lock(struct mm_struct *mm,
 			  unsigned long src_start,
 			  struct vm_area_struct **dst_vmap,
 			  struct vm_area_struct **src_vmap)
+	__no_context_analysis
 {
 	int err;
 
@@ -1776,6 +1783,7 @@ static int uffd_move_lock(struct mm_struct *mm,
 
 static void uffd_move_unlock(struct vm_area_struct *dst_vma,
 			     struct vm_area_struct *src_vma)
+	__no_context_analysis
 {
 	mmap_assert_locked(src_vma->vm_mm);
 	mmap_read_unlock(dst_vma->vm_mm);
@@ -1940,6 +1948,7 @@ ssize_t move_pages(struct userfaultfd_ctx *ctx, unsigned long dst_start,
 
 		ptl = pmd_trans_huge_lock(src_pmd, src_vma);
 		if (ptl) {
+			__acquire(ptl);
 			/* Check if we can move the pmd without splitting it. */
 			if (move_splits_huge_pmd(dst_addr, src_addr, src_start + len) ||
 			    !pmd_none(dst_pmdval)) {
@@ -1965,6 +1974,8 @@ ssize_t move_pages(struct userfaultfd_ctx *ctx, unsigned long dst_start,
 						  dst_pmdval, dst_vma, src_vma,
 						  dst_addr, src_addr);
 			step_size = HPAGE_PMD_SIZE;
+			/* Is a spin_unlock(ptl) call missing here? */
+			__release(ptl);
 		} else {
 			long ret;
 

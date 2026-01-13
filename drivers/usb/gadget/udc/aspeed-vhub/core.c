@@ -29,6 +29,7 @@
 
 void ast_vhub_done(struct ast_vhub_ep *ep, struct ast_vhub_req *req,
 		   int status)
+	__no_context_analysis
 {
 	bool internal = req->internal;
 	struct ast_vhub *vhub = ep->vhub;

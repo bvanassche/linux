@@ -348,6 +348,7 @@ finally:
 }
 
 handle_t *ocfs2_start_trans(struct ocfs2_super *osb, int max_buffs)
+	__no_context_analysis /* conditional locking */
 {
 	journal_t *journal = osb->journal->j_journal;
 	handle_t *handle;
@@ -389,6 +390,7 @@ handle_t *ocfs2_start_trans(struct ocfs2_super *osb, int max_buffs)
 
 int ocfs2_commit_trans(struct ocfs2_super *osb,
 		       handle_t *handle)
+	__no_context_analysis /* conditional locking */
 {
 	int ret, nested;
 	struct ocfs2_journal *journal = osb->journal;

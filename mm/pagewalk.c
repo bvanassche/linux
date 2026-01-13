@@ -60,6 +60,7 @@ static int walk_pte_range_inner(pte_t *pte, unsigned long addr,
 
 static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 			  struct mm_walk *walk)
+	__no_context_analysis
 {
 	pte_t *pte;
 	int err = 0;

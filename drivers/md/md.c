@@ -2693,6 +2693,7 @@ static void export_array(struct mddev *mddev)
 }
 
 static bool set_in_sync(struct mddev *mddev)
+	__must_hold(&mddev->lock)
 {
 	lockdep_assert_held(&mddev->lock);
 	if (!mddev->in_sync) {
@@ -3753,6 +3754,7 @@ rdev_attr_store(struct kobject *kobj, struct attribute *attr,
 	}
 
 	rv = suspend ? mddev_suspend_and_lock(mddev) : mddev_lock(mddev);
+	__assume_ctx_lock(&mddev->reconfig_mutex);
 	if (!rv) {
 		if (rdev->mddev == NULL)
 			rv = -ENODEV;
@@ -5162,6 +5164,7 @@ action_show(struct mddev *mddev, char *page)
  *		function return.
  */
 static void stop_sync_thread(struct mddev *mddev, bool locked)
+	__no_context_analysis /* conditional locking */
 {
 	int sync_seq = atomic_read(&mddev->sync_seq);
 
@@ -5192,6 +5195,7 @@ static void stop_sync_thread(struct mddev *mddev, bool locked)
 }
 
 void md_idle_sync_thread(struct mddev *mddev)
+	__must_hold(mddev->reconfig_mutex)
 {
 	lockdep_assert_held(&mddev->reconfig_mutex);
 
@@ -5201,6 +5205,7 @@ void md_idle_sync_thread(struct mddev *mddev)
 EXPORT_SYMBOL_GPL(md_idle_sync_thread);
 
 void md_frozen_sync_thread(struct mddev *mddev)
+	__must_hold(mddev->reconfig_mutex)
 {
 	lockdep_assert_held(&mddev->reconfig_mutex);
 
@@ -5210,6 +5215,7 @@ void md_frozen_sync_thread(struct mddev *mddev)
 EXPORT_SYMBOL_GPL(md_frozen_sync_thread);
 
 void md_unfrozen_sync_thread(struct mddev *mddev)
+	__must_hold(mddev->reconfig_mutex)
 {
 	lockdep_assert_held(&mddev->reconfig_mutex);
 
@@ -6020,11 +6026,10 @@ lbs_store(struct mddev *mddev, const char *buf, size_t len)
 
 	err = mddev_lock(mddev);
 	if (err)
-		goto unlock;
+		return err;
 
 	err = mddev_set_logical_block_size(mddev, lbs);
 
-unlock:
 	mddev_unlock(mddev);
 	return err ?: len;
 }
@@ -7086,6 +7091,7 @@ EXPORT_SYMBOL_GPL(md_stop);
 
 /* ensure 'mddev->pers' exist before calling md_set_readonly() */
 static int md_set_readonly(struct mddev *mddev)
+	__no_context_analysis /* conditional locking */
 {
 	int err = 0;
 	int did_freeze = 0;
@@ -8370,6 +8376,7 @@ static int md_ioctl(struct block_device *bdev, blk_mode_t mode,
 
 	err = md_ioctl_need_suspend(cmd) ? mddev_suspend_and_lock(mddev) :
 					   mddev_lock(mddev);
+	__assume_ctx_lock(&mddev->reconfig_mutex);
 	if (err) {
 		pr_debug("md: ioctl lock interrupted, reason %d, cmd %d\n",
 			 err, cmd);
@@ -8994,6 +9001,7 @@ static void md_bitmap_status(struct seq_file *seq, struct mddev *mddev)
 }
 
 static int md_seq_show(struct seq_file *seq, void *v)
+	__must_hold(&all_mddevs_lock)
 {
 	struct mddev *mddev;
 	sector_t sectors;

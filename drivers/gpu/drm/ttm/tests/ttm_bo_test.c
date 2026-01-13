@@ -57,6 +57,7 @@ static void ttm_bo_init_case_desc(const struct ttm_bo_test_case *t,
 KUNIT_ARRAY_PARAM(ttm_bo_reserve, ttm_bo_reserved_cases, ttm_bo_init_case_desc);
 
 static void ttm_bo_reserve_optimistic_no_ticket(struct kunit *test)
+	__no_context_analysis
 {
 	const struct ttm_bo_test_case *params = test->param_value;
 	struct ttm_buffer_object *bo;
@@ -71,6 +72,7 @@ static void ttm_bo_reserve_optimistic_no_ticket(struct kunit *test)
 }
 
 static void ttm_bo_reserve_locked_no_sleep(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_buffer_object *bo;
 	bool interruptible = false;
@@ -108,6 +110,7 @@ static void ttm_bo_reserve_no_wait_ticket(struct kunit *test)
 }
 
 static void ttm_bo_reserve_double_resv(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_buffer_object *bo;
 	struct ww_acquire_ctx ctx;
@@ -152,6 +155,7 @@ static void ttm_bo_reserve_deadlock(struct kunit *test)
 	ww_mutex_base_lock(&bo2->base.resv->lock.base);
 
 	/* The deadlock will be caught by WW mutex, don't warn about it */
+	__release(&bo2->base.resv->lock.base);
 	lock_release(&bo2->base.resv->lock.base.dep_map, 1);
 
 	bo2->base.resv->lock.ctx = &ctx2;
@@ -160,6 +164,8 @@ static void ttm_bo_reserve_deadlock(struct kunit *test)
 
 	err = ttm_bo_reserve(bo1, interruptible, no_wait, &ctx1);
 	KUNIT_ASSERT_EQ(test, err, 0);
+	/* to do: annotate ttm_bo_reserve() */
+	__acquire(&bo1->base.resv->lock);
 
 	err = ttm_bo_reserve(bo2, interruptible, no_wait, &ctx1);
 	KUNIT_ASSERT_EQ(test, err, -EDEADLK);
@@ -239,6 +245,7 @@ static void ttm_bo_reserve_interrupted(struct kunit *test)
 #endif /* IS_BUILTIN(CONFIG_DRM_TTM_KUNIT_TEST) */
 
 static void ttm_bo_unreserve_basic(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_test_devices *priv = test->priv;
 	struct ttm_buffer_object *bo;
@@ -283,6 +290,7 @@ static void ttm_bo_unreserve_basic(struct kunit *test)
 }
 
 static void ttm_bo_unreserve_pinned(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_test_devices *priv = test->priv;
 	struct ttm_buffer_object *bo;
@@ -325,6 +333,7 @@ static void ttm_bo_unreserve_pinned(struct kunit *test)
 }
 
 static void ttm_bo_unreserve_bulk(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_test_devices *priv = test->priv;
 	struct ttm_lru_bulk_move lru_bulk_move;
@@ -388,6 +397,7 @@ static void ttm_bo_unreserve_bulk(struct kunit *test)
 }
 
 static void ttm_bo_fini_basic(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_test_devices *priv = test->priv;
 	struct ttm_buffer_object *bo;
@@ -433,6 +443,7 @@ static const struct dma_fence_ops mock_fence_ops = {
 };
 
 static void ttm_bo_fini_shared_resv(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_test_devices *priv = test->priv;
 	struct ttm_buffer_object *bo;
@@ -477,6 +488,7 @@ static void ttm_bo_fini_shared_resv(struct kunit *test)
 }
 
 static void ttm_bo_pin_basic(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_test_devices *priv = test->priv;
 	struct ttm_buffer_object *bo;
@@ -504,6 +516,7 @@ static void ttm_bo_pin_basic(struct kunit *test)
 }
 
 static void ttm_bo_pin_unpin_resource(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_test_devices *priv = test->priv;
 	struct ttm_lru_bulk_move lru_bulk_move;
@@ -557,6 +570,7 @@ static void ttm_bo_pin_unpin_resource(struct kunit *test)
 }
 
 static void ttm_bo_multiple_pin_one_unpin(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_test_devices *priv = test->priv;
 	struct ttm_lru_bulk_move lru_bulk_move;

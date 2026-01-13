@@ -58,6 +58,8 @@ static struct brcmf_fwvid_entry fwvid_list[BRCMF_FWVENDOR_NUM] = {
 
 #if IS_MODULE(CONFIG_BRCMFMAC)
 static int brcmf_fwvid_request_module(enum brcmf_fwvendor fwvid)
+	__releases(fwvid_list_lock)
+	__cond_acquires(0, fwvid_list_lock)
 {
 	int ret;
 
@@ -151,6 +153,7 @@ static inline int brcmf_fwvid_request_module(enum brcmf_fwvendor fwvid)
 #endif
 
 int brcmf_fwvid_attach(struct brcmf_pub *drvr)
+	__cond_acquires(0, fwvid_list_lock)
 {
 	enum brcmf_fwvendor fwvid = drvr->bus_if->fwvid;
 	int ret;

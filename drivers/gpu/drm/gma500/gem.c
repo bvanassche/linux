@@ -27,6 +27,7 @@
  */
 
 int psb_gem_pin(struct psb_gem_object *pobj)
+	__cond_acquires(0, pobj->base.resv->lock)
 {
 	struct drm_gem_object *obj = &pobj->base;
 	struct drm_device *dev = obj->dev;
@@ -75,6 +76,7 @@ err_dma_resv_unlock:
 }
 
 void psb_gem_unpin(struct psb_gem_object *pobj)
+	__no_context_analysis /* clang bug? */
 {
 	struct drm_gem_object *obj = &pobj->base;
 	struct drm_device *dev = obj->dev;

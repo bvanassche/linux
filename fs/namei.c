@@ -829,6 +829,7 @@ static void drop_links(struct nameidata *nd)
 }
 
 static void leave_rcu(struct nameidata *nd)
+	__releases_shared(RCU)
 {
 	nd->flags &= ~LOOKUP_RCU;
 	nd->seq = nd->next_seq = 0;
@@ -836,6 +837,7 @@ static void leave_rcu(struct nameidata *nd)
 }
 
 static void terminate_walk(struct nameidata *nd)
+	__no_context_analysis
 {
 	if (unlikely(nd->depth))
 		drop_links(nd);
@@ -928,6 +930,7 @@ static bool legitimize_root(struct nameidata *nd)
  * terminate_walk().
  */
 static bool try_to_unlazy(struct nameidata *nd)
+	__no_context_analysis
 {
 	struct dentry *parent = nd->path.dentry;
 
@@ -969,6 +972,7 @@ out:
  * terminate_walk().
  */
 static bool try_to_unlazy_next(struct nameidata *nd, struct dentry *dentry)
+	__no_context_analysis
 {
 	int res;
 
@@ -1502,6 +1506,7 @@ static bool choose_mountpoint_rcu(struct mount *m, const struct path *root,
 
 static bool choose_mountpoint(struct mount *m, const struct path *root,
 			      struct path *path)
+	__no_context_analysis
 {
 	bool found;
 
@@ -1680,6 +1685,7 @@ EXPORT_SYMBOL(follow_down);
  * we meet a managed dentry that would need blocking.
  */
 static bool __follow_mount_rcu(struct nameidata *nd, struct path *path)
+	__no_context_analysis
 {
 	struct dentry *dentry = path->dentry;
 	unsigned int flags = dentry->d_flags;
@@ -2149,6 +2155,7 @@ static __always_inline const char *step_into(struct nameidata *nd, int flags,
 }
 
 static struct dentry *follow_dotdot_rcu(struct nameidata *nd)
+	__no_context_analysis
 {
 	struct dentry *parent, *old;
 
@@ -2671,6 +2678,7 @@ OK:
 
 /* must be paired with terminate_walk() */
 static const char *path_init(struct nameidata *nd, unsigned flags)
+	__no_context_analysis
 {
 	int error;
 	const char *s = nd->pathname;
@@ -2901,6 +2909,7 @@ static int filename_parentat(int dfd, struct filename *name,
 static struct dentry *__start_dirop(struct dentry *parent, struct qstr *name,
 				    unsigned int lookup_flags,
 				    unsigned int state)
+	__no_context_analysis
 {
 	struct dentry *dentry;
 	struct inode *dir = d_inode(parent);
@@ -2946,6 +2955,7 @@ struct dentry *start_dirop(struct dentry *parent, struct qstr *name,
  * protect the dentry is dropped and the dentry itself is release (dput()).
  */
 void end_dirop(struct dentry *de)
+	__no_context_analysis
 {
 	if (!IS_ERR(de)) {
 		inode_unlock(de->d_parent->d_inode);
@@ -3560,6 +3570,7 @@ EXPORT_SYMBOL(start_removing_noperm);
  */
 struct dentry *start_creating_dentry(struct dentry *parent,
 				     struct dentry *child)
+	__no_context_analysis
 {
 	inode_lock_nested(parent->d_inode, I_MUTEX_PARENT);
 	if (unlikely(IS_DEADDIR(parent->d_inode) ||
@@ -3593,6 +3604,7 @@ EXPORT_SYMBOL(start_creating_dentry);
  */
 struct dentry *start_removing_dentry(struct dentry *parent,
 				     struct dentry *child)
+	__no_context_analysis
 {
 	inode_lock_nested(parent->d_inode, I_MUTEX_PARENT);
 	if (unlikely(IS_DEADDIR(parent->d_inode) ||
@@ -3747,6 +3759,7 @@ EXPORT_SYMBOL(may_create_dentry);
 
 // p1 != p2, both are on the same filesystem, ->s_vfs_rename_mutex is held
 static struct dentry *lock_two_directories(struct dentry *p1, struct dentry *p2)
+	__no_context_analysis
 {
 	struct dentry *p = p1, *q = p2, *r;
 
@@ -3782,6 +3795,7 @@ static struct dentry *lock_two_directories(struct dentry *p1, struct dentry *p2)
  * p1 and p2 should be directories on the same fs.
  */
 static struct dentry *lock_rename(struct dentry *p1, struct dentry *p2)
+	__no_context_analysis
 {
 	if (p1 == p2) {
 		inode_lock_nested(p1->d_inode, I_MUTEX_PARENT);
@@ -3796,6 +3810,7 @@ static struct dentry *lock_rename(struct dentry *p1, struct dentry *p2)
  * c1 and p2 should be on the same fs.
  */
 static struct dentry *lock_rename_child(struct dentry *c1, struct dentry *p2)
+	__no_context_analysis
 {
 	if (READ_ONCE(c1->d_parent) == p2) {
 		/*
@@ -3834,6 +3849,7 @@ static struct dentry *lock_rename_child(struct dentry *c1, struct dentry *p2)
 }
 
 static void unlock_rename(struct dentry *p1, struct dentry *p2)
+	__no_context_analysis
 {
 	inode_unlock(p1->d_inode);
 	if (p1 != p2) {
@@ -4562,6 +4578,7 @@ static struct dentry *lookup_fast_for_open(struct nameidata *nd, int open_flag)
 
 static const char *open_last_lookups(struct nameidata *nd,
 		   struct file *file, const struct open_flags *op)
+	__no_context_analysis
 {
 	struct delegated_inode delegated_inode = { };
 	struct dentry *dir = nd->path.dentry;
@@ -5922,6 +5939,7 @@ SYSCALL_DEFINE2(link, const char __user *, oldname, const char __user *, newname
  *	   locking].
  */
 int vfs_rename(struct renamedata *rd)
+	__no_context_analysis
 {
 	int error;
 	struct inode *old_dir = d_inode(rd->old_parent);

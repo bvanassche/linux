@@ -1022,6 +1022,7 @@ static int iwl_pcie_set_cmd_in_flight(struct iwl_trans *trans,
 	if (!_iwl_trans_pcie_grab_nic_access(trans, false))
 		return -EIO;
 
+	__acquire(&trans_pcie->reg_lock);
 	/*
 	 * In iwl_trans_grab_nic_access(), we've acquired the reg_lock.
 	 * There, we also returned immediately if cmd_hold_nic_awake is
@@ -1029,6 +1030,7 @@ static int iwl_pcie_set_cmd_in_flight(struct iwl_trans *trans,
 	 */
 	trans_pcie->cmd_hold_nic_awake = true;
 	spin_unlock(&trans_pcie->reg_lock);
+	__release(trans);
 
 	return 0;
 }

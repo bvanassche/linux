@@ -127,6 +127,7 @@ void nf_conntrack_lock(spinlock_t *lock) __acquires(lock)
 EXPORT_SYMBOL_GPL(nf_conntrack_lock);
 
 static void nf_conntrack_double_unlock(unsigned int h1, unsigned int h2)
+	__no_context_analysis
 {
 	h1 %= CONNTRACK_LOCKS;
 	h2 %= CONNTRACK_LOCKS;
@@ -138,6 +139,7 @@ static void nf_conntrack_double_unlock(unsigned int h1, unsigned int h2)
 /* return true if we need to recompute hashes (in case hash table was resized) */
 static bool nf_conntrack_double_lock(unsigned int h1, unsigned int h2,
 				     unsigned int sequence)
+	__no_context_analysis
 {
 	h1 %= CONNTRACK_LOCKS;
 	h2 %= CONNTRACK_LOCKS;

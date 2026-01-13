@@ -559,6 +559,7 @@ int uds_get_volume_index_record(struct volume_index *volume_index,
 }
 
 int uds_put_volume_index_record(struct volume_index_record *record, u64 virtual_chapter)
+	__no_context_analysis /* conditional locking */
 {
 	int result;
 	u32 address;
@@ -602,6 +603,7 @@ int uds_put_volume_index_record(struct volume_index_record *record, u64 virtual_
 }
 
 int uds_remove_volume_index_record(struct volume_index_record *record)
+	__no_context_analysis /* conditional locking */
 {
 	int result;
 
@@ -708,6 +710,7 @@ void uds_set_volume_index_open_chapter(struct volume_index *volume_index,
 
 int uds_set_volume_index_record_chapter(struct volume_index_record *record,
 					u64 virtual_chapter)
+	__no_context_analysis /* conditional locking */
 {
 	const struct volume_sub_index *sub_index = record->sub_index;
 	int result;

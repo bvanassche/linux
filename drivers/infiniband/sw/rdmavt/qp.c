@@ -2675,7 +2675,7 @@ EXPORT_SYMBOL(rvt_qp_iter_init);
  * Return: 0 - iter->qp is valid 1 - no more QPs
  */
 int rvt_qp_iter_next(struct rvt_qp_iter *iter)
-	__must_hold(RCU)
+	__must_hold_shared(RCU)
 {
 	int n = iter->n;
 	int ret = 1;

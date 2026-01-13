@@ -333,6 +333,7 @@ static struct scx_dispatch_q *find_global_dsq(struct scx_sched *sch, s32 cpu)
 }
 
 static struct scx_dispatch_q *find_user_dsq(struct scx_sched *sch, u64 dsq_id)
+	__no_context_analysis
 {
 	return rhashtable_lookup(&sch->dsq_hash, &dsq_id, dsq_hash_params);
 }
@@ -802,6 +803,7 @@ struct scx_task_iter {
  * visited as long as they are not dead.
  */
 static void scx_task_iter_start(struct scx_task_iter *iter, struct cgroup *cgrp)
+	__acquires(&scx_tasks_lock)
 {
 	memset(iter, 0, sizeof(*iter));
 
@@ -823,6 +825,7 @@ static void scx_task_iter_start(struct scx_task_iter *iter, struct cgroup *cgrp)
 }
 
 static void __scx_task_iter_rq_unlock(struct scx_task_iter *iter)
+	__no_context_analysis /* conditional unlocking */
 {
 	if (iter->locked_task) {
 		__balance_callbacks(iter->rq, &iter->rf);
@@ -841,6 +844,7 @@ static void __scx_task_iter_rq_unlock(struct scx_task_iter *iter)
  * iterator operation will automatically restore the necessary locking.
  */
 static void scx_task_iter_unlock(struct scx_task_iter *iter)
+	__no_context_analysis /* conditional locking */
 {
 	__scx_task_iter_rq_unlock(iter);
 	if (iter->list_locked) {
@@ -850,6 +854,7 @@ static void scx_task_iter_unlock(struct scx_task_iter *iter)
 }
 
 static void __scx_task_iter_maybe_relock(struct scx_task_iter *iter)
+	__no_context_analysis /* conditional locking */
 {
 	if (!iter->list_locked) {
 		raw_spin_lock_irq(&scx_tasks_lock);
@@ -941,6 +946,7 @@ static struct task_struct *scx_task_iter_next(struct scx_task_iter *iter)
  * for details.
  */
 static struct task_struct *scx_task_iter_next_locked(struct scx_task_iter *iter)
+	__no_context_analysis /* conditional locking */
 {
 	struct task_struct *p;
 
@@ -1518,6 +1524,7 @@ static void local_dsq_post_enq(struct scx_sched *sch, struct scx_dispatch_q *dsq
 static void dispatch_enqueue(struct scx_sched *sch, struct rq *rq,
 			     struct scx_dispatch_q *dsq, struct task_struct *p,
 			     u64 enq_flags)
+	__no_context_analysis /* conditional locking */
 {
 	bool is_local = dsq->id == SCX_DSQ_LOCAL;
 
@@ -1666,6 +1673,7 @@ static void task_unlink_from_dsq(struct task_struct *p,
 }
 
 static void dispatch_dequeue(struct rq *rq, struct task_struct *p)
+	__no_context_analysis /* conditional locking */
 {
 	struct scx_dispatch_q *dsq = p->scx.dsq;
 	bool is_local = dsq == &rq->scx.local_dsq;
@@ -2236,6 +2244,8 @@ static void move_local_task_to_local_dsq(struct scx_sched *sch,
 					 struct task_struct *p, u64 enq_flags,
 					 struct scx_dispatch_q *src_dsq,
 					 struct rq *dst_rq)
+	__must_hold(&src_dsq->lock)
+	__must_hold(rq_lockp(dst_rq))
 {
 	struct scx_dispatch_q *dst_dsq = &dst_rq->scx.local_dsq;
 
@@ -2267,6 +2277,8 @@ static void move_local_task_to_local_dsq(struct scx_sched *sch,
  */
 static void move_remote_task_to_local_dsq(struct task_struct *p, u64 enq_flags,
 					  struct rq *src_rq, struct rq *dst_rq)
+	__releases(rq_lockp(src_rq))
+	__acquires(rq_lockp(dst_rq))
 {
 	lockdep_assert_rq_held(src_rq);
 
@@ -2393,6 +2405,8 @@ static bool task_can_run_on_remote_rq(struct scx_sched *sch,
 static bool unlink_dsq_and_lock_src_rq(struct task_struct *p,
 				       struct scx_dispatch_q *dsq,
 				       struct rq *src_rq)
+	__releases(&dsq->lock)
+	__acquires(rq_lockp(src_rq))
 {
 	s32 cpu = raw_smp_processor_id();
 
@@ -2413,6 +2427,7 @@ static bool unlink_dsq_and_lock_src_rq(struct task_struct *p,
 static bool consume_remote_task(struct rq *this_rq,
 				struct task_struct *p, u64 enq_flags,
 				struct scx_dispatch_q *dsq, struct rq *src_rq)
+	__no_context_analysis
 {
 	raw_spin_rq_unlock(this_rq);
 
@@ -2446,6 +2461,7 @@ static struct rq *move_task_between_dsqs(struct scx_sched *sch,
 					 struct task_struct *p, u64 enq_flags,
 					 struct scx_dispatch_q *src_dsq,
 					 struct scx_dispatch_q *dst_dsq)
+	__no_context_analysis
 {
 	struct rq *src_rq = task_rq(p), *dst_rq;
 
@@ -2498,6 +2514,7 @@ static struct rq *move_task_between_dsqs(struct scx_sched *sch,
 
 static bool consume_dispatch_q(struct scx_sched *sch, struct rq *rq,
 			       struct scx_dispatch_q *dsq, u64 enq_flags)
+	__no_context_analysis
 {
 	struct task_struct *p;
 retry:
@@ -2568,6 +2585,7 @@ static bool consume_global_dsq(struct scx_sched *sch, struct rq *rq)
 static void dispatch_to_local_dsq(struct scx_sched *sch, struct rq *rq,
 				  struct scx_dispatch_q *dst_dsq,
 				  struct task_struct *p, u64 enq_flags)
+	__no_context_analysis
 {
 	struct rq *src_rq = task_rq(p);
 	struct rq *dst_rq = container_of(dst_dsq, struct rq, scx.local_dsq);
@@ -3736,6 +3754,7 @@ void init_scx_entity(struct sched_ext_entity *scx)
 }
 
 void scx_pre_fork(struct task_struct *p)
+	__acquires_shared(&scx_fork_rwsem)
 {
 	/*
 	 * BPF scheduler enable/disable paths want to be able to iterate and
@@ -3747,6 +3766,7 @@ void scx_pre_fork(struct task_struct *p)
 }
 
 int scx_fork(struct task_struct *p, struct kernel_clone_args *kargs)
+	__must_hold_shared(&scx_fork_rwsem)
 {
 	s32 ret;
 
@@ -3772,6 +3792,7 @@ int scx_fork(struct task_struct *p, struct kernel_clone_args *kargs)
 }
 
 void scx_post_fork(struct task_struct *p)
+	__releases_shared(&scx_fork_rwsem)
 {
 	if (scx_init_task_enabled) {
 		scx_set_task_state(p, SCX_TASK_READY);
@@ -3799,6 +3820,7 @@ void scx_post_fork(struct task_struct *p)
 }
 
 void scx_cancel_fork(struct task_struct *p)
+	__releases_shared(&scx_fork_rwsem)
 {
 	if (scx_enabled()) {
 		struct rq *rq;
@@ -5872,6 +5894,7 @@ static void scx_sub_disable(struct scx_sched *sch) { }
 #endif	/* CONFIG_EXT_SUB_SCHED */
 
 static void scx_root_disable(struct scx_sched *sch)
+	__no_context_analysis
 {
 	struct scx_exit_info *ei = sch->exit_info;
 	struct scx_task_iter sti;
@@ -6786,6 +6809,7 @@ struct scx_enable_cmd {
 };
 
 static void scx_root_enable_workfn(struct kthread_work *work)
+	__no_context_analysis
 {
 	struct scx_enable_cmd *cmd = container_of(work, struct scx_enable_cmd, work);
 	struct sched_ext_ops *ops = cmd->ops;
@@ -8308,6 +8332,7 @@ static const struct btf_kfunc_id_set scx_kfunc_set_enqueue_dispatch = {
 
 static bool scx_dsq_move(struct bpf_iter_scx_dsq_kern *kit,
 			 struct task_struct *p, u64 dsq_id, u64 enq_flags)
+	__no_context_analysis
 {
 	struct scx_dispatch_q *src_dsq = kit->dsq, *dst_dsq;
 	struct scx_sched *sch;
@@ -9384,6 +9409,7 @@ __bpf_kfunc u32 scx_bpf_cpuperf_cur(s32 cpu, const struct bpf_prog_aux *aux)
  * current performance level can be monitored using scx_bpf_cpuperf_cur().
  */
 __bpf_kfunc void scx_bpf_cpuperf_set(s32 cpu, u32 perf, const struct bpf_prog_aux *aux)
+	__no_context_analysis
 {
 	struct scx_sched *sch;
 

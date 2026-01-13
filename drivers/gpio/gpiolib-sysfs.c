@@ -676,8 +676,7 @@ static int match_gdev(struct device *dev, const void *desc)
 	return data && data->gdev == gdev;
 }
 
-static struct gpiodev_data *
-gdev_get_data(struct gpio_device *gdev) __must_hold(&sysfs_lock)
+static struct gpiodev_data *gdev_get_data(struct gpio_device *gdev)
 {
 	/*
 	 * Find the first device in GPIO class that matches. Whether that's

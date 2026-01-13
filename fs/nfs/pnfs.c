@@ -846,7 +846,7 @@ pnfs_layout_bulk_destroy_byserver_locked(struct nfs_client *clp,
 		struct nfs_server *server,
 		struct list_head *layout_list)
 	__must_hold(&clp->cl_lock)
-	__must_hold(RCU)
+	__must_hold_shared(RCU)
 {
 	struct pnfs_layout_hdr *lo, *next;
 	struct inode *inode;

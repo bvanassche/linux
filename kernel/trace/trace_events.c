@@ -1580,6 +1580,7 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void *t_start(struct seq_file *m, loff_t *pos)
+	__acquires(event_mutex)
 {
 	struct trace_event_file *file;
 	struct trace_array *tr = m->private;
@@ -1648,6 +1649,7 @@ s_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void *s_start(struct seq_file *m, loff_t *pos)
+	__no_context_analysis /* __cond_acquires() does not support pointers */
 {
 	struct trace_array *tr = m->private;
 	struct set_event_iter *iter;
@@ -1682,6 +1684,7 @@ static int t_show(struct seq_file *m, void *v)
 }
 
 static void t_stop(struct seq_file *m, void *p)
+	__releases(event_mutex)
 {
 	mutex_unlock(&event_mutex);
 }
@@ -1796,6 +1799,7 @@ static int s_show(struct seq_file *m, void *v)
 #endif
 
 static void s_stop(struct seq_file *m, void *v)
+	__releases(event_mutex)
 {
 	kfree(v);
 	t_stop(m, NULL);
@@ -1828,7 +1832,9 @@ np_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void *__start(struct seq_file *m, loff_t *pos, int type)
-	__acquires(RCU)
+	__acquires_shared(RCU)
+	__acquires_shared(RCU_SCHED)
+	__acquires(event_mutex)
 {
 	struct trace_pid_list *pid_list;
 	struct trace_array *tr = m->private;
@@ -1854,19 +1860,25 @@ static void *__start(struct seq_file *m, loff_t *pos, int type)
 }
 
 static void *p_start(struct seq_file *m, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
+	__acquires_shared(RCU_SCHED)
+	__acquires(event_mutex)
 {
 	return __start(m, pos, TRACE_PIDS);
 }
 
 static void *np_start(struct seq_file *m, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
+	__acquires_shared(RCU_SCHED)
+	__acquires(event_mutex)
 {
 	return __start(m, pos, TRACE_NO_PIDS);
 }
 
 static void p_stop(struct seq_file *m, void *p)
-	__releases(RCU)
+	__releases_shared(RCU_SCHED)
+	__releases_shared(RCU)
+	__releases(event_mutex)
 {
 	rcu_read_unlock_sched();
 	mutex_unlock(&event_mutex);
@@ -2137,6 +2149,7 @@ static int f_show(struct seq_file *m, void *v)
 }
 
 static void *f_start(struct seq_file *m, loff_t *pos)
+	__acquires(event_mutex)
 {
 	struct trace_event_file *file;
 	void *p = (void *)FORMAT_HEADER;
@@ -2155,6 +2168,7 @@ static void *f_start(struct seq_file *m, loff_t *pos)
 }
 
 static void f_stop(struct seq_file *m, void *p)
+	__releases(event_mutex)
 {
 	mutex_unlock(&event_mutex);
 }

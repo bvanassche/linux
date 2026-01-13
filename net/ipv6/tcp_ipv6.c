@@ -1369,6 +1369,7 @@ static struct sock *tcp_v6_syn_recv_sock(const struct sock *sk, struct sk_buff *
 					 bool *own_req,
 					 void (*opt_child_init)(struct sock *newsk,
 								const struct sock *sk))
+	__no_context_analysis /* conditional locking */
 {
 	const struct ipv6_pinfo *np = tcp_inet6_sk(sk);
 	struct inet_request_sock *ireq;
@@ -1711,6 +1712,7 @@ static void tcp_v6_fill_cb(struct sk_buff *skb, const struct ipv6hdr *hdr,
 }
 
 INDIRECT_CALLABLE_SCOPE int tcp_v6_rcv(struct sk_buff *skb)
+	__no_context_analysis
 {
 	struct net *net = dev_net_rcu(skb->dev);
 	enum skb_drop_reason drop_reason;

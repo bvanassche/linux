@@ -252,6 +252,7 @@ static struct qed_ll2_info *__qed_ll2_handle_sanity(struct qed_hwfn *p_hwfn,
 						    u8 connection_handle,
 						    bool b_lock,
 						    bool b_only_active)
+	__no_context_analysis /* conditional locking */
 {
 	struct qed_ll2_info *p_ll2_conn, *p_ret = NULL;
 
@@ -448,6 +449,7 @@ qed_ll2_handle_slowpath(struct qed_hwfn *p_hwfn,
 			struct qed_ll2_info *p_ll2_conn,
 			union core_rx_cqe_union *p_cqe,
 			unsigned long *p_lock_flags)
+	__must_hold(&p_ll2_conn->rx_queue.lock)
 {
 	struct qed_ll2_rx_queue *p_rx = &p_ll2_conn->rx_queue;
 	struct core_rx_slow_path_cqe *sp_cqe;
@@ -483,6 +485,7 @@ qed_ll2_rxq_handle_completion(struct qed_hwfn *p_hwfn,
 			      struct qed_ll2_info *p_ll2_conn,
 			      union core_rx_cqe_union *p_cqe,
 			      unsigned long *p_lock_flags, bool b_last_cqe)
+	__must_hold(&p_ll2_conn->rx_queue.lock)
 {
 	struct qed_ll2_rx_queue *p_rx = &p_ll2_conn->rx_queue;
 	struct qed_ll2_rx_packet *p_pkt = NULL;

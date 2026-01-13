@@ -536,6 +536,7 @@ int
 octeon_send_command(struct octeon_device *oct, u32 iq_no,
 		    u32 force_db, void *cmd, void *buf,
 		    u32 datasize, u32 reqtype)
+	__no_context_analysis /* conditional locking */
 {
 	int xmit_stopped;
 	struct iq_post_status st;

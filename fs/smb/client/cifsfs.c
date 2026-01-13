@@ -293,6 +293,7 @@ out_no_root:
 }
 
 static void cifs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct cifs_sb_info *cifs_sb = CIFS_SB(sb);
 

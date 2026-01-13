@@ -393,6 +393,7 @@ printer_close(struct inode *inode, struct file *fd)
 /* This function must be called with interrupts turned off. */
 static void
 setup_rx_reqs(struct printer_dev *dev)
+	__must_hold(&dev->lock)
 {
 	struct usb_request              *req;
 

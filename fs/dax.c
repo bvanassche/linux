@@ -210,6 +210,7 @@ static void dax_wake_entry(struct xa_state *xas, void *entry,
  * Must be called with the i_pages lock held.
  */
 static void *get_next_unlocked_entry(struct xa_state *xas, unsigned int order)
+	__must_hold(&xas->xa->xa_lock)
 {
 	void *entry;
 	struct wait_exceptional_entry_queue ewait;
@@ -244,6 +245,7 @@ static void *get_next_unlocked_entry(struct xa_state *xas, unsigned int order)
  * dax_unlock_entry() if it did. Returns an unlocked entry if still present.
  */
 static void *wait_entry_unlocked_exclusive(struct xa_state *xas, void *entry)
+	__must_hold(&xas->xa->xa_lock)
 {
 	struct wait_exceptional_entry_queue ewait;
 	wait_queue_head_t *wq;
@@ -275,6 +277,7 @@ static void *wait_entry_unlocked_exclusive(struct xa_state *xas, void *entry)
  * After we call xas_unlock_irq(), we cannot touch xas->xa.
  */
 static void wait_entry_unlocked(struct xa_state *xas, void *entry)
+	__releases(&xas->xa->xa_lock)
 {
 	struct wait_exceptional_entry_queue ewait;
 	wait_queue_head_t *wq;
@@ -535,6 +538,7 @@ static struct page *dax_busy_page(void *entry)
  * not be locked.
  */
 dax_entry_t dax_lock_folio(struct folio *folio)
+	__no_context_analysis
 {
 	XA_STATE(xas, NULL, 0);
 	void *entry;
@@ -603,6 +607,7 @@ void dax_unlock_folio(struct folio *folio, dax_entry_t cookie)
  */
 dax_entry_t dax_lock_mapping_entry(struct address_space *mapping, pgoff_t index,
 		struct page **page)
+	__no_context_analysis
 {
 	XA_STATE(xas, NULL, 0);
 	void *entry;
@@ -1136,6 +1141,7 @@ static void *dax_insert_entry(struct xa_state *xas, struct vm_fault *vmf,
 
 static int dax_writeback_one(struct xa_state *xas, struct dax_device *dax_dev,
 		struct address_space *mapping, void *entry)
+	__must_hold(&xas->xa->xa_lock)
 {
 	unsigned long pfn, index, count, end;
 	long ret = 0;

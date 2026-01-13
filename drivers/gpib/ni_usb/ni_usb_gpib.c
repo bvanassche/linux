@@ -2358,6 +2358,7 @@ static int ni_usb_shutdown_hardware(struct ni_usb_priv *ni_priv)
 }
 
 static void ni_usb_detach(struct gpib_board *board)
+	__no_context_analysis /* conditional locking */
 {
 	struct ni_usb_priv *ni_priv;
 

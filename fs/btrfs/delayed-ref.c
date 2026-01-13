@@ -376,6 +376,7 @@ static struct btrfs_delayed_ref_head *find_first_ref_head(
 
 static bool btrfs_delayed_ref_lock(struct btrfs_delayed_ref_root *delayed_refs,
 				   struct btrfs_delayed_ref_head *head)
+	__cond_acquires(true, head->mutex)
 {
 	lockdep_assert_held(&delayed_refs->lock);
 	if (mutex_trylock(&head->mutex))
@@ -503,6 +504,7 @@ int btrfs_check_delayed_seq(struct btrfs_fs_info *fs_info, u64 seq)
 struct btrfs_delayed_ref_head *btrfs_select_ref_head(
 		const struct btrfs_fs_info *fs_info,
 		struct btrfs_delayed_ref_root *delayed_refs)
+	__no_context_analysis /* __cond_acquires() does not support ERR_PTR() */
 {
 	struct btrfs_delayed_ref_head *head;
 	unsigned long start_index;
@@ -550,6 +552,7 @@ again:
 
 void btrfs_unselect_ref_head(struct btrfs_delayed_ref_root *delayed_refs,
 			     struct btrfs_delayed_ref_head *head)
+	__releases(head->mutex)
 {
 	spin_lock(&delayed_refs->lock);
 	head->processing = false;
@@ -1299,6 +1302,7 @@ bool btrfs_find_delayed_tree_ref(struct btrfs_delayed_ref_head *head,
 }
 
 void btrfs_destroy_delayed_refs(struct btrfs_transaction *trans)
+	__no_context_analysis /* too complex for clang */
 {
 	struct btrfs_delayed_ref_root *delayed_refs = &trans->delayed_refs;
 	struct btrfs_fs_info *fs_info = trans->fs_info;

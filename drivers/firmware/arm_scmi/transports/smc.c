@@ -114,6 +114,7 @@ static bool smc_xfer_inflight(struct scmi_xfer *xfer, atomic_t *inflight)
 static inline void
 smc_channel_lock_acquire(struct scmi_smc *scmi_info,
 			 struct scmi_xfer *xfer __maybe_unused)
+	__no_context_analysis /* conditional locking */
 {
 	if (IS_ENABLED(CONFIG_ARM_SCMI_TRANSPORT_SMC_ATOMIC_ENABLE))
 		spin_until_cond(smc_xfer_inflight(xfer, &scmi_info->inflight));
@@ -122,6 +123,7 @@ smc_channel_lock_acquire(struct scmi_smc *scmi_info,
 }
 
 static inline void smc_channel_lock_release(struct scmi_smc *scmi_info)
+	__no_context_analysis /* conditional locking */
 {
 	if (IS_ENABLED(CONFIG_ARM_SCMI_TRANSPORT_SMC_ATOMIC_ENABLE))
 		atomic_set(&scmi_info->inflight, INFLIGHT_NONE);

@@ -34,7 +34,7 @@ static unsigned int z_erofs_gbuf_id(void)
 }
 
 void *z_erofs_get_gbuf(unsigned int requiredpages)
-	__acquires(gbuf->lock)
+	__cond_acquires(nonnull, &z_erofs_gbufpool[z_erofs_gbuf_id()].lock)
 {
 	struct z_erofs_gbuf *gbuf;
 
@@ -45,14 +45,13 @@ void *z_erofs_get_gbuf(unsigned int requiredpages)
 	if (requiredpages > gbuf->nrpages) {
 		spin_unlock(&gbuf->lock);
 		migrate_enable();
-		/* (for sparse checker) pretend gbuf->lock is still taken */
-		__acquire(gbuf->lock);
 		return NULL;
 	}
 	return gbuf->ptr;
 }
 
-void z_erofs_put_gbuf(void *ptr) __releases(gbuf->lock)
+void z_erofs_put_gbuf(void *ptr)
+	__releases(&z_erofs_gbufpool[z_erofs_gbuf_id()].lock)
 {
 	struct z_erofs_gbuf *gbuf;
 

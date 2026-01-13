@@ -29,6 +29,7 @@ static struct irq_domain *i8259_host;
  * IBM and Motorola PReP boxes so we must use the int-ack feature on them.
  */
 unsigned int i8259_irq(void)
+	__no_context_analysis /* conditional locking */
 {
 	int irq;
 	int lock = 0;

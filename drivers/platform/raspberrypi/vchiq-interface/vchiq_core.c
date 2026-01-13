@@ -942,6 +942,7 @@ queue_message(struct vchiq_state *state, struct vchiq_service *service,
 	      ssize_t (*copy_callback)(void *context, void *dest,
 				       size_t offset, size_t maxsize),
 	      void *context, size_t size, int flags)
+	__no_context_analysis /* conditional locking */
 {
 	struct vchiq_shared_state *local;
 	struct vchiq_service_quota *quota = NULL;
@@ -1173,6 +1174,7 @@ queue_message_sync(struct vchiq_state *state, struct vchiq_service *service,
 		   ssize_t (*copy_callback)(void *context, void *dest,
 					    size_t offset, size_t maxsize),
 		   void *context, int size)
+	__no_context_analysis /* conditional locking */
 {
 	struct vchiq_shared_state *local;
 	struct vchiq_header *header;
@@ -1933,6 +1935,7 @@ bail_not_ready:
  */
 static int
 parse_message(struct vchiq_state *state, struct vchiq_header *header)
+	__no_context_analysis /* conditional locking */
 {
 	struct vchiq_service *service = NULL;
 	unsigned int localport, remoteport;
@@ -3155,6 +3158,7 @@ unlock_error_exit:
 /* Called by the slot handler */
 int
 vchiq_close_service_internal(struct vchiq_service *service, int close_recvd)
+	__no_context_analysis /* conditional locking */
 {
 	struct vchiq_state *state = service->state;
 	int status = 0;

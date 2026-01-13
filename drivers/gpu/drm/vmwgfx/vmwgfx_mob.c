@@ -549,6 +549,7 @@ void vmw_mob_destroy(struct vmw_mob *mob)
  */
 void vmw_mob_unbind(struct vmw_private *dev_priv,
 		    struct vmw_mob *mob)
+	__no_context_analysis
 {
 	struct {
 		SVGA3dCmdHeader header;

@@ -2751,6 +2751,7 @@ static u8 *get_fscrypt_altname(const struct ceph_mds_request *req, u32 *plen)
  */
 char *ceph_mdsc_build_path(struct ceph_mds_client *mdsc, struct dentry *dentry,
 			   struct ceph_path_info *path_info, int for_wire)
+	__no_context_analysis /* may return ERR_PTR() */
 {
 	struct ceph_client *cl = mdsc->fsc->client;
 	struct dentry *cur;
@@ -5126,6 +5127,7 @@ fail_nopagelist:
 static void check_new_map(struct ceph_mds_client *mdsc,
 			  struct ceph_mdsmap *newmap,
 			  struct ceph_mdsmap *oldmap)
+	__no_context_analysis
 {
 	int i, j, err;
 	int oldstate, newstate;

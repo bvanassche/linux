@@ -559,6 +559,7 @@ static void kvm_null_fn(void)
 
 static __always_inline kvm_mn_ret_t kvm_handle_hva_range(struct kvm *kvm,
 							 const struct kvm_mmu_notifier_range *range)
+	__no_context_analysis /* conditional locking */
 {
 	struct kvm_mmu_notifier_return r = {
 		.ret = false,
@@ -1356,6 +1357,7 @@ static int kvm_vm_release(struct inode *inode, struct file *filp)
 }
 
 int kvm_trylock_all_vcpus(struct kvm *kvm)
+	__no_context_analysis /* locking loop */
 {
 	struct kvm_vcpu *vcpu;
 	unsigned long i, j;
@@ -1378,6 +1380,7 @@ out_unlock:
 EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_trylock_all_vcpus);
 
 int kvm_lock_all_vcpus(struct kvm *kvm)
+	__no_context_analysis /* locking loop */
 {
 	struct kvm_vcpu *vcpu;
 	unsigned long i, j;
@@ -1403,6 +1406,7 @@ out_unlock:
 EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_lock_all_vcpus);
 
 void kvm_unlock_all_vcpus(struct kvm *kvm)
+	__no_context_analysis /* unlock loop */
 {
 	struct kvm_vcpu *vcpu;
 	unsigned long i;
@@ -1431,6 +1435,8 @@ static int kvm_alloc_dirty_bitmap(struct kvm_memory_slot *memslot)
 
 static struct kvm_memslots *kvm_get_inactive_memslots(struct kvm *kvm, int as_id)
 {
+	__assume_shared_ctx_lock(&kvm->srcu);
+
 	struct kvm_memslots *active = __kvm_memslots(kvm, as_id);
 	int node_idx_inactive = active->node_idx ^ 1;
 
@@ -1598,6 +1604,7 @@ static int check_memory_region_flags(struct kvm *kvm,
 }
 
 static void kvm_swap_active_memslots(struct kvm *kvm, int as_id)
+	__releases(&kvm->slots_arch_lock)
 {
 	struct kvm_memslots *slots = kvm_get_inactive_memslots(kvm, as_id);
 
@@ -1773,6 +1780,7 @@ static void kvm_commit_memory_region(struct kvm *kvm,
 static void kvm_activate_memslot(struct kvm *kvm,
 				 struct kvm_memory_slot *old,
 				 struct kvm_memory_slot *new)
+	__releases(&kvm->slots_arch_lock)
 {
 	int as_id = kvm_memslots_get_as_id(old, new);
 
@@ -1798,6 +1806,7 @@ static void kvm_copy_memslot(struct kvm_memory_slot *dest,
 static void kvm_invalidate_memslot(struct kvm *kvm,
 				   struct kvm_memory_slot *old,
 				   struct kvm_memory_slot *invalid_slot)
+	__must_hold(&kvm->slots_arch_lock)
 {
 	/*
 	 * Mark the current slot INVALID.  As with all memslot modifications,
@@ -1839,6 +1848,7 @@ static void kvm_invalidate_memslot(struct kvm *kvm,
 
 static void kvm_create_memslot(struct kvm *kvm,
 			       struct kvm_memory_slot *new)
+	__releases(&kvm->slots_arch_lock)
 {
 	/* Add the new memslot to the inactive set and activate. */
 	kvm_replace_memslot(kvm, NULL, new);
@@ -1848,6 +1858,7 @@ static void kvm_create_memslot(struct kvm *kvm,
 static void kvm_delete_memslot(struct kvm *kvm,
 			       struct kvm_memory_slot *old,
 			       struct kvm_memory_slot *invalid_slot)
+	__releases(&kvm->slots_arch_lock)
 {
 	/*
 	 * Remove the old memslot (in the inactive memslots) by passing NULL as
@@ -1861,6 +1872,7 @@ static void kvm_move_memslot(struct kvm *kvm,
 			     struct kvm_memory_slot *old,
 			     struct kvm_memory_slot *new,
 			     struct kvm_memory_slot *invalid_slot)
+	__releases(&kvm->slots_arch_lock)
 {
 	/*
 	 * Replace the old memslot in the inactive slots, and then swap slots
@@ -1873,6 +1885,7 @@ static void kvm_move_memslot(struct kvm *kvm,
 static void kvm_update_flags_memslot(struct kvm *kvm,
 				     struct kvm_memory_slot *old,
 				     struct kvm_memory_slot *new)
+	__releases(&kvm->slots_arch_lock)
 {
 	/*
 	 * Similar to the MOVE case, but the slot doesn't need to be zapped as
@@ -1887,6 +1900,7 @@ static int kvm_set_memslot(struct kvm *kvm,
 			   struct kvm_memory_slot *old,
 			   struct kvm_memory_slot *new,
 			   enum kvm_mr_change change)
+	__cond_acquires(0, &kvm->slots_arch_lock)
 {
 	struct kvm_memory_slot *invalid_slot;
 	int r;
@@ -1993,6 +2007,8 @@ static bool kvm_check_memslot_overlap(struct kvm_memslots *slots, int id,
 
 static int kvm_set_memory_region(struct kvm *kvm,
 				 const struct kvm_userspace_memory_region2 *mem)
+	__must_hold(&kvm->slots_lock)
+	__cond_acquires(0, &kvm->slots_arch_lock)
 {
 	struct kvm_memory_slot *old, *new;
 	struct kvm_memslots *slots;
@@ -2126,6 +2142,7 @@ out:
 
 int kvm_set_internal_memslot(struct kvm *kvm,
 			     const struct kvm_userspace_memory_region2 *mem)
+	__must_hold(&kvm->slots_lock)
 {
 	if (WARN_ON_ONCE(mem->slot < KVM_USER_MEM_SLOTS))
 		return -EINVAL;
@@ -2464,6 +2481,7 @@ bool kvm_range_has_memory_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
 
 static __always_inline void kvm_handle_gfn_range(struct kvm *kvm,
 						 struct kvm_mmu_notifier_range *range)
+	__no_context_analysis /* conditional locking */
 {
 	struct kvm_gfn_range gfn_range;
 	struct kvm_memory_slot *slot;

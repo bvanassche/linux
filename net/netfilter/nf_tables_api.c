@@ -1290,6 +1290,7 @@ done:
 static int nft_netlink_dump_start_rcu(struct sock *nlsk, struct sk_buff *skb,
 				      const struct nlmsghdr *nlh,
 				      struct netlink_dump_control *c)
+	__must_hold_shared(RCU)
 {
 	int err;
 
@@ -1307,6 +1308,7 @@ static int nft_netlink_dump_start_rcu(struct sock *nlsk, struct sk_buff *skb,
 /* called with rcu_read_lock held */
 static int nf_tables_gettable(struct sk_buff *skb, const struct nfnl_info *info,
 			      const struct nlattr * const nla[])
+	__must_hold_shared(RCU)
 {
 	struct netlink_ext_ack *extack = info->extack;
 	u8 genmask = nft_genmask_cur(info->net);
@@ -2236,6 +2238,7 @@ done:
 /* called with rcu_read_lock held */
 static int nf_tables_getchain(struct sk_buff *skb, const struct nfnl_info *info,
 			      const struct nlattr * const nla[])
+	__must_hold_shared(RCU)
 {
 	struct netlink_ext_ack *extack = info->extack;
 	u8 genmask = nft_genmask_cur(info->net);
@@ -4065,6 +4068,7 @@ nf_tables_getrule_single(u32 portid, const struct nfnl_info *info,
 
 static int nf_tables_getrule(struct sk_buff *skb, const struct nfnl_info *info,
 			     const struct nlattr * const nla[])
+	__must_hold_shared(RCU)
 {
 	u32 portid = NETLINK_CB(skb).portid;
 	struct net *net = info->net;
@@ -5193,6 +5197,7 @@ static int nf_tables_dump_sets_done(struct netlink_callback *cb)
 /* called with rcu_read_lock held */
 static int nf_tables_getset(struct sk_buff *skb, const struct nfnl_info *info,
 			    const struct nlattr * const nla[])
+	__must_hold_shared(RCU)
 {
 	struct netlink_ext_ack *extack = info->extack;
 	u8 genmask = nft_genmask_cur(info->net);
@@ -6614,6 +6619,7 @@ static int nft_set_dump_ctx_init(struct nft_set_dump_ctx *dump_ctx,
 static int nf_tables_getsetelem(struct sk_buff *skb,
 				const struct nfnl_info *info,
 				const struct nlattr * const nla[])
+	__must_hold_shared(RCU)
 {
 	struct netlink_ext_ack *extack = info->extack;
 	struct nft_set_dump_ctx dump_ctx;
@@ -8599,6 +8605,7 @@ nf_tables_getobj_single(u32 portid, const struct nfnl_info *info,
 
 static int nf_tables_getobj(struct sk_buff *skb, const struct nfnl_info *info,
 			    const struct nlattr * const nla[])
+	__must_hold_shared(RCU)
 {
 	u32 portid = NETLINK_CB(skb).portid;
 	struct net *net = info->net;
@@ -9594,6 +9601,7 @@ static int nf_tables_dump_flowtable_done(struct netlink_callback *cb)
 static int nf_tables_getflowtable(struct sk_buff *skb,
 				  const struct nfnl_info *info,
 				  const struct nlattr * const nla[])
+	__must_hold_shared(RCU)
 {
 	struct netlink_ext_ack *extack = info->extack;
 	u8 genmask = nft_genmask_cur(info->net);
@@ -10681,6 +10689,7 @@ static void nf_tables_module_autoload_cleanup(struct net *net)
 }
 
 static void nf_tables_commit_release(struct net *net)
+	__no_context_analysis
 {
 	struct nftables_pernet *nft_net = nft_pernet(net);
 	struct nft_trans *trans;
@@ -10857,6 +10866,7 @@ static void nft_gc_seq_end(struct nftables_pernet *nft_net, unsigned int gc_seq)
 }
 
 static int nf_tables_commit(struct net *net, struct sk_buff *skb)
+	__no_context_analysis
 {
 	struct nftables_pernet *nft_net = nft_pernet(net);
 	const struct nlmsghdr *nlh = nlmsg_hdr(skb);
@@ -11172,6 +11182,7 @@ static int nf_tables_commit(struct net *net, struct sk_buff *skb)
 }
 
 static void nf_tables_module_autoload(struct net *net)
+	__no_context_analysis
 {
 	struct nftables_pernet *nft_net = nft_pernet(net);
 	struct nft_module_request *req, *next;
@@ -11451,6 +11462,7 @@ static int __nf_tables_abort(struct net *net, enum nfnl_abort_action action)
 
 static int nf_tables_abort(struct net *net, struct sk_buff *skb,
 			   enum nfnl_abort_action action)
+	__no_context_analysis
 {
 	struct nftables_pernet *nft_net = nft_pernet(net);
 	unsigned int gc_seq;
@@ -11483,6 +11495,7 @@ static int nf_tables_abort(struct net *net, struct sk_buff *skb,
 }
 
 static bool nf_tables_valid_genid(struct net *net, u32 genid)
+	__no_context_analysis
 {
 	struct nftables_pernet *nft_net = nft_pernet(net);
 	bool genid_ok;

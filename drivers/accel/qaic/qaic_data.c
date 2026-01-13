@@ -1341,6 +1341,7 @@ static void update_profiling_data(struct drm_file *file_priv,
 
 static int __qaic_execute_bo_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv,
 				   bool is_partial)
+	__no_context_analysis /* conditional locking */
 {
 	struct qaic_execute *args = data;
 	struct qaic_execute_entry *exec;

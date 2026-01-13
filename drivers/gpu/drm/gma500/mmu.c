@@ -306,6 +306,7 @@ static struct psb_mmu_pt *psb_mmu_alloc_pt(struct psb_mmu_pd *pd)
 
 static struct psb_mmu_pt *psb_mmu_pt_alloc_map_lock(struct psb_mmu_pd *pd,
 						    unsigned long addr)
+	__no_context_analysis /*__cond_acquires(nonnull, &pd->driver->lock)*/
 {
 	uint32_t index = psb_mmu_pd_index(addr);
 	struct psb_mmu_pt *pt;
@@ -346,6 +347,7 @@ static struct psb_mmu_pt *psb_mmu_pt_alloc_map_lock(struct psb_mmu_pd *pd,
 
 static struct psb_mmu_pt *psb_mmu_pt_map_lock(struct psb_mmu_pd *pd,
 					      unsigned long addr)
+	__no_context_analysis/*__cond_acquires(nonnull, &pd->driver->lock)*/
 {
 	uint32_t index = psb_mmu_pd_index(addr);
 	struct psb_mmu_pt *pt;
@@ -362,6 +364,7 @@ static struct psb_mmu_pt *psb_mmu_pt_map_lock(struct psb_mmu_pd *pd,
 }
 
 static void psb_mmu_pt_unmap_unlock(struct psb_mmu_pt *pt)
+	__no_context_analysis/*__releases(&pt->pd->driver->lock)*/
 {
 	struct psb_mmu_pd *pd = pt->pd;
 	uint32_t *v;

@@ -142,6 +142,7 @@ EXPORT_SYMBOL(drm_pagemap_cache_create_devm);
  * Return: %-EINTR if interrupted while blocking. %0 otherwise.
  */
 int drm_pagemap_cache_lock_lookup(struct drm_pagemap_cache *cache)
+	__cond_acquires(0, &cache->lookup_mutex)
 {
 	return mutex_lock_interruptible(&cache->lookup_mutex);
 }
@@ -152,6 +153,7 @@ EXPORT_SYMBOL(drm_pagemap_cache_lock_lookup);
  * @cache: The drm_pagemap_cache to unlock.
  */
 void drm_pagemap_cache_unlock_lookup(struct drm_pagemap_cache *cache)
+	__releases(&cache->lookup_mutex)
 {
 	mutex_unlock(&cache->lookup_mutex);
 }

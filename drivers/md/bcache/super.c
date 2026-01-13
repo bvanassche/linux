@@ -608,6 +608,7 @@ static void prio_io(struct cache *ca, uint64_t bucket, blk_opf_t opf)
 }
 
 int bch_prio_write(struct cache *ca, bool wait)
+	__must_hold(ca->set->bucket_lock)
 {
 	int i;
 	struct bucket *b;
@@ -1984,6 +1985,7 @@ err:
 }
 
 static int run_cache_set(struct cache_set *c)
+	__no_context_analysis
 {
 	const char *err = "cannot allocate memory";
 	struct cached_dev *dc, *t;

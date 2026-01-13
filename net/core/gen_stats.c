@@ -22,6 +22,7 @@
 
 static inline int
 gnet_stats_copy(struct gnet_dump *d, int type, void *buf, int size, int padattr)
+	__no_context_analysis /* conditional locking */
 {
 	if (nla_put_64bit(d->skb, type, size, buf, padattr))
 		goto nla_put_failure;
@@ -59,7 +60,7 @@ int
 gnet_stats_start_copy_compat(struct sk_buff *skb, int type, int tc_stats_type,
 			     int xstats_type, spinlock_t *lock,
 			     struct gnet_dump *d, int padattr)
-	__acquires(lock)
+	__no_context_analysis /* conditional locking */
 {
 	memset(d, 0, sizeof(*d));
 
@@ -424,6 +425,7 @@ EXPORT_SYMBOL(gnet_stats_copy_queue);
  */
 int
 gnet_stats_copy_app(struct gnet_dump *d, void *st, int len)
+	__no_context_analysis /* conditional locking */
 {
 	if (d->compat_xstats) {
 		d->xstats = kmemdup(st, len, GFP_ATOMIC);
@@ -460,6 +462,7 @@ EXPORT_SYMBOL(gnet_stats_copy_app);
  */
 int
 gnet_stats_finish_copy(struct gnet_dump *d)
+	__no_context_analysis /* conditional locking */
 {
 	if (d->tail)
 		d->tail->nla_len = skb_tail_pointer(d->skb) - (u8 *)d->tail;

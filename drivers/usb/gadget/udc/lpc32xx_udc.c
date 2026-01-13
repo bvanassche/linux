@@ -1395,6 +1395,7 @@ static void udc_reinit(struct lpc32xx_udc *udc)
 
 /* Must be called with lock */
 static void done(struct lpc32xx_ep *ep, struct lpc32xx_request *req, int status)
+	__no_context_analysis
 {
 	struct lpc32xx_udc *udc = ep->udc;
 
@@ -1517,6 +1518,7 @@ static int udc_ep0_out_req(struct lpc32xx_udc *udc)
 
 /* Must be called with lock */
 static void stop_activity(struct lpc32xx_udc *udc)
+	__no_context_analysis
 {
 	struct usb_gadget_driver *driver = udc->driver;
 	int i;
@@ -2175,6 +2177,7 @@ static int udc_get_status(struct lpc32xx_udc *udc, u16 reqtype, u16 wIndex)
 }
 
 static void udc_handle_ep0_setup(struct lpc32xx_udc *udc)
+	__no_context_analysis
 {
 	struct lpc32xx_ep *ep, *ep0 = &udc->ep[0];
 	struct usb_ctrlrequest ctrlpkt;

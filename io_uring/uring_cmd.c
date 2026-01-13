@@ -149,6 +149,7 @@ static inline void io_req_set_cqe32_extra(struct io_kiocb *req,
  */
 void __io_uring_cmd_done(struct io_uring_cmd *ioucmd, s32 ret, u64 res2,
 		       unsigned issue_flags, bool is_cqe32)
+	__no_context_analysis
 {
 	struct io_kiocb *req = cmd_to_io_kiocb(ioucmd);
 

@@ -372,6 +372,7 @@ static int ntfs_non_resident_dealloc_clusters(struct ntfs_inode *ni)
 }
 
 int ntfs_drop_big_inode(struct inode *inode)
+	__context_unsafe(conditional locking)
 {
 	struct ntfs_inode *ni = NTFS_I(inode);
 

@@ -659,6 +659,7 @@ static const struct iomap_ops fuse_iomap_ops = {
 };
 
 static void fuse_wait_dax_page(struct inode *inode)
+	__must_hold(&inode->i_mapping->invalidate_lock)
 {
 	filemap_invalidate_unlock(inode->i_mapping);
 	schedule();
@@ -752,6 +753,7 @@ out:
 
 static vm_fault_t __fuse_dax_fault(struct vm_fault *vmf, unsigned int order,
 		bool write)
+	__no_context_analysis /* conditional locking */
 {
 	vm_fault_t ret;
 	struct inode *inode = file_inode(vmf->vma->vm_file);

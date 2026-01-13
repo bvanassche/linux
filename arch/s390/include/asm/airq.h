@@ -72,12 +72,14 @@ static inline unsigned long airq_iv_end(struct airq_iv *iv)
 }
 
 static inline void airq_iv_lock(struct airq_iv *iv, unsigned long bit)
+	__context_unsafe(alias analysis does not support be_to_le)
 {
 	const unsigned long be_to_le = BITS_PER_LONG - 1;
 	bit_spin_lock(bit ^ be_to_le, iv->bitlock);
 }
 
 static inline void airq_iv_unlock(struct airq_iv *iv, unsigned long bit)
+	__context_unsafe(alias analysis does not support be_to_le)
 {
 	const unsigned long be_to_le = BITS_PER_LONG - 1;
 	bit_spin_unlock(bit ^ be_to_le, iv->bitlock);

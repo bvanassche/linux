@@ -82,6 +82,7 @@ static void cdns3_ep0_run_transfer(struct cdns3_device *priv_dev,
  */
 static int cdns3_ep0_delegate_req(struct cdns3_device *priv_dev,
 				  struct usb_ctrlrequest *ctrl_req)
+	__no_context_analysis
 {
 	int ret;
 

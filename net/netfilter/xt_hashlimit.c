@@ -197,6 +197,7 @@ hash_dst(const struct xt_hashlimit_htable *ht, const struct dsthash_dst *dst)
 static struct dsthash_ent *
 dsthash_find(const struct xt_hashlimit_htable *ht,
 	     const struct dsthash_dst *dst)
+	__no_context_analysis
 {
 	struct dsthash_ent *ent;
 	u_int32_t hash = hash_dst(ht, dst);
@@ -215,6 +216,7 @@ dsthash_find(const struct xt_hashlimit_htable *ht,
 static struct dsthash_ent *
 dsthash_alloc_init(struct xt_hashlimit_htable *ht,
 		   const struct dsthash_dst *dst, bool *race)
+	__no_context_analysis
 {
 	struct dsthash_ent *ent;
 
@@ -729,6 +731,7 @@ static bool
 hashlimit_mt_common(const struct sk_buff *skb, struct xt_action_param *par,
 		    struct xt_hashlimit_htable *hinfo,
 		    const struct hashlimit_cfg3 *cfg, int revision)
+	__no_context_analysis
 {
 	unsigned long now = jiffies;
 	struct dsthash_ent *dh;
@@ -1054,7 +1057,7 @@ static struct xt_match hashlimit_mt_reg[] __read_mostly = {
 
 /* PROC stuff */
 static void *dl_seq_start(struct seq_file *s, loff_t *pos)
-	__acquires(htable->lock)
+	__acquires(&((struct xt_hashlimit_htable *)pde_data(file_inode(s->file)))->lock)
 {
 	struct xt_hashlimit_htable *htable = pde_data(file_inode(s->file));
 	unsigned int *bucket;
@@ -1085,7 +1088,7 @@ static void *dl_seq_next(struct seq_file *s, void *v, loff_t *pos)
 }
 
 static void dl_seq_stop(struct seq_file *s, void *v)
-	__releases(htable->lock)
+	__releases(&((struct xt_hashlimit_htable *)pde_data(file_inode(s->file)))->lock)
 {
 	struct xt_hashlimit_htable *htable = pde_data(file_inode(s->file));
 	unsigned int *bucket = v;

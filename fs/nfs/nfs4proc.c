@@ -1703,8 +1703,7 @@ static void nfs_set_open_stateid_locked(struct nfs4_state *state,
 		const nfs4_stateid *stateid, nfs4_stateid *freeme)
 	__must_hold(&state->owner->so_lock)
 	__must_hold(&state->seqlock)
-	__must_hold(RCU)
-
+	__must_hold_shared(RCU)
 {
 	DEFINE_WAIT(wait);
 	int status = 0;
@@ -1771,6 +1770,8 @@ static void nfs_state_set_open_stateid(struct nfs4_state *state,
 		const nfs4_stateid *open_stateid,
 		fmode_t fmode,
 		nfs4_stateid *freeme)
+	__must_hold(&state->owner->so_lock)
+	__must_hold_shared(RCU)
 {
 	/*
 	 * Protect the call to nfs4_state_set_mode_locked and
@@ -3489,6 +3490,8 @@ static bool nfs4_refresh_open_old_stateid(nfs4_stateid *dst,
 			if (read_seqretry(&state->seqlock, seq))
 				continue;
 			break;
+		} else {
+			__release_shared(&state->seqlock);
 		}
 
 		write_seqlock(&state->seqlock);

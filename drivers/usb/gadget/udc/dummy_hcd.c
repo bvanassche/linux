@@ -331,6 +331,7 @@ static inline struct dummy *gadget_dev_to_dummy(struct device *dev)
 
 /* called with spinlock held */
 static void nuke(struct dummy *dum, struct dummy_ep *ep)
+	__must_hold(&dum->lock)
 {
 	while (!list_empty(&ep->queue)) {
 		struct dummy_request	*req;
@@ -347,6 +348,7 @@ static void nuke(struct dummy *dum, struct dummy_ep *ep)
 
 /* caller must hold lock */
 static void stop_activity(struct dummy *dum)
+	__must_hold(&dum->lock)
 {
 	int i;
 
@@ -431,7 +433,7 @@ static void set_link_state_by_speed(struct dummy_hcd *dum_hcd)
 
 /* caller must hold lock */
 static void set_link_state(struct dummy_hcd *dum_hcd)
-	__must_hold(&dum->lock)
+	__must_hold(&dum_hcd->dum->lock)
 {
 	struct dummy *dum = dum_hcd->dum;
 	unsigned int power_bit;
@@ -911,6 +913,7 @@ static int dummy_pullup(struct usb_gadget *_gadget, int value)
 	dum_hcd = gadget_to_dummy_hcd(_gadget);
 
 	spin_lock_irqsave(&dum->lock, flags);
+	__assume_ctx_lock(&dum_hcd->dum->lock);
 	dum->pullup = (value != 0);
 	set_link_state(dum_hcd);
 	spin_unlock_irqrestore(&dum->lock, flags);
@@ -1128,6 +1131,7 @@ static void dummy_udc_pm(struct dummy *dum, struct dummy_hcd *dum_hcd,
 		int suspend)
 {
 	spin_lock_irq(&dum->lock);
+	__assume_ctx_lock(&dum_hcd->dum->lock);
 	dum->udc_suspended = suspend;
 	set_link_state(dum_hcd);
 	spin_unlock_irq(&dum->lock);
@@ -1410,6 +1414,7 @@ static int dummy_perform_transfer(struct urb *urb, struct dummy_request *req,
 /* transfer up to a frame's worth; caller must own lock */
 static int transfer(struct dummy_hcd *dum_hcd, struct urb *urb,
 		struct dummy_ep *ep, int limit, int *status)
+	__must_hold(&dum_hcd->dum->lock)
 {
 	struct dummy		*dum = dum_hcd->dum;
 	struct dummy_request	*req;

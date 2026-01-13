@@ -706,6 +706,7 @@ static inline bool reshape_interrupted(struct mddev *mddev)
 }
 
 static inline int __must_check mddev_lock(struct mddev *mddev)
+	__cond_acquires(0, mddev->reconfig_mutex)
 {
 	int ret;
 
@@ -729,13 +730,15 @@ static inline int __must_check mddev_lock(struct mddev *mddev)
  * call this function after do_md_stop.
  */
 static inline void mddev_lock_nointr(struct mddev *mddev)
+	__acquires(mddev->reconfig_mutex)
 {
 	mutex_lock(&mddev->reconfig_mutex);
 }
 
 static inline int mddev_trylock(struct mddev *mddev)
+	__cond_acquires(true, mddev->reconfig_mutex)
 {
-	int ret;
+	bool ret;
 
 	ret = mutex_trylock(&mddev->reconfig_mutex);
 	if (ret && test_bit(MD_DELETED, &mddev->flags)) {
@@ -744,7 +747,8 @@ static inline int mddev_trylock(struct mddev *mddev)
 	}
 	return ret;
 }
-extern void mddev_unlock(struct mddev *mddev);
+
+void mddev_unlock(struct mddev *mddev) __releases(mddev->reconfig_mutex);
 
 struct md_personality
 {
@@ -1000,6 +1004,7 @@ static inline void mddev_check_write_zeroes(struct mddev *mddev, struct bio *bio
 }
 
 static inline int mddev_suspend_and_lock(struct mddev *mddev)
+	__cond_acquires(0, mddev->reconfig_mutex)
 {
 	int ret;
 
@@ -1015,12 +1020,14 @@ static inline int mddev_suspend_and_lock(struct mddev *mddev)
 }
 
 static inline void mddev_suspend_and_lock_nointr(struct mddev *mddev)
+	__acquires(mddev->reconfig_mutex)
 {
 	mddev_suspend(mddev, false);
 	mddev_lock_nointr(mddev);
 }
 
 static inline void mddev_unlock_and_resume(struct mddev *mddev)
+	__releases(mddev->reconfig_mutex)
 {
 	mddev_unlock(mddev);
 	mddev_resume(mddev);

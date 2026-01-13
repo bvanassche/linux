@@ -392,6 +392,7 @@ btrfs_find_delayed_ref_head(const struct btrfs_fs_info *fs_info,
 			    struct btrfs_delayed_ref_root *delayed_refs,
 			    u64 bytenr);
 static inline void btrfs_delayed_ref_unlock(struct btrfs_delayed_ref_head *head)
+	__releases(head->mutex)
 {
 	mutex_unlock(&head->mutex);
 }

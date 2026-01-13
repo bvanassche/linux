@@ -80,7 +80,7 @@ static void wil_reorder_release(struct net_device *ndev,
 
 /* called in NAPI context */
 void wil_rx_reorder(struct wil6210_priv *wil, struct sk_buff *skb)
-__acquires(&sta->tid_rx_lock) __releases(&sta->tid_rx_lock)
+	__no_context_analysis
 {
 	struct wil6210_vif *vif;
 	struct net_device *ndev;
@@ -298,7 +298,6 @@ static u16 wil_agg_size(struct wil6210_priv *wil, u16 req_agg_wsize)
 int wil_addba_rx_request(struct wil6210_priv *wil, u8 mid, u8 cid, u8 tid,
 			 u8 dialog_token, __le16 ba_param_set,
 			 __le16 ba_timeout, __le16 ba_seq_ctrl)
-__acquires(&sta->tid_rx_lock) __releases(&sta->tid_rx_lock)
 {
 	u16 param_set = le16_to_cpu(ba_param_set);
 	u16 agg_timeout = le16_to_cpu(ba_timeout);

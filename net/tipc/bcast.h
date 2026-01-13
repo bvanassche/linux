@@ -110,11 +110,13 @@ void tipc_mcast_filter_msg(struct net *net, struct sk_buff_head *defq,
 			   struct sk_buff_head *inputq);
 
 static inline void tipc_bcast_lock(struct net *net)
+	__acquires(&tipc_net(net)->bclock)
 {
 	spin_lock_bh(&tipc_net(net)->bclock);
 }
 
 static inline void tipc_bcast_unlock(struct net *net)
+	__releases(&tipc_net(net)->bclock)
 {
 	spin_unlock_bh(&tipc_net(net)->bclock);
 }

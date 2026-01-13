@@ -40,6 +40,7 @@ static void dlm_flush_asts(struct dlm_ctxt *dlm);
 /* will exit holding res->spinlock, but may drop in function */
 /* waits until flags are cleared on res->state */
 void __dlm_wait_on_lockres_flags(struct dlm_lock_resource *res, int flags)
+	__must_hold(&res->spinlock)
 {
 	DECLARE_WAITQUEUE(wait, current);
 
@@ -189,6 +190,8 @@ void __dlm_do_purge_lockres(struct dlm_ctxt *dlm,
 
 static void dlm_purge_lockres(struct dlm_ctxt *dlm,
 			     struct dlm_lock_resource *res)
+	__must_hold(&dlm->spinlock)
+	__releases(&res->spinlock)
 {
 	int master;
 	int ret = 0;

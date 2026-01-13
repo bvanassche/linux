@@ -450,6 +450,7 @@ static void coredump_task_exit(struct task_struct *tsk,
 #ifdef CONFIG_MEMCG
 /* drops tasklist_lock if succeeds */
 static bool __try_to_set_owner(struct task_struct *tsk, struct mm_struct *mm)
+	__no_context_analysis
 {
 	bool ret = false;
 
@@ -485,6 +486,7 @@ static bool try_to_set_owner(struct task_struct *g, struct mm_struct *mm)
  * A task is exiting.   If it owned this mm, find a new owner for the mm.
  */
 void mm_update_next_owner(struct mm_struct *mm)
+	__no_context_analysis
 {
 	struct task_struct *g, *p = current;
 
@@ -698,6 +700,7 @@ static void reparent_leader(struct task_struct *father, struct task_struct *p,
  */
 static void forget_original_parent(struct task_struct *father,
 					struct list_head *dead)
+	__no_context_analysis
 {
 	struct task_struct *p, *t, *reaper;
 
@@ -1172,6 +1175,7 @@ eligible_child(struct wait_opts *wo, bool ptrace, struct task_struct *p)
  * released the lock and the system call should return.
  */
 static int wait_task_zombie(struct wait_opts *wo, struct task_struct *p)
+	__no_context_analysis
 {
 	int state, status;
 	pid_t pid = task_pid_vnr(p);
@@ -1329,6 +1333,7 @@ static int *task_stopped_code(struct task_struct *p, bool ptrace)
  */
 static int wait_task_stopped(struct wait_opts *wo,
 				int ptrace, struct task_struct *p)
+	__no_context_analysis
 {
 	struct waitid_info *infop;
 	int exit_code, *p_code, why;
@@ -1400,6 +1405,7 @@ unlock_sig:
  * released the lock and the system call should return.
  */
 static int wait_task_continued(struct wait_opts *wo, struct task_struct *p)
+	__no_context_analysis
 {
 	struct waitid_info *infop;
 	pid_t pid;
@@ -1662,6 +1668,7 @@ static int do_wait_pid(struct wait_opts *wo)
 }
 
 long __do_wait(struct wait_opts *wo)
+	__no_context_analysis
 {
 	long retval;
 

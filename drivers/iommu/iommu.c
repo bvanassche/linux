@@ -467,6 +467,7 @@ EXPORT_SYMBOL_GPL(dev_iommu_priv_set);
  * driver probed
  */
 static int iommu_init_device(struct device *dev)
+	__must_hold(&iommu_probe_device_lock)
 {
 	const struct iommu_ops *ops;
 	struct iommu_device *iommu_dev;
@@ -626,6 +627,7 @@ static struct iommu_domain *pasid_array_entry_to_domain(void *entry)
 DEFINE_MUTEX(iommu_probe_device_lock);
 
 static int __iommu_probe_device(struct device *dev, struct list_head *group_list)
+	__must_hold(&iommu_probe_device_lock)
 {
 	struct iommu_group *group;
 	struct group_device *gdev;

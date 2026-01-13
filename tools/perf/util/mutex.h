@@ -65,7 +65,7 @@
 #define SHARED_LOCKS_REQUIRED(...) __attribute__((shared_locks_required(__VA_ARGS__)))
 
 /* Turns off thread safety checking within the body of a particular function. */
-#define NO_THREAD_SAFETY_ANALYSIS __attribute__((no_thread_safety_analysis))
+#define __no_context_analysis __attribute__((no_thread_safety_analysis))
 
 #else
 
@@ -80,7 +80,7 @@
 #define EXCLUSIVE_TRYLOCK_FUNCTION(...)
 #define EXCLUSIVE_LOCKS_REQUIRED(...)
 #define SHARED_LOCKS_REQUIRED(...)
-#define NO_THREAD_SAFETY_ANALYSIS
+#define __no_context_analysis
 
 #endif
 

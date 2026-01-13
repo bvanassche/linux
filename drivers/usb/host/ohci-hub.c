@@ -150,8 +150,7 @@ static inline struct ed *find_head (struct ed *ed)
 
 /* caller has locked the root hub */
 static int ohci_rh_resume (struct ohci_hcd *ohci)
-__releases(ohci->lock)
-__acquires(ohci->lock)
+	__no_context_analysis /* conditional locking */
 {
 	struct usb_hcd		*hcd = ohci_to_hcd (ohci);
 	u32			temp, enables;
@@ -346,6 +345,7 @@ static int ohci_bus_resume (struct usb_hcd *hcd)
 /* Carry out polling-, autostop-, and autoresume-related state changes */
 static int ohci_root_hub_state_changes(struct ohci_hcd *ohci, int changed,
 		int any_connected, int rhsc_status)
+	__no_context_analysis
 {
 	int	poll_rh = 1;
 	int	rhsc_enable;

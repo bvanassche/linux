@@ -578,6 +578,7 @@ out:
  */
 int ntfs_look_free_mft(struct ntfs_sb_info *sbi, CLST *rno, bool mft,
 		       struct ntfs_inode *ni, struct mft_inode **mi)
+	__no_context_analysis /* conditional locking */
 {
 	int err = 0;
 	size_t zbit, zlen, from, to, fr;
@@ -758,6 +759,7 @@ out:
  * is_mft - true if we are changing MFT
  */
 void ntfs_mark_rec_free(struct ntfs_sb_info *sbi, CLST rno, bool is_mft)
+	__no_context_analysis /* conditional locking */
 {
 	struct wnd_bitmap *wnd = &sbi->mft.bitmap;
 

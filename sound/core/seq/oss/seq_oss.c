@@ -165,6 +165,7 @@ odev_write(struct file *file, const char __user *buf, size_t count, loff_t *offs
 
 static long
 odev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+	__no_context_analysis /* conditional locking */
 {
 	struct seq_oss_devinfo *dp;
 	long rc;

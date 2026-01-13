@@ -493,6 +493,8 @@ static int hmm_vma_walk_pud(pud_t *pudp, unsigned long start, unsigned long end,
 	if (!ptl)
 		return 0;
 
+	__acquire(ptl);
+
 	/* Normally we don't want to split the huge page */
 	walk->action = ACTION_CONTINUE;
 

@@ -207,6 +207,7 @@ struct dlm_lock_resource * __dlm_lookup_lockres(struct dlm_ctxt *dlm,
 						const char *name,
 						unsigned int len,
 						unsigned int hash)
+	__must_hold(&dlm->spinlock)
 {
 	struct dlm_lock_resource *res = NULL;
 
@@ -305,6 +306,7 @@ static void dlm_free_ctxt_mem(struct dlm_ctxt *dlm)
  * dlm_domain_lock and is expected to be holding it on the way out. We
  * will however drop and reacquire it multiple times */
 static void dlm_ctxt_release(struct kref *kref)
+	__must_hold(&dlm_domain_lock)
 {
 	struct dlm_ctxt *dlm;
 

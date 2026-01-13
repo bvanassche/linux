@@ -1883,6 +1883,7 @@ free_ctx:
 void
 svm_range_list_lock_and_flush_work(struct svm_range_list *svms,
 				   struct mm_struct *mm)
+	__no_context_analysis /* conditionally acquires the mm semaphore */
 {
 retry_flush_work:
 	flush_work(&svms->deferred_list_work);
@@ -1896,6 +1897,7 @@ retry_flush_work:
 }
 
 static void svm_range_restore_work(struct work_struct *work)
+	__no_context_analysis /* conditionally releases the mm semaphore */
 {
 	struct delayed_work *dwork = to_delayed_work(work);
 	struct amdkfd_process_info *process_info;
@@ -3047,6 +3049,7 @@ int
 svm_range_restore_pages(struct amdgpu_device *adev, unsigned int pasid,
 			uint32_t vmid, uint32_t node_id,
 			uint64_t addr, uint64_t ts, bool write_fault)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long start, last, size;
 	struct mm_struct *mm = NULL;
@@ -3710,6 +3713,7 @@ static int
 svm_range_set_attr(struct kfd_process *p, struct mm_struct *mm,
 		   uint64_t start, uint64_t size, uint32_t nattr,
 		   struct kfd_ioctl_svm_attribute *attrs)
+	__no_context_analysis /* conditional locking */
 {
 	struct amdkfd_process_info *process_info = p->kgd_process_info;
 	struct list_head update_list;

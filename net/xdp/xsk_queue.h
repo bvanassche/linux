@@ -106,7 +106,7 @@ struct parsed_desc {
  *
  * RESERVE entries                    PEEK in the ring for entries
  * WRITE data into the ring           READ data from the ring
- * SUBMIT entries                     RELEASE entries
+ * SUBMIT entries                     __releases entries
  *
  * The producer reserves one or more entries in the ring. It can then
  * fill in these entries and finally submit them so that they can be

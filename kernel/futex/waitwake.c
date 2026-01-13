@@ -400,6 +400,7 @@ int futex_unqueue_multiple(struct futex_vector *v, int count)
  *  - <0 - -EFAULT, -EWOULDBLOCK or -EINVAL
  */
 int futex_wait_multiple_setup(struct futex_vector *vs, int count, int *woken)
+	__no_context_analysis /* conditional locking */
 {
 	bool retry = false;
 	int ret, i;

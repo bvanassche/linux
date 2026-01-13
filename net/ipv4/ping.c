@@ -1062,6 +1062,7 @@ void *ping_seq_start(struct seq_file *seq, loff_t *pos, sa_family_t family)
 }
 
 static void *ping_v4_seq_start(struct seq_file *seq, loff_t *pos)
+	__acquires(ping_table.lock)
 {
 	return ping_seq_start(seq, pos, AF_INET);
 }

@@ -1360,6 +1360,7 @@ static int prepare_hello(struct ceph_connection *con)
 #define AUTH_BUF_LEN	(512 - CEPH_CRC_LEN - CEPH_PREAMBLE_PLAIN_LEN)
 
 static int prepare_auth_request(struct ceph_connection *con)
+	__must_hold(con->mutex)
 {
 	void *authorizer, *authorizer_copy;
 	int ctrl_len, authorizer_len;
@@ -1397,6 +1398,7 @@ static int prepare_auth_request(struct ceph_connection *con)
 
 static int prepare_auth_request_more(struct ceph_connection *con,
 				     void *reply, int reply_len)
+	__must_hold(con->mutex)
 {
 	int ctrl_len, authorizer_len;
 	void *authorizer;
@@ -2191,6 +2193,7 @@ bad:
 }
 
 static int process_hello(struct ceph_connection *con, void *p, void *end)
+	__must_hold(con->mutex)
 {
 	struct ceph_entity_addr *my_addr = &con->msgr->inst.addr;
 	struct ceph_entity_addr addr_for_me;
@@ -2259,6 +2262,7 @@ bad:
 
 static int process_auth_bad_method(struct ceph_connection *con,
 				   void *p, void *end)
+	__must_hold(con->mutex)
 {
 	int allowed_protos[8], allowed_modes[8];
 	int allowed_proto_cnt, allowed_mode_cnt;
@@ -2321,6 +2325,7 @@ bad:
 
 static int process_auth_reply_more(struct ceph_connection *con,
 				   void *p, void *end)
+	__must_hold(con->mutex)
 {
 	int payload_len;
 	int ret;
@@ -2356,6 +2361,7 @@ bad:
  * isn't guaranteed to work for stack objects, so do it by hand.
  */
 static int process_auth_done(struct ceph_connection *con, void *p, void *end)
+	__must_hold(con->mutex)
 {
 	u8 session_key[CEPH_MAX_KEY_LEN];
 	u8 con_secret_buf[CEPH_MAX_CON_SECRET_LEN + 16];
@@ -2672,6 +2678,7 @@ bad:
 
 static int process_session_reset(struct ceph_connection *con,
 				 void *p, void *end)
+	__must_hold(con->mutex)
 {
 	bool full;
 	int ret;
@@ -2759,6 +2766,7 @@ bad:
 }
 
 static int process_control(struct ceph_connection *con, void *p, void *end)
+	__must_hold(con->mutex)
 {
 	int tag = con->v2.in_desc.fd_tag;
 	int ret;
@@ -2893,6 +2901,7 @@ static int process_message(struct ceph_connection *con)
 }
 
 static int __handle_control(struct ceph_connection *con, void *p)
+	__must_hold(con->mutex)
 {
 	void *end = p + con->v2.in_desc.fd_lens[0];
 	struct ceph_msg *msg;
@@ -2938,6 +2947,7 @@ static int __handle_control(struct ceph_connection *con, void *p)
 }
 
 static int handle_preamble(struct ceph_connection *con)
+	__must_hold(con->mutex)
 {
 	struct ceph_frame_desc *desc = &con->v2.in_desc;
 	int ret;
@@ -2974,6 +2984,7 @@ static int handle_preamble(struct ceph_connection *con)
 }
 
 static int handle_control(struct ceph_connection *con)
+	__must_hold(con->mutex)
 {
 	int ctrl_len = con->v2.in_desc.fd_lens[0];
 	void *buf;
@@ -3000,6 +3011,7 @@ static int handle_control(struct ceph_connection *con)
 }
 
 static int handle_control_remainder(struct ceph_connection *con)
+	__must_hold(con->mutex)
 {
 	int ret;
 
@@ -3065,6 +3077,7 @@ static void finish_skip(struct ceph_connection *con)
 }
 
 static int populate_in_iter(struct ceph_connection *con)
+	__must_hold(con->mutex)
 {
 	int ret;
 
@@ -3134,6 +3147,7 @@ static int populate_in_iter(struct ceph_connection *con)
 }
 
 int ceph_con_v2_try_read(struct ceph_connection *con)
+	__must_hold(con->mutex)
 {
 	int ret;
 

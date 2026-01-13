@@ -226,6 +226,7 @@ static inline void efx_device_attach_if_not_resetting(struct efx_nic *efx)
 }
 
 static inline bool efx_rwsem_assert_write_locked(struct rw_semaphore *sem)
+	__cond_acquires(true, sem)
 {
 	if (WARN_ON(down_read_trylock(sem))) {
 		up_read(sem);

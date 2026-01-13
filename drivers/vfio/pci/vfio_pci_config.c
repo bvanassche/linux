@@ -564,6 +564,7 @@ static bool vfio_need_bar_restore(struct vfio_pci_core_device *vdev)
 static int vfio_basic_config_write(struct vfio_pci_core_device *vdev, int pos,
 				   int count, struct perm_bits *perm,
 				   int offset, __le32 val)
+	__no_context_analysis /* conditional locking */
 {
 	struct pci_dev *pdev = vdev->pdev;
 	__le16 *virt_cmd;

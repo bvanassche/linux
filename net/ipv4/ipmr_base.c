@@ -77,6 +77,7 @@ mr_table_alloc(struct net *net, u32 id,
 }
 
 void *mr_mfc_find_parent(struct mr_table *mrt, void *hasharg, int parent)
+	__must_hold_shared(RCU)
 {
 	struct rhlist_head *tmp, *list;
 	struct mr_mfc *c;
@@ -90,6 +91,7 @@ void *mr_mfc_find_parent(struct mr_table *mrt, void *hasharg, int parent)
 }
 
 void *mr_mfc_find_any_parent(struct mr_table *mrt, int vifi)
+	__must_hold_shared(RCU)
 {
 	struct rhlist_head *tmp, *list;
 	struct mr_mfc *c;
@@ -104,6 +106,7 @@ void *mr_mfc_find_any_parent(struct mr_table *mrt, int vifi)
 }
 
 void *mr_mfc_find_any(struct mr_table *mrt, int vifi, void *hasharg)
+	__must_hold_shared(RCU)
 {
 	struct rhlist_head *tmp, *list;
 	struct mr_mfc *c, *proxy;
@@ -156,6 +159,7 @@ void *mr_vif_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 
 void *mr_mfc_seq_idx(struct net *net,
 		     struct mr_mfc_iter *it, loff_t pos)
+	__cond_acquires(nonnull, it->lock)
 {
 	struct mr_table *mrt = it->mrt;
 	struct mr_mfc *mfc;
@@ -180,6 +184,7 @@ void *mr_mfc_seq_idx(struct net *net,
 
 void *mr_mfc_seq_next(struct seq_file *seq, void *v,
 		      loff_t *pos)
+	__no_context_analysis
 {
 	struct mr_mfc_iter *it = seq->private;
 	struct net *net = seq_file_net(seq);

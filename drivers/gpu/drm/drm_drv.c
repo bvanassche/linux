@@ -448,6 +448,7 @@ EXPORT_SYMBOL(drm_put_dev);
  * True if it is OK to enter the section, false otherwise.
  */
 bool drm_dev_enter(struct drm_device *dev, int *idx)
+	__cond_acquires_shared(true, &drm_unplug_srcu)
 {
 	*idx = srcu_read_lock(&drm_unplug_srcu);
 
@@ -468,6 +469,7 @@ EXPORT_SYMBOL(drm_dev_enter);
  * the device has been unplugged.
  */
 void drm_dev_exit(int idx)
+	__releases_shared(&drm_unplug_srcu)
 {
 	srcu_read_unlock(&drm_unplug_srcu, idx);
 }
@@ -1055,6 +1057,7 @@ static void remove_compat_control_link(struct drm_device *dev)
  * 0 on success, negative error code on failure.
  */
 int drm_dev_register(struct drm_device *dev, unsigned long flags)
+	__no_context_analysis /* conditional locking */
 {
 	const struct drm_driver *driver = dev->driver;
 	int ret;

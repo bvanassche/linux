@@ -1863,6 +1863,7 @@ void intel_tc_port_link_cancel_reset_work(struct intel_digital_port *dig_port)
 
 static void __intel_tc_port_lock(struct intel_tc_port *tc,
 				 int required_lanes)
+	__acquires(tc->lock)
 {
 	struct intel_display *display = to_intel_display(tc->dig_port);
 
@@ -1879,6 +1880,7 @@ static void __intel_tc_port_lock(struct intel_tc_port *tc,
 }
 
 void intel_tc_port_lock(struct intel_digital_port *dig_port)
+	__acquires(to_tc_port(dig_port)->lock)
 {
 	__intel_tc_port_lock(to_tc_port(dig_port), 1);
 }
@@ -1921,6 +1923,7 @@ void intel_tc_port_suspend(struct intel_digital_port *dig_port)
 }
 
 void intel_tc_port_unlock(struct intel_digital_port *dig_port)
+	__releases(&to_tc_port(dig_port)->lock)
 {
 	struct intel_tc_port *tc = to_tc_port(dig_port);
 

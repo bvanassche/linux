@@ -44,6 +44,7 @@ EXPORT_SYMBOL_GPL(fpga_region_class_find);
  * * -ENODEV if can't take parent driver module refcount.
  */
 static struct fpga_region *fpga_region_get(struct fpga_region *region)
+	__no_context_analysis /* __cond_acquires() does not support ERR_PTR() */
 {
 	struct device *dev = &region->dev;
 
@@ -70,6 +71,7 @@ static struct fpga_region *fpga_region_get(struct fpga_region *region)
  * @region: FPGA region
  */
 static void fpga_region_put(struct fpga_region *region)
+	__releases(region->mutex)
 {
 	struct device *dev = &region->dev;
 
@@ -95,6 +97,7 @@ static void fpga_region_put(struct fpga_region *region)
  * Return: 0 for success or negative error code.
  */
 int fpga_region_program_fpga(struct fpga_region *region)
+	__cond_acquires(0, region->mutex)
 {
 	struct device *dev = &region->dev;
 	struct fpga_image_info *info = region->info;

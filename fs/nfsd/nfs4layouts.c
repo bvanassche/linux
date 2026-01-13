@@ -292,6 +292,7 @@ __be32
 nfsd4_preprocess_layout_stateid(struct svc_rqst *rqstp,
 		struct nfsd4_compound_state *cstate, stateid_t *stateid,
 		bool create, u32 layout_type, struct nfs4_layout_stateid **lsp)
+	__no_context_analysis
 {
 	struct nfs4_layout_stateid *ls;
 	struct nfs4_stid *stid;
@@ -517,6 +518,7 @@ __be32
 nfsd4_return_file_layouts(struct svc_rqst *rqstp,
 		struct nfsd4_compound_state *cstate,
 		struct nfsd4_layoutreturn *lrp)
+	__no_context_analysis
 {
 	struct nfs4_layout_stateid *ls;
 	struct nfs4_layout *lp, *n;

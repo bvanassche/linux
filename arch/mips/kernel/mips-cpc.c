@@ -88,6 +88,7 @@ int mips_cpc_probe(void)
 }
 
 void mips_cpc_lock_other(unsigned int core)
+	__no_context_analysis /* this_cpu_ptr() */
 {
 	unsigned int curr_core;
 
@@ -109,6 +110,7 @@ void mips_cpc_lock_other(unsigned int core)
 }
 
 void mips_cpc_unlock_other(void)
+	__no_context_analysis /* this_cpu_ptr() */
 {
 	unsigned int curr_core;
 

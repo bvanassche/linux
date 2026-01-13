@@ -952,6 +952,7 @@ static int xfrm_inner_extract_output(struct xfrm_state *x, struct sk_buff *skb)
 }
 
 void xfrm_local_error(struct sk_buff *skb, int mtu)
+	__no_context_analysis
 {
 	unsigned int proto;
 	struct xfrm_state_afinfo *afinfo;

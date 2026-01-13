@@ -1075,6 +1075,7 @@ static struct _ddebug *ddebug_iter_next(struct ddebug_iter *iter)
  * seeks the seq_file's iterator to the given position.
  */
 static void *ddebug_proc_start(struct seq_file *m, loff_t *pos)
+	__acquires(ddebug_lock)
 {
 	struct ddebug_iter *iter = m->private;
 	struct _ddebug *dp;
@@ -1167,6 +1168,7 @@ static int ddebug_proc_show(struct seq_file *m, void *p)
  * call from userspace.  Drops ddebug_lock.
  */
 static void ddebug_proc_stop(struct seq_file *m, void *p)
+	__releases(ddebug_lock)
 {
 	mutex_unlock(&ddebug_lock);
 }

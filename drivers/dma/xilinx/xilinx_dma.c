@@ -1049,6 +1049,7 @@ xilinx_dma_get_residue_axidma_direct_s2mm(struct xilinx_dma_chan *chan,
 static void xilinx_dma_chan_handle_cyclic(struct xilinx_dma_chan *chan,
 					  struct xilinx_dma_tx_descriptor *desc,
 					  unsigned long *flags)
+	__must_hold(&chan->lock)
 {
 	struct dmaengine_desc_callback cb;
 

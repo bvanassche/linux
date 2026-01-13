@@ -17,6 +17,7 @@
 #include <linux/io-64-nonatomic-lo-hi.h>
 
 static void amd_mp2_c2p_mutex_lock(struct amd_i2c_common *i2c_common)
+	__acquires(&i2c_common->mp2_dev->c2p_lock)
 {
 	struct amd_mp2_dev *privdata = i2c_common->mp2_dev;
 
@@ -26,6 +27,7 @@ static void amd_mp2_c2p_mutex_lock(struct amd_i2c_common *i2c_common)
 }
 
 static void amd_mp2_c2p_mutex_unlock(struct amd_i2c_common *i2c_common)
+	__no_context_analysis /* conditional unlock */
 {
 	struct amd_mp2_dev *privdata = i2c_common->mp2_dev;
 
@@ -55,6 +57,7 @@ static int amd_mp2_cmd(struct amd_i2c_common *i2c_common,
 }
 
 int amd_mp2_bus_enable_set(struct amd_i2c_common *i2c_common, bool enable)
+	__acquires(&i2c_common->mp2_dev->c2p_lock)
 {
 	struct amd_mp2_dev *privdata = i2c_common->mp2_dev;
 	union i2c_cmd_base i2c_cmd_base;
@@ -84,6 +87,7 @@ static void amd_mp2_cmd_rw_fill(struct amd_i2c_common *i2c_common,
 }
 
 int amd_mp2_rw(struct amd_i2c_common *i2c_common, enum i2c_cmd reqcmd)
+	__acquires(&i2c_common->mp2_dev->c2p_lock)
 {
 	struct amd_mp2_dev *privdata = i2c_common->mp2_dev;
 	union i2c_cmd_base i2c_cmd_base;
@@ -181,6 +185,7 @@ static void __amd_mp2_process_event(struct amd_i2c_common *i2c_common)
 }
 
 void amd_mp2_process_event(struct amd_i2c_common *i2c_common)
+	__no_context_analysis /* conditional unlock */
 {
 	struct amd_mp2_dev *privdata = i2c_common->mp2_dev;
 	struct pci_dev *pdev = privdata->pci_dev;

@@ -262,6 +262,7 @@ out:
 }
 
 static int ocfs2_read_folio(struct file *file, struct folio *folio)
+	__no_context_analysis /* up() from another thread than down() */
 {
 	struct inode *inode = folio->mapping->host;
 	struct ocfs2_inode_info *oi = OCFS2_I(inode);
@@ -426,6 +427,7 @@ int walk_page_buffers(	handle_t *handle,
 }
 
 static sector_t ocfs2_bmap(struct address_space *mapping, sector_t block)
+	__no_context_analysis /* conditional locking */
 {
 	sector_t status;
 	u64 p_blkno = 0;
@@ -1862,6 +1864,7 @@ static int ocfs2_write_begin(const struct kiocb *iocb,
 			     struct address_space *mapping,
 			     loff_t pos, unsigned len,
 			     struct folio **foliop, void **fsdata)
+	__cond_acquires(0, &OCFS2_I(mapping->host)->ip_alloc_sem)
 {
 	int ret;
 	struct buffer_head *di_bh = NULL;
@@ -2054,6 +2057,7 @@ static int ocfs2_write_end(const struct kiocb *iocb,
 			   struct address_space *mapping,
 			   loff_t pos, unsigned len, unsigned copied,
 			   struct folio *folio, void *fsdata)
+	__no_context_analysis /* up() from another thread than down() */
 {
 	int ret;
 	struct inode *inode = mapping->host;

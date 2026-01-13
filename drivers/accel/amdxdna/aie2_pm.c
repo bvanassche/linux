@@ -28,6 +28,7 @@ static int aie2_pm_set_clk_gating(struct amdxdna_dev_hdl *ndev, u32 val)
 }
 
 int aie2_pm_set_dpm(struct amdxdna_dev_hdl *ndev, u32 dpm_level)
+	__must_hold(&ndev->xdna->dev_lock)
 {
 	int ret;
 
@@ -80,6 +81,7 @@ int aie2_pm_init(struct amdxdna_dev_hdl *ndev)
 }
 
 int aie2_pm_set_mode(struct amdxdna_dev_hdl *ndev, enum amdxdna_power_mode_type target)
+	__must_hold(&ndev->xdna->dev_lock)
 {
 	struct amdxdna_dev *xdna = ndev->xdna;
 	u32 clk_gating, dpm_level;

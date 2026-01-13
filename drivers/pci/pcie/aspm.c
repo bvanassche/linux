@@ -1327,6 +1327,7 @@ void pcie_aspm_exit_link_state(struct pci_dev *pdev)
  * @locked: whether pci_bus_sem is held
  */
 void pcie_aspm_pm_state_change(struct pci_dev *pdev, bool locked)
+	__no_context_analysis /* conditional locking */
 {
 	struct pcie_link_state *link = pdev->link_state;
 
@@ -1402,6 +1403,7 @@ static u8 pci_calc_aspm_enable_mask(int state)
 }
 
 static int __pci_disable_link_state(struct pci_dev *pdev, int state, bool locked)
+	__no_context_analysis /* conditional locking */
 {
 	struct pcie_link_state *link = pcie_aspm_get_link(pdev);
 
@@ -1460,6 +1462,7 @@ int pci_disable_link_state(struct pci_dev *pdev, int state)
 EXPORT_SYMBOL(pci_disable_link_state);
 
 static int __pci_enable_link_state(struct pci_dev *pdev, int state, bool locked)
+	__no_context_analysis /* conditional locking */
 {
 	struct pcie_link_state *link = pcie_aspm_get_link(pdev);
 

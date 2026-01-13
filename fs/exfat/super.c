@@ -863,6 +863,7 @@ static void delayed_free(struct rcu_head *p)
 }
 
 static void exfat_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct exfat_sb_info *sbi = sb->s_fs_info;
 

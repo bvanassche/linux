@@ -24,6 +24,7 @@ struct clk_apmu {
 };
 
 static int clk_apmu_enable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct clk_apmu *apmu = to_clk_apmu(hw);
 	unsigned long data;
@@ -42,6 +43,7 @@ static int clk_apmu_enable(struct clk_hw *hw)
 }
 
 static void clk_apmu_disable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct clk_apmu *apmu = to_clk_apmu(hw);
 	unsigned long data;

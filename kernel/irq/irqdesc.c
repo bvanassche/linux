@@ -421,11 +421,13 @@ EXPORT_SYMBOL_GPL(irq_to_desc);
 #endif
 
 void irq_lock_sparse(void)
+	__acquires(sparse_irq_lock)
 {
 	mutex_lock(&sparse_irq_lock);
 }
 
 void irq_unlock_sparse(void)
+	__releases(sparse_irq_lock)
 {
 	mutex_unlock(&sparse_irq_lock);
 }
@@ -932,6 +934,7 @@ unsigned int irq_get_next_irq(unsigned int offset)
 
 struct irq_desc *__irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus,
 				     unsigned int check)
+	__cond_acquires(nonnull, &irq_to_desc(irq)->lock)
 {
 	struct irq_desc *desc;
 

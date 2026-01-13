@@ -65,6 +65,7 @@ static DEFINE_IDA(hci_index_ida);
 /* Get HCI device by index.
  * Device is held on return. */
 static struct hci_dev *__hci_dev_get(int index, int *srcu_index)
+	__no_context_analysis /* acquire on return value */
 {
 	struct hci_dev *hdev = NULL, *d;
 
@@ -97,6 +98,7 @@ static struct hci_dev *hci_dev_get_srcu(int index, int *srcu_index)
 }
 
 static void hci_dev_put_srcu(struct hci_dev *hdev, int srcu_index)
+	__no_context_analysis /* because of __hci_dev_get() */
 {
 	srcu_read_unlock(&hdev->srcu, srcu_index);
 	hci_dev_put(hdev);

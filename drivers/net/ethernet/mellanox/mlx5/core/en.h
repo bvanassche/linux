@@ -812,6 +812,7 @@ struct mlx5e_channel {
 };
 
 static inline bool mlx5e_icosq_sync_lock(struct mlx5e_icosq *sq)
+	__no_context_analysis /* see mlx5e_icosq_sync_unlock() */
 {
 	if (likely(!test_bit(MLX5E_SQ_STATE_LOCK_NEEDED, &sq->state)))
 		return false;
@@ -821,6 +822,7 @@ static inline bool mlx5e_icosq_sync_lock(struct mlx5e_icosq *sq)
 }
 
 static inline void mlx5e_icosq_sync_unlock(struct mlx5e_icosq *sq, bool locked)
+	__no_context_analysis /* conditional unlock */
 {
 	if (unlikely(locked))
 		spin_unlock_bh(&sq->lock);

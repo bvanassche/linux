@@ -239,21 +239,25 @@ static DEFINE_MUTEX(device_links_lock);
 DEFINE_STATIC_SRCU(device_links_srcu);
 
 static inline void device_links_write_lock(void)
+	__acquires(device_links_lock)
 {
 	mutex_lock(&device_links_lock);
 }
 
 static inline void device_links_write_unlock(void)
+	__releases(device_links_lock)
 {
 	mutex_unlock(&device_links_lock);
 }
 
-int device_links_read_lock(void) __acquires(&device_links_srcu)
+int device_links_read_lock(void)
+	__acquires_shared(&device_links_srcu)
 {
 	return srcu_read_lock(&device_links_srcu);
 }
 
-void device_links_read_unlock(int idx) __releases(&device_links_srcu)
+void device_links_read_unlock(int idx)
+	__releases_shared(&device_links_srcu)
 {
 	srcu_read_unlock(&device_links_srcu, idx);
 }
@@ -1159,6 +1163,7 @@ static void __device_links_queue_sync_state(struct device *dev,
  */
 static void device_links_flush_sync_list(struct list_head *list,
 					 struct device *dont_lock_dev)
+	__no_context_analysis /* conditional locking */
 {
 	struct device *dev, *tmp;
 
@@ -2341,16 +2346,19 @@ static struct kobject *sysfs_dev_block_kobj;
 static DEFINE_MUTEX(device_hotplug_lock);
 
 void lock_device_hotplug(void)
+	__no_context_analysis /* function declaration has been annotated */
 {
 	mutex_lock(&device_hotplug_lock);
 }
 
 void unlock_device_hotplug(void)
+	__no_context_analysis /* function declaration has been annotated */
 {
 	mutex_unlock(&device_hotplug_lock);
 }
 
 int lock_device_hotplug_sysfs(void)
+	__no_context_analysis /* function declaration has been annotated */
 {
 	if (mutex_trylock(&device_hotplug_lock))
 		return 0;
@@ -4803,6 +4811,7 @@ out:
  * device_shutdown - call ->shutdown() on each device to shutdown.
  */
 void device_shutdown(void)
+	__no_context_analysis /* conditional locking */
 {
 	struct device *dev, *parent;
 

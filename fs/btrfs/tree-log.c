@@ -3193,6 +3193,7 @@ static int update_log_root(struct btrfs_trans_handle *trans,
 }
 
 static void wait_log_commit(struct btrfs_root *root, int transid)
+	__must_hold(root->log_mutex)
 {
 	DEFINE_WAIT(wait);
 	int index = transid % 2;
@@ -3218,6 +3219,7 @@ static void wait_log_commit(struct btrfs_root *root, int transid)
 }
 
 static void wait_for_writer(struct btrfs_root *root)
+	__must_hold(root->log_mutex)
 {
 	DEFINE_WAIT(wait);
 

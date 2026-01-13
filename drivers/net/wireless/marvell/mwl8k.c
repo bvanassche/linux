@@ -2160,6 +2160,7 @@ mwl8k_txq_xmit(struct ieee80211_hw *hw,
  * and quiesces the transmit path whenever it's taken.
  */
 static int mwl8k_fw_lock(struct ieee80211_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct mwl8k_priv *priv = hw->priv;
 
@@ -2188,6 +2189,7 @@ static int mwl8k_fw_lock(struct ieee80211_hw *hw)
 }
 
 static void mwl8k_fw_unlock(struct ieee80211_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct mwl8k_priv *priv = hw->priv;
 

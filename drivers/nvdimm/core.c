@@ -20,6 +20,7 @@ LIST_HEAD(nvdimm_bus_list);
 DEFINE_MUTEX(nvdimm_bus_list_mutex);
 
 void nvdimm_bus_lock(struct device *dev)
+	__no_context_analysis /*__acquires(&walk_to_nvdimm_bus(dev)->reconfig_mutex)*/
 {
 	struct nvdimm_bus *nvdimm_bus = walk_to_nvdimm_bus(dev);
 
@@ -30,6 +31,7 @@ void nvdimm_bus_lock(struct device *dev)
 EXPORT_SYMBOL(nvdimm_bus_lock);
 
 void nvdimm_bus_unlock(struct device *dev)
+	__no_context_analysis /*__releases(&walk_to_nvdimm_bus(dev)->reconfig_mutex)*/
 {
 	struct nvdimm_bus *nvdimm_bus = walk_to_nvdimm_bus(dev);
 

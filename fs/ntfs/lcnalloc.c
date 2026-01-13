@@ -836,6 +836,7 @@ out_restore:
  */
 s64 __ntfs_cluster_free(struct ntfs_inode *ni, const s64 start_vcn, s64 count,
 		struct ntfs_attr_search_ctx *ctx, const bool is_rollback)
+	__context_unsafe(conditional locking)
 {
 	s64 delta, to_free, total_freed, real_freed;
 	struct ntfs_volume *vol;

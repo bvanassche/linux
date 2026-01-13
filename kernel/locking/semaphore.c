@@ -266,6 +266,7 @@ void sem_del_waiter(struct semaphore *sem, struct semaphore_waiter *waiter)
  */
 static inline int __sched ___down_common(struct semaphore *sem, long state,
 								long timeout)
+	__must_hold(&sem->lock)
 {
 	struct semaphore_waiter waiter, *first;
 
@@ -305,6 +306,7 @@ static inline int __sched ___down_common(struct semaphore *sem, long state,
 
 static inline int __sched __down_common(struct semaphore *sem, long state,
 					long timeout)
+	__must_hold(&sem->lock)
 {
 	int ret;
 
@@ -320,27 +322,32 @@ static inline int __sched __down_common(struct semaphore *sem, long state,
 }
 
 static noinline void __sched __down(struct semaphore *sem)
+	__must_hold(&sem->lock)
 {
 	__down_common(sem, TASK_UNINTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
 }
 
 static noinline int __sched __down_interruptible(struct semaphore *sem)
+	__must_hold(&sem->lock)
 {
 	return __down_common(sem, TASK_INTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
 }
 
 static noinline int __sched __down_killable(struct semaphore *sem)
+	__must_hold(&sem->lock)
 {
 	return __down_common(sem, TASK_KILLABLE, MAX_SCHEDULE_TIMEOUT);
 }
 
 static noinline int __sched __down_timeout(struct semaphore *sem, long timeout)
+	__must_hold(&sem->lock)
 {
 	return __down_common(sem, TASK_UNINTERRUPTIBLE, timeout);
 }
 
 static noinline void __sched __up(struct semaphore *sem,
 				  struct wake_q_head *wake_q)
+	__must_hold(&sem->lock)
 {
 	struct semaphore_waiter *waiter = sem->first_waiter;
 

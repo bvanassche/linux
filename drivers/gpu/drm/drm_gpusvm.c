@@ -1625,6 +1625,7 @@ void drm_gpusvm_unmap_pages(struct drm_gpusvm *gpusvm,
 			    struct drm_gpusvm_pages *svm_pages,
 			    unsigned long npages,
 			    const struct drm_gpusvm_ctx *ctx)
+	__no_context_analysis /* conditional locking */
 {
 	if (ctx->in_notifier)
 		lockdep_assert_held_write(&gpusvm->notifier_lock);

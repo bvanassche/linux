@@ -106,6 +106,7 @@ rds_tcp_accept_one_path(struct rds_connection *conn, struct socket *sock)
 }
 
 void rds_tcp_conn_slots_available(struct rds_connection *conn, bool fan_out)
+	__no_context_analysis
 {
 	struct rds_tcp_connection *tc;
 	struct rds_tcp_net *rtn;
@@ -150,6 +151,7 @@ void rds_tcp_conn_slots_available(struct rds_connection *conn, bool fan_out)
 }
 
 int rds_tcp_accept_one(struct rds_tcp_net *rtn)
+	__no_context_analysis /* conditional locking */
 {
 	struct socket *listen_sock = rtn->rds_tcp_listen_sock;
 	struct socket *new_sock = NULL;

@@ -1100,6 +1100,7 @@ static int ipmi_thread(void *data)
 
 
 static void poll(void *send_info)
+	__no_context_analysis /* conditional locking */
 {
 	struct smi_info *smi_info = send_info;
 	unsigned long flags = 0;

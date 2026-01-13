@@ -130,6 +130,7 @@ static void _filter_clk_table(struct mmp_clk_mix *mix,
 
 static int _set_rate(struct mmp_clk_mix *mix, u32 mux_val, u32 div_val,
 			unsigned int change_mux, unsigned int change_div)
+	__no_context_analysis /* conditional locking */
 {
 	struct mmp_clk_mix_reg_info *ri = &mix->reg_info;
 	u8 width, shift;
@@ -284,6 +285,7 @@ static int mmp_clk_mix_set_rate_and_parent(struct clk_hw *hw,
 }
 
 static u8 mmp_clk_mix_get_parent(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct mmp_clk_mix *mix = to_clk_mix(hw);
 	struct mmp_clk_mix_reg_info *ri = &mix->reg_info;
@@ -314,6 +316,7 @@ static u8 mmp_clk_mix_get_parent(struct clk_hw *hw)
 
 static unsigned long mmp_clk_mix_recalc_rate(struct clk_hw *hw,
 					unsigned long parent_rate)
+	__no_context_analysis /* conditional locking */
 {
 	struct mmp_clk_mix *mix = to_clk_mix(hw);
 	struct mmp_clk_mix_reg_info *ri = &mix->reg_info;

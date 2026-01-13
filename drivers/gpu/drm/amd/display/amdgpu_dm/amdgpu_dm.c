@@ -3283,6 +3283,7 @@ static void dm_destroy_cached_state(struct amdgpu_device *adev)
 }
 
 static int dm_suspend(struct amdgpu_ip_block *ip_block)
+	__no_context_analysis /* conditional locking */
 {
 	struct amdgpu_device *adev = ip_block->adev;
 	struct amdgpu_display_manager *dm = &adev->dm;
@@ -3561,6 +3562,7 @@ static void amdgpu_dm_dump_links_and_sinks(struct amdgpu_device *adev)
 }
 
 static int dm_resume(struct amdgpu_ip_block *ip_block)
+	__no_context_analysis /* conditional locking */
 {
 	struct amdgpu_device *adev = ip_block->adev;
 	struct drm_device *ddev = adev_to_drm(adev);
@@ -3974,6 +3976,7 @@ DEFINE_FREE(sink_release, struct dc_sink *, if (_T) dc_sink_release(_T))
 
 void amdgpu_dm_update_connector_after_detect(
 		struct amdgpu_dm_connector *aconnector)
+	__no_context_analysis /* conditional locking */
 {
 	struct drm_connector *connector = &aconnector->base;
 	struct dc_sink *sink __free(sink_release) = NULL;

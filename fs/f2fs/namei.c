@@ -367,6 +367,7 @@ fail_drop:
 
 static int f2fs_create(struct mnt_idmap *idmap, struct inode *dir,
 		       struct dentry *dentry, umode_t mode, bool excl)
+	__no_context_analysis /* may return PTR_ERR() */
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(dir);
 	struct f2fs_lock_context lc;
@@ -648,6 +649,7 @@ static const char *f2fs_get_link(struct dentry *dentry,
 
 static int f2fs_symlink(struct mnt_idmap *idmap, struct inode *dir,
 			struct dentry *dentry, const char *symname)
+	__no_context_analysis /* may return PTR_ERR() */
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(dir);
 	struct f2fs_lock_context lc;
@@ -729,6 +731,7 @@ out_free_encrypted_link:
 
 static struct dentry *f2fs_mkdir(struct mnt_idmap *idmap, struct inode *dir,
 				 struct dentry *dentry, umode_t mode)
+	__no_context_analysis /* may return PTR_ERR() */
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(dir);
 	struct f2fs_lock_context lc;
@@ -785,6 +788,7 @@ static int f2fs_rmdir(struct inode *dir, struct dentry *dentry)
 
 static int f2fs_mknod(struct mnt_idmap *idmap, struct inode *dir,
 		      struct dentry *dentry, umode_t mode, dev_t rdev)
+	__no_context_analysis /* may return PTR_ERR() */
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(dir);
 	struct f2fs_lock_context lc;
@@ -830,6 +834,7 @@ out:
 static int __f2fs_tmpfile(struct mnt_idmap *idmap, struct inode *dir,
 			  struct file *file, umode_t mode, bool is_whiteout,
 			  struct inode **new_inode, struct f2fs_filename *fname)
+	__no_context_analysis /* may return PTR_ERR() */
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(dir);
 	struct f2fs_lock_context lc;

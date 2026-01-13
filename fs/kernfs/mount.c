@@ -425,6 +425,7 @@ void kernfs_free_fs_context(struct fs_context *fc)
  * this function at the end.
  */
 void kernfs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct kernfs_super_info *info = kernfs_info(sb);
 	struct kernfs_root *root = info->root;

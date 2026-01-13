@@ -1327,6 +1327,7 @@ EXPORT_SYMBOL(xt_find_table);
 /* Find table by name, grabs mutex & ref.  Returns ERR_PTR on error. */
 struct xt_table *xt_find_table_lock(struct net *net, u_int8_t af,
 				    const char *name)
+	__no_context_analysis
 {
 	struct xt_pernet *xt_net = net_generic(net, xt_pernet_id);
 	struct module *owner = NULL;
@@ -1391,6 +1392,7 @@ struct xt_table *xt_request_find_table_lock(struct net *net, u_int8_t af,
 EXPORT_SYMBOL_GPL(xt_request_find_table_lock);
 
 void xt_table_unlock(struct xt_table *table)
+	__no_context_analysis
 {
 	mutex_unlock(&xt[table->af].mutex);
 }
@@ -1398,12 +1400,14 @@ EXPORT_SYMBOL_GPL(xt_table_unlock);
 
 #ifdef CONFIG_NETFILTER_XTABLES_COMPAT
 void xt_compat_lock(u_int8_t af)
+	__no_context_analysis
 {
 	mutex_lock(&xt[af].compat_mutex);
 }
 EXPORT_SYMBOL_GPL(xt_compat_lock);
 
 void xt_compat_unlock(u_int8_t af)
+	__no_context_analysis
 {
 	mutex_unlock(&xt[af].compat_mutex);
 }
@@ -1722,6 +1726,7 @@ EXPORT_SYMBOL_GPL(xt_unregister_table_exit);
 
 #ifdef CONFIG_PROC_FS
 static void *xt_table_seq_start(struct seq_file *seq, loff_t *pos)
+	__no_context_analysis
 {
 	u8 af = (unsigned long)pde_data(file_inode(seq->file));
 	struct net *net = seq_file_net(seq);
@@ -1745,6 +1750,7 @@ static void *xt_table_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void xt_table_seq_stop(struct seq_file *seq, void *v)
+	__no_context_analysis
 {
 	u_int8_t af = (unsigned long)pde_data(file_inode(seq->file));
 
@@ -1785,6 +1791,7 @@ enum {
 
 static void *xt_mttg_seq_next(struct seq_file *seq, void *v, loff_t *ppos,
     bool is_target)
+	__no_context_analysis
 {
 	static const uint8_t next_class[] = {
 		[MTTG_TRAV_NFP_UNSPEC] = MTTG_TRAV_NFP_SPEC,
@@ -1838,6 +1845,7 @@ static void *xt_mttg_seq_start(struct seq_file *seq, loff_t *pos,
 }
 
 static void xt_mttg_seq_stop(struct seq_file *seq, void *v)
+	__no_context_analysis
 {
 	uint8_t nfproto = (unsigned long)pde_data(file_inode(seq->file));
 	struct nf_mttg_trav *trav = seq->private;

@@ -1622,6 +1622,7 @@ struct drm_pagemap *xe_vma_resolve_pagemap(struct xe_vma *vma, struct xe_tile *t
  */
 int xe_svm_alloc_vram(struct xe_svm_range *range, const struct drm_gpusvm_ctx *ctx,
 		      struct drm_pagemap *dpagemap)
+	__no_context_analysis /* conditional locking */
 {
 	static DECLARE_RWSEM(driver_migrate_lock);
 	struct xe_vm *vm = range_to_vm(&range->base);

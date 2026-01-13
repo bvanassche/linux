@@ -6012,6 +6012,7 @@ rb_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
 EXPORT_SYMBOL_GPL(ring_buffer_iter_peek);
 
 static inline bool rb_reader_lock(struct ring_buffer_per_cpu *cpu_buffer)
+	__no_context_analysis /* conditional locking */
 {
 	if (likely(!in_nmi())) {
 		raw_spin_lock(&cpu_buffer->reader_lock);
@@ -6037,6 +6038,7 @@ static inline bool rb_reader_lock(struct ring_buffer_per_cpu *cpu_buffer)
 
 static inline void
 rb_reader_unlock(struct ring_buffer_per_cpu *cpu_buffer, bool locked)
+	__no_context_analysis /* conditional locking */
 {
 	if (likely(locked))
 		raw_spin_unlock(&cpu_buffer->reader_lock);
@@ -7327,6 +7329,7 @@ static void rb_setup_ids_meta_page(struct ring_buffer_per_cpu *cpu_buffer,
 
 static struct ring_buffer_per_cpu *
 rb_get_mapped_buffer(struct trace_buffer *buffer, int cpu)
+	__no_context_analysis
 {
 	struct ring_buffer_per_cpu *cpu_buffer;
 
@@ -7346,6 +7349,7 @@ rb_get_mapped_buffer(struct trace_buffer *buffer, int cpu)
 }
 
 static void rb_put_mapped_buffer(struct ring_buffer_per_cpu *cpu_buffer)
+	__no_context_analysis
 {
 	mutex_unlock(&cpu_buffer->mapping_lock);
 }

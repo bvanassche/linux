@@ -1342,6 +1342,7 @@ static inline struct page *dump_page_copy(struct page *src, struct page *dst)
 
 int dump_user_range(struct coredump_params *cprm, unsigned long start,
 		    unsigned long len)
+	__no_context_analysis
 {
 	unsigned long addr;
 	struct page *dump_page;

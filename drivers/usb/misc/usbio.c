@@ -351,6 +351,7 @@ read:
 EXPORT_SYMBOL_NS_GPL(usbio_bulk_msg, "USBIO");
 
 int usbio_acquire(struct auxiliary_device *adev)
+	__cond_acquires(0, &adev_to_client(adev)->bridge->bulk_mutex)
 {
 	struct usbio_client *client = adev_to_client(adev);
 	struct usbio_device *usbio;
@@ -381,6 +382,11 @@ err_unlock:
 EXPORT_SYMBOL_NS_GPL(usbio_acquire, "USBIO");
 
 void usbio_release(struct auxiliary_device *adev)
+	__no_context_analysis
+#if 0
+	__releases(&adev_to_client(adev)->bridge->bulk_mutex)
+	__releases(&adev_to_client(adev)->mutex)
+#endif
 {
 	struct usbio_client *client = adev_to_client(adev);
 	struct usbio_device *usbio = client->bridge;

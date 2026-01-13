@@ -477,6 +477,7 @@ int drm_mode_object_get_properties(struct drm_mode_object *obj, bool atomic,
  */
 int drm_mode_obj_get_properties_ioctl(struct drm_device *dev, void *data,
 				      struct drm_file *file_priv)
+	__no_context_analysis /* DRM_MODESET_LOCK */
 {
 	struct drm_mode_obj_get_properties *arg = data;
 	struct drm_mode_object *obj;
@@ -527,6 +528,7 @@ EXPORT_SYMBOL_FOR_TESTS_ONLY(drm_mode_obj_find_prop_id);
 static int set_property_legacy(struct drm_mode_object *obj,
 			       struct drm_property *prop,
 			       uint64_t prop_value)
+	__no_context_analysis /* DRM_MODESET_LOCK */
 {
 	struct drm_device *dev = prop->dev;
 	struct drm_mode_object *ref;

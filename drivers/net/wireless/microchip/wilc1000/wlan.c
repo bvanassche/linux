@@ -766,6 +766,7 @@ static int chip_wakeup(struct wilc *wilc)
 }
 
 static inline int acquire_bus(struct wilc *wilc, enum bus_acquire acquire)
+	__cond_acquires(0, wilc->hif_cs)
 {
 	int ret = 0;
 
@@ -780,6 +781,7 @@ static inline int acquire_bus(struct wilc *wilc, enum bus_acquire acquire)
 }
 
 static inline int release_bus(struct wilc *wilc, enum bus_release release)
+	__releases(wilc->hif_cs)
 {
 	int ret = 0;
 

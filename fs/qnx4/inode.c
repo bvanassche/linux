@@ -255,6 +255,7 @@ static int qnx4_init_fs_context(struct fs_context *fc)
 }
 
 static void qnx4_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct qnx4_sb_info *qs = qnx4_sb(sb);
 	kill_block_super(sb);

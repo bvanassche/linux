@@ -257,6 +257,7 @@ static int attach_dn(struct dnotify_struct *dn, struct dnotify_mark *dn_mark,
  * attached to the fsnotify_mark.
  */
 int fcntl_dirnotify(int fd, struct file *filp, unsigned int arg)
+	__no_context_analysis
 {
 	struct dnotify_mark *new_dn_mark, *dn_mark;
 	struct fsnotify_mark *new_fsn_mark, *fsn_mark;

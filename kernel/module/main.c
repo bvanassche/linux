@@ -3241,6 +3241,7 @@ static bool finished_loading(const char *name)
 /* Must be called with module_mutex held */
 static int module_patient_check_exists(const char *name,
 				       enum fail_dup_mod_reason reason)
+	__must_hold(module_mutex)
 {
 	struct module *old;
 	int err = 0;

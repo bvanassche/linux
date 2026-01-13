@@ -94,6 +94,7 @@ static void uncore_free_pcibus_map(void)
 }
 
 struct pci2phy_map *__find_pci2phy_map(int segment)
+	__must_hold(&pci2phy_map_lock)
 {
 	struct pci2phy_map *map, *alloc = NULL;
 	int i;

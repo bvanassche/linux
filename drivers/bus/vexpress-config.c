@@ -78,11 +78,13 @@ static void vexpress_config_set_master(u32 site)
 }
 
 static void vexpress_config_lock(void *arg)
+	__acquires(vexpress_config_mutex)
 {
 	mutex_lock(&vexpress_config_mutex);
 }
 
 static void vexpress_config_unlock(void *arg)
+	__releases(vexpress_config_mutex)
 {
 	mutex_unlock(&vexpress_config_mutex);
 }

@@ -256,6 +256,7 @@ void __sched percpu_down_write(struct percpu_rw_semaphore *sem)
 	rcuwait_wait_event(&sem->writer, readers_active_check(sem), TASK_UNINTERRUPTIBLE);
 	if (contended)
 		trace_contention_end(sem, 0);
+	__acquire(sem);
 }
 EXPORT_SYMBOL_GPL(percpu_down_write);
 
@@ -286,5 +287,6 @@ void percpu_up_write(struct percpu_rw_semaphore *sem)
 	 * exclusive write lock because its counting.
 	 */
 	rcu_sync_exit(&sem->rss);
+	__release(sem);
 }
 EXPORT_SYMBOL_GPL(percpu_up_write);

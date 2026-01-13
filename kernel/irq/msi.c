@@ -350,6 +350,7 @@ int msi_setup_device_data(struct device *dev)
  * Internal function for guard(msi_descs_lock). Don't use in code.
  */
 void __msi_lock_descs(struct device *dev)
+	__acquires(dev->msi.data->mutex)
 {
 	mutex_lock(&dev->msi.data->mutex);
 }
@@ -362,6 +363,7 @@ EXPORT_SYMBOL_GPL(__msi_lock_descs);
  * Internal function for guard(msi_descs_lock). Don't use in code.
  */
 void __msi_unlock_descs(struct device *dev)
+	__releases(dev->msi.data->mutex)
 {
 	/* Invalidate the index which was cached by the iterator */
 	dev->msi.data->__iter_idx = MSI_XA_MAX_INDEX;

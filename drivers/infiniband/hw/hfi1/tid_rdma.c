@@ -468,7 +468,6 @@ void hfi1_qp_priv_tid_free(struct rvt_dev_info *rdi, struct rvt_qp *qp)
  */
 static struct rvt_qp *first_qp(struct hfi1_ctxtdata *rcd,
 			       struct tid_queue *queue)
-	__must_hold(&rcd->exp_lock)
 {
 	struct hfi1_qp_priv *priv;
 
@@ -503,7 +502,6 @@ static struct rvt_qp *first_qp(struct hfi1_ctxtdata *rcd,
  */
 static bool kernel_tid_waiters(struct hfi1_ctxtdata *rcd,
 			       struct tid_queue *queue, struct rvt_qp *qp)
-	__must_hold(&rcd->exp_lock) __must_hold(&qp->s_lock)
 {
 	struct rvt_qp *fqp;
 	bool ret = true;
@@ -536,7 +534,6 @@ static bool kernel_tid_waiters(struct hfi1_ctxtdata *rcd,
  */
 static void dequeue_tid_waiter(struct hfi1_ctxtdata *rcd,
 			       struct tid_queue *queue, struct rvt_qp *qp)
-	__must_hold(&rcd->exp_lock) __must_hold(&qp->s_lock)
 {
 	struct hfi1_qp_priv *priv = qp->priv;
 
@@ -563,7 +560,6 @@ static void dequeue_tid_waiter(struct hfi1_ctxtdata *rcd,
  */
 static void queue_qp_for_tid_wait(struct hfi1_ctxtdata *rcd,
 				  struct tid_queue *queue, struct rvt_qp *qp)
-	__must_hold(&rcd->exp_lock) __must_hold(&qp->s_lock)
 {
 	struct hfi1_qp_priv *priv = qp->priv;
 
@@ -587,7 +583,6 @@ static void queue_qp_for_tid_wait(struct hfi1_ctxtdata *rcd,
  * assuming the caller is holding the qp->s_lock.
  */
 static void __trigger_tid_waiter(struct rvt_qp *qp)
-	__must_hold(&qp->s_lock)
 {
 	lockdep_assert_held(&qp->s_lock);
 	if (!(qp->s_flags & HFI1_S_WAIT_TID_SPACE))
@@ -667,7 +662,6 @@ static void tid_rdma_trigger_resume(struct work_struct *work)
  * of any tid space linkage and reference counts.
  */
 static void _tid_rdma_flush_wait(struct rvt_qp *qp, struct tid_queue *queue)
-	__must_hold(&qp->s_lock)
 {
 	struct hfi1_qp_priv *priv;
 
@@ -687,7 +681,6 @@ static void _tid_rdma_flush_wait(struct rvt_qp *qp, struct tid_queue *queue)
 }
 
 void hfi1_tid_rdma_flush_wait(struct rvt_qp *qp)
-	__must_hold(&qp->s_lock)
 {
 	struct hfi1_qp_priv *priv = qp->priv;
 
@@ -714,7 +707,6 @@ void hfi1_tid_rdma_flush_wait(struct rvt_qp *qp)
  * On failure: -EAGAIN
  */
 static int kern_reserve_flow(struct hfi1_ctxtdata *rcd, int last)
-	__must_hold(&rcd->exp_lock)
 {
 	int nr;
 
@@ -752,7 +744,6 @@ static void kern_set_hw_flow(struct hfi1_ctxtdata *rcd, u32 generation,
 }
 
 static u32 kern_setup_hw_flow(struct hfi1_ctxtdata *rcd, u32 flow_idx)
-	__must_hold(&rcd->exp_lock)
 {
 	u32 generation = rcd->flows[flow_idx].generation;
 
@@ -770,7 +761,6 @@ static u32 kern_flow_generation_next(u32 gen)
 }
 
 static void kern_clear_hw_flow(struct hfi1_ctxtdata *rcd, u32 flow_idx)
-	__must_hold(&rcd->exp_lock)
 {
 	rcd->flows[flow_idx].generation =
 		kern_flow_generation_next(rcd->flows[flow_idx].generation);
@@ -1460,7 +1450,6 @@ static void kern_program_rcvarray(struct tid_rdma_flow *flow)
  */
 int hfi1_kern_exp_rcv_setup(struct tid_rdma_request *req,
 			    struct rvt_sge_state *ss, bool *last)
-	__must_hold(&req->qp->s_lock)
 {
 	struct tid_rdma_flow *flow = &req->flows[req->setup_head];
 	struct hfi1_ctxtdata *rcd = req->rcd;
@@ -1551,7 +1540,6 @@ static void hfi1_tid_rdma_reset_flow(struct tid_rdma_flow *flow)
  * circular buffer.
  */
 int hfi1_kern_exp_rcv_clear(struct tid_rdma_request *req)
-	__must_hold(&req->qp->s_lock)
 {
 	struct tid_rdma_flow *flow = &req->flows[req->clear_tail];
 	struct hfi1_ctxtdata *rcd = req->rcd;
@@ -1594,7 +1582,6 @@ int hfi1_kern_exp_rcv_clear(struct tid_rdma_request *req)
  * a request.
  */
 void hfi1_kern_exp_rcv_clear_all(struct tid_rdma_request *req)
-	__must_hold(&req->qp->s_lock)
 {
 	/* Use memory barrier for proper ordering */
 	while (CIRC_CNT(req->setup_head, req->clear_tail, MAX_FLOWS)) {
@@ -1787,7 +1774,6 @@ u32 hfi1_build_tid_rdma_read_packet(struct rvt_swqe *wqe,
 u32 hfi1_build_tid_rdma_read_req(struct rvt_qp *qp, struct rvt_swqe *wqe,
 				 struct ib_other_headers *ohdr, u32 *bth1,
 				 u32 *bth2, u32 *len)
-	__must_hold(&qp->s_lock)
 {
 	struct hfi1_qp_priv *qpriv = qp->priv;
 	struct tid_rdma_request *req = wqe_to_tid_req(wqe);
@@ -2413,7 +2399,6 @@ done:
 
 static inline struct tid_rdma_request *
 find_tid_request(struct rvt_qp *qp, u32 psn, enum ib_wr_opcode opcode)
-	__must_hold(&qp->s_lock)
 {
 	struct rvt_swqe *wqe;
 	struct tid_rdma_request *req = NULL;
@@ -2576,7 +2561,6 @@ ack_done:
 }
 
 void hfi1_kern_read_tid_flow_free(struct rvt_qp *qp)
-	__must_hold(&qp->s_lock)
 {
 	u32 n = qp->s_acked;
 	struct rvt_swqe *wqe;
@@ -2655,7 +2639,6 @@ static void restart_tid_rdma_read_req(struct hfi1_ctxtdata *rcd,
 static bool handle_read_kdeth_eflags(struct hfi1_ctxtdata *rcd,
 				     struct hfi1_packet *packet, u8 rcv_type,
 				     u8 rte, u32 psn, u32 ibpsn)
-	__must_hold(&packet->qp->r_lock) __must_hold(RCU)
 {
 	struct hfi1_pportdata *ppd = rcd->ppd;
 	struct hfi1_devdata *dd = ppd->dd;
@@ -4982,7 +4965,6 @@ bail:
  * is built.
  */
 static void update_tid_tail(struct rvt_qp *qp)
-	__must_hold(&qp->s_lock)
 {
 	struct hfi1_qp_priv *priv = qp->priv;
 	u32 i;
@@ -5007,7 +4989,6 @@ static void update_tid_tail(struct rvt_qp *qp)
 }
 
 int hfi1_make_tid_rdma_pkt(struct rvt_qp *qp, struct hfi1_pkt_state *ps)
-	__must_hold(&qp->s_lock)
 {
 	struct hfi1_qp_priv *priv = qp->priv;
 	struct rvt_swqe *wqe;

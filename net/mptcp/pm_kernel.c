@@ -327,6 +327,7 @@ static void mptcp_mpc_endpoint_setup(struct mptcp_sock *msk)
 }
 
 static void mptcp_pm_create_subflow_or_signal_addr(struct mptcp_sock *msk)
+	__must_hold(&msk->pm.lock)
 {
 	u8 limit_extra_subflows = mptcp_pm_get_limit_extra_subflows(msk);
 	struct pm_nl_pernet *pernet = pm_nl_get_pernet_from_msk(msk);
@@ -434,11 +435,13 @@ exit:
 }
 
 static void mptcp_pm_nl_fully_established(struct mptcp_sock *msk)
+	__must_hold(&msk->pm.lock)
 {
 	mptcp_pm_create_subflow_or_signal_addr(msk);
 }
 
 static void mptcp_pm_nl_subflow_established(struct mptcp_sock *msk)
+	__must_hold(&msk->pm.lock)
 {
 	mptcp_pm_create_subflow_or_signal_addr(msk);
 }
@@ -644,6 +647,7 @@ fill_local_addresses_vec(struct mptcp_sock *msk, struct mptcp_addr_info *remote,
 }
 
 static void mptcp_pm_nl_add_addr_received(struct mptcp_sock *msk)
+	__must_hold(&msk->pm.lock)
 {
 	u8 limit_add_addr_accepted = mptcp_pm_get_limit_add_addr_accepted(msk);
 	u8 limit_extra_subflows = mptcp_pm_get_limit_extra_subflows(msk);
@@ -1557,6 +1561,7 @@ bool mptcp_pm_nl_check_work_pending(struct mptcp_sock *msk)
 
 /* Called under PM lock */
 void __mptcp_pm_kernel_worker(struct mptcp_sock *msk)
+	__must_hold(&msk->pm.lock)
 {
 	struct mptcp_pm_data *pm = &msk->pm;
 

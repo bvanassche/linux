@@ -527,12 +527,18 @@ extern const struct netfs_request_ops nfs_netfs_ops;
 #endif
 
 /* io.c */
-extern __must_check int nfs_start_io_read(struct inode *inode);
-extern void nfs_end_io_read(struct inode *inode);
-extern  __must_check int nfs_start_io_write(struct inode *inode);
-extern void nfs_end_io_write(struct inode *inode);
-extern __must_check int nfs_start_io_direct(struct inode *inode);
-extern void nfs_end_io_direct(struct inode *inode);
+extern __must_check int nfs_start_io_read(struct inode *inode)
+	__cond_acquires_shared(0, &inode->i_rwsem);
+extern void nfs_end_io_read(struct inode *inode)
+	__releases_shared(&inode->i_rwsem);
+extern  __must_check int nfs_start_io_write(struct inode *inode)
+	__cond_acquires(0, &inode->i_rwsem);
+extern void nfs_end_io_write(struct inode *inode)
+	__releases(&inode->i_rwsem);
+extern __must_check int nfs_start_io_direct(struct inode *inode)
+	__cond_acquires_shared(0, &inode->i_rwsem);
+extern void nfs_end_io_direct(struct inode *inode)
+	__releases_shared(&inode->i_rwsem);
 
 static inline bool nfs_file_io_is_buffered(struct nfs_inode *nfsi)
 {

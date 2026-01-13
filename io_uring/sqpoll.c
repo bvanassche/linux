@@ -243,6 +243,7 @@ static int __io_sq_thread(struct io_ring_ctx *ctx, struct io_sq_data *sqd,
 }
 
 static bool io_sqd_handle_event(struct io_sq_data *sqd)
+	__must_hold(&sqd->lock)
 {
 	bool did_sig = false;
 	struct ksignal ksig;

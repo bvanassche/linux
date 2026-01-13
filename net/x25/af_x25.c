@@ -710,6 +710,7 @@ out:
 }
 
 static int x25_wait_for_connection_establishment(struct sock *sk)
+	__must_hold(sk)
 {
 	DECLARE_WAITQUEUE(wait, current);
 	int rc;
@@ -843,6 +844,7 @@ out:
 }
 
 static int x25_wait_for_data(struct sock *sk, long timeout)
+	__must_hold(sk)
 {
 	DECLARE_WAITQUEUE(wait, current);
 	int rc = 0;

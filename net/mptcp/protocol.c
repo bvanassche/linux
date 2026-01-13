@@ -1565,6 +1565,7 @@ struct sock *mptcp_subflow_get_send(struct mptcp_sock *msk)
 }
 
 static void mptcp_push_release(struct sock *ssk, struct mptcp_sendmsg_info *info)
+	__releases(ssk)
 {
 	tcp_push(ssk, 0, info->mss_now, tcp_sk(ssk)->nonagle, info->size_goal);
 	release_sock(ssk);
@@ -1651,6 +1652,7 @@ out:
 }
 
 void __mptcp_push_pending(struct sock *sk, unsigned int flags)
+	__no_context_analysis
 {
 	struct sock *prev_ssk = NULL, *ssk = NULL;
 	struct mptcp_sock *msk = mptcp_sk(sk);
@@ -3288,6 +3290,7 @@ static void mptcp_check_listen_stop(struct sock *sk)
 }
 
 bool __mptcp_close(struct sock *sk, long timeout)
+	__must_hold(sk)
 {
 	struct mptcp_subflow_context *subflow;
 	struct mptcp_sock *msk = mptcp_sk(sk);
@@ -3531,6 +3534,7 @@ struct sock *mptcp_sk_clone_init(const struct sock *sk,
 				 const struct mptcp_options_received *mp_opt,
 				 struct sock *ssk,
 				 struct request_sock *req)
+	__no_context_analysis
 {
 	struct mptcp_subflow_request_sock *subflow_req = mptcp_subflow_rsk(req);
 	struct sock *nsk = sk_clone_lock(sk, GFP_ATOMIC);
@@ -3964,6 +3968,7 @@ static int mptcp_ioctl(struct sock *sk, int cmd, int *karg)
 
 static int mptcp_connect(struct sock *sk, struct sockaddr_unsized *uaddr,
 			 int addr_len)
+	__no_context_analysis /* conditional locking */
 {
 	struct mptcp_subflow_context *subflow;
 	struct mptcp_sock *msk = mptcp_sk(sk);
@@ -4205,6 +4210,7 @@ unlock:
 
 static int mptcp_stream_accept(struct socket *sock, struct socket *newsock,
 			       struct proto_accept_arg *arg)
+	__no_context_analysis
 {
 	struct mptcp_sock *msk = mptcp_sk(sock->sk);
 	struct sock *ssk, *newsk;

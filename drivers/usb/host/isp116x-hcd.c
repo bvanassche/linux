@@ -293,7 +293,7 @@ static void preproc_atl_queue(struct isp116x *isp116x)
 */
 static void finish_request(struct isp116x *isp116x, struct isp116x_ep *ep,
 			   struct urb *urb, int status)
-__releases(isp116x->lock) __acquires(isp116x->lock)
+	__no_context_analysis
 {
 	unsigned i;
 
@@ -346,6 +346,7 @@ __releases(isp116x->lock) __acquires(isp116x->lock)
   Analyze transfer results, handle partial transfers and errors
 */
 static void postproc_atl_queue(struct isp116x *isp116x)
+	__no_context_analysis
 {
 	struct isp116x_ep *ep;
 	struct urb *urb;

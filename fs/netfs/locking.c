@@ -54,7 +54,7 @@ static int netfs_block_o_direct(struct netfs_inode *ictx)
  * inode->i_rwsem, meaning that those are serialised w.r.t. the reads.
  */
 int netfs_start_io_read(struct inode *inode)
-	__acquires(inode->i_rwsem)
+	__cond_acquires_shared(0, &inode->i_rwsem)
 {
 	struct netfs_inode *ictx = netfs_inode(inode);
 
@@ -85,7 +85,7 @@ EXPORT_SYMBOL(netfs_start_io_read);
  * lock on inode->i_rwsem.
  */
 void netfs_end_io_read(struct inode *inode)
-	__releases(inode->i_rwsem)
+	__releases_shared(&inode->i_rwsem)
 {
 	up_read(&inode->i_rwsem);
 }
@@ -99,7 +99,7 @@ EXPORT_SYMBOL(netfs_end_io_read);
  * that we block all direct I/O.
  */
 int netfs_start_io_write(struct inode *inode)
-	__acquires(inode->i_rwsem)
+	__cond_acquires_shared(0, &inode->i_rwsem)
 {
 	struct netfs_inode *ictx = netfs_inode(inode);
 
@@ -122,7 +122,7 @@ EXPORT_SYMBOL(netfs_start_io_write);
  * lock on inode->i_rwsem.
  */
 void netfs_end_io_write(struct inode *inode)
-	__releases(inode->i_rwsem)
+	__releases_shared(inode->i_rwsem)
 {
 	up_read(&inode->i_rwsem);
 }
@@ -165,7 +165,7 @@ static int netfs_block_buffered(struct inode *inode)
  * inode->i_rwsem, meaning that those are serialised w.r.t. O_DIRECT.
  */
 int netfs_start_io_direct(struct inode *inode)
-	__acquires(inode->i_rwsem)
+	__cond_acquires_shared(0, &inode->i_rwsem)
 {
 	struct netfs_inode *ictx = netfs_inode(inode);
 	int ret;
@@ -198,7 +198,7 @@ EXPORT_SYMBOL(netfs_start_io_direct);
  * lock on inode->i_rwsem.
  */
 void netfs_end_io_direct(struct inode *inode)
-	__releases(inode->i_rwsem)
+	__releases_shared(&inode->i_rwsem)
 {
 	up_read(&inode->i_rwsem);
 }

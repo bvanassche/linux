@@ -150,6 +150,7 @@ static const struct seq_operations proc_pid_maps_op;
 
 static inline bool lock_vma_range(struct seq_file *m,
 				  struct proc_maps_locking_ctx *lock_ctx)
+	__no_context_analysis
 {
 	/*
 	 * smaps and numa_maps perform page table walk, therefore require
@@ -170,6 +171,7 @@ static inline bool lock_vma_range(struct seq_file *m,
 }
 
 static inline void unlock_vma_range(struct proc_maps_locking_ctx *lock_ctx)
+	__no_context_analysis
 {
 	if (lock_ctx->mmap_locked) {
 		mmap_read_unlock(lock_ctx->mm);
@@ -198,6 +200,7 @@ static struct vm_area_struct *get_next_vma(struct proc_maps_private *priv,
 
 static inline bool fallback_to_mmap_lock(struct proc_maps_private *priv,
 					 loff_t pos)
+	__no_context_analysis
 {
 	struct proc_maps_locking_ctx *lock_ctx = &priv->lock_ctx;
 
@@ -222,6 +225,7 @@ static inline bool lock_vma_range(struct seq_file *m,
 }
 
 static inline void unlock_vma_range(struct proc_maps_locking_ctx *lock_ctx)
+	__releases_shared(&lock_ctx->mm->mmap_lock)
 {
 	mmap_read_unlock(lock_ctx->mm);
 }
@@ -326,6 +330,7 @@ static void *m_next(struct seq_file *m, void *v, loff_t *ppos)
 }
 
 static void m_stop(struct seq_file *m, void *v)
+	__no_context_analysis /* conditional locking */
 {
 	struct proc_maps_private *priv = m->private;
 	struct mm_struct *mm = priv->lock_ctx.mm;
@@ -537,6 +542,7 @@ static int query_vma_setup(struct proc_maps_locking_ctx *lock_ctx)
 }
 
 static void query_vma_teardown(struct proc_maps_locking_ctx *lock_ctx)
+	__no_context_analysis
 {
 	if (lock_ctx->mmap_locked) {
 		mmap_read_unlock(lock_ctx->mm);
@@ -548,6 +554,7 @@ static void query_vma_teardown(struct proc_maps_locking_ctx *lock_ctx)
 
 static struct vm_area_struct *query_vma_find_by_addr(struct proc_maps_locking_ctx *lock_ctx,
 						     unsigned long addr)
+	__no_context_analysis
 {
 	struct mm_struct *mm = lock_ctx->mm;
 	struct vm_area_struct *vma;
@@ -589,6 +596,7 @@ static int query_vma_setup(struct proc_maps_locking_ctx *lock_ctx)
 }
 
 static void query_vma_teardown(struct proc_maps_locking_ctx *lock_ctx)
+	__releases_shared(&lock_ctx->mm->mmap_lock)
 {
 	mmap_read_unlock(lock_ctx->mm);
 }
@@ -652,6 +660,7 @@ no_vma:
 }
 
 static int do_procmap_query(struct mm_struct *mm, void __user *uarg)
+	__no_context_analysis /* conditional locking */
 {
 	struct proc_maps_locking_ctx lock_ctx = { .mm = mm };
 	struct procmap_query karg;
@@ -1114,6 +1123,7 @@ static int smaps_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 
 	ptl = pmd_trans_huge_lock(pmd, vma);
 	if (ptl) {
+		__acquire(ptl);
 		smaps_pmd_entry(pmd, addr, walk);
 		spin_unlock(ptl);
 		goto out;
@@ -1688,6 +1698,8 @@ static int clear_refs_pte_range(pmd_t *pmd, unsigned long addr,
 
 	ptl = pmd_trans_huge_lock(pmd, vma);
 	if (ptl) {
+		__acquire(ptl);
+
 		if (cp->type == CLEAR_REFS_SOFT_DIRTY) {
 			clear_soft_dirty_pmd(vma, addr, pmd);
 			goto out;
@@ -2088,6 +2100,7 @@ static int pagemap_pmd_range(pmd_t *pmdp, unsigned long addr, unsigned long end,
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
 	ptl = pmd_trans_huge_lock(pmdp, vma);
 	if (ptl) {
+		__acquire(ptl);
 		err = pagemap_pmd_range_thp(pmdp, addr, end, vma, pm);
 		spin_unlock(ptl);
 		return err;
@@ -2694,6 +2707,8 @@ static int pagemap_scan_thp_entry(pmd_t *pmd, unsigned long start,
 	if (!ptl)
 		return -ENOENT;
 
+	__acquire(ptl);
+
 	categories = p->cur_vma_category |
 		     pagemap_thp_category(p, vma, start, *pmd);
 
@@ -2855,7 +2870,6 @@ static int pagemap_scan_hugetlb_entry(pte_t *ptep, unsigned long hmask,
 
 	i_mmap_lock_write(vma->vm_file->f_mapping);
 	ptl = huge_pte_lock(hstate_vma(vma), vma->vm_mm, ptep);
-
 	pte = huge_ptep_get(walk->mm, start, ptep);
 	categories = p->cur_vma_category | pagemap_hugetlb_category(pte);
 
@@ -3228,6 +3242,8 @@ static int gather_pte_stats(pmd_t *pmd, unsigned long addr,
 	ptl = pmd_trans_huge_lock(pmd, vma);
 	if (ptl) {
 		struct page *page;
+
+		__acquire(ptl);
 
 		page = can_gather_numa_stats_pmd(*pmd, vma, addr);
 		if (page)

@@ -839,6 +839,7 @@ static const struct drm_bridge_funcs cdn_dp_bridge_funcs = {
 };
 
 static int cdn_dp_request_firmware(struct cdn_dp_device *dp)
+	__must_hold(dp->lock)
 {
 	int ret;
 	unsigned long timeout = jiffies + msecs_to_jiffies(CDN_FW_TIMEOUT_MS);

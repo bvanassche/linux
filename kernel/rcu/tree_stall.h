@@ -1001,6 +1001,7 @@ EXPORT_SYMBOL_GPL(show_rcu_gp_kthreads);
  */
 static void rcu_check_gp_start_stall(struct rcu_node *rnp, struct rcu_data *rdp,
 				     const unsigned long gpssdelay)
+	__no_context_analysis
 {
 	unsigned long flags;
 	unsigned long j;

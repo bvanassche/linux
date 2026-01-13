@@ -2200,6 +2200,7 @@ static int ocfs2_inode_lock_for_extent_tree(struct inode *inode,
 					    int meta_level,
 					    int write_sem,
 					    int wait)
+	__no_context_analysis /* conditional locking */
 {
 	int ret = 0;
 
@@ -2241,6 +2242,7 @@ static void ocfs2_inode_unlock_for_extent_tree(struct inode *inode,
 					       struct buffer_head **di_bh,
 					       int meta_level,
 					       int write_sem)
+	__no_context_analysis /* conditional locking */
 {
 	if (write_sem)
 		up_write(&OCFS2_I(inode)->ip_alloc_sem);
@@ -2701,6 +2703,7 @@ out:
 static loff_t ocfs2_remap_file_range(struct file *file_in, loff_t pos_in,
 				     struct file *file_out, loff_t pos_out,
 				     loff_t len, unsigned int remap_flags)
+	__no_context_analysis /* conditional locking */
 {
 	struct inode *inode_in = file_inode(file_in);
 	struct inode *inode_out = file_inode(file_out);

@@ -279,6 +279,7 @@ static void hung_task_info(struct task_struct *t, unsigned long timeout,
  * to exit the grace period. For classic RCU, a reschedule is required.
  */
 static bool rcu_lock_break(struct task_struct *g, struct task_struct *t)
+	__must_hold_shared(RCU)
 {
 	bool can_cont;
 

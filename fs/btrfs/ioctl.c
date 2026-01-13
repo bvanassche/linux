@@ -3322,6 +3322,7 @@ void btrfs_update_ioctl_balance_args(struct btrfs_fs_info *fs_info,
  * as exclusive ops are blocked. In case of failure return an error code.
  */
 static int btrfs_try_lock_balance(struct btrfs_fs_info *fs_info, bool *excl_acquired)
+	__no_context_analysis
 {
 	int ret;
 
@@ -3377,6 +3378,7 @@ out_failure:
 }
 
 static long btrfs_ioctl_balance(struct file *file, void __user *arg)
+	__no_context_analysis
 {
 	struct btrfs_root *root = BTRFS_I(file_inode(file))->root;
 	struct btrfs_fs_info *fs_info = root->fs_info;
@@ -5057,7 +5059,7 @@ static int btrfs_ioctl_subvol_sync(struct btrfs_fs_info *fs_info, void __user *a
 
 	while (1) {
 		/* Wait for the specific one. */
-		if (down_read_interruptible(&fs_info->subvol_sem) == -EINTR)
+		if (down_read_interruptible(&fs_info->subvol_sem))
 			return -EINTR;
 		refs = -1;
 		spin_lock(&fs_info->fs_roots_radix_lock);

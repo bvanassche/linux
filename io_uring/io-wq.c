@@ -275,7 +275,7 @@ static inline bool __io_acct_run_queue(struct io_wq_acct *acct)
  * returns false with no lock held.
  */
 static inline bool io_acct_run_queue(struct io_wq_acct *acct)
-	__acquires(&acct->lock)
+	__cond_acquires(true, &acct->lock)
 {
 	raw_spin_lock(&acct->lock);
 	if (__io_acct_run_queue(acct))
@@ -290,7 +290,7 @@ static inline bool io_acct_run_queue(struct io_wq_acct *acct)
  * caller must create one.
  */
 static bool io_acct_activate_free_worker(struct io_wq_acct *acct)
-	__must_hold(RCU)
+	__must_hold_shared(RCU)
 {
 	struct hlist_nulls_node *n;
 	struct io_worker *worker;

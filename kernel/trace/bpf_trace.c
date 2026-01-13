@@ -3080,6 +3080,7 @@ static int uprobe_prog_run(struct bpf_uprobe *uprobe,
 			   unsigned long entry_ip,
 			   struct pt_regs *regs,
 			   bool is_return, void *data)
+	__no_context_analysis /* conditional locking */
 {
 	struct bpf_uprobe_multi_link *link = uprobe->link;
 	struct bpf_uprobe_multi_run_ctx run_ctx = {

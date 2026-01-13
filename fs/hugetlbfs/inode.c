@@ -399,6 +399,7 @@ static unsigned long vma_offset_end(struct vm_area_struct *vma, pgoff_t end)
 static void hugetlb_unmap_file_folio(struct hstate *h,
 					struct address_space *mapping,
 					struct folio *folio, pgoff_t index)
+	__no_context_analysis
 {
 	struct rb_root_cached *root = &mapping->i_mmap;
 	struct hugetlb_vma_lock *vma_lock;

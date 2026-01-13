@@ -77,21 +77,19 @@ iwl_notification_wait_notify(struct iwl_notif_wait_data *notif_data,
 }
 
 /* user functions */
-void __acquires(wait_entry)
-iwl_init_notification_wait(struct iwl_notif_wait_data *notif_data,
+void iwl_init_notification_wait(struct iwl_notif_wait_data *notif_data,
 			   struct iwl_notification_wait *wait_entry,
 			   const u16 *cmds, int n_cmds,
 			   bool (*fn)(struct iwl_notif_wait_data *notif_data,
 				      struct iwl_rx_packet *pkt, void *data),
 			   void *fn_data);
 
-int __must_check __releases(wait_entry)
-iwl_wait_notification(struct iwl_notif_wait_data *notif_data,
-		      struct iwl_notification_wait *wait_entry,
-		      unsigned long timeout);
+__must_check
+int iwl_wait_notification(struct iwl_notif_wait_data *notif_data,
+			  struct iwl_notification_wait *wait_entry,
+			  unsigned long timeout);
 
-void __releases(wait_entry)
-iwl_remove_notification(struct iwl_notif_wait_data *notif_data,
-			struct iwl_notification_wait *wait_entry);
+void iwl_remove_notification(struct iwl_notif_wait_data *notif_data,
+			     struct iwl_notification_wait *wait_entry);
 
 #endif /* __iwl_notif_wait_h__ */

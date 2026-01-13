@@ -1945,6 +1945,7 @@ err:
  * Do work that needs RTNL.
  */
 static void iavf_finish_config(struct work_struct *work)
+	__no_context_analysis /* conditional unlock */
 {
 	struct iavf_adapter *adapter;
 	bool netdev_released = false;
@@ -4501,6 +4502,7 @@ err_setup_tx:
  * are freed, along with all transmit and receive resources.
  **/
 static int iavf_close(struct net_device *netdev)
+	__must_hold(netdev->lock)
 {
 	struct iavf_adapter *adapter = netdev_priv(netdev);
 	u64 aq_to_restore;

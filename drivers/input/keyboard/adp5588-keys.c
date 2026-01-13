@@ -343,6 +343,7 @@ static int adp5588_build_gpiomap(struct adp5588_kpad *kpad)
 }
 
 static void adp5588_irq_bus_lock(struct irq_data *d)
+	__acquires(&((struct adp5588_kpad *)gpiochip_get_data(irq_data_get_irq_chip_data(d)))->gpio_lock)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct adp5588_kpad *kpad = gpiochip_get_data(gc);
@@ -351,6 +352,7 @@ static void adp5588_irq_bus_lock(struct irq_data *d)
 }
 
 static void adp5588_irq_bus_sync_unlock(struct irq_data *d)
+	__releases(&((struct adp5588_kpad *)gpiochip_get_data(irq_data_get_irq_chip_data(d)))->gpio_lock)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct adp5588_kpad *kpad = gpiochip_get_data(gc);

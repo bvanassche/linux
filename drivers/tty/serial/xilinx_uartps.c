@@ -600,6 +600,7 @@ static unsigned int cdns_uart_set_baud_rate(struct uart_port *port,
  */
 static int cdns_uart_clk_notifier_cb(struct notifier_block *nb,
 		unsigned long event, void *data)
+	__no_context_analysis /* conditional locking */
 {
 	u32 ctrl_reg;
 	struct uart_port *port;
@@ -1370,6 +1371,7 @@ static struct uart_port *console_port;
  */
 static void cdns_uart_console_write(struct console *co, const char *s,
 				unsigned int count)
+	__no_context_analysis /* conditional locking */
 {
 	struct uart_port *port = console_port;
 	unsigned long flags;

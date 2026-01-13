@@ -124,12 +124,14 @@ static int v9fs_lookup_revalidate(struct inode *dir, const struct qstr *name,
 }
 
 static bool v9fs_dentry_unalias_trylock(const struct dentry *dentry)
+	__cond_acquires(true, &((struct v9fs_session_info *)v9fs_dentry2v9ses(dentry))->rename_sem)
 {
 	struct v9fs_session_info *v9ses = v9fs_dentry2v9ses(dentry);
 	return down_write_trylock(&v9ses->rename_sem);
 }
 
 static void v9fs_dentry_unalias_unlock(const struct dentry *dentry)
+	__releases(&((struct v9fs_session_info *)v9fs_dentry2v9ses(dentry))->rename_sem)
 {
 	struct v9fs_session_info *v9ses = v9fs_dentry2v9ses(dentry);
 	up_write(&v9ses->rename_sem);

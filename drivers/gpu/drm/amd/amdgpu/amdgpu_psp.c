@@ -787,6 +787,7 @@ exit:
 }
 
 static struct psp_gfx_cmd_resp *acquire_psp_cmd_buf(struct psp_context *psp)
+	__acquires(psp->mutex)
 {
 	struct psp_gfx_cmd_resp *cmd = psp->cmd;
 
@@ -798,6 +799,7 @@ static struct psp_gfx_cmd_resp *acquire_psp_cmd_buf(struct psp_context *psp)
 }
 
 static void release_psp_cmd_buf(struct psp_context *psp)
+	__releases(psp->mutex)
 {
 	mutex_unlock(&psp->mutex);
 }

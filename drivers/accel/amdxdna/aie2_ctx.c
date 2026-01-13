@@ -141,6 +141,7 @@ static int aie2_hwctx_suspend_cb(struct amdxdna_hwctx *hwctx, void *arg)
 }
 
 void aie2_hwctx_suspend(struct amdxdna_client *client)
+	__must_hold(&client->xdna->dev_lock)
 {
 	struct amdxdna_dev *xdna = client->xdna;
 
@@ -600,6 +601,7 @@ static void aie2_ctx_syncobj_destroy(struct amdxdna_hwctx *hwctx)
 }
 
 int aie2_hwctx_init(struct amdxdna_hwctx *hwctx)
+	__must_hold(&hwctx->client->xdna->dev_lock)
 {
 	struct amdxdna_client *client = hwctx->client;
 	struct amdxdna_dev *xdna = client->xdna;
@@ -742,6 +744,7 @@ free_priv:
 }
 
 void aie2_hwctx_fini(struct amdxdna_hwctx *hwctx)
+	__must_hold(&hwctx->client->xdna->dev_lock)
 {
 	struct amdxdna_dev *xdna;
 	int idx;
@@ -788,6 +791,7 @@ static int aie2_config_cu_resp_handler(void *handle, void __iomem *data, size_t 
 }
 
 static int aie2_hwctx_cu_config(struct amdxdna_hwctx *hwctx, void *buf, u32 size)
+	__must_hold(&hwctx->client->xdna->dev_lock)
 {
 	struct amdxdna_hwctx_param_config_cu *config = buf;
 	struct amdxdna_dev *xdna = hwctx->client->xdna;
@@ -909,6 +913,7 @@ put_obj:
 }
 
 int aie2_hwctx_config(struct amdxdna_hwctx *hwctx, u32 type, u64 value, void *buf, u32 size)
+	__must_hold(&hwctx->client->xdna->dev_lock)
 {
 	struct amdxdna_dev *xdna = hwctx->client->xdna;
 

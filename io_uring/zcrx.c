@@ -787,6 +787,7 @@ err:
 static int zcrx_register_netdev(struct io_zcrx_ifq *ifq,
 				struct io_uring_zcrx_ifq_reg *reg,
 				struct io_uring_zcrx_area_reg *area)
+	__no_context_analysis /* conditional locking */
 {
 	struct pp_memory_provider_params mp_param = {};
 	unsigned if_rxq = reg->if_rxq;
@@ -797,6 +798,7 @@ static int zcrx_register_netdev(struct io_zcrx_ifq *ifq,
 	if (!ifq->netdev)
 		return -ENODEV;
 
+	__acquire(&ifq->netdev->lock);
 	netdev_hold(ifq->netdev, &ifq->netdev_tracker, GFP_KERNEL);
 
 	ifq->dev = netdev_queue_get_dma_dev(ifq->netdev, if_rxq, NETDEV_QUEUE_TYPE_RX);

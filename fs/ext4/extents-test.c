@@ -126,6 +126,7 @@ struct kunit_ext_test_param {
 };
 
 static void ext_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	generic_shutdown_super(sb);
 }
@@ -218,6 +219,7 @@ static int ext4_issue_zeroout_stub(struct inode *inode, ext4_lblk_t lblk,
 }
 
 static int extents_kunit_init(struct kunit *test)
+	__context_unsafe(conditional locking)
 {
 	struct ext4_extent_header *eh = NULL;
 	struct ext4_inode_info *ei;

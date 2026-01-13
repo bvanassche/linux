@@ -324,6 +324,11 @@ static void vpa_dtl_reset_global_refc(struct perf_event *event)
 	dtl_global_refc--;
 	if (dtl_global_refc <= 0) {
 		dtl_global_refc = 0;
+		/*
+		 * Fake __acquire() because the down_write() call occurs
+		 * elsewhere.
+		 */
+		__acquire(&dtl_access_lock);
 		up_write(&dtl_access_lock);
 	}
 	spin_unlock(&dtl_global_lock);
@@ -348,6 +353,7 @@ static int vpa_dtl_mem_alloc(int cpu)
 }
 
 static int vpa_dtl_event_init(struct perf_event *event)
+	__no_context_analysis /* because of down_write_trylock(&dtl_access_lock) */
 {
 	struct hw_perf_event *hwc = &event->hw;
 

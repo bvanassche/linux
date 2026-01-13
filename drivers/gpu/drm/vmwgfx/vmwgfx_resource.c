@@ -964,6 +964,7 @@ void vmw_resource_evict_all(struct vmw_private *dev_priv)
  * This function returns 0 on success and a negative error code on failure.
  */
 int vmw_resource_pin(struct vmw_resource *res, bool interruptible)
+	__no_context_analysis /* conditional locking */
 {
 	struct ttm_operation_ctx ctx = { interruptible, false };
 	struct vmw_private *dev_priv = res->dev_priv;
@@ -1025,6 +1026,7 @@ out_no_reserve:
  * its id will never change as long as there is a pin reference.
  */
 void vmw_resource_unpin(struct vmw_resource *res)
+	__no_context_analysis /* conditional locking */
 {
 	struct vmw_private *dev_priv = res->dev_priv;
 	int ret;

@@ -659,8 +659,7 @@ static int mqprio_dump_class(struct Qdisc *sch, unsigned long cl,
 
 static int mqprio_dump_class_stats(struct Qdisc *sch, unsigned long cl,
 				   struct gnet_dump *d)
-	__releases(d->lock)
-	__acquires(d->lock)
+	__no_context_analysis
 {
 	if (cl >= TC_H_MIN_PRIORITY) {
 		int i;

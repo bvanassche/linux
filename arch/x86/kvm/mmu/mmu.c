@@ -560,6 +560,7 @@ static inline bool is_tdp_mmu_active(struct kvm_vcpu *vcpu)
 }
 
 static void walk_shadow_page_lockless_begin(struct kvm_vcpu *vcpu)
+	__no_context_analysis /* conditional locking */
 {
 	if (is_tdp_mmu_active(vcpu)) {
 		kvm_tdp_mmu_walk_lockless_begin();
@@ -579,6 +580,7 @@ static void walk_shadow_page_lockless_begin(struct kvm_vcpu *vcpu)
 }
 
 static void walk_shadow_page_lockless_end(struct kvm_vcpu *vcpu)
+	__no_context_analysis /* conditional locking */
 {
 	if (is_tdp_mmu_active(vcpu)) {
 		kvm_tdp_mmu_walk_lockless_end();
@@ -1578,6 +1580,7 @@ static __always_inline bool __walk_slot_rmaps(struct kvm *kvm,
 					      gfn_t start_gfn, gfn_t end_gfn,
 					      bool can_yield, bool flush_on_yield,
 					      bool flush)
+	__must_hold(&kvm->mmu_lock)
 {
 	struct slot_rmap_walk_iterator iterator;
 
@@ -1609,6 +1612,7 @@ static __always_inline bool walk_slot_rmaps(struct kvm *kvm,
 					    slot_rmaps_handler fn,
 					    int start_level, int end_level,
 					    bool flush_on_yield)
+	__must_hold(&kvm->mmu_lock)
 {
 	return __walk_slot_rmaps(kvm, slot, fn, start_level, end_level,
 				 slot->base_gfn, slot->base_gfn + slot->npages - 1,
@@ -1619,6 +1623,7 @@ static __always_inline bool walk_slot_rmaps_4k(struct kvm *kvm,
 					       const struct kvm_memory_slot *slot,
 					       slot_rmaps_handler fn,
 					       bool flush_on_yield)
+	__must_hold(&kvm->mmu_lock)
 {
 	return walk_slot_rmaps(kvm, slot, fn, PG_LEVEL_4K, PG_LEVEL_4K, flush_on_yield);
 }
@@ -1627,6 +1632,7 @@ static bool __kvm_rmap_zap_gfn_range(struct kvm *kvm,
 				     const struct kvm_memory_slot *slot,
 				     gfn_t start, gfn_t end, bool can_yield,
 				     bool flush)
+	__must_hold(&kvm->mmu_lock)
 {
 	return __walk_slot_rmaps(kvm, slot, kvm_zap_rmap,
 				 PG_LEVEL_4K, KVM_MAX_HUGEPAGE_LEVEL,
@@ -1647,6 +1653,7 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
 	 */
 	lockdep_assert_once(kvm->mmu_invalidate_in_progress ||
 			    lockdep_is_held(&kvm->slots_lock));
+	__assume_ctx_lock(&kvm->mmu_lock);
 
 	if (kvm_memslots_have_rmaps(kvm))
 		flush = __kvm_rmap_zap_gfn_range(kvm, range->slot,
@@ -2185,6 +2192,7 @@ static void mmu_pages_clear_parents(struct mmu_page_path *parents)
 
 static int mmu_sync_children(struct kvm_vcpu *vcpu,
 			     struct kvm_mmu_page *parent, bool can_yield)
+	__must_hold(&vcpu->kvm->mmu_lock)
 {
 	int i;
 	struct kvm_mmu_page *sp;
@@ -2940,6 +2948,7 @@ static void kvm_unsync_page(struct kvm *kvm, struct kvm_mmu_page *sp)
  */
 int mmu_try_to_unsync_pages(struct kvm *kvm, const struct kvm_memory_slot *slot,
 			    gfn_t gfn, bool synchronizing, bool prefetch)
+	__no_context_analysis /* conditional locking */
 {
 	struct kvm_mmu_page *sp;
 	bool locked = false;
@@ -3828,6 +3837,7 @@ static void mmu_free_root_page(struct kvm *kvm, hpa_t *root_hpa,
 /* roots_to_free must be some combination of the KVM_MMU_ROOT_* flags */
 void kvm_mmu_free_roots(struct kvm *kvm, struct kvm_mmu *mmu,
 			ulong roots_to_free)
+	__no_context_analysis /* conditional locking */
 {
 	bool is_tdp_mmu = tdp_mmu_enabled && mmu->root_role.direct;
 	int i;
@@ -6738,6 +6748,7 @@ int kvm_mmu_create(struct kvm_vcpu *vcpu)
 
 #define BATCH_ZAP_PAGES	10
 static void kvm_zap_obsolete_pages(struct kvm *kvm)
+	__must_hold(kvm->mmu_lock)
 {
 	struct kvm_mmu_page *sp, *node;
 	int nr_zapped, batch = 0;
@@ -6907,6 +6918,7 @@ void kvm_mmu_uninit_vm(struct kvm *kvm)
 }
 
 static bool kvm_rmap_zap_gfn_range(struct kvm *kvm, gfn_t gfn_start, gfn_t gfn_end)
+	__must_hold(kvm->mmu_lock)
 {
 	const struct kvm_memory_slot *memslot;
 	struct kvm_memslots *slots;
@@ -7121,6 +7133,7 @@ static void shadow_mmu_split_huge_page(struct kvm *kvm,
 static int shadow_mmu_try_split_huge_page(struct kvm *kvm,
 					  const struct kvm_memory_slot *slot,
 					  u64 *huge_sptep)
+	__must_hold(kvm->mmu_lock)
 {
 	struct kvm_mmu_page *huge_sp = sptep_to_sp(huge_sptep);
 	int level, r = 0;
@@ -7160,6 +7173,7 @@ out:
 static bool shadow_mmu_try_split_huge_pages(struct kvm *kvm,
 					    struct kvm_rmap_head *rmap_head,
 					    const struct kvm_memory_slot *slot)
+	__must_hold(kvm->mmu_lock)
 {
 	struct rmap_iterator iter;
 	struct kvm_mmu_page *sp;
@@ -7207,6 +7221,7 @@ static void kvm_shadow_mmu_try_split_huge_pages(struct kvm *kvm,
 						const struct kvm_memory_slot *slot,
 						gfn_t start, gfn_t end,
 						int target_level)
+	__must_hold(&kvm->mmu_lock)
 {
 	int level;
 
@@ -7226,6 +7241,7 @@ void kvm_mmu_try_split_huge_pages(struct kvm *kvm,
 				   const struct kvm_memory_slot *memslot,
 				   u64 start, u64 end,
 				   int target_level)
+	__must_hold(kvm->mmu_lock)
 {
 	if (!tdp_mmu_enabled)
 		return;
@@ -7310,6 +7326,7 @@ restart:
 
 static void kvm_rmap_zap_collapsible_sptes(struct kvm *kvm,
 					   const struct kvm_memory_slot *slot)
+	__must_hold(kvm->mmu_lock)
 {
 	/*
 	 * Note, use KVM_MAX_HUGEPAGE_LEVEL - 1 since there's no need to zap
@@ -7398,6 +7415,7 @@ void kvm_arch_flush_shadow_all(struct kvm *kvm)
 static void kvm_mmu_zap_memslot_pages_and_flush(struct kvm *kvm,
 						struct kvm_memory_slot *slot,
 						bool flush)
+	__must_hold(kvm->mmu_lock)
 {
 	LIST_HEAD(invalid_list);
 	unsigned long i;
@@ -7753,6 +7771,7 @@ static bool kvm_mmu_sp_dirty_logging_enabled(struct kvm *kvm,
 
 static void kvm_recover_nx_huge_pages(struct kvm *kvm,
 				      const enum kvm_mmu_type mmu_type)
+	__no_context_analysis /* conditional locking */
 {
 #ifdef CONFIG_X86_64
 	const bool is_tdp_mmu = mmu_type == KVM_TDP_MMU;

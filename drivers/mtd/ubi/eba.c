@@ -313,6 +313,7 @@ static struct ubi_ltree_entry *ltree_add_entry(struct ubi_device *ubi,
  * of success and a negative error code in case of failure.
  */
 static int leb_read_lock(struct ubi_device *ubi, int vol_id, int lnum)
+	__no_context_analysis /* locks allocated pointer */
 {
 	struct ubi_ltree_entry *le;
 
@@ -330,6 +331,7 @@ static int leb_read_lock(struct ubi_device *ubi, int vol_id, int lnum)
  * @lnum: logical eraseblock number
  */
 static void leb_read_unlock(struct ubi_device *ubi, int vol_id, int lnum)
+	__no_context_analysis /* unlocks looked up pointer */
 {
 	struct ubi_ltree_entry *le;
 
@@ -355,6 +357,7 @@ static void leb_read_unlock(struct ubi_device *ubi, int vol_id, int lnum)
  * of success and a negative error code in case of failure.
  */
 static int leb_write_lock(struct ubi_device *ubi, int vol_id, int lnum)
+	__no_context_analysis /* locks allocated pointer */
 {
 	struct ubi_ltree_entry *le;
 
@@ -377,6 +380,7 @@ static int leb_write_lock(struct ubi_device *ubi, int vol_id, int lnum)
  * failure.
  */
 static int leb_write_trylock(struct ubi_device *ubi, int vol_id, int lnum)
+	__no_context_analysis /* locks allocated pointer */
 {
 	struct ubi_ltree_entry *le;
 
@@ -406,6 +410,7 @@ static int leb_write_trylock(struct ubi_device *ubi, int vol_id, int lnum)
  * @lnum: logical eraseblock number
  */
 static void leb_write_unlock(struct ubi_device *ubi, int vol_id, int lnum)
+	__no_context_analysis /* unlocks looked up pointer */
 {
 	struct ubi_ltree_entry *le;
 
@@ -802,6 +807,7 @@ int ubi_eba_read_leb_sg(struct ubi_device *ubi, struct ubi_volume *vol,
 static int try_recover_peb(struct ubi_volume *vol, int pnum, int lnum,
 			   const void *buf, int offset, int len,
 			   struct ubi_vid_io_buf *vidb, bool *retry)
+	__releases_shared(&vol->ubi->fm_eba_sem)
 {
 	struct ubi_device *ubi = vol->ubi;
 	struct ubi_vid_hdr *vid_hdr;
@@ -897,6 +903,7 @@ out_put:
  */
 static int recover_peb(struct ubi_device *ubi, int pnum, int vol_id, int lnum,
 		       const void *buf, int offset, int len)
+	__no_context_analysis
 {
 	int err, idx = vol_id2idx(ubi, vol_id), tries;
 	struct ubi_volume *vol = ubi->volumes[idx];
@@ -940,6 +947,7 @@ static int recover_peb(struct ubi_device *ubi, int pnum, int vol_id, int lnum,
 static int try_write_vid_and_data(struct ubi_volume *vol, int lnum,
 				  struct ubi_vid_io_buf *vidb, const void *buf,
 				  int offset, int len)
+	__releases_shared(&vol->ubi->fm_eba_sem)
 {
 	struct ubi_device *ubi = vol->ubi;
 	int pnum, opnum, err, err2, vol_id = vol->vol_id;
@@ -1011,6 +1019,7 @@ out_put:
  */
 int ubi_eba_write_leb(struct ubi_device *ubi, struct ubi_volume *vol, int lnum,
 		      const void *buf, int offset, int len)
+	__no_context_analysis
 {
 	int err, pnum, tries, vol_id = vol->vol_id;
 	struct ubi_vid_io_buf *vidb;
@@ -1114,6 +1123,7 @@ out:
  */
 int ubi_eba_write_leb_st(struct ubi_device *ubi, struct ubi_volume *vol,
 			 int lnum, const void *buf, int len, int used_ebs)
+	__no_context_analysis
 {
 	int err, tries, data_size = len, vol_id = vol->vol_id;
 	struct ubi_vid_io_buf *vidb;
@@ -1192,6 +1202,7 @@ out:
  */
 int ubi_eba_atomic_leb_change(struct ubi_device *ubi, struct ubi_volume *vol,
 			      int lnum, const void *buf, int len)
+	__no_context_analysis
 {
 	int err, tries, vol_id = vol->vol_id;
 	struct ubi_vid_io_buf *vidb;

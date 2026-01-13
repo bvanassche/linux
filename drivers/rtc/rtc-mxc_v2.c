@@ -112,6 +112,7 @@ static irqreturn_t mxc_rtc_interrupt(int irq, void *dev_id)
  * @return  0 if successful; non-zero otherwise.
  */
 static int mxc_rtc_lock(struct mxc_rtc_data *const pdata)
+	__cond_acquires(0, &pdata->lock)
 {
 	int ret;
 
@@ -125,6 +126,7 @@ static int mxc_rtc_lock(struct mxc_rtc_data *const pdata)
 }
 
 static int mxc_rtc_unlock(struct mxc_rtc_data *const pdata)
+	__releases(&pdata->lock)
 {
 	clk_disable(pdata->clk);
 	spin_unlock_irq(&pdata->lock);

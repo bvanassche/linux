@@ -111,6 +111,7 @@ void __srcu_read_unlock(struct srcu_struct *ssp, int idx)
 	preempt_enable();
 	if (!newval && READ_ONCE(ssp->srcu_gp_waiting) && in_task() && !irqs_disabled())
 		swake_up_one(&ssp->srcu_wq);
+	__release_shared(ssp);
 }
 EXPORT_SYMBOL_GPL(__srcu_read_unlock);
 

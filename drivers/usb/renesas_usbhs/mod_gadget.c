@@ -118,6 +118,7 @@ struct usbhsg_recip_handle {
 static void __usbhsg_queue_pop(struct usbhsg_uep *uep,
 			       struct usbhsg_request *ureq,
 			       int status)
+	__must_hold(usbhs_priv_to_lock(usbhsg_gpriv_to_priv(usbhsg_uep_to_gpriv(uep))))
 {
 	struct usbhsg_gpriv *gpriv = usbhsg_uep_to_gpriv(uep);
 	struct usbhs_pipe *pipe = usbhsg_uep_to_pipe(uep);
@@ -153,6 +154,8 @@ static void usbhsg_queue_done(struct usbhs_priv *priv, struct usbhs_pkt *pkt)
 	struct usbhsg_request *ureq = usbhsg_pkt_to_ureq(pkt);
 	unsigned long flags;
 
+	__assume_ctx_lock(usbhs_priv_to_lock(usbhsg_gpriv_to_priv(usbhsg_uep_to_gpriv(uep))));
+	
 	ureq->req.actual = pkt->actual;
 
 	usbhs_lock(priv, flags);

@@ -689,6 +689,7 @@ static int ima_file_check(struct file *file, int mask)
 
 static int __ima_inode_hash(struct inode *inode, struct file *file, char *buf,
 			    size_t buf_size)
+	__no_context_analysis
 {
 	struct ima_iint_cache *iint = NULL, tmp_iint;
 	int rc, hash_algo;

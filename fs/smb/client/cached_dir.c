@@ -449,12 +449,16 @@ int open_cached_dir_by_dentry(struct cifs_tcon *tcon,
 	return -ENOENT;
 }
 
+static inline struct cached_fid *ref_to_cached_fid(struct kref *ref)
+{
+	return container_of(ref, struct cached_fid, refcount);
+}
+
 static void
 smb2_close_cached_fid(struct kref *ref)
-__releases(&cfid->cfids->cfid_list_lock)
+	__releases(&ref_to_cached_fid(ref)->cfids->cfid_list_lock)
 {
-	struct cached_fid *cfid = container_of(ref, struct cached_fid,
-					       refcount);
+	struct cached_fid *cfid = ref_to_cached_fid(ref);
 	int rc;
 
 	lockdep_assert_held(&cfid->cfids->cfid_list_lock);

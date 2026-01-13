@@ -2087,6 +2087,7 @@ struct bpf_iter_seq_hash_map_info {
 static struct htab_elem *
 bpf_hash_map_seq_find_next(struct bpf_iter_seq_hash_map_info *info,
 			   struct htab_elem *prev_elem)
+	__no_context_analysis
 {
 	const struct bpf_htab *htab = info->htab;
 	u32 skip_elems = info->skip_elems;
@@ -2207,6 +2208,7 @@ static int bpf_hash_map_seq_show(struct seq_file *seq, void *v)
 }
 
 static void bpf_hash_map_seq_stop(struct seq_file *seq, void *v)
+	__no_context_analysis
 {
 	if (!v)
 		(void)__bpf_hash_map_seq_show(seq, NULL);

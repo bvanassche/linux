@@ -686,6 +686,7 @@ static struct l2tp_tunnel *pppol2tp_tunnel_get(struct net *net,
  */
 static int pppol2tp_connect(struct socket *sock, struct sockaddr_unsized *uservaddr,
 			    int sockaddr_len, int flags)
+	__no_context_analysis
 {
 	struct sock *sk = sock->sk;
 	struct pppox_sock *po = pppox_sk(sk);

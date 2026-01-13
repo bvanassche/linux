@@ -444,6 +444,7 @@ static int ntfs_truncate(struct inode *inode, loff_t new_size)
  * allocate and zero out clusters via an expanding truncate.
  */
 static long ntfs_fallocate(struct file *file, int mode, loff_t vbo, loff_t len)
+	__no_context_analysis /* conditional locking */
 {
 	struct inode *inode = file_inode(file);
 	struct address_space *mapping = inode->i_mapping;

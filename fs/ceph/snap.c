@@ -65,6 +65,7 @@
  */
 void ceph_get_snap_realm(struct ceph_mds_client *mdsc,
 			 struct ceph_snap_realm *realm)
+	__must_hold_shared(&mdsc->snap_rwsem)
 {
 	lockdep_assert_held(&mdsc->snap_rwsem);
 
@@ -113,6 +114,7 @@ static void __insert_snap_realm(struct rb_root *root,
 static struct ceph_snap_realm *ceph_create_snap_realm(
 	struct ceph_mds_client *mdsc,
 	u64 ino)
+	__must_hold(&mdsc->snap_rwsem)
 {
 	struct ceph_snap_realm *realm;
 
@@ -149,6 +151,7 @@ static struct ceph_snap_realm *ceph_create_snap_realm(
  */
 static struct ceph_snap_realm *__lookup_snap_realm(struct ceph_mds_client *mdsc,
 						   u64 ino)
+	__must_hold_shared(&mdsc->snap_rwsem)
 {
 	struct ceph_client *cl = mdsc->fsc->client;
 	struct rb_node *n = mdsc->snap_realms.rb_node;
@@ -172,6 +175,7 @@ static struct ceph_snap_realm *__lookup_snap_realm(struct ceph_mds_client *mdsc,
 
 struct ceph_snap_realm *ceph_lookup_snap_realm(struct ceph_mds_client *mdsc,
 					       u64 ino)
+	__must_hold(&mdsc->snap_rwsem)
 {
 	struct ceph_snap_realm *r;
 	r = __lookup_snap_realm(mdsc, ino);
@@ -188,6 +192,7 @@ static void __put_snap_realm(struct ceph_mds_client *mdsc,
  */
 static void __destroy_snap_realm(struct ceph_mds_client *mdsc,
 				 struct ceph_snap_realm *realm)
+	__must_hold(&mdsc->snap_rwsem)
 {
 	struct ceph_client *cl = mdsc->fsc->client;
 	lockdep_assert_held_write(&mdsc->snap_rwsem);
@@ -213,6 +218,7 @@ static void __destroy_snap_realm(struct ceph_mds_client *mdsc,
  */
 static void __put_snap_realm(struct ceph_mds_client *mdsc,
 			     struct ceph_snap_realm *realm)
+	__must_hold(&mdsc->snap_rwsem)
 {
 	lockdep_assert_held_write(&mdsc->snap_rwsem);
 
@@ -251,6 +257,7 @@ void ceph_put_snap_realm(struct ceph_mds_client *mdsc,
  * Called under snap_rwsem (write)
  */
 static void __cleanup_empty_realms(struct ceph_mds_client *mdsc)
+	__must_hold(&mdsc->snap_rwsem)
 {
 	struct ceph_snap_realm *realm;
 
@@ -291,6 +298,7 @@ void ceph_cleanup_global_and_empty_realms(struct ceph_mds_client *mdsc)
 static int adjust_snap_realm_parent(struct ceph_mds_client *mdsc,
 				    struct ceph_snap_realm *realm,
 				    u64 parentino)
+	__must_hold(&mdsc->snap_rwsem)
 {
 	struct ceph_client *cl = mdsc->fsc->client;
 	struct ceph_snap_realm *parent;
@@ -779,6 +787,7 @@ static void queue_realm_cap_snaps(struct ceph_mds_client *mdsc,
 int ceph_update_snap_trace(struct ceph_mds_client *mdsc,
 			   void *p, void *e, bool deletion,
 			   struct ceph_snap_realm **realm_ret)
+	__must_hold(&mdsc->snap_rwsem)
 {
 	struct ceph_client *cl = mdsc->fsc->client;
 	struct ceph_mds_snap_realm *ri;    /* encoded */
@@ -1016,6 +1025,7 @@ void ceph_change_snap_realm(struct inode *inode, struct ceph_snap_realm *realm)
 void ceph_handle_snap(struct ceph_mds_client *mdsc,
 		      struct ceph_mds_session *session,
 		      struct ceph_msg *msg)
+	__no_context_analysis /* conditional locking */
 {
 	struct ceph_client *cl = mdsc->fsc->client;
 	struct super_block *sb = mdsc->fsc->sb;

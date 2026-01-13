@@ -344,6 +344,7 @@ out:
  * Return: BLK_STS_RESOURCE if allocating memory fails, BLK_STS_OK otherwise.
  */
 int btrfs_lookup_bio_sums(struct btrfs_bio *bbio)
+	__no_context_analysis
 {
 	struct btrfs_inode *inode = bbio->inode;
 	struct btrfs_fs_info *fs_info = inode->root->fs_info;

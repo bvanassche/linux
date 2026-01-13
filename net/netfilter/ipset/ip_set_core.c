@@ -72,12 +72,14 @@ MODULE_ALIAS_NFNL_SUBSYS(NFNL_SUBSYS_IPSET);
 
 static void
 ip_set_type_lock(void)
+	__acquires(ip_set_type_mutex)
 {
 	mutex_lock(&ip_set_type_mutex);
 }
 
 static void
 ip_set_type_unlock(void)
+	__releases(ip_set_type_mutex)
 {
 	mutex_unlock(&ip_set_type_mutex);
 }
@@ -724,6 +726,7 @@ ip_set_rcu_get(struct net *net, ip_set_id_t index)
 
 static inline void
 ip_set_lock(struct ip_set *set)
+	__no_context_analysis
 {
 	if (!set->variant->region_lock)
 		spin_lock_bh(&set->lock);
@@ -731,6 +734,7 @@ ip_set_lock(struct ip_set *set)
 
 static inline void
 ip_set_unlock(struct ip_set *set)
+	__no_context_analysis
 {
 	if (!set->variant->region_lock)
 		spin_unlock_bh(&set->lock);

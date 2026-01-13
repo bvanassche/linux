@@ -61,6 +61,7 @@ static u8 clk_super_get_parent(struct clk_hw *hw)
 }
 
 static int clk_super_set_parent(struct clk_hw *hw, u8 index)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_super_mux *mux = to_clk_super_mux(hw);
 	u32 val, state;

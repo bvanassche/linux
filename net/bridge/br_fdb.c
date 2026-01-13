@@ -209,6 +209,7 @@ static struct net_bridge_fdb_entry *fdb_find_rcu(struct rhashtable *tbl,
 	struct net_bridge_fdb_key key;
 
 	WARN_ON_ONCE(!rcu_read_lock_held());
+	__assume_shared_ctx_lock(RCU);
 
 	key.vlan_id = vid;
 	memcpy(key.addr.addr, addr, sizeof(key.addr.addr));

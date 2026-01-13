@@ -298,6 +298,7 @@ goku_free_request(struct usb_ep *_ep, struct usb_request *_req)
 
 static void
 done(struct goku_ep *ep, struct goku_request *req, int status)
+	__no_context_analysis
 {
 	struct goku_udc		*dev;
 	unsigned		stopped = ep->stopped;
@@ -1417,6 +1418,7 @@ static int goku_udc_stop(struct usb_gadget *g)
 /*-------------------------------------------------------------------------*/
 
 static void ep0_setup(struct goku_udc *dev)
+	__no_context_analysis
 {
 	struct goku_udc_regs __iomem	*regs = dev->regs;
 	struct usb_ctrlrequest		ctrl;

@@ -262,6 +262,7 @@ static inline void ef4_device_detach_sync(struct ef4_nic *efx)
 }
 
 static inline bool ef4_rwsem_assert_write_locked(struct rw_semaphore *sem)
+	__cond_acquires(true, sem)
 {
 	if (WARN_ON(down_read_trylock(sem))) {
 		up_read(sem);

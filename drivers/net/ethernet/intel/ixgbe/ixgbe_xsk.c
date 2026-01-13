@@ -97,6 +97,7 @@ int ixgbe_xsk_pool_setup(struct ixgbe_adapter *adapter,
 static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
 			    struct ixgbe_ring *rx_ring,
 			    struct xdp_buff *xdp)
+	__no_context_analysis /* conditional locking */
 {
 	int err, result = IXGBE_XDP_PASS;
 	struct bpf_prog *xdp_prog;

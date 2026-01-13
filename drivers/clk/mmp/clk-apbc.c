@@ -30,6 +30,7 @@ struct clk_apbc {
 };
 
 static int clk_apbc_prepare(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct clk_apbc *apbc = to_clk_apbc(hw);
 	unsigned int data;
@@ -81,6 +82,7 @@ static int clk_apbc_prepare(struct clk_hw *hw)
 }
 
 static void clk_apbc_unprepare(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct clk_apbc *apbc = to_clk_apbc(hw);
 	unsigned long data;

@@ -995,7 +995,7 @@ out:
 }
 
 static void *pppoe_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	struct pppoe_net *pn = pppoe_pernet(seq_file_net(seq));
 	loff_t l = *pos;
@@ -1034,7 +1034,7 @@ out:
 }
 
 static void pppoe_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

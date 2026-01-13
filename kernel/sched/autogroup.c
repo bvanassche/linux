@@ -163,8 +163,10 @@ autogroup_move_group(struct task_struct *p, struct autogroup *ag)
 	struct task_struct *t;
 	unsigned long flags;
 
-	if (WARN_ON_ONCE(!lock_task_sighand(p, &flags)))
+	if (!lock_task_sighand(p, &flags)) {
+		WARN_ON_ONCE(true);
 		return;
+	}
 
 	prev = p->signal->autogroup;
 	if (prev == ag) {

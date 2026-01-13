@@ -330,6 +330,7 @@ static int io_ring_buffers_peek(struct io_kiocb *req, struct buf_sel_arg *arg,
 
 int io_buffers_select(struct io_kiocb *req, struct buf_sel_arg *arg,
 		      struct io_br_sel *sel, unsigned int issue_flags)
+	__no_context_analysis /* conditional locking */
 {
 	struct io_ring_ctx *ctx = req->ctx;
 	int ret = -ENOENT;

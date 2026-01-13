@@ -2633,6 +2633,7 @@ nfsd4_getdeviceinfo_release(union nfsd4_op_u *u)
 static __be32
 nfsd4_layoutget(struct svc_rqst *rqstp,
 		struct nfsd4_compound_state *cstate, union nfsd4_op_u *u)
+	__no_context_analysis
 {
 	struct nfsd4_layoutget *lgp = &u->layoutget;
 	struct svc_fh *current_fh = &cstate->current_fh;
@@ -2719,6 +2720,7 @@ nfsd4_layoutget_release(union nfsd4_op_u *u)
 static __be32
 nfsd4_layoutcommit(struct svc_rqst *rqstp,
 		struct nfsd4_compound_state *cstate, union nfsd4_op_u *u)
+	__no_context_analysis
 {
 	struct net *net = SVC_NET(rqstp);
 	struct nfsd4_layoutcommit *lcp = &u->layoutcommit;

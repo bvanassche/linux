@@ -1400,6 +1400,7 @@ bad:
  * may deadlock.
  */
 void ceph_con_process_message(struct ceph_connection *con)
+	__must_hold(con->mutex)
 {
 	struct ceph_msg *msg = con->in_msg;
 
@@ -1518,6 +1519,7 @@ static bool con_backoff(struct ceph_connection *con)
 /* Finish fault handling; con->mutex must *not* be held here */
 
 static void con_fault_finish(struct ceph_connection *con)
+	__must_not_hold(con->mutex)
 {
 	dout("%s %p\n", __func__, con);
 
@@ -2065,6 +2067,7 @@ static int ceph_alloc_middle(struct ceph_connection *con, struct ceph_msg *msg)
  */
 int ceph_con_in_msg_alloc(struct ceph_connection *con,
 			  struct ceph_msg_header *hdr, int *skip)
+	__must_hold(con->mutex)
 {
 	int middle_len = le32_to_cpu(hdr->middle_len);
 	struct ceph_msg *msg;

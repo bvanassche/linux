@@ -284,6 +284,7 @@ static void smc_restore_fallback_changes(struct smc_sock *smc)
 }
 
 static int __smc_release(struct smc_sock *smc)
+	__must_hold(&smc->sk)
 {
 	struct sock *sk = &smc->sk;
 	int rc = 0;
@@ -351,6 +352,8 @@ int smc_release(struct socket *sock)
 		lock_sock_nested(sk, SINGLE_DEPTH_NESTING);
 	else
 		lock_sock(sk);
+
+	__assume_ctx_lock(&smc->sk);
 
 	if (old_state == SMC_INIT && sk->sk_state == SMC_ACTIVE &&
 	    !smc->use_fallback)
@@ -566,6 +569,7 @@ static int smcr_lgr_reg_sndbufs(struct smc_link *link,
 /* register the new rmb on all links */
 static int smcr_lgr_reg_rmbs(struct smc_link *link,
 			     struct smc_buf_desc *rmb_desc)
+	__no_context_analysis
 {
 	struct smc_link_group *lgr = link->lgr;
 	bool do_slow = false;
@@ -1733,6 +1737,7 @@ out_err:
 }
 
 static int smc_clcsock_accept(struct smc_sock *lsmc, struct smc_sock **new_smc)
+	__must_hold(&lsmc->sk)
 {
 	struct socket *new_clcsock = NULL;
 	struct sock *lsk = &lsmc->sk;
@@ -1858,6 +1863,7 @@ void smc_close_non_accepted(struct sock *sk)
 
 	sock_hold(sk); /* sock_put below */
 	lock_sock(sk);
+	__assume_ctx_lock(&smc->sk);
 	if (!sk->sk_lingertime)
 		/* wait for peer closing */
 		WRITE_ONCE(sk->sk_lingertime, SMC_MAX_STREAM_WAIT_TIMEOUT);
@@ -1921,6 +1927,7 @@ static int smcr_serv_conf_first_link(struct smc_sock *smc)
 
 /* listen worker: finish */
 static void smc_listen_out(struct smc_sock *new_smc)
+	__releases(&new_smc->sk)
 {
 	struct smc_sock *lsmc = new_smc->listen_smc;
 	struct sock *newsmcsk = &new_smc->sk;
@@ -1944,6 +1951,7 @@ static void smc_listen_out(struct smc_sock *new_smc)
 
 /* listen worker: finish in state connected */
 static void smc_listen_out_connected(struct smc_sock *new_smc)
+	__releases(&new_smc->sk)
 {
 	struct sock *newsmcsk = &new_smc->sk;
 
@@ -1955,6 +1963,7 @@ static void smc_listen_out_connected(struct smc_sock *new_smc)
 
 /* listen worker: finish in error state */
 static void smc_listen_out_err(struct smc_sock *new_smc)
+	__releases(&new_smc->sk)
 {
 	struct sock *newsmcsk = &new_smc->sk;
 	struct net *net = sock_net(newsmcsk);
@@ -1970,6 +1979,7 @@ static void smc_listen_out_err(struct smc_sock *new_smc)
 /* listen worker: decline and fall back if possible */
 static void smc_listen_decline(struct smc_sock *new_smc, int reason_code,
 			       int local_first, u8 version)
+	__releases(&new_smc->sk)
 {
 	/* RDMA setup failed, switch back to TCP */
 	smc_conn_abort(new_smc, local_first);
@@ -2445,6 +2455,7 @@ static int smc_listen_rdma_finish(struct smc_sock *new_smc,
 
 /* setup for connection of server */
 static void smc_listen_work(struct work_struct *work)
+	__no_context_analysis
 {
 	struct smc_sock *new_smc = container_of(work, struct smc_sock,
 						smc_listen_work);
@@ -2767,6 +2778,7 @@ int smc_accept(struct socket *sock, struct socket *new_sock,
 			release_sock(clcsk);
 		} else if (!atomic_read(&smc_sk(nsk)->conn.bytes_to_rcv)) {
 			lock_sock(nsk);
+			__assume_ctx_lock(&smc_sk(nsk)->sk);
 			smc_rx_wait(smc_sk(nsk), &timeo, 0, smc_rx_data_available);
 			release_sock(nsk);
 		}
@@ -2799,6 +2811,7 @@ int smc_sendmsg(struct socket *sock, struct msghdr *msg, size_t len)
 
 	smc = smc_sk(sk);
 	lock_sock(sk);
+	__assume_ctx_lock(&smc->sk);
 
 	/* SMC does not support connect with fastopen */
 	if (msg->msg_flags & MSG_FASTOPEN) {
@@ -2838,6 +2851,7 @@ int smc_recvmsg(struct socket *sock, struct msghdr *msg, size_t len,
 
 	smc = smc_sk(sk);
 	lock_sock(sk);
+	__assume_ctx_lock(&smc->sk);
 	if (sk->sk_state == SMC_CLOSED && (sk->sk_shutdown & RCV_SHUTDOWN)) {
 		/* socket was connected before, no more data to read */
 		rc = 0;
@@ -3288,6 +3302,7 @@ ssize_t smc_splice_read(struct socket *sock, loff_t *ppos,
 
 	smc = smc_sk(sk);
 	lock_sock(sk);
+	__assume_ctx_lock(&smc->sk);
 	if (sk->sk_state == SMC_CLOSED && (sk->sk_shutdown & RCV_SHUTDOWN)) {
 		/* socket was connected before, no more data to read */
 		rc = 0;

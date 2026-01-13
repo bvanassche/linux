@@ -15,6 +15,7 @@ static DEFINE_MUTEX(bank_read_lock);
 	ADF_MSG_SIZE_TO_BYTES(ring->msg_size))
 
 static void *adf_ring_start(struct seq_file *sfile, loff_t *pos)
+	__acquires(ring_read_lock)
 {
 	struct adf_etr_ring_data *ring = sfile->private;
 	unsigned int num_msg = ADF_RING_NUM_MSGS(ring);
@@ -81,6 +82,7 @@ static int adf_ring_show(struct seq_file *sfile, void *v)
 }
 
 static void adf_ring_stop(struct seq_file *sfile, void *v)
+	__releases(ring_read_lock)
 {
 	mutex_unlock(&ring_read_lock);
 }
@@ -124,6 +126,7 @@ void adf_ring_debugfs_rm(struct adf_etr_ring_data *ring)
 }
 
 static void *adf_bank_start(struct seq_file *sfile, loff_t *pos)
+	__acquires(bank_read_lock)
 {
 	struct adf_etr_bank_data *bank = sfile->private;
 	u8 num_rings_per_bank = GET_NUM_RINGS_PER_BANK(bank->accel_dev);
@@ -182,6 +185,7 @@ static int adf_bank_show(struct seq_file *sfile, void *v)
 }
 
 static void adf_bank_stop(struct seq_file *sfile, void *v)
+	__releases(bank_read_lock)
 {
 	mutex_unlock(&bank_read_lock);
 }

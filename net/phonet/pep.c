@@ -1319,6 +1319,7 @@ copy:
 }
 
 static void pep_sock_unhash(struct sock *sk)
+	__no_context_analysis /* conditional locking */
 {
 	struct pep_sock *pn = pep_sk(sk);
 	struct sock *skparent = NULL;

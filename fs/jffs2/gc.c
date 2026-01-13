@@ -42,6 +42,7 @@ static int jffs2_garbage_collect_live(struct jffs2_sb_info *c,  struct jffs2_era
 
 /* Called with erase_completion_lock held */
 static struct jffs2_eraseblock *jffs2_find_gc_block(struct jffs2_sb_info *c)
+	__must_hold(&c->erase_completion_lock)
 {
 	struct jffs2_eraseblock *ret;
 	struct list_head *nextlist = NULL;
@@ -1164,6 +1165,7 @@ static int jffs2_garbage_collect_hole(struct jffs2_sb_info *c, struct jffs2_eras
 static int jffs2_garbage_collect_dnode(struct jffs2_sb_info *c, struct jffs2_eraseblock *orig_jeb,
 				       struct jffs2_inode_info *f, struct jffs2_full_dnode *fn,
 				       uint32_t start, uint32_t end)
+	__must_hold(&f->sem)
 {
 	struct inode *inode = OFNI_EDONI_2SFFJ(f);
 	struct jffs2_full_dnode *new_fn;

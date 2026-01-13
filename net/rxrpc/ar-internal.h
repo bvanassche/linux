@@ -1053,12 +1053,12 @@ extern struct kmem_cache *rxrpc_call_jar;
 void rxrpc_poke_call(struct rxrpc_call *call, enum rxrpc_call_poke_trace what);
 struct rxrpc_call *rxrpc_find_call_by_user_ID(struct rxrpc_sock *, unsigned long);
 struct rxrpc_call *rxrpc_alloc_call(struct rxrpc_sock *, gfp_t, unsigned int);
-struct rxrpc_call *rxrpc_new_client_call(struct rxrpc_sock *,
-					 struct rxrpc_conn_parameters *,
-					 struct rxrpc_call_params *, gfp_t,
-					 unsigned int)
-	__releases(&rx->sk.sk_lock)
-	__acquires(&call->user_mutex);
+struct rxrpc_call *rxrpc_new_client_call(struct rxrpc_sock *rx,
+					 struct rxrpc_conn_parameters *cp,
+					 struct rxrpc_call_params *p,
+					 gfp_t gfp,
+					 unsigned int debug_id)
+	__releases(&rx->sk);
 void rxrpc_start_call_timer(struct rxrpc_call *call);
 void rxrpc_incoming_call(struct rxrpc_sock *, struct rxrpc_call *,
 			 struct sk_buff *);
@@ -1355,7 +1355,8 @@ static inline struct rxrpc_net *rxrpc_net(struct net *net)
  */
 void rxrpc_notify_socket_oob(struct rxrpc_call *call, struct sk_buff *skb);
 void rxrpc_add_pending_oob(struct rxrpc_sock *rx, struct sk_buff *skb);
-int rxrpc_sendmsg_oob(struct rxrpc_sock *rx, struct msghdr *msg, size_t len);
+int rxrpc_sendmsg_oob(struct rxrpc_sock *rx, struct msghdr *msg, size_t len)
+	__releases(&rx->sk);
 
 /*
  * output.c
@@ -1471,7 +1472,8 @@ struct key *rxrpc_look_up_server_security(struct rxrpc_connection *,
  */
 bool rxrpc_propose_abort(struct rxrpc_call *call, s32 abort_code, int error,
 			 enum rxrpc_abort_reason why);
-int rxrpc_do_sendmsg(struct rxrpc_sock *, struct msghdr *, size_t);
+int rxrpc_do_sendmsg(struct rxrpc_sock *rx, struct msghdr *msg, size_t len)
+	__releases(&rx->sk);
 
 /*
  * server_key.c

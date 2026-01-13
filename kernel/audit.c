@@ -244,6 +244,7 @@ int auditd_test_task(struct task_struct *task)
  * audit_ctl_lock - Take the audit control lock
  */
 void audit_ctl_lock(void)
+	__acquires(audit_cmd_mutex.lock)
 {
 	mutex_lock(&audit_cmd_mutex.lock);
 	audit_cmd_mutex.owner = current;
@@ -253,6 +254,7 @@ void audit_ctl_lock(void)
  * audit_ctl_unlock - Drop the audit control lock
  */
 void audit_ctl_unlock(void)
+	__releases(audit_cmd_mutex.lock)
 {
 	audit_cmd_mutex.owner = NULL;
 	mutex_unlock(&audit_cmd_mutex.lock);

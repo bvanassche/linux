@@ -823,6 +823,7 @@ static int usbduxsigma_ao_inttrig(struct comedi_device *dev,
 static int usbduxsigma_ao_cmdtest(struct comedi_device *dev,
 				  struct comedi_subdevice *s,
 				  struct comedi_cmd *cmd)
+	__no_context_analysis /* conditional locking */
 {
 	struct usbduxsigma_private *devpriv = dev->private;
 	unsigned int tmp;

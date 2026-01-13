@@ -1907,6 +1907,7 @@ static void vcn_v1_0_idle_work_handler(struct work_struct *work)
 }
 
 static void vcn_v1_0_ring_begin_use(struct amdgpu_ring *ring)
+	__acquires(ring->adev->vcn.inst[0].vcn1_jpeg1_workaround)
 {
 	struct	amdgpu_device *adev = ring->adev;
 	bool set_clocks = !cancel_delayed_work_sync(&adev->vcn.inst[0].idle_work);
@@ -1960,6 +1961,7 @@ void vcn_v1_0_set_pg_for_begin_use(struct amdgpu_ring *ring, bool set_clocks)
 }
 
 void vcn_v1_0_ring_end_use(struct amdgpu_ring *ring)
+	__releases(ring->adev->vcn.inst[0].vcn1_jpeg1_workaround)
 {
 	schedule_delayed_work(&ring->adev->vcn.inst[0].idle_work, VCN_IDLE_TIMEOUT);
 	mutex_unlock(&ring->adev->vcn.inst[0].vcn1_jpeg1_workaround);

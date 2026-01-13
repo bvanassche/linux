@@ -151,6 +151,7 @@ static void ttm_tt_fini_shmem(struct kunit *test)
 }
 
 static void ttm_tt_create_basic(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_buffer_object *bo;
 	int err;
@@ -171,6 +172,7 @@ static void ttm_tt_create_basic(struct kunit *test)
 }
 
 static void ttm_tt_create_invalid_bo_type(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_buffer_object *bo;
 	int err;
@@ -188,6 +190,7 @@ static void ttm_tt_create_invalid_bo_type(struct kunit *test)
 }
 
 static void ttm_tt_create_ttm_exists(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_buffer_object *bo;
 	struct ttm_tt *tt;
@@ -224,6 +227,7 @@ static struct ttm_device_funcs ttm_dev_empty_funcs = {
 };
 
 static void ttm_tt_create_failed(struct kunit *test)
+	__no_context_analysis
 {
 	const struct ttm_test_devices *devs = test->priv;
 	struct ttm_buffer_object *bo;
@@ -243,6 +247,7 @@ static void ttm_tt_create_failed(struct kunit *test)
 }
 
 static void ttm_tt_destroy_basic(struct kunit *test)
+	__no_context_analysis
 {
 	const struct ttm_test_devices *devs = test->priv;
 	struct ttm_buffer_object *bo;

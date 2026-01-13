@@ -202,6 +202,7 @@ static void wbsd_reset(struct wbsd_host *host)
 }
 
 static void wbsd_request_end(struct wbsd_host *host, struct mmc_request *mrq)
+	__must_hold(&host->lock)
 {
 	unsigned long dmaflags;
 
@@ -663,6 +664,7 @@ static void wbsd_prepare_data(struct wbsd_host *host, struct mmc_data *data)
 }
 
 static void wbsd_finish_data(struct wbsd_host *host, struct mmc_data *data)
+	__must_hold(&host->lock)
 {
 	unsigned long dmaflags;
 	int count;

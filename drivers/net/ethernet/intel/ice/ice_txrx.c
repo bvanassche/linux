@@ -652,6 +652,7 @@ static u32
 ice_run_xdp(struct ice_rx_ring *rx_ring, struct libeth_xdp_buff *xdp,
 	    struct bpf_prog *xdp_prog, struct ice_tx_ring *xdp_ring,
 	    union ice_32b_rx_flex_desc *eop_desc)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned int ret = ICE_XDP_PASS;
 	u32 act;
@@ -729,6 +730,7 @@ static int ice_xmit_xdp_ring(const struct xdp_frame *xdpf,
 int
 ice_xdp_xmit(struct net_device *dev, int n, struct xdp_frame **frames,
 	     u32 flags)
+	__no_context_analysis /* conditional locking */
 {
 	struct ice_netdev_priv *np = netdev_priv(dev);
 	unsigned int queue_index = smp_processor_id();

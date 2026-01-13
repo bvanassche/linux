@@ -1890,6 +1890,7 @@ ice_sq_send_cmd_retry(struct ice_hw *hw, struct ice_ctl_q_info *cq,
 int
 ice_aq_send_cmd(struct ice_hw *hw, struct libie_aq_desc *desc, void *buf,
 		u16 buf_size, struct ice_sq_cd *cd)
+	__no_context_analysis /* conditional locking */
 {
 	struct libie_aqc_req_res *cmd = libie_aq_raw(desc);
 	bool lock_acquired = false;

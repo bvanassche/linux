@@ -40,6 +40,7 @@
 #include <nvif/push206e.h>
 
 static vm_fault_t nouveau_ttm_fault(struct vm_fault *vmf)
+	__no_context_analysis /* conditional unlocking */
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct ttm_buffer_object *bo = vma->vm_private_data;
@@ -449,6 +450,7 @@ static void
 validate_fini(struct validate_op *op, struct nouveau_channel *chan,
 	      struct nouveau_fence *fence,
 	      struct drm_nouveau_gem_pushbuf_bo *pbbo)
+	__releases(&op->ticket)
 {
 	validate_fini_no_ticket(op, chan, fence, pbbo);
 	ww_acquire_fini(&op->ticket);
@@ -458,6 +460,7 @@ static int
 validate_init(struct nouveau_channel *chan, struct drm_file *file_priv,
 	      struct drm_nouveau_gem_pushbuf_bo *pbbo,
 	      int nr_buffers, struct validate_op *op)
+	__cond_acquires(0, &op->ticket)
 {
 	struct nouveau_cli *cli = nouveau_cli(file_priv);
 	int trycnt = 0;
@@ -626,6 +629,7 @@ nouveau_gem_pushbuf_validate(struct nouveau_channel *chan,
 			     struct drm_nouveau_gem_pushbuf_bo *pbbo,
 			     int nr_buffers,
 			     struct validate_op *op, bool *apply_relocs)
+	__cond_acquires(0, &op->ticket)
 {
 	struct nouveau_cli *cli = nouveau_cli(file_priv);
 	int ret;

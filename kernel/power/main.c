@@ -65,6 +65,7 @@ void pm_restrict_gfp_mask(void)
 }
 
 unsigned int lock_system_sleep(void)
+	__acquires(system_transition_mutex)
 {
 	unsigned int flags = current->flags;
 	current->flags |= PF_NOFREEZE;
@@ -74,6 +75,7 @@ unsigned int lock_system_sleep(void)
 EXPORT_SYMBOL_GPL(lock_system_sleep);
 
 void unlock_system_sleep(unsigned int flags)
+	__releases(system_transition_mutex)
 {
 	if (!(flags & PF_NOFREEZE))
 		current->flags &= ~PF_NOFREEZE;

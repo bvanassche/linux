@@ -143,9 +143,11 @@ static inline bool amdgpu_reset_pending(struct amdgpu_reset_domain *domain)
 	return rwsem_is_contended(&domain->sem);
 }
 
-void amdgpu_device_lock_reset_domain(struct amdgpu_reset_domain *reset_domain);
+void amdgpu_device_lock_reset_domain(struct amdgpu_reset_domain *reset_domain)
+	__acquires(&reset_domain->sem);
 
-void amdgpu_device_unlock_reset_domain(struct amdgpu_reset_domain *reset_domain);
+void amdgpu_device_unlock_reset_domain(struct amdgpu_reset_domain *reset_domain)
+	__releases(&reset_domain->sem);
 
 void amdgpu_reset_get_desc(struct amdgpu_reset_context *rst_ctxt, char *buf,
 			   size_t len);

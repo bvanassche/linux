@@ -59,7 +59,7 @@ static void *kcm_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void *kcm_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 
@@ -70,7 +70,7 @@ static void *kcm_seq_start(struct seq_file *seq, loff_t *pos)
 }
 
 static void kcm_seq_stop(struct seq_file *seq, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

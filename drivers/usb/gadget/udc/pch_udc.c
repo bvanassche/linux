@@ -1420,8 +1420,7 @@ static void pch_vbus_gpio_free(struct pch_udc_dev *dev)
  */
 static void complete_req(struct pch_udc_ep *ep, struct pch_udc_request *req,
 								 int status)
-	__releases(&dev->lock)
-	__acquires(&dev->lock)
+	__no_context_analysis
 {
 	struct pch_udc_dev	*dev;
 	unsigned halted = ep->halted;
@@ -2246,7 +2245,7 @@ static void pch_udc_svc_data_out(struct pch_udc_dev *dev, int ep_num)
 }
 
 static int pch_udc_gadget_setup(struct pch_udc_dev *dev)
-	__must_hold(&dev->lock)
+	__no_context_analysis
 {
 	int rc;
 
@@ -2471,6 +2470,7 @@ static void pch_udc_activate_control_ep(struct pch_udc_dev *dev)
  * @dev:	Reference to driver structure
  */
 static void pch_udc_svc_ur_interrupt(struct pch_udc_dev *dev)
+	__no_context_analysis
 {
 	struct pch_udc_ep	*ep;
 	int i;
@@ -2629,6 +2629,7 @@ static void pch_udc_svc_cfg_interrupt(struct pch_udc_dev *dev)
  * @dev_intr:	The Device interrupt status.
  */
 static void pch_udc_dev_isr(struct pch_udc_dev *dev, u32 dev_intr)
+	__no_context_analysis
 {
 	int vbus;
 

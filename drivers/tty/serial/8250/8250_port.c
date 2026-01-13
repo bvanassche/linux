@@ -3301,6 +3301,7 @@ static void serial8250_console_fifo_write(struct uart_8250_port *up,
  */
 void serial8250_console_write(struct uart_8250_port *up, const char *s,
 			      unsigned int count)
+	__no_context_analysis /* conditional locking */
 {
 	struct uart_8250_em485 *em485 = up->em485;
 	struct uart_port *port = &up->port;

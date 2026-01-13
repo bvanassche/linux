@@ -787,8 +787,7 @@ void __ceph_destroy_xattrs(struct ceph_inode_info *ci)
 }
 
 static int __build_xattrs(struct inode *inode)
-	__releases(ci->i_ceph_lock)
-	__acquires(ci->i_ceph_lock)
+	__must_hold(&ceph_inode(inode)->i_ceph_lock)
 {
 	struct ceph_client *cl = ceph_inode_to_client(inode);
 	u32 namelen;
@@ -1245,9 +1244,11 @@ retry:
 		if (!down_read_trylock(&mdsc->snap_rwsem)) {
 			spin_unlock(&ci->i_ceph_lock);
 			down_read(&mdsc->snap_rwsem);
+			__release_shared(&mdsc->snap_rwsem);
 			spin_lock(&ci->i_ceph_lock);
 			goto retry;
 		}
+		__release_shared(&mdsc->snap_rwsem);
 	}
 
 	doutc(cl, "%p %llx.%llx name '%s' issued %s\n", inode,
@@ -1301,8 +1302,10 @@ retry:
 
 	spin_unlock(&ci->i_ceph_lock);
 	ceph_buffer_put(old_blob);
-	if (lock_snap_rwsem)
+	if (lock_snap_rwsem) {
+		__acquire_shared(&mdsc->snap_rwsem);
 		up_read(&mdsc->snap_rwsem);
+	}
 	if (dirty)
 		__mark_inode_dirty(inode, dirty);
 	ceph_free_cap_flush(prealloc_cf);
@@ -1312,8 +1315,10 @@ do_sync:
 	spin_unlock(&ci->i_ceph_lock);
 	ceph_buffer_put(old_blob);
 do_sync_unlocked:
-	if (lock_snap_rwsem)
+	if (lock_snap_rwsem) {
+		__acquire_shared(&mdsc->snap_rwsem);
 		up_read(&mdsc->snap_rwsem);
+	}
 
 	/* security module set xattr while filling trace */
 	if (current->journal_info) {

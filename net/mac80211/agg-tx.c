@@ -150,7 +150,7 @@ void ieee80211_assign_tid_tx(struct sta_info *sta, int tid,
  * These two functions take care of this issue by keeping
  * a global "agg_queue_stop" refcount.
  */
-static void __acquires(agg_queue)
+static void
 ieee80211_stop_queue_agg(struct ieee80211_sub_if_data *sdata, int tid)
 {
 	int queue = sdata->vif.hw_queue[ieee80211_ac_from_tid(tid)];
@@ -162,10 +162,9 @@ ieee80211_stop_queue_agg(struct ieee80211_sub_if_data *sdata, int tid)
 			&sdata->local->hw, queue,
 			IEEE80211_QUEUE_STOP_REASON_AGGREGATION,
 			false);
-	__acquire(agg_queue);
 }
 
-static void __releases(agg_queue)
+static void
 ieee80211_wake_queue_agg(struct ieee80211_sub_if_data *sdata, int tid)
 {
 	int queue = sdata->vif.hw_queue[ieee80211_ac_from_tid(tid)];
@@ -175,7 +174,6 @@ ieee80211_wake_queue_agg(struct ieee80211_sub_if_data *sdata, int tid)
 			&sdata->local->hw, queue,
 			IEEE80211_QUEUE_STOP_REASON_AGGREGATION,
 			false);
-	__release(agg_queue);
 }
 
 static void
@@ -229,7 +227,7 @@ ieee80211_agg_start_txq(struct sta_info *sta, int tid, bool enable)
  * splice packets from the STA's pending to the local pending,
  * requires a call to ieee80211_agg_splice_finish later
  */
-static void __acquires(agg_queue)
+static void
 ieee80211_agg_splice_packets(struct ieee80211_sub_if_data *sdata,
 			     struct tid_ampdu_tx *tid_tx, u16 tid)
 {
@@ -253,7 +251,7 @@ ieee80211_agg_splice_packets(struct ieee80211_sub_if_data *sdata,
 	}
 }
 
-static void __releases(agg_queue)
+static void
 ieee80211_agg_splice_finish(struct ieee80211_sub_if_data *sdata, u16 tid)
 {
 	ieee80211_wake_queue_agg(sdata, tid);

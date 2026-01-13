@@ -36,6 +36,7 @@ static struct marvell_c22_pcs *pcs_to_marvell_c22_pcs(struct phylink_pcs *pcs)
 }
 
 static int marvell_c22_pcs_set_fiber_page(struct marvell_c22_pcs *mpcs)
+	__acquires(mpcs->mdio.bus->mdio_lock)
 {
 	u16 page;
 	int err;
@@ -66,6 +67,7 @@ static int marvell_c22_pcs_set_fiber_page(struct marvell_c22_pcs *mpcs)
 
 static int marvell_c22_pcs_restore_page(struct marvell_c22_pcs *mpcs,
 					int oldpage, int ret)
+	__releases(mpcs->mdio.bus->mdio_lock)
 {
 	int err;
 

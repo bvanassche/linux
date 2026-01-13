@@ -480,6 +480,7 @@ int
 drm_gem_handle_create_tail(struct drm_file *file_priv,
 			   struct drm_gem_object *obj,
 			   u32 *handlep)
+	__no_context_analysis /* conditional locking */
 {
 	struct drm_device *dev = obj->dev;
 	u32 handle;
@@ -501,7 +502,7 @@ drm_gem_handle_create_tail(struct drm_file *file_priv,
 	spin_unlock(&file_priv->table_lock);
 	idr_preload_end();
 
-	mutex_unlock(&dev->object_name_lock);
+	mutex_unlock(&obj->dev->object_name_lock);
 	if (ret < 0)
 		goto err_unref;
 
@@ -552,6 +553,7 @@ err_unref:
 int drm_gem_handle_create(struct drm_file *file_priv,
 			  struct drm_gem_object *obj,
 			  u32 *handlep)
+	__acquires(&obj->dev->object_name_lock)
 {
 	mutex_lock(&obj->dev->object_name_lock);
 
@@ -984,6 +986,7 @@ err:
 int
 drm_gem_open_ioctl(struct drm_device *dev, void *data,
 		   struct drm_file *file_priv)
+	__no_context_analysis /* requires alias analysis */
 {
 	struct drm_gem_open *args = data;
 	struct drm_gem_object *obj;
@@ -1448,14 +1451,17 @@ void drm_gem_vunmap_locked(struct drm_gem_object *obj, struct iosys_map *map)
 EXPORT_SYMBOL(drm_gem_vunmap_locked);
 
 void drm_gem_lock(struct drm_gem_object *obj)
+	__acquires(&obj->resv->lock)
 {
 	if (dma_resv_lock(obj->resv, NULL) == 0)
 		return;
 	WARN_ON_ONCE(true);
+	__acquire(&obj->resv->lock);
 }
 EXPORT_SYMBOL(drm_gem_lock);
 
 void drm_gem_unlock(struct drm_gem_object *obj)
+	__releases(&obj->resv->lock)
 {
 	dma_resv_unlock(obj->resv);
 }
@@ -1502,6 +1508,7 @@ EXPORT_SYMBOL(drm_gem_vunmap);
 int
 drm_gem_lock_reservations(struct drm_gem_object **objs, int count,
 			  struct ww_acquire_ctx *acquire_ctx)
+	__cond_acquires(0, acquire_ctx)
 {
 	int contended = -1;
 	int i, ret;
@@ -1554,6 +1561,7 @@ EXPORT_SYMBOL(drm_gem_lock_reservations);
 void
 drm_gem_unlock_reservations(struct drm_gem_object **objs, int count,
 			    struct ww_acquire_ctx *acquire_ctx)
+	__no_context_analysis /* dma_resv_unlock() inside loop */
 {
 	int i;
 
@@ -1672,6 +1680,7 @@ drm_gem_lru_scan(struct drm_gem_lru *lru,
 		 unsigned long *remaining,
 		 bool (*shrink)(struct drm_gem_object *obj, struct ww_acquire_ctx *ticket),
 		 struct ww_acquire_ctx *ticket)
+	__no_context_analysis /* conditional locking */
 {
 	struct drm_gem_lru still_in_lru;
 	struct drm_gem_object *obj;

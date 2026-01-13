@@ -204,6 +204,7 @@ void jfs_dirty_inode(struct inode *inode, int flags)
 
 int jfs_get_block(struct inode *ip, sector_t lblock,
 		  struct buffer_head *bh_result, int create)
+	__no_context_analysis /* conditional locking */
 {
 	s64 lblock64 = lblock;
 	int rc = 0;

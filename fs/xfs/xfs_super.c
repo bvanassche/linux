@@ -2280,6 +2280,7 @@ xfs_init_fs_context(
 static void
 xfs_kill_sb(
 	struct super_block		*sb)
+	__releases(&sb->s_umount)
 {
 	kill_block_super(sb);
 	xfs_mount_free(XFS_M(sb));

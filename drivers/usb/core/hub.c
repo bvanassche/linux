@@ -1077,6 +1077,7 @@ static void hub_init_func2(struct work_struct *ws);
 static void hub_init_func3(struct work_struct *ws);
 
 static void hub_activate(struct usb_hub *hub, enum hub_activation_type type)
+	__no_context_analysis /* conditional locking */
 {
 	struct usb_device *hdev = hub->hdev;
 	struct usb_hcd *hcd;
@@ -3049,6 +3050,7 @@ static int hub_port_wait_reset(struct usb_hub *hub, int port1,
 /* Handle port reset and port warm(BH) reset (for USB3 protocol ports) */
 static int hub_port_reset(struct usb_hub *hub, int port1,
 			struct usb_device *udev, unsigned int delay, bool warm)
+	__no_context_analysis /* conditional locking */
 {
 	int i, status;
 	u16 portchange, portstatus;
@@ -3247,17 +3249,15 @@ int usb_port_is_power_on(struct usb_hub *hub, unsigned int portstatus)
 }
 
 static void usb_lock_port(struct usb_port *port_dev)
-		__acquires(&port_dev->status_lock)
+	__acquires(&port_dev->status_lock)
 {
 	mutex_lock(&port_dev->status_lock);
-	__acquire(&port_dev->status_lock);
 }
 
 static void usb_unlock_port(struct usb_port *port_dev)
-		__releases(&port_dev->status_lock)
+	__releases(&port_dev->status_lock)
 {
 	mutex_unlock(&port_dev->status_lock);
-	__release(&port_dev->status_lock);
 }
 
 #ifdef	CONFIG_PM
@@ -3899,7 +3899,7 @@ int usb_remote_wakeup(struct usb_device *udev)
 /* Returns 1 if there was a remote wakeup and a connect status change. */
 static int hub_handle_remote_wakeup(struct usb_hub *hub, unsigned int port,
 		u16 portstatus, u16 portchange)
-		__must_hold(&port_dev->status_lock)
+	__no_context_analysis /* mutex is in an array member */
 {
 	struct usb_port *port_dev = hub->ports[port - 1];
 	struct usb_device *hdev;
@@ -5389,6 +5389,7 @@ static int descriptors_changed(struct usb_device *udev,
 
 static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
 		u16 portchange)
+	__no_context_analysis /* mutex is in an array member */
 {
 	int status = -ENODEV;
 	int i;
@@ -5636,7 +5637,7 @@ done:
  */
 static void hub_port_connect_change(struct usb_hub *hub, int port1,
 					u16 portstatus, u16 portchange)
-		__must_hold(&port_dev->status_lock)
+	__no_context_analysis /* mutex is in an array member */
 {
 	struct usb_port *port_dev = hub->ports[port1 - 1];
 	struct usb_device *udev = port_dev->child;
@@ -5744,7 +5745,7 @@ exit:
 }
 
 static void port_event(struct usb_hub *hub, int port1)
-		__must_hold(&port_dev->status_lock)
+	__no_context_analysis /* mutex is in an array member */
 {
 	int connect_change;
 	struct usb_port *port_dev = hub->ports[port1 - 1];

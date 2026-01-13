@@ -356,6 +356,7 @@ static void return_hosed_msg(struct ssif_info *ssif_info,
  * messages to start in here.
  */
 static void start_clear_flags(struct ssif_info *ssif_info, unsigned long *flags)
+	__releases(&ssif_info->lock)
 {
 	unsigned char msg[3];
 
@@ -375,6 +376,7 @@ static void start_clear_flags(struct ssif_info *ssif_info, unsigned long *flags)
 }
 
 static void start_flag_fetch(struct ssif_info *ssif_info, unsigned long *flags)
+	__releases(&ssif_info->lock)
 {
 	unsigned char mb[2];
 
@@ -403,6 +405,7 @@ static void check_start_send(struct ssif_info *ssif_info, unsigned long *flags,
 }
 
 static void start_event_fetch(struct ssif_info *ssif_info, unsigned long *flags)
+	__releases(&ssif_info->lock)
 {
 	struct ipmi_smi_msg *msg;
 
@@ -431,6 +434,7 @@ static void start_event_fetch(struct ssif_info *ssif_info, unsigned long *flags)
 
 static void start_recv_msg_fetch(struct ssif_info *ssif_info,
 				 unsigned long *flags)
+	__releases(&ssif_info->lock)
 {
 	struct ipmi_smi_msg *msg;
 
@@ -462,6 +466,7 @@ static void start_recv_msg_fetch(struct ssif_info *ssif_info,
  * messages to start in here.
  */
 static void handle_flags(struct ssif_info *ssif_info, unsigned long *flags)
+	__releases(&ssif_info->lock)
 {
 	if (ssif_info->msg_flags & WDT_PRE_TIMEOUT_INT) {
 		/* Watchdog pre-timeout */
@@ -620,6 +625,7 @@ static void ssif_alert(struct i2c_client *client, enum i2c_alert_protocol type,
 
 static void msg_done_handler(struct ssif_info *ssif_info, int result,
 			     unsigned char *data, unsigned int len)
+	__no_context_analysis /* conditional locking */
 {
 	struct ipmi_smi_msg *msg;
 	unsigned long oflags, *flags;
@@ -1055,6 +1061,7 @@ static int start_send(struct ssif_info *ssif_info,
 
 /* Must be called with the message lock held. */
 static void start_next_msg(struct ssif_info *ssif_info, unsigned long *flags)
+	__releases(&ssif_info->lock)
 {
 	struct ipmi_smi_msg *msg;
 	unsigned long oflags;

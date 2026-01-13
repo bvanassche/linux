@@ -99,6 +99,7 @@ br_sg_port_find(struct net_bridge *br,
 static struct net_bridge_mdb_entry *br_mdb_ip_get_rcu(struct net_bridge *br,
 						      struct br_ip *dst)
 {
+	__assume_shared_ctx_lock(RCU);
 	return rhashtable_lookup(&br->mdb_hash_tbl, dst, br_mdb_rht_params);
 }
 

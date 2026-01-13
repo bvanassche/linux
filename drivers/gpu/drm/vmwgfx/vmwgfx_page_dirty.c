@@ -399,6 +399,7 @@ void vmw_bo_dirty_clear_res(struct vmw_resource *res)
 }
 
 vm_fault_t vmw_bo_vm_mkwrite(struct vm_fault *vmf)
+	__no_context_analysis /* conditional locking */
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct ttm_buffer_object *bo = (struct ttm_buffer_object *)
@@ -440,6 +441,7 @@ out_unlock:
 }
 
 vm_fault_t vmw_bo_vm_fault(struct vm_fault *vmf)
+	__no_context_analysis
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct ttm_buffer_object *bo = (struct ttm_buffer_object *)

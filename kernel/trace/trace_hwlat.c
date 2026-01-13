@@ -600,6 +600,7 @@ out_error:
 }
 
 static void *s_mode_start(struct seq_file *s, loff_t *pos)
+	__acquires(hwlat_data.lock)
 {
 	int mode = *pos;
 
@@ -638,6 +639,7 @@ static int s_mode_show(struct seq_file *s, void *v)
 }
 
 static void s_mode_stop(struct seq_file *s, void *v)
+	__releases(hwlat_data.lock)
 {
 	seq_puts(s, "\n");
 	mutex_unlock(&hwlat_data.lock);

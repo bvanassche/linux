@@ -2495,6 +2495,7 @@ static void lpuart32_console_putchar(struct uart_port *port, unsigned char ch)
 
 static void
 lpuart_console_write(struct console *co, const char *s, unsigned int count)
+	__no_context_analysis /* conditional locking */
 {
 	struct lpuart_port *sport = lpuart_ports[co->index];
 	u8  old_cr2, cr2;
@@ -2525,6 +2526,7 @@ lpuart_console_write(struct console *co, const char *s, unsigned int count)
 
 static void
 lpuart32_console_write(struct console *co, const char *s, unsigned int count)
+	__no_context_analysis /* conditional locking */
 {
 	struct lpuart_port *sport = lpuart_ports[co->index];
 	u32 old_cr, cr;

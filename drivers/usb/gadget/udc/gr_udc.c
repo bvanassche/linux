@@ -281,8 +281,7 @@ static void gr_ep0_setup(struct gr_udc *dev, struct gr_request *req);
  */
 static void gr_finish_request(struct gr_ep *ep, struct gr_request *req,
 			      int status)
-	__releases(&dev->lock)
-	__acquires(&dev->lock)
+	__no_context_analysis
 {
 	struct gr_udc *dev;
 
@@ -1195,6 +1194,7 @@ static void gr_enable_vbus_detect(struct gr_udc *dev)
 
 /* Must be called with dev->lock held and irqs disabled */
 static void gr_vbus_disconnected(struct gr_udc *dev)
+	__no_context_analysis
 {
 	gr_stop_activity(dev);
 
@@ -1313,6 +1313,7 @@ static int gr_handle_out_ep(struct gr_ep *ep)
  * Must be called with dev->lock held and irqs disabled.
  */
 static int gr_handle_state_changes(struct gr_udc *dev)
+	__no_context_analysis
 {
 	u32 status = gr_read32(&dev->regs->status);
 	int handled = 0;
@@ -1650,6 +1651,7 @@ static void gr_free_request(struct usb_ep *_ep, struct usb_request *_req)
 /* Queue a request from the gadget */
 static int gr_queue_ext(struct usb_ep *_ep, struct usb_request *_req,
 			gfp_t gfp_flags)
+	__no_context_analysis
 {
 	struct gr_ep *ep;
 	struct gr_request *req;

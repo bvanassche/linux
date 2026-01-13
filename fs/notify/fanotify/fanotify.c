@@ -927,6 +927,7 @@ static int fanotify_handle_event(struct fsnotify_group *group, u32 mask,
 				 struct inode *dir,
 				 const struct qstr *file_name, u32 cookie,
 				 struct fsnotify_iter_info *iter_info)
+	__must_hold_shared(&fsnotify_mark_srcu)
 {
 	int ret = 0;
 	struct fanotify_event *event;
@@ -974,6 +975,8 @@ static int fanotify_handle_event(struct fsnotify_group *group, u32 mask,
 		 */
 		if (!fsnotify_prepare_user_wait(iter_info))
 			return 0;
+	} else {
+		__release_shared(&fsnotify_mark_srcu);
 	}
 
 	if (FAN_GROUP_FLAG(group, FANOTIFY_FID_BITS))
@@ -1009,6 +1012,8 @@ static int fanotify_handle_event(struct fsnotify_group *group, u32 mask,
 finish:
 	if (fanotify_is_perm_event(mask))
 		fsnotify_finish_user_wait(iter_info);
+	else
+		__acquire_shared(&fsnotify_mark_srcu);
 
 	return ret;
 }

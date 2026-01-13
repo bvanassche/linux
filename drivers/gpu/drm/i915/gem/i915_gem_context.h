@@ -189,6 +189,7 @@ i915_gem_context_engines(struct i915_gem_context *ctx)
 static inline struct i915_gem_engines *
 i915_gem_context_lock_engines(struct i915_gem_context *ctx)
 	__acquires(&ctx->engines_mutex)
+	__acquires(ctx->engines_mutex)
 {
 	mutex_lock(&ctx->engines_mutex);
 	return i915_gem_context_engines(ctx);
@@ -197,6 +198,7 @@ i915_gem_context_lock_engines(struct i915_gem_context *ctx)
 static inline void
 i915_gem_context_unlock_engines(struct i915_gem_context *ctx)
 	__releases(&ctx->engines_mutex)
+	__releases(ctx->engines_mutex)
 {
 	mutex_unlock(&ctx->engines_mutex);
 }

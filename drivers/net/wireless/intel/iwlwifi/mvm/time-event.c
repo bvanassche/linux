@@ -45,6 +45,7 @@ void iwl_mvm_te_clear_data(struct iwl_mvm *mvm,
 }
 
 static void iwl_mvm_cleanup_roc(struct iwl_mvm *mvm)
+	__releases(mvm->mutex)
 {
 	struct ieee80211_vif *vif = mvm->p2p_device_vif;
 

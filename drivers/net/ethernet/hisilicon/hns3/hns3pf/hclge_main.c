@@ -5330,6 +5330,7 @@ static int hclge_fd_set_user_def_cmd(struct hclge_dev *hdev,
 }
 
 static void hclge_sync_fd_user_def_cfg(struct hclge_dev *hdev, bool locked)
+	__no_context_analysis /* conditional locking */
 {
 	int ret;
 
@@ -8466,6 +8467,7 @@ static void hclge_reset_umv_space(struct hclge_dev *hdev)
 }
 
 static bool hclge_is_umv_space_full(struct hclge_vport *vport, bool need_lock)
+	__no_context_analysis /* conditional locking */
 {
 	struct hclge_dev *hdev = vport->back;
 	bool is_full;

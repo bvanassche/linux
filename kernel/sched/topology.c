@@ -10,10 +10,12 @@
 
 DEFINE_MUTEX(sched_domains_mutex);
 void sched_domains_mutex_lock(void)
+	__acquires(&sched_domains_mutex)
 {
 	mutex_lock(&sched_domains_mutex);
 }
 void sched_domains_mutex_unlock(void)
+	__releases(&sched_domains_mutex)
 {
 	mutex_unlock(&sched_domains_mutex);
 }

@@ -982,6 +982,7 @@ static int pwrseq_debugfs_seq_count(struct device *dev, void *data)
 }
 
 static void *pwrseq_debugfs_seq_start(struct seq_file *seq, loff_t *pos)
+	__acquires_shared(&pwrseq_sem)
 {
 	struct pwrseq_debugfs_count_ctx ctx;
 
@@ -1057,6 +1058,7 @@ static int pwrseq_debugfs_seq_show(struct seq_file *seq, void *data)
 }
 
 static void pwrseq_debugfs_seq_stop(struct seq_file *seq, void *data)
+	__releases_shared(&pwrseq_sem)
 {
 	up_read(&pwrseq_sem);
 }

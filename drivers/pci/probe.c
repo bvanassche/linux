@@ -3515,12 +3515,14 @@ EXPORT_SYMBOL_GPL(pci_rescan_bus);
 DEFINE_MUTEX(pci_rescan_remove_lock);
 
 void pci_lock_rescan_remove(void)
+	__acquires(pci_rescan_remove_lock)
 {
 	mutex_lock(&pci_rescan_remove_lock);
 }
 EXPORT_SYMBOL_GPL(pci_lock_rescan_remove);
 
 void pci_unlock_rescan_remove(void)
+	__releases(pci_rescan_remove_lock)
 {
 	mutex_unlock(&pci_rescan_remove_lock);
 }

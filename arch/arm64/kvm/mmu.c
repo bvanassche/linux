@@ -63,6 +63,7 @@ static int stage2_apply_range(struct kvm_s2_mmu *mmu, phys_addr_t addr,
 			      phys_addr_t end,
 			      int (*fn)(struct kvm_pgtable *, u64, u64),
 			      bool resched)
+	__must_hold(&kvm_s2_mmu_to_kvm(mmu)->mmu_lock)
 {
 	struct kvm *kvm = kvm_s2_mmu_to_kvm(mmu);
 	int ret;
@@ -119,6 +120,7 @@ static bool need_split_memcache_topup_or_resched(struct kvm *kvm)
 
 static int kvm_mmu_split_huge_pages(struct kvm *kvm, phys_addr_t addr,
 				    phys_addr_t end)
+	__must_hold(&kvm->mmu_lock)
 {
 	struct kvm_mmu_memory_cache *cache;
 	struct kvm_pgtable *pgt;
@@ -327,6 +329,7 @@ static void invalidate_icache_guest_page(void *va, size_t size)
  */
 static void __unmap_stage2_range(struct kvm_s2_mmu *mmu, phys_addr_t start, u64 size,
 				 bool may_block)
+	__must_hold(&kvm_s2_mmu_to_kvm(mmu)->mmu_lock)
 {
 	struct kvm *kvm = kvm_s2_mmu_to_kvm(mmu);
 	phys_addr_t end = start + size;
@@ -339,6 +342,7 @@ static void __unmap_stage2_range(struct kvm_s2_mmu *mmu, phys_addr_t start, u64 
 
 void kvm_stage2_unmap_range(struct kvm_s2_mmu *mmu, phys_addr_t start,
 			    u64 size, bool may_block)
+	__must_hold(&kvm_s2_mmu_to_kvm(mmu)->mmu_lock)
 {
 	if (kvm_vm_is_protected(kvm_s2_mmu_to_kvm(mmu)))
 		return;
@@ -347,16 +351,19 @@ void kvm_stage2_unmap_range(struct kvm_s2_mmu *mmu, phys_addr_t start,
 }
 
 void kvm_stage2_flush_range(struct kvm_s2_mmu *mmu, phys_addr_t addr, phys_addr_t end)
+	__must_hold(&kvm_s2_mmu_to_kvm(mmu)->mmu_lock)
 {
 	stage2_apply_range_resched(mmu, addr, end, KVM_PGT_FN(kvm_pgtable_stage2_flush));
 }
 
 static void stage2_flush_memslot(struct kvm *kvm,
 				 struct kvm_memory_slot *memslot)
+	__must_hold(&kvm->mmu_lock)
 {
 	phys_addr_t addr = memslot->base_gfn << PAGE_SHIFT;
 	phys_addr_t end = addr + PAGE_SIZE * memslot->npages;
 
+	__assume_ctx_lock(&kvm_s2_mmu_to_kvm(&kvm->arch.mmu)->mmu_lock);
 	kvm_stage2_flush_range(&kvm->arch.mmu, addr, end);
 }
 
@@ -1061,6 +1068,7 @@ static void stage2_unmap_memslot(struct kvm *kvm,
 
 		if (!(vma->vm_flags & VM_PFNMAP)) {
 			gpa_t gpa = addr + (vm_start - memslot->userspace_addr);
+			__assume_ctx_lock(&kvm_s2_mmu_to_kvm(&kvm->arch.mmu)->mmu_lock);
 			kvm_stage2_unmap_range(&kvm->arch.mmu, gpa, vm_end - vm_start, true);
 		}
 		hva = vm_end;
@@ -1220,6 +1228,7 @@ int kvm_phys_addr_ioremap(struct kvm *kvm, phys_addr_t guest_ipa,
  * @end:	End address of range
  */
 void kvm_stage2_wp_range(struct kvm_s2_mmu *mmu, phys_addr_t addr, phys_addr_t end)
+	__must_hold(&kvm_s2_mmu_to_kvm(mmu)->mmu_lock)
 {
 	stage2_apply_range_resched(mmu, addr, end, KVM_PGT_FN(kvm_pgtable_stage2_wrprotect));
 }
@@ -1250,6 +1259,7 @@ static void kvm_mmu_wp_memory_region(struct kvm *kvm, int slot)
 	end = (memslot->base_gfn + memslot->npages) << PAGE_SHIFT;
 
 	write_lock(&kvm->mmu_lock);
+	__assume_ctx_lock(&kvm_s2_mmu_to_kvm(&kvm->arch.mmu)->mmu_lock);
 	kvm_stage2_wp_range(&kvm->arch.mmu, start, end);
 	kvm_nested_s2_wp(kvm);
 	write_unlock(&kvm->mmu_lock);
@@ -1298,6 +1308,7 @@ static void kvm_mmu_split_memory_region(struct kvm *kvm, int slot)
 void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
 		struct kvm_memory_slot *slot,
 		gfn_t gfn_offset, unsigned long mask)
+	__must_hold(&kvm->mmu_lock)
 {
 	phys_addr_t base_gfn = slot->base_gfn + gfn_offset;
 	phys_addr_t start = (base_gfn +  __ffs(mask)) << PAGE_SHIFT;
@@ -1305,6 +1316,7 @@ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
 
 	lockdep_assert_held_write(&kvm->mmu_lock);
 
+	__assume_ctx_lock(&kvm_s2_mmu_to_kvm(&kvm->arch.mmu)->mmu_lock);
 	kvm_stage2_wp_range(&kvm->arch.mmu, start, end);
 
 	/*
@@ -2404,6 +2416,7 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
 	if (!kvm->arch.mmu.pgt || kvm_vm_is_protected(kvm))
 		return false;
 
+	__assume_ctx_lock(&kvm_s2_mmu_to_kvm(&kvm->arch.mmu)->mmu_lock);
 	__unmap_stage2_range(&kvm->arch.mmu, range->start << PAGE_SHIFT,
 			     (range->end - range->start) << PAGE_SHIFT,
 			     range->may_block);
@@ -2685,6 +2698,7 @@ void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
 	phys_addr_t size = slot->npages << PAGE_SHIFT;
 
 	write_lock(&kvm->mmu_lock);
+	__assume_ctx_lock(&kvm_s2_mmu_to_kvm(&kvm->arch.mmu)->mmu_lock);
 	kvm_stage2_unmap_range(&kvm->arch.mmu, gpa, size, true);
 	kvm_nested_s2_unmap(kvm, true);
 	write_unlock(&kvm->mmu_lock);

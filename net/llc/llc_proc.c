@@ -32,6 +32,7 @@ static void llc_ui_format_mac(struct seq_file *seq, const u8 *addr)
 }
 
 static struct sock *llc_get_sk_idx(loff_t pos)
+	__no_context_analysis /* acquire on return value */
 {
 	struct llc_sap *sap;
 	struct sock *sk = NULL;
@@ -56,7 +57,9 @@ found:
 	return sk;
 }
 
-static void *llc_seq_start(struct seq_file *seq, loff_t *pos) __acquires(RCU)
+static void *llc_seq_start(struct seq_file *seq, loff_t *pos)
+	__acquires_shared(RCU)
+	__acquires_shared(RCU_BH)
 {
 	loff_t l = *pos;
 
@@ -78,6 +81,7 @@ out:
 }
 
 static void *llc_seq_next(struct seq_file *seq, void *v, loff_t *pos)
+	__no_context_analysis /* conditional release */
 {
 	struct sock* sk, *next;
 	struct llc_sock *llc;
@@ -112,6 +116,9 @@ out:
 }
 
 static void llc_seq_stop(struct seq_file *seq, void *v)
+	__releases_shared(RCU)
+	__releases_shared(RCU_BH)
+	__no_context_analysis /* conditional release */
 {
 	if (v && v != SEQ_START_TOKEN) {
 		struct sock *sk = v;

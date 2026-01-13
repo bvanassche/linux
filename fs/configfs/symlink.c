@@ -134,6 +134,7 @@ static int get_target(const char *symname, struct config_item **target,
 
 int configfs_symlink(struct mnt_idmap *idmap, struct inode *dir,
 		     struct dentry *dentry, const char *symname)
+	__must_hold(&dir->i_rwsem)
 {
 	int ret;
 	struct configfs_dirent *sd;

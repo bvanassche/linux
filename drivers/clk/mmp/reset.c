@@ -33,6 +33,7 @@ static int mmp_of_reset_xlate(struct reset_controller_dev *rcdev,
 
 static int mmp_clk_reset_assert(struct reset_controller_dev *rcdev,
 				unsigned long id)
+	__no_context_analysis /* conditional locking */
 {
 	struct mmp_clk_reset_unit *unit = rcdev_to_unit(rcdev);
 	struct mmp_clk_reset_cell *cell;
@@ -55,6 +56,7 @@ static int mmp_clk_reset_assert(struct reset_controller_dev *rcdev,
 
 static int mmp_clk_reset_deassert(struct reset_controller_dev *rcdev,
 				unsigned long id)
+	__no_context_analysis /* conditional locking */
 {
 	struct mmp_clk_reset_unit *unit = rcdev_to_unit(rcdev);
 	struct mmp_clk_reset_cell *cell;

@@ -66,6 +66,7 @@ static int bpf_cgroup_storage_key_cmp(const struct bpf_cgroup_storage_map *map,
 struct bpf_cgroup_storage *
 cgroup_storage_lookup(struct bpf_cgroup_storage_map *map,
 		      void *key, bool locked)
+	__no_context_analysis
 {
 	struct rb_root *root = &map->root;
 	struct rb_node *node;

@@ -669,19 +669,20 @@ xpc_send_activate_IRQ_part_uv(struct xpc_partition *part, void *msg,
 static void
 xpc_send_activate_IRQ_ch_uv(struct xpc_channel *ch, unsigned long *irq_flags,
 			 void *msg, size_t msg_size, int msg_type)
+	__must_hold(&ch->lock)
 {
 	struct xpc_partition *part = &xpc_partitions[ch->partid];
 	enum xp_retval ret;
 
 	ret = xpc_send_activate_IRQ_uv(part, msg, msg_size, msg_type);
 	if (unlikely(ret != xpSuccess)) {
-		if (irq_flags != NULL)
+		if (irq_flags != NULL) {
 			spin_unlock_irqrestore(&ch->lock, *irq_flags);
-
-		XPC_DEACTIVATE_PARTITION(part, ret);
-
-		if (irq_flags != NULL)
+			XPC_DEACTIVATE_PARTITION(part, ret);
 			spin_lock_irqsave(&ch->lock, *irq_flags);
+		} else {
+			XPC_DEACTIVATE_PARTITION(part, ret);
+		}
 	}
 }
 
@@ -1113,6 +1114,7 @@ xpc_teardown_msg_structures_uv(struct xpc_channel *ch)
 
 static void
 xpc_send_chctl_closerequest_uv(struct xpc_channel *ch, unsigned long *irq_flags)
+	__must_hold(&ch->lock)
 {
 	struct xpc_activate_mq_msg_chctl_closerequest_uv msg;
 
@@ -1124,6 +1126,7 @@ xpc_send_chctl_closerequest_uv(struct xpc_channel *ch, unsigned long *irq_flags)
 
 static void
 xpc_send_chctl_closereply_uv(struct xpc_channel *ch, unsigned long *irq_flags)
+	__must_hold(&ch->lock)
 {
 	struct xpc_activate_mq_msg_chctl_closereply_uv msg;
 
@@ -1134,6 +1137,7 @@ xpc_send_chctl_closereply_uv(struct xpc_channel *ch, unsigned long *irq_flags)
 
 static void
 xpc_send_chctl_openrequest_uv(struct xpc_channel *ch, unsigned long *irq_flags)
+	__must_hold(&ch->lock)
 {
 	struct xpc_activate_mq_msg_chctl_openrequest_uv msg;
 
@@ -1146,6 +1150,7 @@ xpc_send_chctl_openrequest_uv(struct xpc_channel *ch, unsigned long *irq_flags)
 
 static void
 xpc_send_chctl_openreply_uv(struct xpc_channel *ch, unsigned long *irq_flags)
+	__must_hold(&ch->lock)
 {
 	struct xpc_activate_mq_msg_chctl_openreply_uv msg;
 
@@ -1159,6 +1164,7 @@ xpc_send_chctl_openreply_uv(struct xpc_channel *ch, unsigned long *irq_flags)
 
 static void
 xpc_send_chctl_opencomplete_uv(struct xpc_channel *ch, unsigned long *irq_flags)
+	__must_hold(&ch->lock)
 {
 	struct xpc_activate_mq_msg_chctl_opencomplete_uv msg;
 

@@ -360,6 +360,7 @@ static inline void complete_tx(struct sdma_engine *sde,
  *
  */
 static void sdma_flush(struct sdma_engine *sde)
+	__no_context_analysis /* read_seqbegin() + write_seqlock(). Bug? */
 {
 	struct sdma_txreq *txp, *txp_next;
 	LIST_HEAD(flushlist);
@@ -1706,6 +1707,7 @@ retry:
  * This is called with head_lock held.
  */
 static void sdma_desc_avail(struct sdma_engine *sde, uint avail)
+	__no_context_analysis /* read_seqbegin() + write_seqlock(). Bug? */
 {
 	struct iowait *wait, *nw, *twait;
 	struct iowait *waits[SDMA_WAIT_BATCH_SIZE];

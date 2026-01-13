@@ -296,6 +296,7 @@ out:
 }
 
 int ocfs2_lock_global_qf(struct ocfs2_mem_dqinfo *oinfo, int ex)
+	__no_context_analysis /* conditional locking */
 {
 	int status;
 	struct buffer_head *bh = NULL;
@@ -333,6 +334,7 @@ bail:
 }
 
 void ocfs2_unlock_global_qf(struct ocfs2_mem_dqinfo *oinfo, int ex)
+	__no_context_analysis /* conditional locking */
 {
 	if (ex) {
 		up_write(&OCFS2_I(oinfo->dqi_gqinode)->ip_alloc_sem);

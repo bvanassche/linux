@@ -508,6 +508,7 @@ struct xfs_mru_cache_elem *
 xfs_mru_cache_lookup(
 	struct xfs_mru_cache	*mru,
 	unsigned long		key)
+	__cond_acquires(nonnull, &mru->lock)
 {
 	struct xfs_mru_cache_elem *elem;
 
@@ -520,7 +521,6 @@ xfs_mru_cache_lookup(
 	if (elem) {
 		list_del(&elem->list_node);
 		_xfs_mru_cache_list_insert(mru, elem);
-		__release(mru_lock); /* help sparse not be stupid */
 	} else
 		spin_unlock(&mru->lock);
 

@@ -47,8 +47,7 @@ static inline void __buffer_unlink(struct journal_head *jh)
  * for a checkpoint to free up some space in the log.
  */
 void __jbd2_log_wait_for_space(journal_t *journal)
-__acquires(&journal->j_state_lock)
-__releases(&journal->j_state_lock)
+	__must_hold(&journal->j_state_lock)
 {
 	int nblocks, space_left;
 	/* assert_spin_locked(&journal->j_state_lock); */
@@ -152,6 +151,7 @@ __flush_batch(journal_t *journal, int *batch_count)
  * Called with j_checkpoint_mutex held.
  */
 int jbd2_log_do_checkpoint(journal_t *journal)
+	__no_context_analysis
 {
 	struct journal_head	*jh;
 	struct buffer_head	*bh;

@@ -624,11 +624,13 @@ static inline void __slab_clear_pfmemalloc(struct slab *slab)
  * Per slab locking using the pagelock
  */
 static __always_inline void slab_lock(struct slab *slab)
+	__no_context_analysis
 {
 	bit_spin_lock(SL_locked, &slab->flags.f);
 }
 
 static __always_inline void slab_unlock(struct slab *slab)
+	__no_context_analysis
 {
 	bit_spin_unlock(SL_locked, &slab->flags.f);
 }
@@ -2846,6 +2848,7 @@ static void __kmem_cache_free_bulk(struct kmem_cache *s, size_t size, void **p);
  * Returns how many objects are remaining to be flushed
  */
 static unsigned int __sheaf_flush_main_batch(struct kmem_cache *s)
+	__releases(&s->cpu_sheaves->lock)
 {
 	struct slub_percpu_sheaves *pcs;
 	unsigned int batch, remaining;
@@ -3672,6 +3675,7 @@ static void *alloc_single_from_partial(struct kmem_cache *s,
  */
 static void *alloc_single_from_new_slab(struct kmem_cache *s, struct slab *slab,
 					int orig_size, gfp_t gfpflags)
+	__no_context_analysis /* conditional locking */
 {
 	bool allow_spin = gfpflags_allow_spinning(gfpflags);
 	int nid = slab_nid(slab);
@@ -4346,6 +4350,7 @@ static __always_inline void maybe_wipe_obj_freeptr(struct kmem_cache *s,
 
 static unsigned int alloc_from_new_slab(struct kmem_cache *s, struct slab *slab,
 		void **p, unsigned int count, bool allow_spin)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned int allocated = 0;
 	struct kmem_cache_node *n;
@@ -4590,6 +4595,7 @@ bool slab_post_alloc_hook(struct kmem_cache *s, struct list_lru *lru,
  */
 static struct slub_percpu_sheaves *
 __pcs_replace_empty_main(struct kmem_cache *s, struct slub_percpu_sheaves *pcs, gfp_t gfp)
+	__no_context_analysis
 {
 	struct slab_sheaf *empty = NULL;
 	struct slab_sheaf *full;
@@ -4702,6 +4708,7 @@ barn_put:
 
 static __fastpath_inline
 void *alloc_from_pcs(struct kmem_cache *s, gfp_t gfp, int node)
+	__no_context_analysis
 {
 	struct slub_percpu_sheaves *pcs;
 	bool node_requested;
@@ -5509,7 +5516,7 @@ static noinline void free_to_partial_list(
 static void __slab_free(struct kmem_cache *s, struct slab *slab,
 			void *head, void *tail, int cnt,
 			unsigned long addr)
-
+	__no_context_analysis
 {
 	bool was_full;
 	struct freelist_counters old, new;
@@ -5679,6 +5686,7 @@ static void __pcs_install_empty_sheaf(struct kmem_cache *s,
 static struct slub_percpu_sheaves *
 __pcs_replace_full_main(struct kmem_cache *s, struct slub_percpu_sheaves *pcs,
 			bool allow_spin)
+	__no_context_analysis
 {
 	struct slab_sheaf *empty;
 	struct node_barn *barn;
@@ -5801,6 +5809,7 @@ got_empty:
  */
 static __fastpath_inline
 bool free_to_pcs(struct kmem_cache *s, void *object, bool allow_spin)
+	__no_context_analysis
 {
 	struct slub_percpu_sheaves *pcs;
 

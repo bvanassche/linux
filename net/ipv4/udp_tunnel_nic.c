@@ -647,6 +647,7 @@ static void __udp_tunnel_nic_assert_locked(struct net_device *dev)
 }
 
 static void __udp_tunnel_nic_lock(struct net_device *dev)
+	__no_context_analysis
 {
 	struct udp_tunnel_nic *utn;
 
@@ -656,6 +657,7 @@ static void __udp_tunnel_nic_lock(struct net_device *dev)
 }
 
 static void __udp_tunnel_nic_unlock(struct net_device *dev)
+	__no_context_analysis
 {
 	struct udp_tunnel_nic *utn;
 

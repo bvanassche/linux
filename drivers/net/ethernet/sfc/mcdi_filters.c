@@ -343,6 +343,7 @@ static int efx_mcdi_filter_pri(struct efx_mcdi_filter_table *table,
 static s32 efx_mcdi_filter_insert_locked(struct efx_nic *efx,
 					 struct efx_filter_spec *spec,
 					 bool replace_equal)
+	__no_context_analysis /* conditional locking */
 {
 	DECLARE_BITMAP(mc_rem_map, EFX_EF10_FILTER_SEARCH_LIMIT);
 	struct efx_rss_context_priv *ctx = NULL;
@@ -1299,6 +1300,7 @@ efx_mcdi_filter_table_probe_matches(struct efx_nic *efx,
 }
 
 int efx_mcdi_filter_table_probe(struct efx_nic *efx, bool multicast_chaining)
+	__no_context_analysis /* acquires a semaphore if _ret != -EINVAL */
 {
 	struct net_device *net_dev = efx->net_dev;
 	struct efx_mcdi_filter_table *table;
@@ -1498,6 +1500,7 @@ void efx_mcdi_filter_table_down(struct efx_nic *efx)
 }
 
 void efx_mcdi_filter_table_remove(struct efx_nic *efx)
+	__no_context_analysis /* conditionally acquires efx->filter_sem */
 {
 	struct efx_mcdi_filter_table *table = efx->filter_state;
 
@@ -1522,6 +1525,7 @@ void efx_mcdi_filter_table_remove(struct efx_nic *efx)
 }
 
 static void efx_mcdi_filter_mark_one_old(struct efx_nic *efx, uint16_t *id)
+	__no_context_analysis /* conditionally acquires efx->filter_sem */
 {
 	struct efx_mcdi_filter_table *table = efx->filter_state;
 	unsigned int filter_idx;
@@ -1571,6 +1575,7 @@ static void efx_mcdi_filter_mark_old(struct efx_nic *efx)
 }
 
 int efx_mcdi_filter_add_vlan(struct efx_nic *efx, u16 vid)
+	__no_context_analysis /* acquires efx->filter_sem if _ret != -EINVAL */
 {
 	struct efx_mcdi_filter_table *table = efx->filter_state;
 	struct efx_mcdi_filter_vlan *vlan;
@@ -1609,6 +1614,7 @@ int efx_mcdi_filter_add_vlan(struct efx_nic *efx, u16 vid)
 
 static void efx_mcdi_filter_del_vlan_internal(struct efx_nic *efx,
 					      struct efx_mcdi_filter_vlan *vlan)
+	__no_context_analysis /* conditionally acquires efx->filter_sem */
 {
 	unsigned int i;
 
@@ -1633,6 +1639,7 @@ static void efx_mcdi_filter_del_vlan_internal(struct efx_nic *efx,
 }
 
 void efx_mcdi_filter_del_vlan(struct efx_nic *efx, u16 vid)
+	__no_context_analysis /* conditionally acquires efx->filter_sem */
 {
 	struct efx_mcdi_filter_vlan *vlan;
 
@@ -1667,6 +1674,7 @@ struct efx_mcdi_filter_vlan *efx_mcdi_filter_find_vlan(struct efx_nic *efx,
 }
 
 void efx_mcdi_filter_cleanup_vlans(struct efx_nic *efx)
+	__no_context_analysis /* conditionally acquires efx->filter_sem */
 {
 	struct efx_mcdi_filter_table *table = efx->filter_state;
 	struct efx_mcdi_filter_vlan *vlan, *next_vlan;

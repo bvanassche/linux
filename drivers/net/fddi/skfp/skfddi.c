@@ -1277,6 +1277,7 @@ static void ResetAdapter(struct s_smc *smc)
  *
  ************************/
 void llc_restart_tx(struct s_smc *smc)
+	__must_hold(&smc->os.DriverLock)
 {
 	skfddi_priv *bp = &smc->os;
 

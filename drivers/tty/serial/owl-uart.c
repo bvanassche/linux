@@ -507,6 +507,7 @@ static void owl_console_putchar(struct uart_port *port, unsigned char ch)
 
 static void owl_uart_port_write(struct uart_port *port, const char *s,
 				u_int count)
+	__no_context_analysis /* conditional locking */
 {
 	u32 old_ctl, val;
 	unsigned long flags;

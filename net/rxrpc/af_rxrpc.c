@@ -384,6 +384,7 @@ struct rxrpc_call *rxrpc_kernel_begin_call(struct socket *sock,
 	call = rxrpc_new_client_call(rx, &cp, &p, gfp, debug_id);
 	/* The socket has been unlocked. */
 	if (!IS_ERR(call)) {
+		__assume_ctx_lock(&call->user_mutex);
 		call->notify_rx = notify_rx;
 		mutex_unlock(&call->user_mutex);
 	}

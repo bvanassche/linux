@@ -1231,6 +1231,7 @@ int amdgpu_vm_update_range(struct amdgpu_device *adev, struct amdgpu_vm *vm,
 		}
 
 		tmp = start + num_entries;
+		__assume_ctx_lock(&params.vm->eviction_lock);
 		r = amdgpu_vm_ptes_update(&params, start, tmp, addr, flags);
 		if (r)
 			goto error_free;
@@ -1628,6 +1629,7 @@ error_free:
 int amdgpu_vm_handle_moved(struct amdgpu_device *adev,
 			   struct amdgpu_vm *vm,
 			   struct ww_acquire_ctx *ticket)
+	__no_context_analysis /* conditional locking */
 {
 	struct amdgpu_bo_va *bo_va;
 	struct dma_resv *resv;

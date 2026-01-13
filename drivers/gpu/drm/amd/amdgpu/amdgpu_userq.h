@@ -147,7 +147,8 @@ void amdgpu_userq_destroy_object(struct amdgpu_userq_mgr *uq_mgr,
 void amdgpu_userq_evict(struct amdgpu_userq_mgr *uq_mgr);
 
 void amdgpu_userq_ensure_ev_fence(struct amdgpu_userq_mgr *userq_mgr,
-				  struct amdgpu_eviction_fence_mgr *evf_mgr);
+				  struct amdgpu_eviction_fence_mgr *evf_mgr)
+	__acquires(&userq_mgr->userq_mutex);
 
 uint64_t amdgpu_userq_get_doorbell_index(struct amdgpu_userq_mgr *uq_mgr,
 					 struct amdgpu_db_info *db_info,

@@ -1565,6 +1565,7 @@ allocate:
  */
 static int ep_insert(struct eventpoll *ep, const struct epoll_event *event,
 		     struct file *tfile, int fd, int full_check)
+	__no_context_analysis
 {
 	int error, pwake = 0;
 	__poll_t revents;
@@ -2225,6 +2226,7 @@ static inline void ep_take_care_of_epollwakeup(struct epoll_event *epev)
 
 static inline int epoll_mutex_lock(struct mutex *mutex, int depth,
 				   bool nonblock)
+	__no_context_analysis
 {
 	if (!nonblock) {
 		mutex_lock_nested(mutex, depth);
@@ -2237,6 +2239,7 @@ static inline int epoll_mutex_lock(struct mutex *mutex, int depth,
 
 int do_epoll_ctl(int epfd, int op, int fd, struct epoll_event *epds,
 		 bool nonblock)
+	__no_context_analysis
 {
 	int error;
 	int full_check = 0;

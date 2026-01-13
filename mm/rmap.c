@@ -235,6 +235,7 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 static void check_anon_vma_clone(struct vm_area_struct *dst,
 				 struct vm_area_struct *src,
 				 enum vma_operation operation)
+	__no_context_analysis /* conditional locking */
 {
 	/* The write lock must be held. */
 	mmap_assert_write_locked(src->vm_mm);
@@ -269,6 +270,7 @@ static void check_anon_vma_clone(struct vm_area_struct *dst,
 
 static void maybe_reuse_anon_vma(struct vm_area_struct *dst,
 		struct anon_vma *anon_vma)
+	__no_context_analysis /* conditional locking */
 {
 	/* If already populated, nothing to do.*/
 	if (dst->anon_vma)
@@ -632,6 +634,7 @@ out:
  */
 struct anon_vma *folio_lock_anon_vma_read(const struct folio *folio,
 					  struct rmap_walk_control *rwc)
+	__no_context_analysis /* too complex */
 {
 	struct anon_vma *anon_vma = NULL;
 	struct anon_vma *root_anon_vma;
@@ -2813,6 +2816,7 @@ void try_to_migrate(struct folio *folio, enum ttu_flags flags)
  */
 struct page *make_device_exclusive(struct mm_struct *mm, unsigned long addr,
 		void *owner, struct folio **foliop)
+	__no_context_analysis
 {
 	struct mmu_notifier_range range;
 	struct folio *folio, *fw_folio;
@@ -2919,6 +2923,7 @@ void __put_anon_vma(struct anon_vma *anon_vma)
 
 static struct anon_vma *rmap_walk_anon_lock(const struct folio *folio,
 					    struct rmap_walk_control *rwc)
+	__no_context_analysis /* conditional locking */
 {
 	struct anon_vma *anon_vma;
 
@@ -2961,6 +2966,7 @@ out:
  */
 static void rmap_walk_anon(struct folio *folio,
 		struct rmap_walk_control *rwc, bool locked)
+	__no_context_analysis /* conditional locking */
 {
 	struct anon_vma *anon_vma;
 	pgoff_t pgoff_start, pgoff_end;
@@ -3029,6 +3035,7 @@ static void rmap_walk_anon(struct folio *folio,
 static void __rmap_walk_file(struct folio *folio, struct address_space *mapping,
 			     pgoff_t pgoff_start, unsigned long nr_pages,
 			     struct rmap_walk_control *rwc, bool locked)
+	__no_context_analysis /* conditional locking */
 {
 	pgoff_t pgoff_end = pgoff_start + nr_pages - 1;
 	struct vm_area_struct *vma;

@@ -2614,6 +2614,7 @@ void mlx4_cmd_cleanup(struct mlx4_dev *dev, int cleanup_mask)
  * after event queue for command events has been initialized).
  */
 int mlx4_cmd_use_events(struct mlx4_dev *dev)
+	__no_context_analysis /* conditional locking */
 {
 	struct mlx4_priv *priv = mlx4_priv(dev);
 	int i;
@@ -2661,6 +2662,7 @@ int mlx4_cmd_use_events(struct mlx4_dev *dev)
  * Switch back to polling (used when shutting down the device)
  */
 void mlx4_cmd_use_polling(struct mlx4_dev *dev)
+	__no_context_analysis /* conditional locking */
 {
 	struct mlx4_priv *priv = mlx4_priv(dev);
 	int i;

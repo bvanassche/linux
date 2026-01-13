@@ -685,6 +685,7 @@ static pageout_t pageout(struct folio *folio, struct address_space *mapping,
  */
 static int __remove_mapping(struct address_space *mapping, struct folio *folio,
 			    bool reclaimed, struct mem_cgroup *target_memcg)
+	__no_context_analysis /* conditional locking */
 {
 	int refcount;
 	void *shadow = NULL;
@@ -1800,6 +1801,7 @@ move:
  * false if the folio was not on an LRU list.
  */
 bool folio_isolate_lru(struct folio *folio)
+	__no_context_analysis /* conditional locking */
 {
 	bool ret = false;
 
@@ -1870,6 +1872,7 @@ static bool too_many_isolated(struct pglist_data *pgdat, int file,
  * Note: The caller must not hold any lruvec lock.
  */
 static unsigned int move_folios_to_lru(struct list_head *list)
+	__no_context_analysis /* conditional locking */
 {
 	int nr_pages, nr_moved = 0;
 	struct lruvec *lruvec = NULL;
@@ -8008,6 +8011,7 @@ int user_proactive_reclaim(char *buf,
  * should be only used for lru folios.
  */
 void check_move_unevictable_folios(struct folio_batch *fbatch)
+	__no_context_analysis /* conditional locking */
 {
 	struct lruvec *lruvec = NULL;
 	int pgscanned = 0;

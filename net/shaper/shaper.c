@@ -214,6 +214,7 @@ static int net_shaper_ctx_setup(const struct genl_info *info, int type,
  */
 static int net_shaper_ctx_setup_lock(const struct genl_info *info, int type,
 				     struct net_shaper_nl_ctx *ctx)
+	__no_context_analysis /* conditional locking */
 {
 	struct net *ns = genl_info_net(info);
 	struct net_device *dev;
@@ -229,12 +230,14 @@ static int net_shaper_ctx_setup_lock(const struct genl_info *info, int type,
 		return -ENOENT;
 	}
 
+	__acquire(&dev->lock);
 	if (!dev->netdev_ops->net_shaper_ops) {
 		NL_SET_BAD_ATTR(info->extack, info->attrs[type]);
 		netdev_unlock(dev);
 		return -EOPNOTSUPP;
 	}
 
+	/* Lock ownership is transferred to ctx. */
 	ctx->binding.type = NET_SHAPER_BINDING_TYPE_NETDEV;
 	ctx->binding.netdev = dev;
 	return 0;
@@ -247,6 +250,7 @@ static void net_shaper_ctx_cleanup(struct net_shaper_nl_ctx *ctx)
 }
 
 static void net_shaper_ctx_cleanup_unlock(struct net_shaper_nl_ctx *ctx)
+	__no_context_analysis /* conditional locking */
 {
 	if (ctx->binding.type == NET_SHAPER_BINDING_TYPE_NETDEV)
 		netdev_unlock(ctx->binding.netdev);

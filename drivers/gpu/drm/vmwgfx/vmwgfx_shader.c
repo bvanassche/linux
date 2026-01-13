@@ -884,6 +884,7 @@ int vmw_compat_shader_add(struct vmw_private *dev_priv,
 			  SVGA3dShaderType shader_type,
 			  size_t size,
 			  struct list_head *list)
+	__no_context_analysis
 {
 	struct ttm_operation_ctx ctx = { false, true };
 	struct vmw_bo *buf;

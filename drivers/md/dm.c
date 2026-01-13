@@ -681,16 +681,16 @@ static void queue_io(struct mapped_device *md, struct bio *bio)
  * function to access the md->map field, and make sure they call
  * dm_put_live_table() when finished.
  */
-struct dm_table *dm_get_live_table(struct mapped_device *md,
-				   int *srcu_idx) __acquires(md->io_barrier)
+struct dm_table *dm_get_live_table(struct mapped_device *md, int *srcu_idx)
+	__acquires_shared(md->io_barrier)
 {
 	*srcu_idx = srcu_read_lock(&md->io_barrier);
 
 	return srcu_dereference(md->map, &md->io_barrier);
 }
 
-void dm_put_live_table(struct mapped_device *md,
-		       int srcu_idx) __releases(md->io_barrier)
+void dm_put_live_table(struct mapped_device *md, int srcu_idx)
+	__releases_shared(md->io_barrier)
 {
 	srcu_read_unlock(&md->io_barrier, srcu_idx);
 }
@@ -705,13 +705,15 @@ void dm_sync_table(struct mapped_device *md)
  * A fast alternative to dm_get_live_table/dm_put_live_table.
  * The caller must not block between these two functions.
  */
-static struct dm_table *dm_get_live_table_fast(struct mapped_device *md) __acquires(RCU)
+static struct dm_table *dm_get_live_table_fast(struct mapped_device *md)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return rcu_dereference(md->map);
 }
 
-static void dm_put_live_table_fast(struct mapped_device *md) __releases(RCU)
+static void dm_put_live_table_fast(struct mapped_device *md)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }
@@ -1191,7 +1193,7 @@ EXPORT_SYMBOL_GPL(dm_set_target_max_io_len);
 
 static struct dm_target *dm_dax_get_live_target(struct mapped_device *md,
 						sector_t sector, int *srcu_idx)
-	__acquires(md->io_barrier)
+	__acquires_shared(md->io_barrier)
 {
 	struct dm_table *map;
 	struct dm_target *ti;
@@ -1469,6 +1471,7 @@ static void setup_split_accounting(struct clone_info *ci, unsigned int len)
 static void alloc_multiple_bios(struct bio_list *blist, struct clone_info *ci,
 				struct dm_target *ti, unsigned int num_bios,
 				unsigned *len)
+	__no_context_analysis /* conditional locking */
 {
 	struct bio *bio;
 	int try;
@@ -2557,11 +2560,13 @@ int dm_create(int minor, struct mapped_device **result)
  * All are required to hold md->type_lock.
  */
 void dm_lock_md_type(struct mapped_device *md)
+	__acquires(md->type_lock)
 {
 	mutex_lock(&md->type_lock);
 }
 
 void dm_unlock_md_type(struct mapped_device *md)
+	__releases(md->type_lock)
 {
 	mutex_unlock(&md->type_lock);
 }
@@ -3243,6 +3248,7 @@ EXPORT_SYMBOL_GPL(dm_internal_resume);
  */
 
 void dm_internal_suspend_fast(struct mapped_device *md)
+	__acquires(md->suspend_lock)
 {
 	mutex_lock(&md->suspend_lock);
 	if (dm_suspended_md(md) || dm_suspended_internally_md(md))
@@ -3256,6 +3262,7 @@ void dm_internal_suspend_fast(struct mapped_device *md)
 EXPORT_SYMBOL_GPL(dm_internal_suspend_fast);
 
 void dm_internal_resume_fast(struct mapped_device *md)
+	__releases(md->suspend_lock)
 {
 	if (dm_suspended_md(md) || dm_suspended_internally_md(md))
 		goto done;

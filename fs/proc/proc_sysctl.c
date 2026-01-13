@@ -290,6 +290,7 @@ static void proc_sys_invalidate_dcache(struct ctl_table_header *head)
 }
 
 static void start_unregistering(struct ctl_table_header *p)
+	__must_hold(&sysctl_lock)
 {
 	/* will reacquire if has to wait */
 	lockdep_assert_held(&sysctl_lock);
@@ -1255,6 +1256,7 @@ static bool get_links(struct ctl_dir *dir,
 }
 
 static int insert_links(struct ctl_table_header *head)
+	__must_hold(&sysctl_lock)
 {
 	struct ctl_table_set *root_set = &sysctl_table_root.default_set;
 	struct ctl_dir *core_parent;
@@ -1506,6 +1508,7 @@ static void put_links(struct ctl_table_header *header)
 }
 
 static void drop_sysctl_table(struct ctl_table_header *header)
+	__must_hold(&sysctl_lock)
 {
 	struct ctl_dir *parent = header->parent;
 

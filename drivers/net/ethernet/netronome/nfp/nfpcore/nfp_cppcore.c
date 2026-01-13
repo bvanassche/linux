@@ -822,6 +822,7 @@ int nfp_cpp_area_cache_add(struct nfp_cpp *cpp, size_t size)
 static struct nfp_cpp_area_cache *
 area_cache_get(struct nfp_cpp *cpp, u32 id,
 	       u64 addr, unsigned long *offset, size_t length)
+	__no_context_analysis /* __cond_acquires() does not support pointers */
 {
 	struct nfp_cpp_area_cache *cache;
 	int err;
@@ -903,6 +904,7 @@ exit:
 
 static void
 area_cache_put(struct nfp_cpp *cpp, struct nfp_cpp_area_cache *cache)
+	__no_context_analysis /* to match the above function */
 {
 	if (!cache)
 		return;

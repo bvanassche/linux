@@ -822,8 +822,7 @@ static inline bool pl011_dma_tx_start(struct uart_amba_port *uap)
  * Locking: called with port lock held and IRQs disabled.
  */
 static void pl011_dma_flush_buffer(struct uart_port *port)
-__releases(&uap->port.lock)
-__acquires(&uap->port.lock)
+	__no_context_analysis /* container_of() */
 {
 	struct uart_amba_port *uap =
 	    container_of(port, struct uart_amba_port, port);
@@ -2658,12 +2657,14 @@ pl011_console_write_thread(struct console *co, struct nbcon_write_context *wctxt
 
 static void
 pl011_console_device_lock(struct console *co, unsigned long *flags)
+	__acquires(&amba_ports[co->index]->port.lock)
 {
 	__uart_port_lock_irqsave(&amba_ports[co->index]->port, flags);
 }
 
 static void
 pl011_console_device_unlock(struct console *co, unsigned long flags)
+	__releases(&amba_ports[co->index]->port.lock)
 {
 	__uart_port_unlock_irqrestore(&amba_ports[co->index]->port, flags);
 }

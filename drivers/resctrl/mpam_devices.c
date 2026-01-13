@@ -740,8 +740,10 @@ static bool mpam_ris_hw_probe_csu_nrdy(struct mpam_msc_ris *ris)
 	bool can_set, can_clear;
 	struct mpam_msc *msc = ris->vmsc->msc;
 
-	if (WARN_ON_ONCE(!mpam_mon_sel_lock(msc)))
+	if (!mpam_mon_sel_lock(msc)) {
+		WARN_ON_ONCE(true);
 		return false;
+	}
 
 	mon_sel = FIELD_PREP(MSMON_CFG_MON_SEL_MON_SEL, 0) |
 		  FIELD_PREP(MSMON_CFG_MON_SEL_RIS, ris->ris_idx);
@@ -1424,8 +1426,10 @@ void mpam_msmon_reset_mbwu(struct mpam_component *comp, struct mon_cfg *ctx)
 			if (!mpam_has_feature(mpam_feat_msmon_mbwu, &ris->props))
 				continue;
 
-			if (WARN_ON_ONCE(!mpam_mon_sel_lock(msc)))
+			if (!mpam_mon_sel_lock(msc)) {
+				WARN_ON_ONCE(true);
 				continue;
+			}
 
 			ris->mbwu_state[ctx->mon].correction = 0;
 			ris->mbwu_state[ctx->mon].reset_on_next_read = true;
@@ -1662,8 +1666,10 @@ static int mpam_save_mbwu_state(void *arg)
 		mbwu_state = &ris->mbwu_state[i];
 		cfg = &mbwu_state->cfg;
 
-		if (WARN_ON_ONCE(!mpam_mon_sel_lock(msc)))
+		if (!mpam_mon_sel_lock(msc)) {
+			WARN_ON_ONCE(true);
 			return -EIO;
+		}
 
 		mon_sel = FIELD_PREP(MSMON_CFG_MON_SEL_MON_SEL, i) |
 			  FIELD_PREP(MSMON_CFG_MON_SEL_RIS, ris->ris_idx);

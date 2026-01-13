@@ -503,6 +503,7 @@ static u32 i2c_atr_functionality(struct i2c_adapter *adap)
 }
 
 static void i2c_atr_lock_bus(struct i2c_adapter *adapter, unsigned int flags)
+	__acquires(((struct i2c_atr_chan *)adapter->algo_data)->atr->lock)
 {
 	struct i2c_atr_chan *chan = adapter->algo_data;
 	struct i2c_atr *atr = chan->atr;
@@ -511,6 +512,7 @@ static void i2c_atr_lock_bus(struct i2c_adapter *adapter, unsigned int flags)
 }
 
 static int i2c_atr_trylock_bus(struct i2c_adapter *adapter, unsigned int flags)
+	__cond_acquires(0, ((struct i2c_atr_chan *)adapter->algo_data)->atr->lock)
 {
 	struct i2c_atr_chan *chan = adapter->algo_data;
 	struct i2c_atr *atr = chan->atr;
@@ -519,6 +521,7 @@ static int i2c_atr_trylock_bus(struct i2c_adapter *adapter, unsigned int flags)
 }
 
 static void i2c_atr_unlock_bus(struct i2c_adapter *adapter, unsigned int flags)
+	__releases(((struct i2c_atr_chan *)adapter->algo_data)->atr->lock)
 {
 	struct i2c_atr_chan *chan = adapter->algo_data;
 	struct i2c_atr *atr = chan->atr;

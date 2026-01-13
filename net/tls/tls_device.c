@@ -422,6 +422,7 @@ static int tls_push_data(struct sock *sk,
 			 struct iov_iter *iter,
 			 size_t size, int flags,
 			 unsigned char record_type)
+	__must_hold(sk)
 {
 	struct tls_context *tls_ctx = tls_get_ctx(sk);
 	struct tls_prot_info *prot = &tls_ctx->prot_info;
@@ -671,6 +672,7 @@ exit_rcu_unlock:
 EXPORT_SYMBOL(tls_get_record);
 
 static int tls_device_push_pending_record(struct sock *sk, int flags)
+	__must_hold(sk)
 {
 	struct iov_iter iter;
 

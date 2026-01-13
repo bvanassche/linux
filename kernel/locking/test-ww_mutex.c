@@ -49,13 +49,17 @@ static void test_mutex_work(struct work_struct *work)
 		while (!ww_mutex_trylock(&mtx->mutex, NULL))
 			cond_resched();
 	} else {
-		ww_mutex_lock(&mtx->mutex, NULL);
+		if (ww_mutex_lock(&mtx->mutex, NULL) != 0) {
+			WARN_ON_ONCE(true);
+			return;
+		}
 	}
 	complete(&mtx->done);
 	ww_mutex_unlock(&mtx->mutex);
 }
 
 static int __test_mutex(struct ww_class *class, unsigned int flags)
+	__no_context_analysis /* conditional locking */
 {
 #define TIMEOUT (HZ / 16)
 	struct test_mutex mtx;
@@ -122,6 +126,7 @@ static int test_mutex(struct ww_class *class)
 }
 
 static int test_aa(struct ww_class *class, bool trylock)
+	__no_context_analysis /* double ww_mutex_trylock() call */
 {
 	struct ww_mutex mutex;
 	struct ww_acquire_ctx ctx;
@@ -188,6 +193,7 @@ struct test_abba {
 };
 
 static void test_abba_work(struct work_struct *work)
+	__no_context_analysis /* intentional EDEADLK */
 {
 	struct test_abba *abba = container_of(work, typeof(*abba), work);
 	struct ww_acquire_ctx ctx;
@@ -196,8 +202,10 @@ static void test_abba_work(struct work_struct *work)
 	ww_acquire_init_noinject(&ctx, abba->class);
 	if (!abba->trylock)
 		ww_mutex_lock(&abba->b_mutex, &ctx);
-	else
-		WARN_ON(!ww_mutex_trylock(&abba->b_mutex, &ctx));
+	else if (!ww_mutex_trylock(&abba->b_mutex, &ctx)) {
+		WARN_ON(true);
+		return;
+	}
 
 	WARN_ON(READ_ONCE(abba->b_mutex.ctx) != &ctx);
 
@@ -220,6 +228,7 @@ static void test_abba_work(struct work_struct *work)
 }
 
 static int test_abba(struct ww_class *class, bool trylock, bool resolve)
+	__no_context_analysis
 {
 	struct test_abba abba;
 	struct ww_acquire_ctx ctx;
@@ -290,6 +299,7 @@ struct test_cycle {
 };
 
 static void test_cycle_work(struct work_struct *work)
+	__no_context_analysis
 {
 	struct test_cycle *cycle = container_of(work, typeof(*cycle), work);
 	struct ww_acquire_ctx ctx;
@@ -434,6 +444,7 @@ static void dummy_load(struct stress *stress)
 }
 
 static void stress_inorder_work(struct work_struct *work)
+	__no_context_analysis
 {
 	struct stress *stress = container_of(work, typeof(*stress), work);
 	const int nlocks = stress->nlocks;
@@ -493,6 +504,7 @@ struct reorder_lock {
 };
 
 static void stress_reorder_work(struct work_struct *work)
+	__no_context_analysis
 {
 	struct stress *stress = container_of(work, typeof(*stress), work);
 	LIST_HEAD(locks);

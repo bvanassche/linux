@@ -834,6 +834,7 @@ static void
 __bad_area(struct pt_regs *regs, unsigned long error_code,
 	   unsigned long address, struct mm_struct *mm,
 	   struct vm_area_struct *vma, u32 pkey, int si_code)
+	__no_context_analysis /* conditional locking */
 {
 	/*
 	 * Something tried to access memory that isn't in our memory map..
@@ -1207,6 +1208,7 @@ static inline
 void do_user_addr_fault(struct pt_regs *regs,
 			unsigned long error_code,
 			unsigned long address)
+	__no_context_analysis /* conditional unlocking */
 {
 	struct vm_area_struct *vma;
 	struct task_struct *tsk;

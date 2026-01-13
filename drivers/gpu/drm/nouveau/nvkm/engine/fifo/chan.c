@@ -293,6 +293,7 @@ nvkm_chan_del(struct nvkm_chan **pchan)
 
 void
 nvkm_chan_put(struct nvkm_chan **pchan, unsigned long irqflags)
+	__no_context_analysis /* conditional locking */
 {
 	struct nvkm_chan *chan = *pchan;
 

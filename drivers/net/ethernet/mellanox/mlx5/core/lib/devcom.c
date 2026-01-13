@@ -344,6 +344,7 @@ bool mlx5_devcom_comp_is_ready(struct mlx5_devcom_comp_dev *devcom)
 }
 
 bool mlx5_devcom_for_each_peer_begin(struct mlx5_devcom_comp_dev *devcom)
+	__cond_acquires_shared(true, &devcom->comp->sem)
 {
 	struct mlx5_devcom_comp *comp;
 
@@ -361,6 +362,7 @@ bool mlx5_devcom_for_each_peer_begin(struct mlx5_devcom_comp_dev *devcom)
 }
 
 void mlx5_devcom_for_each_peer_end(struct mlx5_devcom_comp_dev *devcom)
+	__releases_shared(&devcom->comp->sem)
 {
 	up_read(&devcom->comp->sem);
 }
@@ -419,6 +421,7 @@ void *mlx5_devcom_get_next_peer_data_rcu(struct mlx5_devcom_comp_dev *devcom,
 }
 
 void mlx5_devcom_comp_lock(struct mlx5_devcom_comp_dev *devcom)
+	__no_context_analysis /* conditional locking */
 {
 	if (!devcom)
 		return;
@@ -426,6 +429,7 @@ void mlx5_devcom_comp_lock(struct mlx5_devcom_comp_dev *devcom)
 }
 
 void mlx5_devcom_comp_unlock(struct mlx5_devcom_comp_dev *devcom)
+	__no_context_analysis /* conditional locking */
 {
 	if (!devcom)
 		return;
@@ -433,6 +437,7 @@ void mlx5_devcom_comp_unlock(struct mlx5_devcom_comp_dev *devcom)
 }
 
 int mlx5_devcom_comp_trylock(struct mlx5_devcom_comp_dev *devcom)
+	__no_context_analysis /* conditional locking */
 {
 	if (!devcom)
 		return 0;

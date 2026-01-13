@@ -73,6 +73,7 @@ err_free:
 }
 
 static vm_fault_t sgx_vepc_fault(struct vm_fault *vmf)
+	__no_context_analysis /* conditional unlocking */
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct sgx_vepc *vepc = vma->vm_private_data;

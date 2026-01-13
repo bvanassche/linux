@@ -1347,6 +1347,7 @@ static void unregister_shadow_scb(struct kvm_vcpu *vcpu)
  *          - -ENOMEM if out of memory
  */
 static int vsie_run(struct kvm_vcpu *vcpu, struct vsie_page *vsie_page)
+	__context_unsafe(conditional locking)
 {
 	struct kvm_s390_sie_block *scb_s = &vsie_page->scb_s;
 	struct gmap *sg = NULL;

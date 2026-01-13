@@ -115,6 +115,7 @@ __ccu_write(struct ccu_data *ccu, u32 reg_offset, u32 reg_val)
 }
 
 static inline unsigned long ccu_lock(struct ccu_data *ccu)
+	__acquires(&ccu->lock)
 {
 	unsigned long flags;
 
@@ -123,6 +124,7 @@ static inline unsigned long ccu_lock(struct ccu_data *ccu)
 	return flags;
 }
 static inline void ccu_unlock(struct ccu_data *ccu, unsigned long flags)
+	__releases(&ccu->lock)
 {
 	spin_unlock_irqrestore(&ccu->lock, flags);
 }

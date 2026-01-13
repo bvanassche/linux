@@ -366,7 +366,7 @@ static ssize_t iowarrior_write(struct file *file,
 	dev = file->private_data;
 
 	retval = mutex_lock_interruptible(&dev->mutex);
-	if (retval < 0)
+	if (retval)
 		return -EINTR;
 
 	/* verify that the device wasn't unplugged */

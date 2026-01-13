@@ -87,6 +87,7 @@ static inline int stripe_hash_locks_hash(struct r5conf *conf, sector_t sect)
 }
 
 static inline void lock_device_hash_lock(struct r5conf *conf, int hash)
+	__acquires(conf->hash_locks + hash)
 	__acquires(&conf->device_lock)
 {
 	spin_lock_irq(conf->hash_locks + hash);
@@ -95,13 +96,14 @@ static inline void lock_device_hash_lock(struct r5conf *conf, int hash)
 
 static inline void unlock_device_hash_lock(struct r5conf *conf, int hash)
 	__releases(&conf->device_lock)
+	__releases(conf->hash_locks + hash)
 {
 	spin_unlock(&conf->device_lock);
 	spin_unlock_irq(conf->hash_locks + hash);
 }
 
 static inline void lock_all_device_hash_locks_irq(struct r5conf *conf)
-	__acquires(&conf->device_lock)
+	__no_context_analysis /* locking loop */
 {
 	int i;
 	spin_lock_irq(conf->hash_locks);
@@ -111,7 +113,7 @@ static inline void lock_all_device_hash_locks_irq(struct r5conf *conf)
 }
 
 static inline void unlock_all_device_hash_locks_irq(struct r5conf *conf)
-	__releases(&conf->device_lock)
+	__no_context_analysis /* unlock loop */
 {
 	int i;
 	spin_unlock(&conf->device_lock);
@@ -229,6 +231,8 @@ static void do_release_stripe(struct r5conf *conf, struct stripe_head *sh,
 	int i;
 	int injournal = 0;	/* number of date pages with R5_InJournal */
 
+	__assume_ctx_lock(&sh->raid_conf->device_lock);
+	
 	BUG_ON(!list_empty(&sh->lru));
 	BUG_ON(atomic_read(&conf->active_stripes)==0);
 
@@ -5305,7 +5309,9 @@ static void raid5_activate_delayed(struct r5conf *conf)
 		while (!list_empty(&conf->delayed_list)) {
 			struct list_head *l = conf->delayed_list.next;
 			struct stripe_head *sh;
+
 			sh = list_entry(l, struct stripe_head, lru);
+			__assume_ctx_lock(&sh->raid_conf->device_lock);
 			list_del_init(l);
 			clear_bit(STRIPE_DELAYED, &sh->state);
 			if (!test_and_set_bit(STRIPE_PREREAD_ACTIVE, &sh->state))

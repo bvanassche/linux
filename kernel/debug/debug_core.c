@@ -570,6 +570,7 @@ NOKPROBE_SYMBOL(dbg_touch_watchdogs);
 
 static int kgdb_cpu_enter(struct kgdb_state *ks, struct pt_regs *regs,
 		int exception_state)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long flags;
 	int sstep_tries = 100;

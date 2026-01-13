@@ -121,12 +121,14 @@ static struct lt9611uxc *bridge_to_lt9611uxc(struct drm_bridge *bridge)
 }
 
 static void lt9611uxc_lock(struct lt9611uxc *lt9611uxc)
+	__acquires(lt9611uxc->ocm_lock)
 {
 	mutex_lock(&lt9611uxc->ocm_lock);
 	regmap_write(lt9611uxc->regmap, 0x80ee, 0x01);
 }
 
 static void lt9611uxc_unlock(struct lt9611uxc *lt9611uxc)
+	__releases(lt9611uxc->ocm_lock)
 {
 	regmap_write(lt9611uxc->regmap, 0x80ee, 0x00);
 	msleep(50);

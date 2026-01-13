@@ -855,6 +855,7 @@ __restore_vm_bo_list(struct drm_gpuvm *gpuvm, spinlock_t *lock,
 
 static void
 cond_spin_lock(spinlock_t *lock, bool cond)
+	__no_context_analysis /* conditional locking */
 {
 	if (cond)
 		spin_lock(lock);
@@ -862,6 +863,7 @@ cond_spin_lock(spinlock_t *lock, bool cond)
 
 static void
 cond_spin_unlock(spinlock_t *lock, bool cond)
+	__no_context_analysis /* conditional locking */
 {
 	if (cond)
 		spin_unlock(lock);
@@ -1728,6 +1730,7 @@ drm_gpuvm_bo_defer_zombie_cleanup(struct drm_gpuvm_bo *vm_bo)
 
 static void
 drm_gpuvm_bo_defer_free(struct kref *kref)
+	__no_context_analysis /* container_of() */
 {
 	struct drm_gpuvm_bo *vm_bo = container_of(kref, struct drm_gpuvm_bo,
 						  kref);

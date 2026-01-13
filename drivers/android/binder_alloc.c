@@ -1135,6 +1135,7 @@ enum lru_status binder_alloc_free_page(struct list_head *item,
 				       struct list_lru_one *lru,
 				       void *cb_arg)
 	__must_hold(&lru->lock)
+	__no_context_analysis /* conditional locking */
 {
 	struct binder_shrinker_mdata *mdata = container_of(item, typeof(*mdata), lru);
 	struct binder_alloc *alloc = mdata->alloc;

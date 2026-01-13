@@ -193,6 +193,7 @@ void media_gobj_destroy(struct media_gobj *gobj)
 
 int media_entity_pads_init(struct media_entity *entity, u16 num_pads,
 			   struct media_pad *pads)
+	__no_context_analysis /* conditional locking */
 {
 	struct media_device *mdev = entity->graph_obj.mdev;
 	struct media_pad *iter;

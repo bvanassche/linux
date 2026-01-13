@@ -1270,6 +1270,7 @@ error:
 }
 
 static int __init debug_vm_pgtable(void)
+	__no_context_analysis /* conditional locking */
 {
 	struct pgtable_debug_args args;
 	spinlock_t *ptl = NULL;

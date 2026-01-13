@@ -50,6 +50,7 @@ static inline size_t buffer_start(struct persistent_ram_zone *prz)
 
 /* increase and wrap the start pointer, returning the old value */
 static size_t buffer_start_add(struct persistent_ram_zone *prz, size_t a)
+	__no_context_analysis
 {
 	int old;
 	int new;
@@ -72,6 +73,7 @@ static size_t buffer_start_add(struct persistent_ram_zone *prz, size_t a)
 
 /* increase the size counter until it hits the max size */
 static void buffer_size_add(struct persistent_ram_zone *prz, size_t a)
+	__no_context_analysis
 {
 	size_t old;
 	size_t new;

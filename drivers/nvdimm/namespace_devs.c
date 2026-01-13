@@ -2030,6 +2030,7 @@ static struct device **scan_labels(struct nd_region *nd_region)
 }
 
 static struct device **create_namespaces(struct nd_region *nd_region)
+	__no_context_analysis /* locking inside loop */
 {
 	struct nd_mapping *nd_mapping;
 	struct device **devs;

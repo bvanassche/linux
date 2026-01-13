@@ -96,6 +96,7 @@ static const struct class uverbs_class = {
  * must be held until use of the ucontext is finished.
  */
 struct ib_ucontext *ib_uverbs_get_ucontext_file(struct ib_uverbs_file *ufile)
+	__must_hold_shared(&ufile->device->disassociate_srcu)
 {
 	/*
 	 * We do not hold the hw_destroy_rwsem lock for this flow, instead

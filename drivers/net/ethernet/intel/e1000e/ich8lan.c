@@ -1853,6 +1853,7 @@ static DEFINE_MUTEX(nvm_mutex);
  *  Acquires the mutex for performing NVM operations.
  **/
 static s32 e1000_acquire_nvm_ich8lan(struct e1000_hw __always_unused *hw)
+	__acquires(nvm_mutex)
 {
 	mutex_lock(&nvm_mutex);
 
@@ -1866,6 +1867,7 @@ static s32 e1000_acquire_nvm_ich8lan(struct e1000_hw __always_unused *hw)
  *  Releases the mutex used while performing NVM operations.
  **/
 static void e1000_release_nvm_ich8lan(struct e1000_hw __always_unused *hw)
+	__releases(nvm_mutex)
 {
 	mutex_unlock(&nvm_mutex);
 }

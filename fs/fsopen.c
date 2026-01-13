@@ -215,6 +215,7 @@ err:
 }
 
 static int vfs_cmd_create(struct fs_context *fc, bool exclusive)
+	__cond_releases(0, &fc->root->d_sb->s_umount)
 {
 	struct super_block *sb;
 	int ret;
@@ -282,6 +283,7 @@ static int vfs_cmd_reconfigure(struct fs_context *fc)
  */
 static int vfs_fsconfig_locked(struct fs_context *fc, int cmd,
 			       struct fs_parameter *param)
+	__cond_releases(0, &fc->root->d_sb->s_umount)
 {
 	int ret;
 
@@ -353,6 +355,7 @@ SYSCALL_DEFINE5(fsconfig,
 		const char __user *, _key,
 		const void __user *, _value,
 		int, aux)
+	__no_context_analysis
 {
 	struct fs_context *fc;
 	int ret;

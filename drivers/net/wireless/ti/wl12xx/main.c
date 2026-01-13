@@ -1567,6 +1567,7 @@ static void wl12xx_set_tx_desc_csum(struct wl1271 *wl,
 }
 
 static int wl12xx_plt_init(struct wl1271 *wl)
+	__must_hold(wl->mutex)
 {
 	int ret;
 

@@ -90,6 +90,7 @@ static DEFINE_MUTEX(hwspinlock_tree_lock);
  * This function will never sleep.
  */
 int __hwspin_trylock(struct hwspinlock *hwlock, int mode, unsigned long *flags)
+	__no_context_analysis
 {
 	int ret;
 
@@ -266,6 +267,7 @@ EXPORT_SYMBOL_GPL(__hwspin_lock_timeout);
  * The function will never sleep.
  */
 void __hwspin_unlock(struct hwspinlock *hwlock, int mode, unsigned long *flags)
+	__no_context_analysis
 {
 	if (WARN_ON(!hwlock || (!flags && mode == HWLOCK_IRQSTATE)))
 		return;

@@ -299,6 +299,7 @@ static int aie2_xrs_unload(void *cb_arg)
 }
 
 static int aie2_xrs_set_dft_dpm_level(struct drm_device *ddev, u32 dpm_level)
+	__must_hold(&to_xdna_dev(ddev)->dev_lock)
 {
 	struct amdxdna_dev *xdna = to_xdna_dev(ddev);
 	struct amdxdna_dev_hdl *ndev;
@@ -899,6 +900,7 @@ static int aie2_hwctx_status_cb(struct amdxdna_hwctx *hwctx, void *arg)
 
 static int aie2_get_hwctx_status(struct amdxdna_client *client,
 				 struct amdxdna_drm_get_info *args)
+	__must_hold(&client->xdna->dev_lock)
 {
 	struct amdxdna_drm_get_array array_args;
 	struct amdxdna_dev *xdna = client->xdna;
@@ -1035,6 +1037,7 @@ static int aie2_get_preempt_state(struct amdxdna_client *client,
 }
 
 static int aie2_get_info(struct amdxdna_client *client, struct amdxdna_drm_get_info *args)
+	__must_hold(&client->xdna->dev_lock)
 {
 	struct amdxdna_dev *xdna = client->xdna;
 	int ret, idx;
@@ -1096,6 +1099,7 @@ dev_exit:
 
 static int aie2_query_ctx_status_array(struct amdxdna_client *client,
 				       struct amdxdna_drm_get_array *args)
+	__must_hold(&client->xdna->dev_lock)
 {
 	struct amdxdna_drm_get_array array_args;
 	struct amdxdna_dev *xdna = client->xdna;
@@ -1131,6 +1135,7 @@ static int aie2_query_ctx_status_array(struct amdxdna_client *client,
 
 static int aie2_get_array(struct amdxdna_client *client,
 			  struct amdxdna_drm_get_array *args)
+	__must_hold(&client->xdna->dev_lock)
 {
 	struct amdxdna_dev *xdna = client->xdna;
 	int ret, idx;
@@ -1224,6 +1229,7 @@ static int aie2_set_preempt_state(struct amdxdna_client *client,
 
 static int aie2_set_state(struct amdxdna_client *client,
 			  struct amdxdna_drm_set_state *args)
+	__must_hold(&client->xdna->dev_lock)
 {
 	struct amdxdna_dev *xdna = client->xdna;
 	int ret, idx;

@@ -372,6 +372,7 @@ static void vmw_print_sm_type(struct vmw_private *dev_priv)
  * Returns an error if bo creation or initialization fails.
  */
 static int vmw_dummy_query_bo_create(struct vmw_private *dev_priv)
+	__no_context_analysis /* conditional locking */
 {
 	int ret;
 	struct vmw_bo *vbo;

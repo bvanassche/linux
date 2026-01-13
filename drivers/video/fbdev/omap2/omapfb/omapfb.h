@@ -161,11 +161,13 @@ static inline struct omapfb_display_data *get_display_data(
 }
 
 static inline void omapfb_lock(struct omapfb2_device *fbdev)
+	__acquires(&fbdev->mtx)
 {
 	mutex_lock(&fbdev->mtx);
 }
 
 static inline void omapfb_unlock(struct omapfb2_device *fbdev)
+	__releases(&fbdev->mtx)
 {
 	mutex_unlock(&fbdev->mtx);
 }
@@ -180,12 +182,14 @@ static inline int omapfb_overlay_enable(struct omap_overlay *ovl,
 }
 
 static inline void omapfb_get_mem_region(struct omapfb2_mem_region *rg)
+	__acquires_shared(&rg->lock)
 {
 	down_read_nested(&rg->lock, rg->id);
 	atomic_inc(&rg->lock_count);
 }
 
 static inline void omapfb_put_mem_region(struct omapfb2_mem_region *rg)
+	__releases_shared(&rg->lock)
 {
 	atomic_dec(&rg->lock_count);
 	up_read(&rg->lock);

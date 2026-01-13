@@ -724,6 +724,7 @@ int uds_get_index_session_stats(struct uds_index_session *index_session,
 }
 
 void uds_wait_cond(struct cond_var *cv, struct mutex *mutex)
+	__must_hold(*mutex)
 {
 	DEFINE_WAIT(__wait);
 

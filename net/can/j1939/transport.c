@@ -235,11 +235,13 @@ static int j1939_xtp_abort_to_errno(struct j1939_priv *priv,
 }
 
 static inline void j1939_session_list_lock(struct j1939_priv *priv)
+	__acquires(&priv->active_session_list_lock)
 {
 	spin_lock_bh(&priv->active_session_list_lock);
 }
 
 static inline void j1939_session_list_unlock(struct j1939_priv *priv)
+	__releases(&priv->active_session_list_lock)
 {
 	spin_unlock_bh(&priv->active_session_list_lock);
 }

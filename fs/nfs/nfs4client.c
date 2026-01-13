@@ -458,6 +458,7 @@ static bool nfs4_match_client_owner_id(const struct nfs_client *clp1,
 
 int nfs4_match_client(struct nfs_client  *pos,  struct nfs_client *new,
 		      struct nfs_client **prev, struct nfs_net *nn)
+	__must_hold(&nn->nfs_client_lock)
 {
 	int status;
 

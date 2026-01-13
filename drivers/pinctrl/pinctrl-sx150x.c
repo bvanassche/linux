@@ -562,6 +562,7 @@ static irqreturn_t sx150x_irq_thread_fn(int irq, void *dev_id)
 }
 
 static void sx150x_irq_bus_lock(struct irq_data *d)
+	__acquires(&((struct sx150x_pinctrl *)gpiochip_get_data(irq_data_get_irq_chip_data(d)))->lock)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct sx150x_pinctrl *pctl = gpiochip_get_data(gc);
@@ -570,6 +571,7 @@ static void sx150x_irq_bus_lock(struct irq_data *d)
 }
 
 static void sx150x_irq_bus_sync_unlock(struct irq_data *d)
+	__releases(&((struct sx150x_pinctrl *)gpiochip_get_data(irq_data_get_irq_chip_data(d)))->lock)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct sx150x_pinctrl *pctl = gpiochip_get_data(gc);

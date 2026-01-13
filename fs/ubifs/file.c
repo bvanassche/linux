@@ -204,6 +204,7 @@ static void release_existing_page_budget(struct ubifs_info *c)
 
 static int write_begin_slow(struct address_space *mapping,
 			    loff_t pos, unsigned len, struct folio **foliop)
+	__no_context_analysis
 {
 	struct inode *inode = mapping->host;
 	struct ubifs_info *c = inode->i_sb->s_fs_info;
@@ -310,6 +311,7 @@ static int write_begin_slow(struct address_space *mapping,
  */
 static int allocate_budget(struct ubifs_info *c, struct folio *folio,
 			   struct ubifs_inode *ui, int appending)
+	__no_context_analysis
 {
 	struct ubifs_budget_req req = { .fast = 1 };
 
@@ -408,6 +410,7 @@ static int ubifs_write_begin(const struct kiocb *iocb,
 			     struct address_space *mapping,
 			     loff_t pos, unsigned len,
 			     struct folio **foliop, void **fsdata)
+	__no_context_analysis
 {
 	struct inode *inode = mapping->host;
 	struct ubifs_info *c = inode->i_sb->s_fs_info;
@@ -501,6 +504,7 @@ static int ubifs_write_begin(const struct kiocb *iocb,
  */
 static void cancel_budget(struct ubifs_info *c, struct folio *folio,
 			  struct ubifs_inode *ui, int appending)
+	__no_context_analysis
 {
 	if (appending) {
 		if (!ui->dirty)
@@ -519,6 +523,7 @@ static int ubifs_write_end(const struct kiocb *iocb,
 			   struct address_space *mapping, loff_t pos,
 			   unsigned len, unsigned copied,
 			   struct folio *folio, void *fsdata)
+	__no_context_analysis
 {
 	struct inode *inode = mapping->host;
 	struct ubifs_inode *ui = ubifs_inode(inode);
@@ -806,6 +811,7 @@ out_bu_off:
  * Returns: %1 if a bulk-read is done and %0 otherwise.
  */
 static int ubifs_bulk_read(struct folio *folio)
+	__no_context_analysis
 {
 	struct inode *inode = folio->mapping->host;
 	struct ubifs_info *c = inode->i_sb->s_fs_info;

@@ -1242,6 +1242,7 @@ static void spi_nor_unlock_device(struct spi_nor *nor)
 
 /* Generic helpers for internal locking and serialization */
 static bool spi_nor_rww_start_exclusive(struct spi_nor *nor)
+	__acquires(&nor->lock)
 {
 	struct spi_nor_rww *rww = &nor->rww;
 
@@ -1268,6 +1269,7 @@ static void spi_nor_rww_end_exclusive(struct spi_nor *nor)
 }
 
 int spi_nor_prep_and_lock(struct spi_nor *nor)
+	__no_context_analysis /* conditional locking */
 {
 	int ret;
 
@@ -1285,6 +1287,7 @@ int spi_nor_prep_and_lock(struct spi_nor *nor)
 }
 
 void spi_nor_unlock_and_unprep(struct spi_nor *nor)
+	__no_context_analysis /* conditional locking */
 {
 	if (!spi_nor_use_parallel_locking(nor)) {
 		mutex_unlock(&nor->lock);
@@ -1339,6 +1342,7 @@ static void spi_nor_rww_end_pe(struct spi_nor *nor, loff_t start, size_t len)
 }
 
 static int spi_nor_prep_and_lock_pe(struct spi_nor *nor, loff_t start, size_t len)
+	__no_context_analysis /* conditional locking */
 {
 	int ret;
 
@@ -1356,6 +1360,7 @@ static int spi_nor_prep_and_lock_pe(struct spi_nor *nor, loff_t start, size_t le
 }
 
 static void spi_nor_unlock_and_unprep_pe(struct spi_nor *nor, loff_t start, size_t len)
+	__no_context_analysis /* conditional locking */
 {
 	if (!spi_nor_use_parallel_locking(nor)) {
 		mutex_unlock(&nor->lock);
@@ -1412,6 +1417,7 @@ static void spi_nor_rww_end_rd(struct spi_nor *nor, loff_t start, size_t len)
 }
 
 static int spi_nor_prep_and_lock_rd(struct spi_nor *nor, loff_t start, size_t len)
+	__no_context_analysis /* conditional locking */
 {
 	int ret;
 
@@ -1429,6 +1435,7 @@ static int spi_nor_prep_and_lock_rd(struct spi_nor *nor, loff_t start, size_t le
 }
 
 static void spi_nor_unlock_and_unprep_rd(struct spi_nor *nor, loff_t start, size_t len)
+	__no_context_analysis /* conditional locking */
 {
 	if (!spi_nor_use_parallel_locking(nor)) {
 		mutex_unlock(&nor->lock);

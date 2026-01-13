@@ -5311,14 +5311,16 @@ int sctp_get_sctp_info(struct sock *sk, struct sctp_association *asoc,
 EXPORT_SYMBOL_GPL(sctp_get_sctp_info);
 
 /* use callback to avoid exporting the core structure */
-void sctp_transport_walk_start(struct rhashtable_iter *iter) __acquires(RCU)
+void sctp_transport_walk_start(struct rhashtable_iter *iter)
+	__acquires_shared(RCU)
 {
 	rhltable_walk_enter(&sctp_transport_hashtable, iter);
 
 	rhashtable_walk_start(iter);
 }
 
-void sctp_transport_walk_stop(struct rhashtable_iter *iter) __releases(RCU)
+void sctp_transport_walk_stop(struct rhashtable_iter *iter)
+	__releases_shared(RCU)
 {
 	rhashtable_walk_stop(iter);
 	rhashtable_walk_exit(iter);
@@ -8390,6 +8392,7 @@ static struct sctp_bind_bucket *sctp_bucket_create(
 	struct sctp_bind_hashbucket *head, struct net *, unsigned short snum);
 
 static int sctp_get_port_local(struct sock *sk, union sctp_addr *addr)
+	__no_context_analysis
 {
 	struct sctp_sock *sp = sctp_sk(sk);
 	bool reuse = (sk->sk_reuse || sp->reuse);
@@ -9009,6 +9012,7 @@ static int sctp_msghdr_parse(const struct msghdr *msg, struct sctp_cmsgs *cmsgs)
  * with a few modifications to make lksctp work.
  */
 static int sctp_wait_for_packet(struct sock *sk, int *err, long *timeo_p)
+	__must_hold(sk)
 {
 	int error;
 	DEFINE_WAIT(wait);
@@ -9067,6 +9071,7 @@ out:
  * with a few changes to make lksctp work.
  */
 struct sk_buff *sctp_skb_recv_datagram(struct sock *sk, int flags, int *err)
+	__must_hold(sk)
 {
 	int error;
 	struct sk_buff *skb;
@@ -9255,6 +9260,7 @@ void sctp_sock_rfree(struct sk_buff *skb)
 static int sctp_wait_for_sndbuf(struct sctp_association *asoc,
 				struct sctp_transport *transport,
 				long *timeo_p, size_t msg_len)
+	__must_hold(asoc->base.sk)
 {
 	struct sock *sk = asoc->base.sk;
 	long current_timeo = *timeo_p;
@@ -9370,6 +9376,7 @@ static bool sctp_writeable(const struct sock *sk)
  * returns immediately with EINPROGRESS.
  */
 static int sctp_wait_for_connect(struct sctp_association *asoc, long *timeo_p)
+	__must_hold(asoc->base.sk)
 {
 	struct sock *sk = asoc->base.sk;
 	int err = 0;
@@ -9432,6 +9439,7 @@ do_nonblock:
 }
 
 static int sctp_wait_for_accept(struct sock *sk, long timeo)
+	__must_hold(sk)
 {
 	struct sctp_endpoint *ep;
 	int err = 0;
@@ -9474,6 +9482,7 @@ static int sctp_wait_for_accept(struct sock *sk, long timeo)
 }
 
 static void sctp_wait_for_close(struct sock *sk, long timeout)
+	__must_hold(sk)
 {
 	DEFINE_WAIT(wait);
 

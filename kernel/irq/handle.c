@@ -253,6 +253,7 @@ irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
 }
 
 irqreturn_t handle_irq_event(struct irq_desc *desc)
+	__must_hold(desc->lock)
 {
 	irqreturn_t ret;
 

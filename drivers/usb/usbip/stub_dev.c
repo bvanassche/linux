@@ -340,6 +340,8 @@ static int stub_probe(struct usb_device *udev)
 		goto sdev_free;
 	}
 
+	__acquire(&busid_priv->busid_lock);
+
 	if ((busid_priv->status == STUB_BUSID_REMOV) ||
 	    (busid_priv->status == STUB_BUSID_OTHER)) {
 		dev_info(&udev->dev,
@@ -438,6 +440,7 @@ static void shutdown_busid(struct bus_id_priv *busid_priv)
  * but only if actconfig(active configuration) exists
  */
 static void stub_disconnect(struct usb_device *udev)
+	__releases(&get_busid_priv(dev_name(&udev->dev))->busid_lock)
 {
 	struct stub_device *sdev;
 	const char *udev_busid = dev_name(&udev->dev);

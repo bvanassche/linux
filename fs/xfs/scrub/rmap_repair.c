@@ -1601,6 +1601,7 @@ xrep_rmapbt_live_update(
 	struct notifier_block		*nb,
 	unsigned long			action,
 	void				*data)
+	__no_context_analysis
 {
 	struct xfs_rmap_update_params	*p = data;
 	struct xrep_rmap		*rr;

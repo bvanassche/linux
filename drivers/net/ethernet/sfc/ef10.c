@@ -1959,6 +1959,7 @@ out:
 
 static size_t efx_ef10_update_stats_vf(struct efx_nic *efx, u64 *full_stats,
 				       struct rtnl_link_stats64 *core_stats)
+	__must_hold(&efx->stats_lock)
 {
 	if (efx_ef10_try_update_nic_stats_vf(efx))
 		return 0;

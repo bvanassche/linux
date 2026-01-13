@@ -2236,16 +2236,19 @@ static struct drm_dp_aux *i2c_to_aux(struct i2c_adapter *i2c)
 }
 
 static void lock_bus(struct i2c_adapter *i2c, unsigned int flags)
+	__acquires(i2c_to_aux(i2c)->hw_mutex)
 {
 	mutex_lock(&i2c_to_aux(i2c)->hw_mutex);
 }
 
 static int trylock_bus(struct i2c_adapter *i2c, unsigned int flags)
+	__cond_acquires(true, i2c_to_aux(i2c)->hw_mutex)
 {
 	return mutex_trylock(&i2c_to_aux(i2c)->hw_mutex);
 }
 
 static void unlock_bus(struct i2c_adapter *i2c, unsigned int flags)
+	__releases(i2c_to_aux(i2c)->hw_mutex)
 {
 	mutex_unlock(&i2c_to_aux(i2c)->hw_mutex);
 }

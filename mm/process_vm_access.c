@@ -77,6 +77,7 @@ static int process_vm_rw_single_vec(unsigned long addr,
 				    struct mm_struct *mm,
 				    struct task_struct *task,
 				    int vm_write)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long pa = addr & PAGE_MASK;
 	unsigned long start_offset = addr - pa;

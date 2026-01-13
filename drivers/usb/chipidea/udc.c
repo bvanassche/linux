@@ -906,12 +906,12 @@ static int _hardware_dequeue(struct ci_hw_ep *hwep, struct ci_hw_req *hwreq)
  * Caller must hold lock
  */
 static int _ep_nuke(struct ci_hw_ep *hwep)
-__releases(hwep->lock)
-__acquires(hwep->lock)
 {
 	struct td_node *node, *tmpnode;
 	if (hwep == NULL)
 		return -EINVAL;
+
+	__assume_ctx_lock(hwep->lock);
 
 	hw_ep_flush(hwep->ci, hwep->num, hwep->dir);
 
@@ -1159,8 +1159,7 @@ static int _ep_queue(struct usb_ep *ep, struct usb_request *req,
  */
 static int isr_get_status_response(struct ci_hdrc *ci,
 				   struct usb_ctrlrequest *setup)
-__releases(hwep->lock)
-__acquires(hwep->lock)
+	__must_hold(ci->ep0in->lock)
 {
 	struct ci_hw_ep *hwep = ci->ep0in;
 	struct usb_request *req = NULL;
@@ -1275,12 +1274,12 @@ static int isr_setup_status_phase(struct ci_hdrc *ci)
  * Caller must hold lock
  */
 static int isr_tr_complete_low(struct ci_hw_ep *hwep)
-__releases(hwep->lock)
-__acquires(hwep->lock)
 {
 	struct ci_hw_req *hwreq, *hwreqtemp;
 	struct ci_hw_ep *hweptemp = hwep;
 	int retval = 0;
+
+	__assume_ctx_lock(hwep->lock);
 
 	list_for_each_entry_safe(hwreq, hwreqtemp, &hwep->qh.queue,
 			queue) {
@@ -1318,13 +1317,14 @@ static int otg_a_alt_hnp_support(struct ci_hdrc *ci)
  * This function handles setup packet 
  */
 static void isr_setup_packet_handler(struct ci_hdrc *ci)
-__releases(ci->lock)
-__acquires(ci->lock)
+	__must_hold(&ci->lock)
 {
 	struct ci_hw_ep *hwep = &ci->ci_hw_ep[0];
 	struct usb_ctrlrequest req;
 	int type, num, dir, err = -EINVAL;
 	u8 tmode = 0;
+
+	__assume_ctx_lock(ci->ep0in->lock);
 
 	/*
 	 * Flush data and handshake transactions of previous
@@ -1488,11 +1488,11 @@ delegate:
  * This function handles traffic events
  */
 static void isr_tr_complete_handler(struct ci_hdrc *ci)
-__releases(ci->lock)
-__acquires(ci->lock)
 {
 	unsigned i;
 	int err;
+
+	__assume_ctx_lock(&ci->lock);
 
 	for (i = 0; i < ci->hw_ep_max; i++) {
 		struct ci_hw_ep *hwep  = &ci->ci_hw_ep[i];

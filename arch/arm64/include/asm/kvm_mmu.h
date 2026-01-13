@@ -358,6 +358,7 @@ static inline bool kvm_is_nested_s2_mmu(struct kvm *kvm, struct kvm_s2_mmu *mmu)
 }
 
 static inline void kvm_fault_lock(struct kvm *kvm)
+	__no_context_analysis /* conditional locking */
 {
 	if (is_protected_kvm_enabled())
 		write_lock(&kvm->mmu_lock);
@@ -366,6 +367,7 @@ static inline void kvm_fault_lock(struct kvm *kvm)
 }
 
 static inline void kvm_fault_unlock(struct kvm *kvm)
+	__no_context_analysis /* conditional locking */
 {
 	if (is_protected_kvm_enabled())
 		write_unlock(&kvm->mmu_lock);

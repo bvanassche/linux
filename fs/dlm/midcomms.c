@@ -1001,6 +1001,7 @@ static struct dlm_msg *dlm_midcomms_get_msg_3_2(struct dlm_mhandle *mh, int node
  */
 #ifndef __CHECKER__
 struct dlm_mhandle *dlm_midcomms_get_mhandle(int nodeid, int len, char **ppc)
+	__cond_acquires(nonnull, &nodes_srcu)
 {
 	struct midcomms_node *node;
 	struct dlm_mhandle *mh;
@@ -1099,6 +1100,7 @@ static void dlm_midcomms_commit_msg_3_2(struct dlm_mhandle *mh,
 #ifndef __CHECKER__
 void dlm_midcomms_commit_mhandle(struct dlm_mhandle *mh,
 				 const void *name, int namelen)
+	__releases_shared(&nodes_srcu)
 {
 
 	switch (mh->node->version) {

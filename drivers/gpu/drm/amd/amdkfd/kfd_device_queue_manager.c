@@ -2482,6 +2482,8 @@ static int execute_queues_cpsch(struct device_queue_manager *dqm,
 
 static int wait_on_destroy_queue(struct device_queue_manager *dqm,
 				 struct queue *q)
+	__must_hold(dqm->lock_hidden)
+	__must_hold(q->process->mutex)
 {
 	struct kfd_process_device *pdd = kfd_get_process_device_data(q->device,
 								q->process);
@@ -2511,6 +2513,7 @@ static int wait_on_destroy_queue(struct device_queue_manager *dqm,
 static int destroy_queue_cpsch(struct device_queue_manager *dqm,
 				struct qcm_process_device *qpd,
 				struct queue *q)
+	__must_hold(q->process->mutex)
 {
 	int retval;
 	struct mqd_manager *mqd_mgr;
@@ -3565,6 +3568,7 @@ void set_queue_snapshot_entry(struct queue *q,
 }
 
 int debug_lock_and_unmap(struct device_queue_manager *dqm)
+	__no_context_analysis /* conditional locking */
 {
 	struct device *dev = dqm->dev->adev->dev;
 	int r;
@@ -3587,6 +3591,7 @@ int debug_lock_and_unmap(struct device_queue_manager *dqm)
 }
 
 int debug_map_and_unlock(struct device_queue_manager *dqm)
+	__no_context_analysis /* conditional unlock */
 {
 	struct device *dev = dqm->dev->adev->dev;
 	int r;

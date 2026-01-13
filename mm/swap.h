@@ -97,6 +97,7 @@ static inline struct swap_cluster_info *__swap_entry_to_cluster(swp_entry_t entr
 
 static __always_inline struct swap_cluster_info *__swap_cluster_lock(
 		struct swap_info_struct *si, unsigned long offset, bool irq)
+	__no_context_analysis
 {
 	struct swap_cluster_info *ci = __swap_offset_to_cluster(si, offset);
 
@@ -118,6 +119,9 @@ static __always_inline struct swap_cluster_info *__swap_cluster_lock(
 	return ci;
 }
 
+#define swap_cluster_lock(...)					\
+	__acquire_ret(_swap_cluster_lock(__VA_ARGS__), &__ret->lock)
+
 /**
  * swap_cluster_lock - Lock and return the swap cluster of given offset.
  * @si: swap device the cluster belongs to.
@@ -126,20 +130,25 @@ static __always_inline struct swap_cluster_info *__swap_cluster_lock(
  * Context: The caller must ensure the offset is in the valid range and
  * protect the swap device with reference count or locks.
  */
-static inline struct swap_cluster_info *swap_cluster_lock(
+static inline struct swap_cluster_info *_swap_cluster_lock(
 		struct swap_info_struct *si, unsigned long offset)
+	__no_context_analysis
 {
 	return __swap_cluster_lock(si, offset, false);
 }
 
 static inline struct swap_cluster_info *__swap_cluster_get_and_lock(
 		const struct folio *folio, bool irq)
+	__no_context_analysis
 {
 	VM_WARN_ON_ONCE_FOLIO(!folio_test_locked(folio), folio);
 	VM_WARN_ON_ONCE_FOLIO(!folio_test_swapcache(folio), folio);
 	return __swap_cluster_lock(__swap_entry_to_info(folio->swap),
 				   swp_offset(folio->swap), irq);
 }
+
+#define swap_cluster_get_and_lock(...)					\
+	__acquire_ret(_swap_cluster_get_and_lock(__VA_ARGS__), &__ret->lock)
 
 /*
  * swap_cluster_get_and_lock - Locks the cluster that holds a folio's entries.
@@ -153,11 +162,14 @@ static inline struct swap_cluster_info *__swap_cluster_get_and_lock(
  * Context: Caller must ensure the folio is locked and in the swap cache.
  * Return: Pointer to the swap cluster.
  */
-static inline struct swap_cluster_info *swap_cluster_get_and_lock(
+static inline struct swap_cluster_info *_swap_cluster_get_and_lock(
 		const struct folio *folio)
 {
 	return __swap_cluster_get_and_lock(folio, false);
 }
+
+#define swap_cluster_get_and_lock_irq(...)				\
+	__acquire_ret(_swap_cluster_get_and_lock_irq(__VA_ARGS__), &__ret->lock)
 
 /*
  * swap_cluster_get_and_lock_irq - Locks the cluster that holds a folio's entries.
@@ -168,18 +180,20 @@ static inline struct swap_cluster_info *swap_cluster_get_and_lock(
  * Context: Caller must ensure the folio is locked and in the swap cache.
  * Return: Pointer to the swap cluster.
  */
-static inline struct swap_cluster_info *swap_cluster_get_and_lock_irq(
+static inline struct swap_cluster_info *_swap_cluster_get_and_lock_irq(
 		const struct folio *folio)
 {
 	return __swap_cluster_get_and_lock(folio, true);
 }
 
 static inline void swap_cluster_unlock(struct swap_cluster_info *ci)
+	__releases(&ci->lock)
 {
 	spin_unlock(&ci->lock);
 }
 
 static inline void swap_cluster_unlock_irq(struct swap_cluster_info *ci)
+	__releases(&ci->lock)
 {
 	spin_unlock_irq(&ci->lock);
 }

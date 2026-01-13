@@ -60,6 +60,7 @@ static int validate_gdte_nested(struct iommu_hwpt_amd_guest *gdte)
 }
 
 static void *gdom_info_load_or_alloc_locked(struct xarray *xa, unsigned long index)
+	__must_hold(&xa->xa_lock)
 {
 	struct guest_domain_mapping_info *elm, *res;
 

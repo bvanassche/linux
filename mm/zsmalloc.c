@@ -326,6 +326,7 @@ static void zspage_read_unlock(struct zspage *zspage)
 }
 
 static __must_check bool zspage_write_trylock(struct zspage *zspage)
+	__cond_acquires(true, &zspage->zsl.lock)
 {
 	struct zspage_lock *zsl = &zspage->zsl;
 
@@ -342,6 +343,7 @@ static __must_check bool zspage_write_trylock(struct zspage *zspage)
 }
 
 static void zspage_write_unlock(struct zspage *zspage)
+	__releases(&zspage->zsl.lock)
 {
 	struct zspage_lock *zsl = &zspage->zsl;
 

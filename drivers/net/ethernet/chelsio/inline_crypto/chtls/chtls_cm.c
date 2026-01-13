@@ -400,6 +400,7 @@ out:
  * Wait until a socket enters on of the given states.
  */
 static int wait_for_states(struct sock *sk, unsigned int states)
+	__must_hold(sk)
 {
 	DECLARE_WAITQUEUE(wait, current);
 	struct socket_wq _sk_wq;
@@ -444,6 +445,7 @@ static int wait_for_states(struct sock *sk, unsigned int states)
 }
 
 int chtls_disconnect(struct sock *sk, int flags)
+	__must_hold(sk)
 {
 	struct tcp_sock *tp;
 	int err;
@@ -1132,6 +1134,8 @@ static struct sock *chtls_recv_sock(struct sock *lsk,
 	newsk = tcp_create_openreq_child(lsk, oreq, cdev->askb);
 	if (!newsk)
 		goto free_oreq;
+
+	__assume_ctx_lock(&newsk->sk_lock.slock);
 
 	if (lsk->sk_family == AF_INET) {
 		dst = inet_csk_route_child_sock(lsk, newsk, oreq);

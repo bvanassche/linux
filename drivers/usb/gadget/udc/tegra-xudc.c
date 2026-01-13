@@ -1033,6 +1033,7 @@ static void ep_wait_for_inactive(struct tegra_xudc *xudc, unsigned int ep)
 
 static void tegra_xudc_req_done(struct tegra_xudc_ep *ep,
 				struct tegra_xudc_request *req, int status)
+	__must_hold(&ep->xudc->lock)
 {
 	struct tegra_xudc *xudc = ep->xudc;
 
@@ -1059,6 +1060,7 @@ static void tegra_xudc_req_done(struct tegra_xudc_ep *ep,
 }
 
 static void tegra_xudc_ep_nuke(struct tegra_xudc_ep *ep, int status)
+	__must_hold(&ep->xudc->lock)
 {
 	struct tegra_xudc_request *req;
 
@@ -1424,6 +1426,7 @@ static bool trb_before_request(struct tegra_xudc_ep *ep,
 static int
 __tegra_xudc_ep_dequeue(struct tegra_xudc_ep *ep,
 			struct tegra_xudc_request *req)
+	__must_hold(&ep->xudc->lock)
 {
 	struct tegra_xudc *xudc = ep->xudc;
 	struct tegra_xudc_request *r = NULL, *iter;
@@ -1704,6 +1707,7 @@ static void setup_link_trb(struct tegra_xudc_ep *ep,
 }
 
 static int __tegra_xudc_ep_disable(struct tegra_xudc_ep *ep)
+	__must_hold(&ep->xudc->lock)
 {
 	struct tegra_xudc *xudc = ep->xudc;
 
@@ -1786,6 +1790,7 @@ unlock:
 
 static int __tegra_xudc_ep_enable(struct tegra_xudc_ep *ep,
 				  const struct usb_endpoint_descriptor *desc)
+	__must_hold(&ep->xudc->lock)
 {
 	struct tegra_xudc *xudc = ep->xudc;
 	unsigned int i;
@@ -2087,6 +2092,7 @@ static int tegra_xudc_gadget_start(struct usb_gadget *gadget,
 	pm_runtime_get_sync(xudc->dev);
 
 	spin_lock_irqsave(&xudc->lock, flags);
+	__assume_ctx_lock(&xudc->ep[0].xudc->lock);
 
 	if (xudc->driver) {
 		ret = -EBUSY;
@@ -2139,6 +2145,7 @@ static int tegra_xudc_gadget_stop(struct usb_gadget *gadget)
 	pm_runtime_get_sync(xudc->dev);
 
 	spin_lock_irqsave(&xudc->lock, flags);
+	__assume_ctx_lock(&xudc->ep[0].xudc->lock);
 
 	for (i = 0; i < xudc->soc->num_phys; i++)
 		if (xudc->usbphy[i])
@@ -2241,6 +2248,7 @@ static void tegra_xudc_ep0_req_done(struct tegra_xudc *xudc)
 
 static int tegra_xudc_ep0_delegate_req(struct tegra_xudc *xudc,
 				       struct usb_ctrlrequest *ctrl)
+	__must_hold(&xudc->lock)
 {
 	int ret;
 
@@ -2263,6 +2271,7 @@ static void set_feature_complete(struct usb_ep *ep, struct usb_request *req)
 
 static int tegra_xudc_ep0_set_feature(struct tegra_xudc *xudc,
 				      struct usb_ctrlrequest *ctrl)
+	__must_hold(&xudc->lock)
 {
 	bool set = (ctrl->bRequest == USB_REQ_SET_FEATURE);
 	u32 feature = le16_to_cpu(ctrl->wValue);
@@ -2531,6 +2540,7 @@ static int tegra_xudc_ep0_set_address(struct tegra_xudc *xudc,
 
 static int tegra_xudc_ep0_standard_req(struct tegra_xudc *xudc,
 				      struct usb_ctrlrequest *ctrl)
+	__must_hold(&xudc->lock)
 {
 	int ret;
 
@@ -2575,6 +2585,7 @@ static int tegra_xudc_ep0_standard_req(struct tegra_xudc *xudc,
 static void tegra_xudc_handle_ep0_setup_packet(struct tegra_xudc *xudc,
 					       struct usb_ctrlrequest *ctrl,
 					       u16 seq_num)
+	__must_hold(&xudc->lock)
 {
 	int ret;
 
@@ -2614,6 +2625,7 @@ static void tegra_xudc_handle_ep0_setup_packet(struct tegra_xudc *xudc,
 
 static void tegra_xudc_handle_ep0_event(struct tegra_xudc *xudc,
 					struct tegra_xudc_trb *event)
+	__must_hold(&xudc->lock)
 {
 	struct usb_ctrlrequest *ctrl = (struct usb_ctrlrequest *)event;
 	u16 seq_num = trb_read_seq_num(event);
@@ -2652,10 +2664,13 @@ trb_to_request(struct tegra_xudc_ep *ep, struct tegra_xudc_trb *trb)
 static void tegra_xudc_handle_transfer_completion(struct tegra_xudc *xudc,
 						  struct tegra_xudc_ep *ep,
 						  struct tegra_xudc_trb *event)
+	__must_hold(&xudc->lock)
 {
 	struct tegra_xudc_request *req;
 	struct tegra_xudc_trb *trb;
 	bool short_packet;
+
+	__assume_ctx_lock(&ep->xudc->lock);
 
 	short_packet = (trb_read_cmpl_code(event) ==
 			TRB_CMPL_CODE_SHORT_PACKET);
@@ -2702,11 +2717,14 @@ static void tegra_xudc_handle_transfer_completion(struct tegra_xudc *xudc,
 
 static void tegra_xudc_handle_transfer_event(struct tegra_xudc *xudc,
 					     struct tegra_xudc_trb *event)
+	__must_hold(&xudc->lock)
 {
 	unsigned int ep_index = trb_read_endpoint_id(event);
 	struct tegra_xudc_ep *ep = &xudc->ep[ep_index];
 	struct tegra_xudc_trb *trb;
 	u16 comp_code;
+
+	__assume_ctx_lock(&ep->xudc->lock);
 
 	if (ep_ctx_read_state(ep->context) == EP_STATE_DISABLED) {
 		dev_warn(xudc->dev, "transfer event on disabled EP %u\n",
@@ -2803,6 +2821,7 @@ static void tegra_xudc_handle_transfer_event(struct tegra_xudc *xudc,
 }
 
 static void tegra_xudc_reset(struct tegra_xudc *xudc)
+	__must_hold(&xudc->lock)
 {
 	struct tegra_xudc_ep *ep0 = &xudc->ep[0];
 	dma_addr_t deq_ptr;
@@ -2814,8 +2833,10 @@ static void tegra_xudc_reset(struct tegra_xudc *xudc)
 
 	ep_unpause_all(xudc);
 
-	for (i = 0; i < ARRAY_SIZE(xudc->ep); i++)
+	for (i = 0; i < ARRAY_SIZE(xudc->ep); i++) {
+		__assume_ctx_lock(&xudc->ep[i].xudc->lock);
 		tegra_xudc_ep_nuke(&xudc->ep[i], -ESHUTDOWN);
+	}
 
 	/*
 	 * Reset sequence number and dequeue pointer to flush the transfer
@@ -2911,6 +2932,7 @@ static void tegra_xudc_port_connect(struct tegra_xudc *xudc)
 }
 
 static void tegra_xudc_port_disconnect(struct tegra_xudc *xudc)
+	__must_hold(&xudc->lock)
 {
 	tegra_xudc_reset(xudc);
 
@@ -2927,6 +2949,7 @@ static void tegra_xudc_port_disconnect(struct tegra_xudc *xudc)
 }
 
 static void tegra_xudc_port_reset(struct tegra_xudc *xudc)
+	__must_hold(&xudc->lock)
 {
 	tegra_xudc_reset(xudc);
 
@@ -2940,6 +2963,7 @@ static void tegra_xudc_port_reset(struct tegra_xudc *xudc)
 }
 
 static void tegra_xudc_port_suspend(struct tegra_xudc *xudc)
+	__must_hold(&xudc->lock)
 {
 	dev_dbg(xudc->dev, "port suspend\n");
 
@@ -2955,6 +2979,7 @@ static void tegra_xudc_port_suspend(struct tegra_xudc *xudc)
 }
 
 static void tegra_xudc_port_resume(struct tegra_xudc *xudc)
+	__must_hold(&xudc->lock)
 {
 	dev_dbg(xudc->dev, "port resume\n");
 
@@ -2978,6 +3003,7 @@ static inline void clear_port_change(struct tegra_xudc *xudc, u32 flag)
 }
 
 static void __tegra_xudc_handle_port_status(struct tegra_xudc *xudc)
+	__must_hold(&xudc->lock)
 {
 	u32 portsc, porthalt;
 
@@ -3070,6 +3096,7 @@ static void __tegra_xudc_handle_port_status(struct tegra_xudc *xudc)
 }
 
 static void tegra_xudc_handle_port_status(struct tegra_xudc *xudc)
+	__must_hold(&xudc->lock)
 {
 	while ((xudc_readl(xudc, PORTSC) & PORTSC_CHANGE_MASK) ||
 	       (xudc_readl(xudc, PORTHALT) & PORTHALT_STCHG_REQ))
@@ -3078,6 +3105,7 @@ static void tegra_xudc_handle_port_status(struct tegra_xudc *xudc)
 
 static void tegra_xudc_handle_event(struct tegra_xudc *xudc,
 				    struct tegra_xudc_trb *event)
+	__must_hold(&xudc->lock)
 {
 	u32 type = trb_read_type(event);
 
@@ -3100,6 +3128,7 @@ static void tegra_xudc_handle_event(struct tegra_xudc *xudc,
 }
 
 static void tegra_xudc_process_event_ring(struct tegra_xudc *xudc)
+	__must_hold(&xudc->lock)
 {
 	struct tegra_xudc_trb *event;
 	dma_addr_t erdp;

@@ -2400,6 +2400,7 @@ static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
 static int ixgbe_run_xdp(struct ixgbe_adapter *adapter,
 			 struct ixgbe_ring *rx_ring,
 			 struct xdp_buff *xdp)
+	__no_context_analysis /* conditional locking */
 {
 	int err, result = IXGBE_XDP_PASS;
 	struct bpf_prog *xdp_prog;
@@ -10990,6 +10991,7 @@ void ixgbe_xdp_ring_update_tail(struct ixgbe_ring *ring)
 }
 
 void ixgbe_xdp_ring_update_tail_locked(struct ixgbe_ring *ring)
+	__no_context_analysis /* conditional locking */
 {
 	if (static_branch_unlikely(&ixgbe_xdp_locking_key))
 		spin_lock(&ring->tx_lock);
@@ -11000,6 +11002,7 @@ void ixgbe_xdp_ring_update_tail_locked(struct ixgbe_ring *ring)
 
 static int ixgbe_xdp_xmit(struct net_device *dev, int n,
 			  struct xdp_frame **frames, u32 flags)
+	__no_context_analysis /* conditional locking */
 {
 	struct ixgbe_adapter *adapter = ixgbe_from_netdev(dev);
 	struct ixgbe_ring *ring;

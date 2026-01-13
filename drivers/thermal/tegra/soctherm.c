@@ -1089,6 +1089,7 @@ static irqreturn_t soctherm_edp_isr(int irq, void *arg)
  * a particular over-current interrupt request.
  */
 static void soctherm_oc_irq_lock(struct irq_data *data)
+	__acquires(&((struct soctherm_oc_irq_chip_data *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct soctherm_oc_irq_chip_data *d = irq_data_get_irq_chip_data(data);
 
@@ -1103,6 +1104,7 @@ static void soctherm_oc_irq_lock(struct irq_data *data)
  * with a particular over-current interrupt request.
  */
 static void soctherm_oc_irq_sync_unlock(struct irq_data *data)
+	__releases(&((struct soctherm_oc_irq_chip_data *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct soctherm_oc_irq_chip_data *d = irq_data_get_irq_chip_data(data);
 

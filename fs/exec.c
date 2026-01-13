@@ -142,6 +142,7 @@ static void acct_arg_size(struct linux_binprm *bprm, unsigned long pages)
 
 static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
 		int write)
+	__no_context_analysis
 {
 	struct page *page;
 	struct vm_area_struct *vma = bprm->vma;
@@ -835,6 +836,7 @@ EXPORT_SYMBOL(read_code);
  * held for writing.
  */
 static int exec_mmap(struct mm_struct *mm)
+	__no_context_analysis
 {
 	struct task_struct *tsk;
 	struct mm_struct *old_mm, *active_mm;
@@ -1089,6 +1091,7 @@ void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
  * (after exec_mmap()) by search_binary_handler (see below).
  */
 int begin_new_exec(struct linux_binprm * bprm)
+	__no_context_analysis
 {
 	struct task_struct *me = current;
 	int retval;
@@ -1313,6 +1316,7 @@ void would_dump(struct linux_binprm *bprm, struct file *file)
 EXPORT_SYMBOL(would_dump);
 
 void setup_new_exec(struct linux_binprm * bprm)
+	__no_context_analysis
 {
 	/* Setup things that can depend upon the personality */
 	struct task_struct *me = current;
@@ -1348,6 +1352,7 @@ EXPORT_SYMBOL(finalize_exec);
  * and unlock.
  */
 static int prepare_bprm_creds(struct linux_binprm *bprm)
+	__no_context_analysis
 {
 	if (mutex_lock_interruptible(&current->signal->cred_guard_mutex))
 		return -ERESTARTNOINTR;
@@ -1370,6 +1375,7 @@ static void do_close_execat(struct file *file)
 }
 
 static void free_bprm(struct linux_binprm *bprm)
+	__no_context_analysis
 {
 	if (bprm->mm) {
 		acct_arg_size(bprm, 0);

@@ -1336,6 +1336,7 @@ void cgroup_free_root(struct cgroup_root *root)
 }
 
 static void cgroup_destroy_root(struct cgroup_root *root)
+	__releases(cgroup_mutex)
 {
 	struct cgroup *cgrp = &root->cgrp;
 	struct cgrp_cset_link *link, *tmp_link;
@@ -1627,6 +1628,7 @@ static u32 cgroup_calc_subtree_ss_mask(u32 subtree_control, u32 this_ss_mask)
  * cgroup, it should pin it before invoking this function.
  */
 void cgroup_kn_unlock(struct kernfs_node *kn)
+	__releases(cgroup_mutex)
 {
 	struct cgroup *cgrp;
 
@@ -1659,6 +1661,7 @@ void cgroup_kn_unlock(struct kernfs_node *kn)
  * including self-removal.
  */
 struct cgroup *cgroup_kn_lock_live(struct kernfs_node *kn, bool drain_offline)
+	__no_context_analysis
 {
 	struct cgroup *cgrp;
 
@@ -2497,6 +2500,7 @@ EXPORT_SYMBOL_GPL(cgroup_path_ns);
  */
 void cgroup_attach_lock(enum cgroup_attach_lock_mode lock_mode,
 			struct task_struct *tsk)
+	__no_context_analysis
 {
 	cpus_read_lock();
 
@@ -2522,6 +2526,7 @@ void cgroup_attach_lock(enum cgroup_attach_lock_mode lock_mode,
  */
 void cgroup_attach_unlock(enum cgroup_attach_lock_mode lock_mode,
 			  struct task_struct *tsk)
+	__no_context_analysis
 {
 	switch (lock_mode) {
 	case CGRP_ATTACH_LOCK_NONE:
@@ -3216,6 +3221,7 @@ out_finish:
  */
 void cgroup_lock_and_drain_offline(struct cgroup *cgrp)
 	__acquires(&cgroup_mutex)
+	__acquires(cgroup_mutex)
 {
 	struct cgroup *dsct;
 	struct cgroup_subsys_state *d_css;
@@ -3504,6 +3510,7 @@ static int cgroup_vet_subtree_control_enable(struct cgroup *cgrp, u32 enable)
 static ssize_t cgroup_subtree_control_write(struct kernfs_open_file *of,
 					    char *buf, size_t nbytes,
 					    loff_t off)
+	__no_context_analysis
 {
 	u32 enable = 0, disable = 0;
 	struct cgroup *cgrp, *child;
@@ -3670,6 +3677,7 @@ static int cgroup_type_show(struct seq_file *seq, void *v)
 
 static ssize_t cgroup_type_write(struct kernfs_open_file *of, char *buf,
 				 size_t nbytes, loff_t off)
+	__no_context_analysis
 {
 	struct cgroup *cgrp;
 	int ret;
@@ -3705,6 +3713,7 @@ static int cgroup_max_descendants_show(struct seq_file *seq, void *v)
 
 static ssize_t cgroup_max_descendants_write(struct kernfs_open_file *of,
 					   char *buf, size_t nbytes, loff_t off)
+	__no_context_analysis
 {
 	struct cgroup *cgrp;
 	int descendants;
@@ -3748,6 +3757,7 @@ static int cgroup_max_depth_show(struct seq_file *seq, void *v)
 
 static ssize_t cgroup_max_depth_write(struct kernfs_open_file *of,
 				      char *buf, size_t nbytes, loff_t off)
+	__no_context_analysis
 {
 	struct cgroup *cgrp;
 	ssize_t ret;
@@ -3956,6 +3966,7 @@ static int cgroup_cpu_pressure_show(struct seq_file *seq, void *v)
 
 static ssize_t pressure_write(struct kernfs_open_file *of, char *buf,
 			      size_t nbytes, enum psi_res res)
+	__no_context_analysis
 {
 	struct cgroup_file_ctx *ctx;
 	struct psi_trigger *new;
@@ -4047,6 +4058,7 @@ static int cgroup_pressure_show(struct seq_file *seq, void *v)
 static ssize_t cgroup_pressure_write(struct kernfs_open_file *of,
 				     char *buf, size_t nbytes,
 				     loff_t off)
+	__no_context_analysis
 {
 	ssize_t ret;
 	int enable;
@@ -4124,6 +4136,7 @@ static int cgroup_freeze_show(struct seq_file *seq, void *v)
 
 static ssize_t cgroup_freeze_write(struct kernfs_open_file *of,
 				   char *buf, size_t nbytes, loff_t off)
+	__no_context_analysis
 {
 	struct cgroup *cgrp;
 	ssize_t ret;
@@ -4186,6 +4199,7 @@ static void cgroup_kill(struct cgroup *cgrp)
 
 static ssize_t cgroup_kill_write(struct kernfs_open_file *of, char *buf,
 				 size_t nbytes, loff_t off)
+	__no_context_analysis
 {
 	ssize_t ret = 0;
 	int kill;
@@ -5346,6 +5360,7 @@ static int cgroup_attach_permissions(struct cgroup *src_cgrp,
 
 static ssize_t __cgroup_procs_write(struct kernfs_open_file *of, char *buf,
 				    bool threadgroup)
+	__no_context_analysis
 {
 	struct cgroup_file_ctx *ctx = of->priv;
 	struct cgroup *src_cgrp, *dst_cgrp;
@@ -5558,6 +5573,7 @@ static struct cftype cgroup_psi_files[] = {
  * steps to the already complex sequence.
  */
 static void css_free_rwork_fn(struct work_struct *work)
+	__no_context_analysis
 {
 	struct cgroup_subsys_state *css = container_of(to_rcu_work(work),
 				struct cgroup_subsys_state, destroy_rwork);
@@ -5963,6 +5979,7 @@ fail:
 }
 
 int cgroup_mkdir(struct kernfs_node *parent_kn, const char *name, umode_t mode)
+	__no_context_analysis
 {
 	struct cgroup *parent, *cgrp;
 	int ret;
@@ -6252,6 +6269,7 @@ static void cgroup_finish_destroy(struct cgroup *cgrp)
 }
 
 int cgroup_rmdir(struct kernfs_node *kn)
+	__no_context_analysis
 {
 	struct cgroup *cgrp;
 	int ret = 0;
@@ -6718,7 +6736,7 @@ static struct cgroup *cgroup_get_from_file(struct file *f)
  * to the target cgroup.
  */
 static int cgroup_css_set_fork(struct kernel_clone_args *kargs)
-	__acquires(&cgroup_mutex) __acquires(&cgroup_threadgroup_rwsem)
+	__no_context_analysis
 {
 	int ret;
 	struct cgroup *dst_cgrp = NULL;
@@ -6822,6 +6840,7 @@ err:
  */
 static void cgroup_css_set_put_fork(struct kernel_clone_args *kargs)
 	__releases(&cgroup_threadgroup_rwsem) __releases(&cgroup_mutex)
+	__no_context_analysis
 {
 	struct cgroup *cgrp = kargs->cgrp;
 	struct css_set *cset = kargs->cset;
@@ -6854,6 +6873,7 @@ static void cgroup_css_set_put_fork(struct kernel_clone_args *kargs)
  * allows for a cgroup subsystem to conditionally allow or deny new forks.
  */
 int cgroup_can_fork(struct task_struct *child, struct kernel_clone_args *kargs)
+	__no_context_analysis
 {
 	struct cgroup_subsys *ss;
 	int i, j, ret;
@@ -6894,6 +6914,7 @@ out_revert:
  */
 void cgroup_cancel_fork(struct task_struct *child,
 			struct kernel_clone_args *kargs)
+	__no_context_analysis
 {
 	struct cgroup_subsys *ss;
 	int i;

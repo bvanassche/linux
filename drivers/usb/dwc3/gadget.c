@@ -225,6 +225,7 @@ static void dwc3_gadget_del_and_unmap_request(struct dwc3_ep *dep,
  */
 void dwc3_gadget_giveback(struct dwc3_ep *dep, struct dwc3_request *req,
 		int status)
+	__no_context_analysis
 {
 	struct dwc3			*dwc = dep->dwc;
 
@@ -3935,6 +3936,7 @@ static void dwc3_endpoint_interrupt(struct dwc3 *dwc,
 }
 
 static void dwc3_disconnect_gadget(struct dwc3 *dwc)
+	__no_context_analysis
 {
 	if (dwc->async_callbacks && dwc->gadget_driver->disconnect) {
 		spin_unlock(&dwc->lock);
@@ -3944,6 +3946,7 @@ static void dwc3_disconnect_gadget(struct dwc3 *dwc)
 }
 
 static void dwc3_suspend_gadget(struct dwc3 *dwc)
+	__no_context_analysis
 {
 	if (dwc->async_callbacks && dwc->gadget_driver->suspend) {
 		spin_unlock(&dwc->lock);
@@ -3953,6 +3956,7 @@ static void dwc3_suspend_gadget(struct dwc3 *dwc)
 }
 
 static void dwc3_resume_gadget(struct dwc3 *dwc)
+	__no_context_analysis
 {
 	if (dwc->async_callbacks && dwc->gadget_driver->resume) {
 		spin_unlock(&dwc->lock);
@@ -3962,6 +3966,7 @@ static void dwc3_resume_gadget(struct dwc3 *dwc)
 }
 
 static void dwc3_reset_gadget(struct dwc3 *dwc)
+	__no_context_analysis
 {
 	if (!dwc->gadget_driver)
 		return;
@@ -4322,6 +4327,7 @@ static void dwc3_gadget_conndone_interrupt(struct dwc3 *dwc)
 }
 
 static void dwc3_gadget_wakeup_interrupt(struct dwc3 *dwc, unsigned int evtinfo)
+	__no_context_analysis
 {
 	dwc->suspended = false;
 

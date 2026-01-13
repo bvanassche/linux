@@ -2385,7 +2385,7 @@ mtk_wed_start(struct mtk_wed_device *dev, u32 irq_mask)
 
 static int
 mtk_wed_attach(struct mtk_wed_device *dev)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	struct mtk_wed_hw *hw;
 	struct device *device;

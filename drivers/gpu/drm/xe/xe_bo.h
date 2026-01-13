@@ -210,6 +210,7 @@ int xe_bo_lock(struct xe_bo *bo, bool intr);
 void xe_bo_unlock(struct xe_bo *bo);
 
 static inline void xe_bo_unlock_vm_held(struct xe_bo *bo)
+	__no_context_analysis /* conditional locking */
 {
 	if (bo) {
 		XE_WARN_ON(bo->vm && bo->ttm.base.resv != xe_vm_resv(bo->vm));

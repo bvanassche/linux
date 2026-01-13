@@ -419,6 +419,7 @@ static int ip_vs_svc_hash(struct ip_vs_service *svc)
  *	Should be called with locked tables.
  */
 static int ip_vs_svc_unhash(struct ip_vs_service *svc)
+	__context_unsafe(conditional locking)
 {
 	struct netns_ipvs *ipvs = svc->ipvs;
 	struct hlist_bl_head *head;
@@ -2817,7 +2818,7 @@ static struct ip_vs_service *ip_vs_info_array(struct seq_file *seq, loff_t pos)
 }
 
 static void *ip_vs_info_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	struct ip_vs_iter *iter = seq->private;
 	struct net *net = seq_file_net(seq);
@@ -2865,7 +2866,7 @@ static void *ip_vs_info_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void ip_vs_info_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }
@@ -3628,6 +3629,7 @@ union ip_vs_get_arglen {
 
 static int
 do_ip_vs_get_ctl(struct sock *sk, int cmd, void __user *user, int *len)
+	__context_unsafe(conditional locking)
 {
 	unsigned char arg[MAX_GET_ARGLEN];
 	int ret = 0;

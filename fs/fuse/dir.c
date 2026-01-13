@@ -2135,6 +2135,7 @@ int fuse_flush_times(struct inode *inode, struct fuse_file *ff)
  */
 int fuse_do_setattr(struct mnt_idmap *idmap, struct dentry *dentry,
 		    struct iattr *attr, struct file *file)
+	__no_context_analysis /* conditional locking */
 {
 	struct inode *inode = d_inode(dentry);
 	struct fuse_mount *fm = get_fuse_mount(inode);

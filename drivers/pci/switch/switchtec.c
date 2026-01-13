@@ -492,6 +492,7 @@ static int switchtec_dev_release(struct inode *inode, struct file *filp)
 }
 
 static int lock_mutex_and_test_alive(struct switchtec_dev *stdev)
+	__cond_acquires(0, stdev->mrpc_mutex)
 {
 	if (mutex_lock_interruptible(&stdev->mrpc_mutex))
 		return -EINTR;

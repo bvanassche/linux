@@ -2606,8 +2606,10 @@ struct rdtgroup *rdtgroup_kn_lock_live(struct kernfs_node *kn)
 {
 	struct rdtgroup *rdtgrp = kernfs_to_rdtgroup(kn);
 
-	if (!rdtgrp)
+	if (!rdtgrp) {
+		__acquire(&rdtgroup_mutex);
 		return NULL;
+	}
 
 	rdtgroup_kn_get(rdtgrp, kn);
 
@@ -2625,8 +2627,10 @@ void rdtgroup_kn_unlock(struct kernfs_node *kn)
 {
 	struct rdtgroup *rdtgrp = kernfs_to_rdtgroup(kn);
 
-	if (!rdtgrp)
+	if (!rdtgrp) {
+		__release(&rdtgroup_mutex);
 		return;
+	}
 
 	mutex_unlock(&rdtgroup_mutex);
 	cpus_read_unlock();
@@ -3727,6 +3731,7 @@ static bool is_mon_groups(struct kernfs_node *kn, const char *name)
 static int mkdir_rdt_prepare(struct kernfs_node *parent_kn,
 			     const char *name, umode_t mode,
 			     enum rdt_group_type rtype, struct rdtgroup **r)
+	__cond_acquires(0, &rdtgroup_mutex)
 {
 	struct rdtgroup *prdtgrp, *rdtgrp;
 	unsigned long files = 0;

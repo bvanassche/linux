@@ -276,6 +276,7 @@ void i915_vma_destroy(struct i915_vma *vma);
 #define assert_vma_held(vma) dma_resv_assert_held((vma)->obj->base.resv)
 
 static inline void i915_vma_lock(struct i915_vma *vma)
+	__no_context_analysis /* TODO */
 {
 	if (dma_resv_lock(vma->obj->base.resv, NULL) == 0)
 		return;
@@ -283,6 +284,7 @@ static inline void i915_vma_lock(struct i915_vma *vma)
 }
 
 static inline void i915_vma_unlock(struct i915_vma *vma)
+	__no_context_analysis /* TODO */
 {
 	dma_resv_unlock(vma->obj->base.resv);
 }

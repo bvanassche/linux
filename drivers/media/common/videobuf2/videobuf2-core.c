@@ -1980,6 +1980,7 @@ EXPORT_SYMBOL_GPL(vb2_core_qbuf);
  * Will sleep if required for nonblocking == false.
  */
 static int __vb2_wait_for_done_vb(struct vb2_queue *q, int nonblocking)
+	__no_context_analysis /* conditional locking */
 {
 	/*
 	 * All operations on vb_done_list are performed under done_lock
@@ -3177,6 +3178,7 @@ struct vb2_threadio_data {
 };
 
 static int vb2_thread(void *data)
+	__no_context_analysis /* conditional locking */
 {
 	struct vb2_queue *q = data;
 	struct vb2_threadio_data *threadio = q->threadio;

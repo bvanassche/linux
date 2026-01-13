@@ -23,6 +23,7 @@ static inline void io_loop_wait_finish(struct io_ring_ctx *ctx)
 
 static void io_loop_wait(struct io_ring_ctx *ctx, struct iou_loop_params *lp,
 			 unsigned nr_wait)
+	__must_hold(&ctx->uring_lock)
 {
 	io_loop_wait_start(ctx, nr_wait);
 
@@ -40,6 +41,7 @@ static void io_loop_wait(struct io_ring_ctx *ctx, struct iou_loop_params *lp,
 }
 
 static int __io_run_loop(struct io_ring_ctx *ctx)
+	__must_hold(&ctx->uring_lock)
 {
 	struct iou_loop_params lp = {};
 

@@ -2236,6 +2236,7 @@ static const char *cs48l32_dai_clk_str(int clk_id)
 
 static int cs48l32_dai_set_sysclk(struct snd_soc_dai *dai,
 				  int clk_id, unsigned int freq, int dir)
+	__no_context_analysis /* conditional locking */
 {
 	struct snd_soc_component *component = dai->component;
 	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);

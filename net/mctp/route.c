@@ -183,8 +183,8 @@ static bool mctp_key_match(struct mctp_sk_key *key, unsigned int net,
  */
 static struct mctp_sk_key *mctp_lookup_key(struct net *net, struct sk_buff *skb,
 					   unsigned int netid, mctp_eid_t peer,
-					   unsigned long *irqflags)
-	__acquires(&key->lock)
+					    unsigned long *irqflags)
+	__no_context_analysis /* __cond_acquires(nonnull, &key->lock) */
 {
 	struct mctp_sk_key *key, *ret;
 	unsigned long flags;
@@ -432,6 +432,7 @@ err_free:
 }
 
 static int mctp_dst_input(struct mctp_dst *dst, struct sk_buff *skb)
+	__no_context_analysis /* conditional locking */
 {
 	struct mctp_sk_key *key, *any_key = NULL;
 	struct net *net = dev_net(skb->dev);

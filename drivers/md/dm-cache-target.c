@@ -1028,6 +1028,7 @@ static void calc_discard_block_range(struct cache *cache, struct bio *bio,
 /*----------------------------------------------------------------*/
 
 static void prevent_background_work(struct cache *cache)
+	__no_context_analysis /* not suited for lock context analysis */
 {
 	lockdep_off();
 	down_write(&cache->background_work_lock);
@@ -1035,6 +1036,7 @@ static void prevent_background_work(struct cache *cache)
 }
 
 static void allow_background_work(struct cache *cache)
+	__no_context_analysis /* not suited for lock context analysis */
 {
 	lockdep_off();
 	up_write(&cache->background_work_lock);
@@ -1042,6 +1044,7 @@ static void allow_background_work(struct cache *cache)
 }
 
 static bool background_work_begin(struct cache *cache)
+	__no_context_analysis /* not suited for lock context analysis */
 {
 	bool r;
 
@@ -1053,6 +1056,7 @@ static bool background_work_begin(struct cache *cache)
 }
 
 static void background_work_end(struct cache *cache)
+	__no_context_analysis /* not suited for lock context analysis */
 {
 	lockdep_off();
 	up_read(&cache->background_work_lock);

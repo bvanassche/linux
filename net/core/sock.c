@@ -662,6 +662,7 @@ out:
 }
 
 int sock_bindtoindex(struct sock *sk, int ifindex, bool lock_sk)
+	__no_context_analysis
 {
 	int ret;
 
@@ -1143,6 +1144,7 @@ frag_limit_reached:
 #endif
 
 void sockopt_lock_sock(struct sock *sk)
+	__no_context_analysis
 {
 	/* When current->bpf_ctx is set, the setsockopt is called from
 	 * a bpf prog.  bpf has ensured the sk lock has been
@@ -1156,6 +1158,7 @@ void sockopt_lock_sock(struct sock *sk)
 EXPORT_SYMBOL(sockopt_lock_sock);
 
 void sockopt_release_sock(struct sock *sk)
+	__no_context_analysis
 {
 	if (has_current_bpf_ctx())
 		return;
@@ -2474,6 +2477,7 @@ static void sk_init_common(struct sock *sk)
  */
 struct sock *sk_clone(const struct sock *sk, const gfp_t priority,
 		      bool lock)
+	__no_context_analysis /* conditional locking */
 {
 	struct proto *prot = READ_ONCE(sk->sk_prot);
 	struct sk_filter *filter;
@@ -3197,8 +3201,6 @@ static void __lock_sock(struct sock *sk)
 }
 
 void __release_sock(struct sock *sk)
-	__releases(&sk->sk_lock.slock)
-	__acquires(&sk->sk_lock.slock)
 {
 	struct sk_buff *skb, *next;
 	int nb = 0;
@@ -3803,6 +3805,7 @@ void noinline lock_sock_nested(struct sock *sk, int subclass)
 	if (unlikely(sock_owned_by_user_nocheck(sk)))
 		__lock_sock(sk);
 	sk->sk_lock.owned = 1;
+	__acquire(sk);
 	spin_unlock_bh(&sk->sk_lock.slock);
 }
 EXPORT_SYMBOL(lock_sock_nested);
@@ -3826,7 +3829,7 @@ void release_sock(struct sock *sk)
 }
 EXPORT_SYMBOL(release_sock);
 
-bool __lock_sock_fast(struct sock *sk) __acquires(&sk->sk_lock.slock)
+bool __lock_sock_fast(struct sock *sk)
 {
 	might_sleep();
 	spin_lock_bh(&sk->sk_lock.slock);
@@ -3852,7 +3855,6 @@ bool __lock_sock_fast(struct sock *sk) __acquires(&sk->sk_lock.slock)
 
 	__lock_sock(sk);
 	sk->sk_lock.owned = 1;
-	__acquire(&sk->sk_lock.slock);
 	spin_unlock_bh(&sk->sk_lock.slock);
 	return true;
 }
@@ -4299,6 +4301,7 @@ EXPORT_SYMBOL(sock_load_diag_module);
 #ifdef CONFIG_PROC_FS
 static void *proto_seq_start(struct seq_file *seq, loff_t *pos)
 	__acquires(proto_list_mutex)
+	__acquires(proto_list_mutex)
 {
 	mutex_lock(&proto_list_mutex);
 	return seq_list_start_head(&proto_list, *pos);
@@ -4310,6 +4313,7 @@ static void *proto_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void proto_seq_stop(struct seq_file *seq, void *v)
+	__releases(proto_list_mutex)
 	__releases(proto_list_mutex)
 {
 	mutex_unlock(&proto_list_mutex);

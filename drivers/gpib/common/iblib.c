@@ -637,6 +637,8 @@ static void remove_wait_timer(struct wait_info *winfo)
  */
 int ibwait(struct gpib_board *board, int wait_mask, int clear_mask, int set_mask,
 	   int *status, unsigned long usec_timeout, struct gpib_descriptor *desc)
+	__releases(&board->big_gpib_mutex)
+	__cond_acquires(0, &board->big_gpib_mutex)
 {
 	int retval = 0;
 	struct gpib_status_queue *status_queue;

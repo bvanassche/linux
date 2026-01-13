@@ -24,6 +24,7 @@ bool intel_display_reset_test(struct intel_display *display)
 /* returns true if intel_display_reset_finish() needs to be called */
 bool intel_display_reset_prepare(struct intel_display *display,
 				 modeset_stuck_fn modeset_stuck, void *context)
+	__no_context_analysis /* conditional locking */
 {
 	struct drm_modeset_acquire_ctx *ctx = &display->restore.reset_ctx;
 	struct drm_atomic_state *state;
@@ -78,6 +79,7 @@ bool intel_display_reset_prepare(struct intel_display *display,
 }
 
 void intel_display_reset_finish(struct intel_display *display, bool test_only)
+	__no_context_analysis /* conditional locking */
 {
 	struct drm_modeset_acquire_ctx *ctx = &display->restore.reset_ctx;
 	struct drm_atomic_state *state;

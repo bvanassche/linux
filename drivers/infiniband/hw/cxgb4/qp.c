@@ -1592,6 +1592,7 @@ static void post_terminate(struct c4iw_qp *qhp, struct t4_cqe *err_cqe,
  */
 static void __flush_qp(struct c4iw_qp *qhp, struct c4iw_cq *rchp,
 		       struct c4iw_cq *schp)
+	__no_context_analysis /* conditional locking */
 {
 	int count;
 	int rq_flushed = 0, sq_flushed;

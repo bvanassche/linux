@@ -76,6 +76,7 @@ static inline void uart_port_deref(struct uart_port *uport)
 }
 
 static inline struct uart_port *uart_port_ref_lock(struct uart_state *state, unsigned long *flags)
+	__no_context_analysis /* conditional locking */
 {
 	struct uart_port *uport = uart_port_ref(state);
 
@@ -86,6 +87,7 @@ static inline struct uart_port *uart_port_ref_lock(struct uart_state *state, uns
 }
 
 static inline void uart_port_unlock_deref(struct uart_port *uport, unsigned long flags)
+	__no_context_analysis /* conditional locking */
 {
 	if (uport) {
 		uart_port_unlock_irqrestore(uport, flags);
@@ -1552,6 +1554,7 @@ static int uart_set_iso7816_config(struct uart_port *port,
  */
 static int
 uart_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
+	__no_context_analysis /* conditional locking */
 {
 	struct uart_state *state = tty->driver_data;
 	struct tty_port *port = &state->port;

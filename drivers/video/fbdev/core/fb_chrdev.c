@@ -330,8 +330,7 @@ static int fb_mmap(struct file *file, struct vm_area_struct *vma)
 }
 
 static int fb_open(struct inode *inode, struct file *file)
-__acquires(&info->lock)
-__releases(&info->lock)
+	__must_hold(&get_fb_info(iminor(inode))->lock)
 {
 	int fbidx = iminor(inode);
 	struct fb_info *info;
@@ -370,8 +369,7 @@ out:
 }
 
 static int fb_release(struct inode *inode, struct file *file)
-__acquires(&info->lock)
-__releases(&info->lock)
+	__must_not_hold(&((struct fb_info *)file->private_data)->lock)
 {
 	struct fb_info * const info = file->private_data;
 

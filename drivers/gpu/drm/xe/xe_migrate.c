@@ -1819,6 +1819,7 @@ static struct dma_fence *
 __xe_migrate_update_pgtables(struct xe_migrate *m,
 			     struct xe_migrate_pt_update *pt_update,
 			     struct xe_vm_pgtable_update_ops *pt_update_ops)
+	__no_context_analysis /* conditional locking */
 {
 	const struct xe_migrate_pt_update_ops *ops = pt_update->ops;
 	struct xe_tile *tile = m->tile;
@@ -2553,6 +2554,7 @@ out_err:
  * assert the VM's dma-resv is held (user queue's have own locking).
  */
 void xe_migrate_job_lock(struct xe_migrate *m, struct xe_exec_queue *q)
+	__no_context_analysis /* conditional locking */
 {
 	bool is_migrate = q == m->q;
 
@@ -2571,6 +2573,7 @@ void xe_migrate_job_lock(struct xe_migrate *m, struct xe_exec_queue *q)
  * assert the VM's dma-resv is held (user queue's have own locking).
  */
 void xe_migrate_job_unlock(struct xe_migrate *m, struct xe_exec_queue *q)
+	__no_context_analysis /* conditional locking */
 {
 	bool is_migrate = q == m->q;
 

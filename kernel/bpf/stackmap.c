@@ -425,6 +425,7 @@ const struct bpf_func_proto bpf_get_stackid_proto_pe = {
 static long __bpf_get_stack(struct pt_regs *regs, struct task_struct *task,
 			    struct perf_callchain_entry *trace_in,
 			    void *buf, u32 size, u64 flags, bool may_fault)
+	__no_context_analysis
 {
 	u32 trace_nr, copy_len, elem_size, max_depth;
 	bool user_build_id = flags & BPF_F_USER_BUILD_ID;

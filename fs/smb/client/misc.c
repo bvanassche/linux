@@ -425,6 +425,7 @@ cifs_add_pending_open_locked(struct cifs_fid *fid, struct tcon_link *tlink,
 void
 cifs_add_pending_open(struct cifs_fid *fid, struct tcon_link *tlink,
 		      struct cifs_pending_open *open)
+	__no_context_analysis
 {
 	spin_lock(&tlink_tcon(tlink)->open_file_lock);
 	cifs_add_pending_open_locked(fid, tlink, open);

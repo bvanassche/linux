@@ -304,6 +304,7 @@ static int _cxusb_power_ctrl(struct dvb_usb_device *d, int onoff)
 }
 
 static int cxusb_power_ctrl(struct dvb_usb_device *d, int onoff)
+	__no_context_analysis /* conditional locking */
 {
 	bool is_medion = d->props.devices[0].warm_ids[0] == &cxusb_table[MEDION_MD95700];
 	int ret;

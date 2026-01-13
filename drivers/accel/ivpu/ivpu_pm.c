@@ -124,6 +124,7 @@ err_power_down:
 }
 
 static void ivpu_pm_reset_begin(struct ivpu_device *vdev)
+	__acquires(&vdev->pm->reset_lock)
 {
 	pm_runtime_disable(vdev->drm.dev);
 
@@ -133,6 +134,7 @@ static void ivpu_pm_reset_begin(struct ivpu_device *vdev)
 }
 
 static void ivpu_pm_reset_complete(struct ivpu_device *vdev)
+	__releases(&vdev->pm->reset_lock)
 {
 	int ret;
 
@@ -375,6 +377,7 @@ void ivpu_rpm_put(struct ivpu_device *vdev)
 }
 
 void ivpu_pm_reset_prepare_cb(struct pci_dev *pdev)
+	__acquires(&((struct ivpu_device *)pci_get_drvdata(pdev))->pm->reset_lock)
 {
 	struct ivpu_device *vdev = pci_get_drvdata(pdev);
 
@@ -391,6 +394,7 @@ void ivpu_pm_reset_prepare_cb(struct pci_dev *pdev)
 }
 
 void ivpu_pm_reset_done_cb(struct pci_dev *pdev)
+	__releases(&((struct ivpu_device *)pci_get_drvdata(pdev))->pm->reset_lock)
 {
 	struct ivpu_device *vdev = pci_get_drvdata(pdev);
 

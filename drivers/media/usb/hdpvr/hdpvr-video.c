@@ -324,6 +324,7 @@ static int hdpvr_start_streaming(struct hdpvr_device *dev)
 
 /* function expects dev->io_mutex to be hold by caller */
 static int hdpvr_stop_streaming(struct hdpvr_device *dev)
+	__must_hold(dev->io_mutex)
 {
 	int actual_length;
 	uint c = 0;

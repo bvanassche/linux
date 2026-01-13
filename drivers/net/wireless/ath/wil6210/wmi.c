@@ -1312,7 +1312,7 @@ static void wmi_evt_addba_rx_req(struct wil6210_vif *vif, int id,
 }
 
 static void wmi_evt_delba(struct wil6210_vif *vif, int id, void *d, int len)
-__acquires(&sta->tid_rx_lock) __releases(&sta->tid_rx_lock)
+	__no_context_analysis
 {
 	struct wil6210_priv *wil = vif_to_wil(vif);
 	struct wmi_delba_event *evt = d;

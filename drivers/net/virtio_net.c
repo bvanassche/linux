@@ -1576,6 +1576,9 @@ static int __virtnet_xdp_xmit_one(struct virtnet_info *vi,
  * three issues at the same time: 1. the choice of sq. 2. judge and execute the
  * lock/unlock of txq 3. make sparse happy. It is difficult for two inline
  * functions to perfectly solve these three problems at the same time.
+ *
+ * Note: the __release() and __acquire() occur in the two macros below because
+ * these are too complex for compile-time thread-safety analysis.
  */
 #define virtnet_xdp_get_sq(vi) ({                                       \
 	int cpu = smp_processor_id();                                   \
@@ -1588,10 +1591,12 @@ static int __virtnet_xdp_xmit_one(struct virtnet_info *vi,
 		qp += cpu;                                              \
 		txq = netdev_get_tx_queue(v->dev, qp);                  \
 		__netif_tx_acquire(txq);                                \
+		__release(&txq->_xmit_lock);				\
 	} else {                                                        \
 		qp = cpu % v->curr_queue_pairs;                         \
 		txq = netdev_get_tx_queue(v->dev, qp);                  \
 		__netif_tx_lock(txq, cpu);                              \
+		__release(&txq->_xmit_lock);				\
 	}                                                               \
 	v->sq + qp;                                                     \
 })
@@ -1601,6 +1606,7 @@ static int __virtnet_xdp_xmit_one(struct virtnet_info *vi,
 	typeof(vi) v = (vi);                                            \
 									\
 	txq = netdev_get_tx_queue(v->dev, (q) - v->sq);                 \
+	__acquire(&txq->_xmit_lock);					\
 	if (v->curr_queue_pairs > nr_cpu_ids)                           \
 		__netif_tx_release(txq);                                \
 	else                                                            \

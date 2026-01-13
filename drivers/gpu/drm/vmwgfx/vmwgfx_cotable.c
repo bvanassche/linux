@@ -397,6 +397,7 @@ static int vmw_cotable_readback(struct vmw_resource *res)
  * invalid state which we can't currently recover from.
  */
 static int vmw_cotable_resize(struct vmw_resource *res, size_t new_size)
+	__no_context_analysis
 {
 	struct ttm_operation_ctx ctx = { false, false };
 	struct vmw_private *dev_priv = res->dev_priv;

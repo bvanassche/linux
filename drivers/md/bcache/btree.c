@@ -604,6 +604,7 @@ static struct btree *mca_bucket_alloc(struct cache_set *c,
 }
 
 static int mca_reap(struct btree *b, unsigned int min_order, bool flush)
+	__no_context_analysis /* conditional locking */
 {
 	struct closure cl;
 
@@ -921,6 +922,7 @@ void bch_cannibalize_unlock(struct cache_set *c)
 
 static struct btree *mca_alloc(struct cache_set *c, struct btree_op *op,
 			       struct bkey *k, int level)
+	__no_context_analysis /* conditional locking */
 {
 	struct btree *b;
 
@@ -1005,6 +1007,7 @@ err:
 struct btree *bch_btree_node_get(struct cache_set *c, struct btree_op *op,
 				 struct bkey *k, int level, bool write,
 				 struct btree *parent)
+	__no_context_analysis /* conditional locking */
 {
 	int i = 0;
 	struct btree *b;
@@ -1358,6 +1361,7 @@ static int bch_btree_insert_node(struct btree *b, struct btree_op *op,
 
 static int btree_gc_coalesce(struct btree *b, struct btree_op *op,
 			     struct gc_stat *gc, struct gc_merge_info *r)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned int i, nodes = 0, keys = 0, blocks;
 	struct btree *new_nodes[GC_MERGE_NODES];
@@ -2426,6 +2430,7 @@ split:
 
 int bch_btree_insert_check_key(struct btree *b, struct btree_op *op,
 			       struct bkey *check_key)
+	__no_context_analysis /* conditional locking */
 {
 	int ret = -EINTR;
 	uint64_t btree_ptr = b->key.ptr[0];

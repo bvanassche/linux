@@ -15,6 +15,7 @@
 #include "selftests/mock_drm.h"
 
 static int request_sync(struct i915_request *rq)
+	__no_context_analysis /*__releases(&i915_request_timeline(rq)->mutex)*/
 {
 	struct intel_timeline *tl = i915_request_timeline(rq);
 	long timeout;

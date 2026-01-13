@@ -330,6 +330,7 @@ EXPORT_SYMBOL(prepare_to_wait_event);
  * entry to the wake queue.
  */
 int do_wait_intr(wait_queue_head_t *wq, wait_queue_entry_t *wait)
+	__must_hold(&wq->lock)
 {
 	if (likely(list_empty(&wait->entry)))
 		__add_wait_queue_entry_tail(wq, wait);
@@ -347,6 +348,7 @@ int do_wait_intr(wait_queue_head_t *wq, wait_queue_entry_t *wait)
 EXPORT_SYMBOL(do_wait_intr);
 
 int do_wait_intr_irq(wait_queue_head_t *wq, wait_queue_entry_t *wait)
+	__must_hold(&wq->lock)
 {
 	if (likely(list_empty(&wait->entry)))
 		__add_wait_queue_entry_tail(wq, wait);

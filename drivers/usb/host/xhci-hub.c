@@ -917,6 +917,7 @@ static void xhci_del_comp_mod_timer(struct xhci_hcd *xhci, u32 portsc, int portn
 static int xhci_handle_usb2_port_link_resume(struct xhci_port *port,
 					     u32 portsc,
 					     unsigned long *flags)
+	__no_context_analysis
 {
 	struct xhci_bus_state *bus_state;
 	struct xhci_hcd	*xhci;
@@ -1135,8 +1136,7 @@ static void xhci_get_usb2_port_status(struct xhci_port *port, u32 *status,
  */
 static u32 xhci_get_port_status(struct usb_hcd *hcd, struct xhci_bus_state *bus_state,
 				int portnum, u32 portsc, unsigned long *flags)
-	__releases(&xhci->lock)
-	__acquires(&xhci->lock)
+	__no_context_analysis
 {
 	u32 status = 0;
 	struct xhci_hub *rhub;

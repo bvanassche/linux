@@ -385,6 +385,7 @@ static int ntfs_zero_range(struct inode *inode, loff_t offset, loff_t length)
 
 static int ntfs_write_simple_iomap_begin_non_resident(struct inode *inode, loff_t offset,
 						      loff_t length, struct iomap *iomap)
+	__context_unsafe(conditional locking)
 {
 	struct ntfs_inode *ni = NTFS_I(inode);
 	struct ntfs_volume *vol = ni->vol;
@@ -569,6 +570,7 @@ remap_rl:
 static int ntfs_write_da_iomap_begin_non_resident(struct inode *inode,
 		loff_t offset, loff_t length, unsigned int flags,
 		struct iomap *iomap, int ntfs_iomap_flags)
+	__context_unsafe(conditional locking)
 {
 	struct ntfs_inode *ni = NTFS_I(inode);
 	struct ntfs_volume *vol = ni->vol;
@@ -652,6 +654,7 @@ static int ntfs_write_da_iomap_begin_non_resident(struct inode *inode,
 
 static int ntfs_write_iomap_begin_resident(struct inode *inode, loff_t offset,
 		struct iomap *iomap)
+	__context_unsafe(conditional locking)
 {
 	struct ntfs_inode *ni = NTFS_I(inode);
 	struct attr_record *a;
@@ -704,6 +707,7 @@ out:
 static int ntfs_write_iomap_begin_non_resident(struct inode *inode, loff_t offset,
 					       loff_t length, unsigned int flags,
 					       struct iomap *iomap, int ntfs_iomap_flags)
+	__context_unsafe(conditional locking)
 {
 	struct ntfs_inode *ni = NTFS_I(inode);
 
@@ -733,6 +737,7 @@ static int ntfs_write_iomap_begin_non_resident(struct inode *inode, loff_t offse
 static int __ntfs_write_iomap_begin(struct inode *inode, loff_t offset,
 				    loff_t length, unsigned int flags,
 				    struct iomap *iomap, int ntfs_iomap_flags)
+	__context_unsafe(conditional locking)
 {
 	struct ntfs_inode *ni = NTFS_I(inode);
 	loff_t end = offset + length;

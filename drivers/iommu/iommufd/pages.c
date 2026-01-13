@@ -806,6 +806,7 @@ static void pfn_reader_user_init(struct pfn_reader_user *user,
 
 static void pfn_reader_user_destroy(struct pfn_reader_user *user,
 				    struct iopt_pages *pages)
+	__no_context_analysis /* conditional locking */
 {
 	if (user->locked != -1) {
 		if (user->locked)
@@ -877,6 +878,7 @@ static int pfn_reader_user_pin(struct pfn_reader_user *user,
 			       struct iopt_pages *pages,
 			       unsigned long start_index,
 			       unsigned long last_index)
+	__no_context_analysis /* conditional locking */
 {
 	bool remote_mm = pages->source_mm != current->mm;
 	unsigned long npages = last_index - start_index + 1;
@@ -982,6 +984,7 @@ static void decr_user_locked_vm(struct iopt_pages *pages, unsigned long npages)
 /* This is the accounting method used for compatibility with VFIO */
 static int update_mm_locked_vm(struct iopt_pages *pages, unsigned long npages,
 			       bool inc, struct pfn_reader_user *user)
+	__no_context_analysis /* conditional locking */
 {
 	bool do_put = false;
 	int rc;

@@ -186,6 +186,7 @@ static int madvise_update_vma(vm_flags_t new_flags,
 #ifdef CONFIG_SWAP
 static int swapin_walk_pmd_entry(pmd_t *pmd, unsigned long start,
 		unsigned long end, struct mm_walk *walk)
+	__no_context_analysis
 {
 	struct vm_area_struct *vma = walk->private;
 	struct swap_iocb *splug = NULL;
@@ -279,6 +280,7 @@ static void mark_mmap_lock_dropped(struct madvise_behavior *madv_behavior)
  * Schedule all required I/O operations.  Do not wait for completion.
  */
 static long madvise_willneed(struct madvise_behavior *madv_behavior)
+	__must_hold_shared(&madv_behavior->mm->mmap_lock)
 {
 	struct vm_area_struct *vma = madv_behavior->vma;
 	struct mm_struct *mm = madv_behavior->mm;
@@ -354,6 +356,7 @@ static inline int madvise_folio_pte_batch(unsigned long addr, unsigned long end,
 static int madvise_cold_or_pageout_pte_range(pmd_t *pmd,
 				unsigned long addr, unsigned long end,
 				struct mm_walk *walk)
+	__no_context_analysis /* conditional locking */
 {
 	struct madvise_walk_private *private = walk->private;
 	struct mmu_gather *tlb = private->tlb;
@@ -653,6 +656,7 @@ static long madvise_pageout(struct madvise_behavior *madv_behavior)
 static int madvise_free_pte_range(pmd_t *pmd, unsigned long addr,
 				unsigned long end, struct mm_walk *walk)
 
+	__no_context_analysis /* conditional locking */
 {
 	const cydp_t cydp_flags = CYDP_CLEAR_YOUNG | CYDP_CLEAR_DIRTY;
 	struct mmu_gather *tlb = walk->private;
@@ -895,6 +899,7 @@ bool madvise_dontneed_free_valid_vma(struct madvise_behavior *madv_behavior)
 }
 
 static long madvise_dontneed_free(struct madvise_behavior *madv_behavior)
+	__no_context_analysis
 {
 	struct mm_struct *mm = madv_behavior->mm;
 	struct madvise_behavior_range *range = &madv_behavior->range;
@@ -956,6 +961,7 @@ static long madvise_dontneed_free(struct madvise_behavior *madv_behavior)
 }
 
 static long madvise_populate(struct madvise_behavior *madv_behavior)
+	__no_context_analysis /* conditional locking */
 {
 	struct mm_struct *mm = madv_behavior->mm;
 	const bool write = madv_behavior->behavior == MADV_POPULATE_WRITE;
@@ -999,6 +1005,7 @@ static long madvise_populate(struct madvise_behavior *madv_behavior)
  * This is effectively punching a hole into the middle of a file.
  */
 static long madvise_remove(struct madvise_behavior *madv_behavior)
+	__no_context_analysis /* conditional locking */
 {
 	loff_t offset;
 	int error;
@@ -1337,6 +1344,7 @@ static bool can_madvise_modify(struct madvise_behavior *madv_behavior)
  * behavior.
  */
 static int madvise_vma_behavior(struct madvise_behavior *madv_behavior)
+	__no_context_analysis
 {
 	int behavior = madv_behavior->behavior;
 	struct vm_area_struct *vma = madv_behavior->vma;
@@ -1628,6 +1636,7 @@ static bool is_vma_lock_sufficient(struct vm_area_struct *vma,
  * fallback to mmap lock behaviour.
  */
 static bool try_vma_read_lock(struct madvise_behavior *madv_behavior)
+	__cond_acquires(false, &madv_behavior->mm->mmap_lock)
 {
 	struct mm_struct *mm = madv_behavior->mm;
 	struct vm_area_struct *vma;
@@ -1661,6 +1670,7 @@ take_mmap_read_lock:
  */
 static
 int madvise_walk_vmas(struct madvise_behavior *madv_behavior)
+	__no_context_analysis
 {
 	struct mm_struct *mm = madv_behavior->mm;
 	struct madvise_behavior_range *range = &madv_behavior->range;
@@ -1766,6 +1776,7 @@ static enum madvise_lock_mode get_lock_mode(struct madvise_behavior *madv_behavi
 }
 
 static int madvise_lock(struct madvise_behavior *madv_behavior)
+	__no_context_analysis
 {
 	struct mm_struct *mm = madv_behavior->mm;
 	enum madvise_lock_mode lock_mode = get_lock_mode(madv_behavior);
@@ -1790,6 +1801,7 @@ static int madvise_lock(struct madvise_behavior *madv_behavior)
 }
 
 static void madvise_unlock(struct madvise_behavior *madv_behavior)
+	__no_context_analysis
 {
 	struct mm_struct *mm = madv_behavior->mm;
 

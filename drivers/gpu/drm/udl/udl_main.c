@@ -260,6 +260,7 @@ retry:
 }
 
 static struct urb *udl_get_urb_locked(struct udl_device *udl, long timeout)
+	__must_hold(&udl->urbs.lock)
 {
 	struct urb_node *unode;
 

@@ -183,6 +183,7 @@ static const struct fs_parameter_spec ecryptfs_fs_param_spec[] = {
 
 static int ecryptfs_init_global_auth_toks(
 	struct ecryptfs_mount_crypt_stat *mount_crypt_stat)
+	__no_context_analysis
 {
 	struct ecryptfs_global_auth_tok *global_auth_tok;
 	struct ecryptfs_auth_tok *auth_tok;
@@ -576,6 +577,7 @@ out:
  * Used to bring the superblock down and free the private data.
  */
 static void ecryptfs_kill_block_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct ecryptfs_sb_info *sb_info = ecryptfs_superblock_to_private(sb);
 	kill_anon_super(sb);

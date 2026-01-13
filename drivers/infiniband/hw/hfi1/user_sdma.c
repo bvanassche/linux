@@ -215,10 +215,12 @@ int hfi1_user_sdma_free_queues(struct hfi1_filedata *fd,
 	trace_hfi1_sdma_user_free_queues(uctxt->dd, uctxt->ctxt, fd->subctxt);
 
 	spin_lock(&fd->pq_rcu_lock);
+	__acquire(&fd->pq_srcu);
 	pq = srcu_dereference_check(fd->pq, &fd->pq_srcu,
 				    lockdep_is_held(&fd->pq_rcu_lock));
 	if (pq) {
 		rcu_assign_pointer(fd->pq, NULL);
+		__release(&fd->pq_srcu);
 		spin_unlock(&fd->pq_rcu_lock);
 		synchronize_srcu(&fd->pq_srcu);
 		/* at this point there can be no more new requests */
@@ -234,6 +236,7 @@ int hfi1_user_sdma_free_queues(struct hfi1_filedata *fd,
 		flush_pq_iowait(pq);
 		kfree(pq);
 	} else {
+		__release(&fd->pq_srcu);
 		spin_unlock(&fd->pq_rcu_lock);
 	}
 	if (fd->cq) {
@@ -275,6 +278,7 @@ static u8 dlid_to_selector(u16 dlid)
 int hfi1_user_sdma_process_request(struct hfi1_filedata *fd,
 				   struct iovec *iovec, unsigned long dim,
 				   unsigned long *count)
+	__must_hold_shared(&fd->pq_srcu)
 {
 	int ret = 0, i;
 	struct hfi1_ctxtdata *uctxt = fd->uctxt;

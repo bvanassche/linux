@@ -445,7 +445,7 @@ __releases(torture_rwlock)
 }
 
 static int torture_rwlock_read_lock(int tid __maybe_unused)
-__acquires(torture_rwlock)
+__acquires_shared(torture_rwlock)
 {
 	read_lock(&torture_rwlock);
 	return 0;
@@ -465,7 +465,7 @@ static void torture_rwlock_read_delay(struct torture_random_state *trsp)
 }
 
 static void torture_rwlock_read_unlock(int tid __maybe_unused)
-__releases(torture_rwlock)
+__releases_shared(torture_rwlock)
 {
 	read_unlock(&torture_rwlock);
 }
@@ -498,7 +498,7 @@ __releases(torture_rwlock)
 }
 
 static int torture_rwlock_read_lock_irq(int tid __maybe_unused)
-__acquires(torture_rwlock)
+__acquires_shared(torture_rwlock)
 {
 	unsigned long flags;
 
@@ -508,7 +508,7 @@ __acquires(torture_rwlock)
 }
 
 static void torture_rwlock_read_unlock_irq(int tid __maybe_unused)
-__releases(torture_rwlock)
+__releases_shared(torture_rwlock)
 {
 	read_unlock_irqrestore(&torture_rwlock, cxt.cur_ops->flags);
 }
@@ -539,6 +539,7 @@ static void torture_mutex_init(void)
 
 static int torture_mutex_nested_lock(int tid __maybe_unused,
 				     u32 lockset)
+	__no_context_analysis
 {
 	int i;
 
@@ -572,6 +573,7 @@ __releases(torture_mutex)
 
 static void torture_mutex_nested_unlock(int tid __maybe_unused,
 					u32 lockset)
+	__no_context_analysis
 {
 	int i;
 
@@ -625,6 +627,7 @@ static int torture_ww_mutex_lock(int tid)
 __acquires(torture_ww_mutex_0)
 __acquires(torture_ww_mutex_1)
 __acquires(torture_ww_mutex_2)
+__no_context_analysis
 {
 	LIST_HEAD(list);
 	struct reorder_lock {
@@ -669,6 +672,7 @@ static void torture_ww_mutex_unlock(int tid)
 __releases(torture_ww_mutex_0)
 __releases(torture_ww_mutex_1)
 __releases(torture_ww_mutex_2)
+__releases(&ww_acquire_ctxs[tid])
 {
 	struct ww_acquire_ctx *ctx = &ww_acquire_ctxs[tid];
 
@@ -707,6 +711,7 @@ static void torture_rtmutex_init(void)
 
 static int torture_rtmutex_nested_lock(int tid __maybe_unused,
 				       u32 lockset)
+	__no_context_analysis
 {
 	int i;
 
@@ -717,7 +722,7 @@ static int torture_rtmutex_nested_lock(int tid __maybe_unused,
 }
 
 static int torture_rtmutex_lock(int tid __maybe_unused)
-__acquires(torture_rtmutex)
+	__acquires(&torture_rtmutex)
 {
 	rt_mutex_lock(&torture_rtmutex);
 	return 0;
@@ -741,7 +746,7 @@ static void torture_rtmutex_delay(struct torture_random_state *trsp)
 }
 
 static void torture_rtmutex_unlock(int tid __maybe_unused)
-__releases(torture_rtmutex)
+	__releases(&torture_rtmutex)
 {
 	rt_mutex_unlock(&torture_rtmutex);
 }
@@ -756,6 +761,7 @@ static void torture_rt_boost_rtmutex(struct torture_random_state *trsp)
 
 static void torture_rtmutex_nested_unlock(int tid __maybe_unused,
 					  u32 lockset)
+	__no_context_analysis
 {
 	int i;
 
@@ -797,13 +803,13 @@ static void torture_rwsem_write_delay(struct torture_random_state *trsp)
 }
 
 static void torture_rwsem_up_write(int tid __maybe_unused)
-__releases(torture_rwsem)
+	__releases(&torture_rwsem)
 {
 	up_write(&torture_rwsem);
 }
 
 static int torture_rwsem_down_read(int tid __maybe_unused)
-__acquires(torture_rwsem)
+	__acquires_shared(&torture_rwsem)
 {
 	down_read(&torture_rwsem);
 	return 0;
@@ -821,7 +827,7 @@ static void torture_rwsem_read_delay(struct torture_random_state *trsp)
 }
 
 static void torture_rwsem_up_read(int tid __maybe_unused)
-__releases(torture_rwsem)
+	__releases_shared(&torture_rwsem)
 {
 	up_read(&torture_rwsem);
 }
@@ -851,27 +857,27 @@ static void torture_percpu_rwsem_exit(void)
 }
 
 static int torture_percpu_rwsem_down_write(int tid __maybe_unused)
-__acquires(pcpu_rwsem)
+	__acquires(pcpu_rwsem)
 {
 	percpu_down_write(&pcpu_rwsem);
 	return 0;
 }
 
 static void torture_percpu_rwsem_up_write(int tid __maybe_unused)
-__releases(pcpu_rwsem)
+	__releases(pcpu_rwsem)
 {
 	percpu_up_write(&pcpu_rwsem);
 }
 
 static int torture_percpu_rwsem_down_read(int tid __maybe_unused)
-__acquires(pcpu_rwsem)
+	__acquires_shared(pcpu_rwsem)
 {
 	percpu_down_read(&pcpu_rwsem);
 	return 0;
 }
 
 static void torture_percpu_rwsem_up_read(int tid __maybe_unused)
-__releases(pcpu_rwsem)
+	__releases_shared(pcpu_rwsem)
 {
 	percpu_up_read(&pcpu_rwsem);
 }

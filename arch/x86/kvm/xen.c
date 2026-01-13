@@ -319,6 +319,7 @@ static void kvm_xen_stop_timer(struct kvm_vcpu *vcpu)
 }
 
 static void kvm_xen_update_runstate_guest(struct kvm_vcpu *v, bool atomic)
+	__no_context_analysis /* conditional locking */
 {
 	struct kvm_vcpu_xen *vx = &v->arch.xen;
 	struct gfn_to_pfn_cache *gpc1 = &vx->runstate_cache;
@@ -1790,6 +1791,7 @@ static void kvm_xen_check_poller(struct kvm_vcpu *vcpu, int port)
  * only check on its return value is a comparison with -EWOULDBLOCK'.
  */
 int kvm_xen_set_evtchn_fast(struct kvm_xen_evtchn *xe, struct kvm *kvm)
+	__no_context_analysis /* too complex for static analysis */
 {
 	struct gfn_to_pfn_cache *gpc = &kvm->arch.xen.shinfo_cache;
 	struct kvm_vcpu *vcpu;

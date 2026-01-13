@@ -234,6 +234,7 @@ static void psp_release_i2c_bus(void)
  */
 static void i2c_adapter_dw_psp_lock_bus(struct i2c_adapter *adapter,
 					unsigned int flags)
+	__acquires(&adapter->bus_lock)
 {
 	psp_acquire_i2c_bus();
 	rt_mutex_lock_nested(&adapter->bus_lock, i2c_adapter_depth(adapter));
@@ -241,6 +242,7 @@ static void i2c_adapter_dw_psp_lock_bus(struct i2c_adapter *adapter,
 
 static int i2c_adapter_dw_psp_trylock_bus(struct i2c_adapter *adapter,
 					  unsigned int flags)
+	__cond_acquires(0, &adapter->bus_lock)
 {
 	int ret;
 
@@ -255,6 +257,7 @@ static int i2c_adapter_dw_psp_trylock_bus(struct i2c_adapter *adapter,
 
 static void i2c_adapter_dw_psp_unlock_bus(struct i2c_adapter *adapter,
 					  unsigned int flags)
+	__releases(&adapter->bus_lock)
 {
 	psp_release_i2c_bus();
 	rt_mutex_unlock(&adapter->bus_lock);

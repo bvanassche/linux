@@ -431,6 +431,7 @@ static ssize_t nfs_direct_read_schedule_iovec(struct nfs_direct_req *dreq,
  */
 ssize_t nfs_file_direct_read(struct kiocb *iocb, struct iov_iter *iter,
 			     bool swap)
+	__no_context_analysis /* conditional locking */
 {
 	struct file *file = iocb->ki_filp;
 	struct address_space *mapping = file->f_mapping;

@@ -2734,6 +2734,7 @@ static unsigned long get_ind_bit(__u64 addr, unsigned long bit_nr, bool swap)
 }
 
 static struct page *get_map_page(struct kvm *kvm, u64 uaddr)
+	__context_unsafe(conditional locking)
 {
 	struct mm_struct *mm = kvm->mm;
 	struct page *page = NULL;

@@ -1014,6 +1014,7 @@ int ceph_fill_inode(struct inode *inode, struct page *locked_page,
 		    struct ceph_mds_reply_dirfrag *dirinfo,
 		    struct ceph_mds_session *session, int cap_fmode,
 		    struct ceph_cap_reservation *caps_reservation)
+	/*__must_hold(&ceph_sb_to_mdsc(inode->i_sb)->snap_rwsem)*/
 {
 	struct ceph_mds_client *mdsc = ceph_sb_to_mdsc(inode->i_sb);
 	struct ceph_client *cl = mdsc->fsc->client;
@@ -2568,6 +2569,7 @@ out:
 
 int __ceph_setattr(struct mnt_idmap *idmap, struct inode *inode,
 		   struct iattr *attr, struct ceph_iattr *cia)
+	__no_context_analysis /* conditional locking */
 {
 	struct ceph_inode_info *ci = ceph_inode(inode);
 	unsigned int ia_valid = attr->ia_valid;

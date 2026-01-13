@@ -1082,7 +1082,7 @@ static int lba_to_arena(struct btt *btt, sector_t sector, __u32 *premap,
  * readability, since they index into an array of locks
  */
 static void lock_map(struct arena_info *arena, u32 premap)
-		__acquires(&arena->map_locks[idx].lock)
+	__no_context_analysis /* too complex */
 {
 	u32 idx = (premap * MAP_ENT_SIZE / L1_CACHE_BYTES) % arena->nfree;
 
@@ -1090,7 +1090,7 @@ static void lock_map(struct arena_info *arena, u32 premap)
 }
 
 static void unlock_map(struct arena_info *arena, u32 premap)
-		__releases(&arena->map_locks[idx].lock)
+	__no_context_analysis /* too complex */
 {
 	u32 idx = (premap * MAP_ENT_SIZE / L1_CACHE_BYTES) % arena->nfree;
 

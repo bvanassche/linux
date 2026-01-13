@@ -205,6 +205,7 @@ bool btrfs_exclop_start(struct btrfs_fs_info *fs_info,
  */
 bool btrfs_exclop_start_try_lock(struct btrfs_fs_info *fs_info,
 				 enum btrfs_exclusive_operation type)
+	__cond_acquires(true, &fs_info->super_lock)
 {
 	spin_lock(&fs_info->super_lock);
 	if (fs_info->exclusive_operation == type ||
@@ -217,6 +218,7 @@ bool btrfs_exclop_start_try_lock(struct btrfs_fs_info *fs_info,
 }
 
 void btrfs_exclop_start_unlock(struct btrfs_fs_info *fs_info)
+	__releases(&fs_info->super_lock)
 {
 	spin_unlock(&fs_info->super_lock);
 }

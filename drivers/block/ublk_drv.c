@@ -5298,6 +5298,7 @@ exit:
  * already holds ub->mutex when calling del_gendisk() which freezes the queue.
 */
 static unsigned int ublk_lock_buf_tree(struct ublk_device *ub)
+	__acquires(&ub->mutex)
 {
 	unsigned int memflags = 0;
 
@@ -5309,6 +5310,7 @@ static unsigned int ublk_lock_buf_tree(struct ublk_device *ub)
 }
 
 static void ublk_unlock_buf_tree(struct ublk_device *ub, unsigned int memflags)
+	__releases(&ub->mutex)
 {
 	if (ub->ub_disk)
 		blk_mq_unfreeze_queue(ub->ub_disk->queue, memflags);

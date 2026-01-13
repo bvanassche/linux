@@ -33,6 +33,7 @@
 int wrap_directory_iterator(struct file *file,
 			    struct dir_context *ctx,
 			    int (*iter)(struct file *, struct dir_context *))
+	__must_hold_shared(&file_inode(file)->i_rwsem)
 {
 	struct inode *inode = file_inode(file);
 	int ret;

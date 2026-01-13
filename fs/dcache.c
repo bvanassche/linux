@@ -692,6 +692,8 @@ static inline void dentry_unlist(struct dentry *dentry)
 }
 
 static struct dentry *__dentry_kill(struct dentry *dentry)
+	__releases(&dentry->d_inode->i_lock)
+	__releases(&dentry->d_lock)
 {
 	struct dentry *parent = NULL;
 	bool can_free = true;
@@ -714,10 +716,12 @@ static struct dentry *__dentry_kill(struct dentry *dentry)
 	}
 	/* if it was on the hash then remove it */
 	__d_drop(dentry);
-	if (dentry->d_inode)
+	if (dentry->d_inode) {
 		dentry_unlink_inode(dentry);
-	else
+	} else {
+		__release(&dentry->d_inode->i_lock);
 		spin_unlock(&dentry->d_lock);
+	}
 	this_cpu_dec(nr_dentry);
 	if (dentry->d_op && dentry->d_op->d_release)
 		dentry->d_op->d_release(dentry);
@@ -727,6 +731,7 @@ static struct dentry *__dentry_kill(struct dentry *dentry)
 	if (!IS_ROOT(dentry)) {
 		parent = dentry->d_parent;
 		spin_lock(&parent->d_lock);
+		__release(&parent->d_lock);
 	}
 	spin_lock_nested(&dentry->d_lock, DENTRY_D_LOCK_NESTED);
 	dentry_unlist(dentry);
@@ -736,6 +741,7 @@ static struct dentry *__dentry_kill(struct dentry *dentry)
 	if (likely(can_free))
 		dentry_free(dentry);
 	if (parent && --parent->d_lockref.count) {
+		__acquire(&parent->d_lock);
 		spin_unlock(&parent->d_lock);
 		return NULL;
 	}
@@ -754,6 +760,8 @@ static struct dentry *__dentry_kill(struct dentry *dentry)
  */
 
 static bool lock_for_kill(struct dentry *dentry)
+	__cond_acquires(true, &dentry->d_lock)
+	__cond_acquires(true, &dentry->d_inode->i_lock)
 {
 	struct inode *inode = dentry->d_inode;
 
@@ -859,6 +867,7 @@ EXPORT_SYMBOL(d_mark_dontcache);
  * guaranteed to stay around even if the refcount goes down to zero!
  */
 static inline bool fast_dput(struct dentry *dentry)
+	__cond_acquires(0, &dentry->d_lock)
 {
 	int ret;
 
@@ -919,8 +928,7 @@ locked:
 }
 
 static void finish_dput(struct dentry *dentry)
-	__releases(dentry->d_lock)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	while (lock_for_kill(dentry)) {
 		rcu_read_unlock();
@@ -928,12 +936,14 @@ static void finish_dput(struct dentry *dentry)
 		if (!dentry)
 			return;
 		if (retain_dentry(dentry, true)) {
+			__acquire(&dentry->d_lock);
 			spin_unlock(&dentry->d_lock);
 			return;
 		}
 		rcu_read_lock();
 	}
 	rcu_read_unlock();
+	__acquire(&dentry->d_lock);
 	spin_unlock(&dentry->d_lock);
 }
 
@@ -964,6 +974,7 @@ static void finish_dput(struct dentry *dentry)
  * they too may now get deleted.
  */
 void dput(struct dentry *dentry)
+	__no_context_analysis
 {
 	if (!dentry)
 		return;
@@ -978,6 +989,7 @@ void dput(struct dentry *dentry)
 EXPORT_SYMBOL(dput);
 
 void d_make_discardable(struct dentry *dentry)
+	__acquires(&dentry->d_lock)
 {
 	spin_lock(&dentry->d_lock);
 	WARN_ON(!(dentry->d_flags & DCACHE_PERSISTENT));
@@ -1189,6 +1201,8 @@ void d_prune_aliases(struct inode *inode)
 EXPORT_SYMBOL(d_prune_aliases);
 
 static inline void shrink_kill(struct dentry *victim)
+	__releases_shared(RCU)
+	__no_context_analysis
 {
 	do {
 		rcu_read_unlock();
@@ -1201,6 +1215,7 @@ static inline void shrink_kill(struct dentry *victim)
 }
 
 void shrink_dentry_list(struct list_head *list)
+	__no_context_analysis
 {
 	while (!list_empty(list)) {
 		struct dentry *dentry;
@@ -1369,6 +1384,7 @@ enum d_walk_ret {
  */
 static void d_walk(struct dentry *parent, void *data,
 		   enum d_walk_ret (*enter)(void *, struct dentry *))
+	__no_context_analysis
 {
 	struct dentry *this_parent, *dentry;
 	unsigned seq = 0;
@@ -1567,6 +1583,7 @@ struct select_data {
 };
 
 static enum d_walk_ret select_collect(void *_data, struct dentry *dentry)
+	__no_context_analysis
 {
 	struct select_data *data = _data;
 	enum d_walk_ret ret = D_WALK_CONTINUE;
@@ -1603,6 +1620,7 @@ static enum d_walk_ret select_collect_umount(void *_data, struct dentry *dentry)
 }
 
 static enum d_walk_ret select_collect2(void *_data, struct dentry *dentry)
+	__no_context_analysis
 {
 	struct select_data *data = _data;
 	enum d_walk_ret ret = D_WALK_CONTINUE;
@@ -1641,6 +1659,7 @@ out:
  * Prune the dcache to remove unused children of the parent dentry.
  */
 static void shrink_dcache_tree(struct dentry *parent, bool for_umount)
+	__no_context_analysis
 {
 	for (;;) {
 		struct select_data data = {.start = parent};
@@ -1728,6 +1747,7 @@ static void do_one_tree(struct dentry *dentry)
  * destroy the dentries attached to a superblock on unmounting
  */
 void shrink_dcache_for_umount(struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct dentry *dentry;
 
@@ -2452,6 +2472,7 @@ struct dentry *__d_lookup_rcu(const struct dentry *parent,
  * finished using it. %NULL is returned if the dentry does not exist.
  */
 struct dentry *d_lookup(const struct dentry *parent, const struct qstr *name)
+	__no_context_analysis
 {
 	struct dentry *dentry;
 	unsigned seq;
@@ -2648,6 +2669,7 @@ static inline void end_dir_add(struct inode *dir, unsigned int n,
 }
 
 static void d_wait_lookup(struct dentry *dentry)
+	__must_hold(&dentry->d_lock)
 {
 	if (d_in_lookup(dentry)) {
 		DECLARE_WAITQUEUE(wait, current);
@@ -2664,6 +2686,7 @@ static void d_wait_lookup(struct dentry *dentry)
 struct dentry *d_alloc_parallel(struct dentry *parent,
 				const struct qstr *name,
 				wait_queue_head_t *wq)
+	__no_context_analysis
 {
 	unsigned int hash = name->hash;
 	struct hlist_bl_head *b = in_lookup_hash(parent, hash);
@@ -2813,6 +2836,7 @@ EXPORT_SYMBOL(__d_lookup_unhash_wake);
 
 static inline void __d_add(struct dentry *dentry, struct inode *inode,
 			   const struct dentry_operations *ops)
+	__no_context_analysis
 {
 	wait_queue_head_t *d_wait;
 	struct inode *dir = NULL;
@@ -2851,6 +2875,7 @@ static inline void __d_add(struct dentry *dentry, struct inode *inode,
  */
 
 void d_add(struct dentry *entry, struct inode *inode)
+	__no_context_analysis
 {
 	if (inode) {
 		security_d_instantiate(entry, inode);
@@ -2946,6 +2971,7 @@ static void copy_name(struct dentry *dentry, struct dentry *target)
  */
 static void __d_move(struct dentry *dentry, struct dentry *target,
 		     bool exchange)
+	__no_context_analysis
 {
 	struct dentry *old_parent, *p;
 	wait_queue_head_t *d_wait;
@@ -3095,6 +3121,7 @@ struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)
  * remember to update this too...
  */
 static int __d_unalias(struct dentry *dentry, struct dentry *alias)
+	__no_context_analysis
 {
 	struct mutex *m1 = NULL;
 	struct rw_semaphore *m2 = NULL;
@@ -3129,6 +3156,7 @@ out_err:
 
 struct dentry *d_splice_alias_ops(struct inode *inode, struct dentry *dentry,
 				  const struct dentry_operations *ops)
+	__no_context_analysis
 {
 	if (IS_ERR(inode))
 		return ERR_CAST(inode);

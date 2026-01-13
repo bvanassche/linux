@@ -207,6 +207,7 @@ err:
  */
 int efx_siena_xdp_tx_buffers(struct efx_nic *efx, int n, struct xdp_frame **xdpfs,
 			     bool flush)
+	__no_context_analysis /* conditional locking */
 {
 	struct efx_tx_buffer *tx_buffer;
 	struct efx_tx_queue *tx_queue;

@@ -36,6 +36,7 @@ static inline unsigned int xa_lock_type(const struct xarray *xa)
 }
 
 static inline void xas_lock_type(struct xa_state *xas, unsigned int lock_type)
+	__acquires(&xas->xa->xa_lock)
 {
 	if (lock_type == XA_LOCK_IRQ)
 		xas_lock_irq(xas);
@@ -46,6 +47,7 @@ static inline void xas_lock_type(struct xa_state *xas, unsigned int lock_type)
 }
 
 static inline void xas_unlock_type(struct xa_state *xas, unsigned int lock_type)
+	__releases(&xas->xa->xa_lock)
 {
 	if (lock_type == XA_LOCK_IRQ)
 		xas_unlock_irq(xas);
@@ -326,7 +328,7 @@ EXPORT_SYMBOL_GPL(xas_nomem);
  * Return: true if memory was needed, and was successfully allocated.
  */
 static bool __xas_nomem(struct xa_state *xas, gfp_t gfp)
-	__must_hold(xas->xa->xa_lock)
+	__no_context_analysis
 {
 	unsigned int lock_type = xa_lock_type(xas->xa);
 
@@ -1690,6 +1692,7 @@ EXPORT_SYMBOL(xa_erase);
  * Return: The old entry at this index or xa_err() if an error happened.
  */
 void *__xa_store(struct xarray *xa, unsigned long index, void *entry, gfp_t gfp)
+	__no_context_analysis
 {
 	XA_STATE(xas, xa, index);
 	void *curr;
@@ -1769,6 +1772,7 @@ EXPORT_SYMBOL(__xa_cmpxchg);
 
 static inline void *__xa_cmpxchg_raw(struct xarray *xa, unsigned long index,
 			void *old, void *entry, gfp_t gfp)
+	__no_context_analysis
 {
 	XA_STATE(xas, xa, index);
 	void *curr;
@@ -1805,6 +1809,7 @@ static inline void *__xa_cmpxchg_raw(struct xarray *xa, unsigned long index,
  * -ENOMEM if memory could not be allocated.
  */
 int __xa_insert(struct xarray *xa, unsigned long index, void *entry, gfp_t gfp)
+	__must_hold(&xa->xa_lock)
 {
 	void *curr;
 	int errno;
@@ -1984,6 +1989,7 @@ EXPORT_SYMBOL(xa_get_order);
  */
 int __xa_alloc(struct xarray *xa, u32 *id, void *entry,
 		struct xa_limit limit, gfp_t gfp)
+	__no_context_analysis
 {
 	XA_STATE(xas, xa, 0);
 

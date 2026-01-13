@@ -452,6 +452,7 @@ static bool fscrypt_valid_master_key_size(const struct fscrypt_master_key *mk,
 static int setup_file_encryption_key(struct fscrypt_inode_info *ci,
 				     bool need_dirhash_key,
 				     struct fscrypt_master_key **mk_ret)
+	__no_context_analysis
 {
 	struct super_block *sb = ci->ci_inode->i_sb;
 	struct fscrypt_key_specifier mk_spec;
@@ -581,6 +582,7 @@ fscrypt_setup_encryption_info(struct inode *inode,
 			      const union fscrypt_policy *policy,
 			      const u8 nonce[FSCRYPT_FILE_NONCE_SIZE],
 			      bool need_dirhash_key)
+	__no_context_analysis
 {
 	struct fscrypt_inode_info *crypt_info;
 	struct fscrypt_mode *mode;

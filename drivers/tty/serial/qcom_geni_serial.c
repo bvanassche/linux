@@ -530,6 +530,7 @@ __qcom_geni_serial_console_write(struct uart_port *uport, const char *s,
 
 static void qcom_geni_serial_console_write(struct console *co, const char *s,
 			      unsigned int count)
+	__no_context_analysis
 {
 	struct uart_port *uport;
 	struct qcom_geni_serial_port *port;

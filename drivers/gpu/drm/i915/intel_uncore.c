@@ -1804,6 +1804,7 @@ __unclaimed_previous_reg_debug(struct intel_uncore *uncore,
 static inline bool __must_check
 unclaimed_reg_debug_header(struct intel_uncore *uncore,
 			   const i915_reg_t reg, const bool read)
+	__no_context_analysis /* conditional locking */
 {
 	if (likely(!uncore->i915->params.mmio_debug) || !uncore->debug)
 		return false;
@@ -1820,6 +1821,7 @@ unclaimed_reg_debug_header(struct intel_uncore *uncore,
 static inline void
 unclaimed_reg_debug_footer(struct intel_uncore *uncore,
 			   const i915_reg_t reg, const bool read)
+	__no_context_analysis /* to match unclaimed_reg_debug_header() */
 {
 	/* interrupts are disabled and re-enabled around uncore->lock usage */
 	lockdep_assert_held(&uncore->lock);

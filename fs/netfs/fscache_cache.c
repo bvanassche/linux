@@ -403,7 +403,7 @@ static int fscache_caches_seq_show(struct seq_file *m, void *v)
 }
 
 static void *fscache_caches_seq_start(struct seq_file *m, loff_t *_pos)
-	__acquires(fscache_addremove_sem)
+	__acquires_shared(&fscache_addremove_sem)
 {
 	down_read(&fscache_addremove_sem);
 	return seq_list_start_head(&fscache_caches, *_pos);
@@ -415,7 +415,7 @@ static void *fscache_caches_seq_next(struct seq_file *m, void *v, loff_t *_pos)
 }
 
 static void fscache_caches_seq_stop(struct seq_file *m, void *v)
-	__releases(fscache_addremove_sem)
+	__releases_shared(&fscache_addremove_sem)
 {
 	up_read(&fscache_addremove_sem);
 }

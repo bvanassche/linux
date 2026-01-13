@@ -1362,6 +1362,7 @@ error_splat_super:
  * Destroy an NFS superblock
  */
 void nfs_kill_super(struct super_block *s)
+	__releases(&s->s_umount)
 {
 	struct nfs_server *server = NFS_SB(s);
 

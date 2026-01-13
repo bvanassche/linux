@@ -1248,6 +1248,7 @@ static const struct usb_ep_ops cdnsp_gadget_ep_ops = {
 void cdnsp_gadget_giveback(struct cdnsp_ep *pep,
 			   struct cdnsp_request *preq,
 			   int status)
+	__no_context_analysis
 {
 	struct cdnsp_device *pdev = pep->pdev;
 
@@ -1735,6 +1736,7 @@ static void cdnsp_gadget_free_endpoints(struct cdnsp_device *pdev)
 }
 
 void cdnsp_disconnect_gadget(struct cdnsp_device *pdev)
+	__no_context_analysis
 {
 	pdev->cdnsp_state |= CDNSP_STATE_DISCONNECT_PENDING;
 
@@ -1751,6 +1753,7 @@ void cdnsp_disconnect_gadget(struct cdnsp_device *pdev)
 }
 
 void cdnsp_suspend_gadget(struct cdnsp_device *pdev)
+	__no_context_analysis
 {
 	if (pdev->gadget_driver && pdev->gadget_driver->suspend) {
 		spin_unlock(&pdev->lock);
@@ -1760,6 +1763,7 @@ void cdnsp_suspend_gadget(struct cdnsp_device *pdev)
 }
 
 void cdnsp_resume_gadget(struct cdnsp_device *pdev)
+	__no_context_analysis
 {
 	if (pdev->gadget_driver && pdev->gadget_driver->resume) {
 		spin_unlock(&pdev->lock);
@@ -1769,6 +1773,7 @@ void cdnsp_resume_gadget(struct cdnsp_device *pdev)
 }
 
 void cdnsp_irq_reset(struct cdnsp_device *pdev)
+	__no_context_analysis
 {
 	struct cdnsp_port_regs __iomem *port_regs;
 

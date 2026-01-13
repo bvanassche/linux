@@ -3323,6 +3323,7 @@ void intel_psr_wait_for_idle_dsb(struct intel_dsb *dsb,
 }
 
 static bool __psr_wait_for_idle_locked(struct intel_dp *intel_dp)
+	__must_hold(intel_dp->psr.lock)
 {
 	struct intel_display *display = to_intel_display(intel_dp);
 	enum transcoder cpu_transcoder = intel_dp->psr.transcoder;
@@ -3945,6 +3946,7 @@ bool intel_psr_link_ok(struct intel_dp *intel_dp)
  * before it to avoid vblank evasion.
  */
 void intel_psr_lock(const struct intel_crtc_state *crtc_state)
+	__no_context_analysis /* mutex_lock() inside loop */
 {
 	struct intel_display *display = to_intel_display(crtc_state);
 	struct intel_encoder *encoder;
@@ -3968,6 +3970,7 @@ void intel_psr_lock(const struct intel_crtc_state *crtc_state)
  * Release the PSR lock that was held during pipe update.
  */
 void intel_psr_unlock(const struct intel_crtc_state *crtc_state)
+	__no_context_analysis /* mutex_unlock() inside loop */
 {
 	struct intel_display *display = to_intel_display(crtc_state);
 	struct intel_encoder *encoder;

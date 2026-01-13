@@ -925,6 +925,7 @@ static void erofs_drop_internal_inodes(struct erofs_sb_info *sbi)
 }
 
 static void erofs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct erofs_sb_info *sbi = EROFS_SB(sb);
 

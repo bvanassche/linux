@@ -1230,6 +1230,7 @@ static void __xiic_start_xfer(struct xiic_i2c *i2c)
 }
 
 static int xiic_start_xfer(struct xiic_i2c *i2c, struct i2c_msg *msgs, int num)
+	__no_context_analysis /* conditional locking */
 {
 	bool broken_read, max_read_len, smbus_blk_read;
 	int ret, count;

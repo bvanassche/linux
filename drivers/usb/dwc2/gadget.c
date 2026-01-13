@@ -1773,6 +1773,7 @@ static void dwc2_gadget_start_next_request(struct dwc2_hsotg_ep *hs_ep)
  */
 static int dwc2_hsotg_process_req_feature(struct dwc2_hsotg *hsotg,
 					  struct usb_ctrlrequest *ctrl)
+	__no_context_analysis
 {
 	struct dwc2_hsotg_ep *ep0 = hsotg->eps_out[0];
 	struct dwc2_hsotg_req *hs_req;
@@ -1931,6 +1932,7 @@ static void dwc2_hsotg_stall_ep0(struct dwc2_hsotg *hsotg)
  */
 static void dwc2_hsotg_process_control(struct dwc2_hsotg *hsotg,
 				       struct usb_ctrlrequest *ctrl)
+	__no_context_analysis
 {
 	struct dwc2_hsotg_ep *ep0 = hsotg->eps_out[0];
 	int ret = 0;
@@ -2119,6 +2121,7 @@ static void dwc2_hsotg_complete_request(struct dwc2_hsotg *hsotg,
 					struct dwc2_hsotg_ep *hs_ep,
 				       struct dwc2_hsotg_req *hs_req,
 				       int result)
+	__no_context_analysis
 {
 	if (!hs_req) {
 		dev_dbg(hsotg->dev, "%s: nothing to complete?\n", __func__);
@@ -3313,6 +3316,7 @@ static void kill_all_requests(struct dwc2_hsotg *hsotg,
  * has happened.
  */
 void dwc2_hsotg_disconnect(struct dwc2_hsotg *hsotg)
+	__no_context_analysis
 {
 	unsigned int ep;
 
@@ -5707,6 +5711,7 @@ void dwc2_gadget_enter_clock_gating(struct dwc2_hsotg *hsotg)
  * This function is for exiting from device mode clock gating.
  */
 void dwc2_gadget_exit_clock_gating(struct dwc2_hsotg *hsotg, int rem_wakeup)
+	__no_context_analysis
 {
 	u32 pcgctl;
 	u32 dctl;

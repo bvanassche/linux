@@ -11072,6 +11072,7 @@ static void init_vl_arb_caches(struct hfi1_pportdata *ppd)
  */
 static inline struct vl_arb_cache *
 vl_arb_lock_cache(struct hfi1_pportdata *ppd, int idx)
+	__cond_acquires(nonnull, &ppd->vl_arb_cache[idx].lock)
 {
 	if (idx != LO_PRIO_TABLE && idx != HI_PRIO_TABLE)
 		return NULL;
@@ -11080,6 +11081,7 @@ vl_arb_lock_cache(struct hfi1_pportdata *ppd, int idx)
 }
 
 static inline void vl_arb_unlock_cache(struct hfi1_pportdata *ppd, int idx)
+	__releases(&ppd->vl_arb_cache[idx].lock)
 {
 	spin_unlock(&ppd->vl_arb_cache[idx].lock);
 }
@@ -11591,7 +11593,7 @@ int set_buffer_control(struct hfi1_pportdata *ppd,
  * failure.
  */
 int fm_get_table(struct hfi1_pportdata *ppd, int which, void *t)
-
+	__no_context_analysis /* conditional locking */
 {
 	int size;
 	struct vl_arb_cache *vlc;
@@ -11645,6 +11647,7 @@ int fm_get_table(struct hfi1_pportdata *ppd, int which, void *t)
  * Write the given fabric manager table.
  */
 int fm_set_table(struct hfi1_pportdata *ppd, int which, void *t)
+	__no_context_analysis /* conditional locking */
 {
 	int ret = 0;
 	struct vl_arb_cache *vlc;

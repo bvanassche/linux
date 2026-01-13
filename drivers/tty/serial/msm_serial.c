@@ -1607,6 +1607,7 @@ static inline struct uart_port *msm_get_port_from_line(unsigned int line)
 #ifdef CONFIG_SERIAL_MSM_CONSOLE
 static void __msm_console_write(struct uart_port *port, const char *s,
 				unsigned int count, bool is_uartdm)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long flags;
 	int i;

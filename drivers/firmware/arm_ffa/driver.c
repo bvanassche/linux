@@ -758,6 +758,7 @@ ffa_setup_and_transmit(u32 func_id, void *buffer, u32 max_fragsize,
 }
 
 static int ffa_memory_ops(u32 func_id, struct ffa_mem_ops_args *args)
+	__no_context_analysis /* conditional locking */
 {
 	int ret;
 	void *buffer;

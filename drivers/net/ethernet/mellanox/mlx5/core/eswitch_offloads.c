@@ -2881,6 +2881,7 @@ void mlx5_esw_offloads_unload_rep(struct mlx5_eswitch *esw, struct mlx5_vport *v
 
 static int esw_set_slave_root_fdb(struct mlx5_core_dev *master,
 				  struct mlx5_core_dev *slave)
+	__no_context_analysis /* too complex for static analysis */
 {
 	u32 in[MLX5_ST_SZ_DW(set_flow_table_root_in)]   = {};
 	u32 out[MLX5_ST_SZ_DW(set_flow_table_root_out)] = {};
@@ -4093,6 +4094,7 @@ void mlx5_eswitch_safe_aux_devs_remove(struct mlx5_core_dev *dev)
 
 int mlx5_devlink_eswitch_mode_set(struct devlink *devlink, u16 mode,
 				  struct netlink_ext_ack *extack)
+	__must_hold(&mlx5_devlink_eswitch_get(devlink)->mode_lock)
 {
 	u16 cur_mlx5_mode, mlx5_mode = 0;
 	struct mlx5_eswitch *esw;

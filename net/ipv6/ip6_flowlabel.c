@@ -815,7 +815,7 @@ static struct ip6_flowlabel *ip6fl_get_idx(struct seq_file *seq, loff_t pos)
 }
 
 static void *ip6fl_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	struct ip6fl_iter_state *state = ip6fl_seq_private(seq);
 
@@ -838,7 +838,7 @@ static void *ip6fl_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void ip6fl_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

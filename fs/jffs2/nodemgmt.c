@@ -282,6 +282,7 @@ static void jffs2_close_nextblock(struct jffs2_sb_info *c, struct jffs2_eraseblo
 /* Select a new jeb for nextblock */
 
 static int jffs2_find_nextblock(struct jffs2_sb_info *c)
+	__must_hold(&c->erase_completion_lock)
 {
 	struct list_head *next;
 
@@ -357,6 +358,7 @@ static int jffs2_find_nextblock(struct jffs2_sb_info *c)
 /* Called with alloc sem _and_ erase_completion_lock */
 static int jffs2_do_reserve_space(struct jffs2_sb_info *c, uint32_t minsize,
 				  uint32_t *len, uint32_t sumsize)
+	__must_hold(&c->erase_completion_lock)
 {
 	struct jffs2_eraseblock *jeb = c->nextblock;
 	uint32_t reserved_size;				/* for summary information at the end of the jeb */
@@ -584,6 +586,7 @@ static inline int on_list(struct list_head *obj, struct list_head *head)
 }
 
 void jffs2_mark_node_obsolete(struct jffs2_sb_info *c, struct jffs2_raw_node_ref *ref)
+	__no_context_analysis /* conditional locking */
 {
 	struct jffs2_eraseblock *jeb;
 	int blocknr;

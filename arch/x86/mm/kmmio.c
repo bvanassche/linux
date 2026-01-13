@@ -234,6 +234,7 @@ static void disarm_kmmio_fault_page(struct kmmio_fault_page *f)
  * and they remain disabled throughout this function.
  */
 int kmmio_handler(struct pt_regs *regs, unsigned long addr)
+	__no_context_analysis /* see post_kmmio_handler() */
 {
 	struct kmmio_context *ctx;
 	struct kmmio_fault_page *faultpage;
@@ -332,6 +333,7 @@ no_kmmio:
  * This must always get called as the pair to kmmio_handler().
  */
 static int post_kmmio_handler(unsigned long condition, struct pt_regs *regs)
+	__no_context_analysis /* conditional unlock */
 {
 	int ret = 0;
 	struct kmmio_context *ctx = this_cpu_ptr(&kmmio_ctx);

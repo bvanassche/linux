@@ -629,7 +629,7 @@ static struct shrinker *nfsd_file_shrinker;
  */
 static void
 nfsd_file_cond_queue(struct nfsd_file *nf, struct list_head *dispose)
-	__must_hold(RCU)
+	__must_hold_shared(RCU)
 {
 	int decrement = 1;
 
@@ -994,6 +994,7 @@ static struct nfsd_file *
 nfsd_file_lookup_locked(const struct net *net, const struct cred *cred,
 			struct inode *inode, unsigned char need,
 			bool want_gc)
+	__must_hold_shared(RCU)
 {
 	struct rhlist_head *tmp, *list;
 	struct nfsd_file *nf;

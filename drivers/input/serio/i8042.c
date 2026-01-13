@@ -184,12 +184,14 @@ static i8042_filter_t i8042_platform_filter;
 static void *i8042_platform_filter_context;
 
 void i8042_lock_chip(void)
+	__acquires(i8042_mutex)
 {
 	mutex_lock(&i8042_mutex);
 }
 EXPORT_SYMBOL(i8042_lock_chip);
 
 void i8042_unlock_chip(void)
+	__releases(i8042_mutex)
 {
 	mutex_unlock(&i8042_mutex);
 }

@@ -407,6 +407,7 @@ static int tree_get_node(struct fs_node *node)
 
 static void nested_down_read_ref_node(struct fs_node *node,
 				      enum fs_i_lock_class class)
+	__no_context_analysis /* conditional locking */
 {
 	if (node) {
 		down_read_nested(&node->lock, class);
@@ -416,6 +417,7 @@ static void nested_down_read_ref_node(struct fs_node *node,
 
 static void nested_down_write_ref_node(struct fs_node *node,
 				       enum fs_i_lock_class class)
+	__no_context_analysis /* conditional locking */
 {
 	if (node) {
 		down_write_nested(&node->lock, class);
@@ -424,6 +426,7 @@ static void nested_down_write_ref_node(struct fs_node *node,
 }
 
 static void down_write_ref_node(struct fs_node *node, bool locked)
+	__no_context_analysis /* conditional locking */
 {
 	if (node) {
 		if (!locked)
@@ -433,12 +436,14 @@ static void down_write_ref_node(struct fs_node *node, bool locked)
 }
 
 static void up_read_ref_node(struct fs_node *node)
+	__no_context_analysis /* conditional locking */
 {
 	refcount_dec(&node->refcount);
 	up_read(&node->lock);
 }
 
 static void up_write_ref_node(struct fs_node *node, bool locked)
+	__no_context_analysis /* conditional locking */
 {
 	refcount_dec(&node->refcount);
 	if (!locked)

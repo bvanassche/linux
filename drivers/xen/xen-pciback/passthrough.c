@@ -71,6 +71,7 @@ static int __xen_pcibk_add_pci_dev(struct xen_pcibk_device *pdev,
 
 static void __xen_pcibk_release_pci_dev(struct xen_pcibk_device *pdev,
 					struct pci_dev *dev, bool lock)
+	__no_context_analysis /* conditional locking */
 {
 	struct passthrough_dev_data *dev_data = pdev->pci_dev_data;
 	struct pci_dev_entry *dev_entry, *t;

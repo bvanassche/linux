@@ -1393,7 +1393,7 @@ static void *cache_seq_next(struct seq_file *m, void *p, loff_t *pos)
 }
 
 void *cache_seq_start_rcu(struct seq_file *m, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return __cache_seq_start(m, pos);
@@ -1407,7 +1407,7 @@ void *cache_seq_next_rcu(struct seq_file *file, void *p, loff_t *pos)
 EXPORT_SYMBOL_GPL(cache_seq_next_rcu);
 
 void cache_seq_stop_rcu(struct seq_file *m, void *p)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

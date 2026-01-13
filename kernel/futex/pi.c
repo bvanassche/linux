@@ -847,6 +847,7 @@ handle_err:
 
 static int fixup_pi_state_owner(u32 __user *uaddr, struct futex_q *q,
 				struct task_struct *argowner)
+	__must_hold(q->lock_ptr)
 {
 	struct futex_pi_state *pi_state = q->pi_state;
 	int ret;
@@ -876,6 +877,8 @@ static int fixup_pi_state_owner(u32 __user *uaddr, struct futex_q *q,
  */
 int fixup_pi_owner(u32 __user *uaddr, struct futex_q *q, int locked)
 {
+	__assume_ctx_lock(q->lock_ptr);
+
 	if (locked) {
 		/*
 		 * Got the lock. We might not be the anticipated owner if we
@@ -921,6 +924,7 @@ int fixup_pi_owner(u32 __user *uaddr, struct futex_q *q, int locked)
  * Also serves as futex trylock_pi()'ing, and due semantics.
  */
 int futex_lock_pi(u32 __user *uaddr, unsigned int flags, ktime_t *time, int trylock)
+	__no_context_analysis /* conditional locking */
 {
 	struct hrtimer_sleeper timeout, *to;
 	struct task_struct *exiting;
@@ -1140,6 +1144,7 @@ out:
  * and do the rt-mutex unlock.
  */
 int futex_unlock_pi(u32 __user *uaddr, unsigned int flags)
+	__no_context_analysis /* conditional locking */
 {
 	u32 curval, uval, vpid = task_pid_vnr(current);
 	union futex_key key = FUTEX_KEY_INIT;

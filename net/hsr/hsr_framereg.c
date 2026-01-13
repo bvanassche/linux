@@ -125,6 +125,7 @@ static void hsr_free_node_rcu(struct rcu_head *rn)
 
 static void hsr_lock_seq_out_pair(struct hsr_node *node_a,
 				  struct hsr_node *node_b)
+	__context_unsafe(conditional locking)
 {
 	if (node_a == node_b) {
 		spin_lock_bh(&node_a->seq_out_lock);
@@ -142,6 +143,7 @@ static void hsr_lock_seq_out_pair(struct hsr_node *node_a,
 
 static void hsr_unlock_seq_out_pair(struct hsr_node *node_a,
 				    struct hsr_node *node_b)
+	__context_unsafe(conditional locking)
 {
 	if (node_a == node_b) {
 		spin_unlock_bh(&node_a->seq_out_lock);

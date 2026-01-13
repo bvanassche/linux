@@ -149,6 +149,7 @@ static void ttm_resource_init_basic(struct kunit *test)
 }
 
 static void ttm_resource_init_pinned(struct kunit *test)
+	__no_context_analysis
 {
 	struct ttm_resource_test_priv *priv = test->priv;
 	struct ttm_resource *res;

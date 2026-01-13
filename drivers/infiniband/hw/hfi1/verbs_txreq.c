@@ -11,6 +11,7 @@
 #define TXREQ_LEN 24
 
 void hfi1_put_txreq(struct verbs_txreq *tx)
+	__no_context_analysis /* read_seqbegin() + write_seqlock(). Bug? */
 {
 	struct hfi1_ibdev *dev;
 	struct rvt_qp *qp;

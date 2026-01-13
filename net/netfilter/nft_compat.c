@@ -706,6 +706,7 @@ nla_put_failure:
 static int nfnl_compat_get_rcu(struct sk_buff *skb,
 			       const struct nfnl_info *info,
 			       const struct nlattr * const tb[])
+	__must_hold_shared(RCU)
 {
 	u8 family = info->nfmsg->nfgen_family;
 	const char *name, *fmt;

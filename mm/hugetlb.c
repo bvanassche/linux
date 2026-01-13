@@ -135,6 +135,7 @@ static inline bool subpool_is_free(struct hugepage_subpool *spool)
 
 static inline void unlock_or_release_subpool(struct hugepage_subpool *spool,
 						unsigned long irq_flags)
+	__releases(&spool->lock)
 {
 	spin_unlock_irqrestore(&spool->lock, irq_flags);
 
@@ -280,6 +281,7 @@ static inline struct hugepage_subpool *subpool_vma(struct vm_area_struct *vma)
  * hugetlb vma_lock helper routines
  */
 void hugetlb_vma_lock_read(struct vm_area_struct *vma)
+	__no_context_analysis /* conditional locking */
 {
 	if (__vma_shareable_lock(vma)) {
 		struct hugetlb_vma_lock *vma_lock = vma->vm_private_data;
@@ -293,6 +295,7 @@ void hugetlb_vma_lock_read(struct vm_area_struct *vma)
 }
 
 void hugetlb_vma_unlock_read(struct vm_area_struct *vma)
+	__no_context_analysis /* conditional locking */
 {
 	if (__vma_shareable_lock(vma)) {
 		struct hugetlb_vma_lock *vma_lock = vma->vm_private_data;
@@ -306,6 +309,7 @@ void hugetlb_vma_unlock_read(struct vm_area_struct *vma)
 }
 
 void hugetlb_vma_lock_write(struct vm_area_struct *vma)
+	__no_context_analysis /* conditional locking */
 {
 	if (__vma_shareable_lock(vma)) {
 		struct hugetlb_vma_lock *vma_lock = vma->vm_private_data;
@@ -319,6 +323,7 @@ void hugetlb_vma_lock_write(struct vm_area_struct *vma)
 }
 
 void hugetlb_vma_unlock_write(struct vm_area_struct *vma)
+	__no_context_analysis /* conditional locking */
 {
 	if (__vma_shareable_lock(vma)) {
 		struct hugetlb_vma_lock *vma_lock = vma->vm_private_data;
@@ -332,6 +337,7 @@ void hugetlb_vma_unlock_write(struct vm_area_struct *vma)
 }
 
 int hugetlb_vma_trylock_write(struct vm_area_struct *vma)
+	__no_context_analysis /* conditional locking */
 {
 
 	if (__vma_shareable_lock(vma)) {
@@ -369,6 +375,7 @@ void hugetlb_vma_lock_release(struct kref *kref)
 }
 
 static void __hugetlb_vma_unlock_write_put(struct hugetlb_vma_lock *vma_lock)
+	__releases(&vma_lock->rw_sema)
 {
 	struct vm_area_struct *vma = vma_lock->vma;
 
@@ -384,6 +391,7 @@ static void __hugetlb_vma_unlock_write_put(struct hugetlb_vma_lock *vma_lock)
 }
 
 static void __hugetlb_vma_unlock_write_free(struct vm_area_struct *vma)
+	__no_context_analysis
 {
 	if (__vma_shareable_lock(vma)) {
 		struct hugetlb_vma_lock *vma_lock = vma->vm_private_data;
@@ -657,7 +665,8 @@ static long add_reservation_in_range(struct resv_map *resv, long f, long t,
  */
 static int allocate_file_region_entries(struct resv_map *resv,
 					int regions_needed)
-	__must_hold(&resv->lock)
+	__releases(&resv->lock)
+	__cond_acquires(0, &resv->lock)
 {
 	LIST_HEAD(allocated_regions);
 	int to_allocate = 0, i = 0;
@@ -2366,6 +2375,7 @@ free:
  */
 static void return_unused_surplus_pages(struct hstate *h,
 					unsigned long unused_resv_pages)
+	__must_hold(&hugetlb_lock)
 {
 	unsigned long nr_pages;
 	LIST_HEAD(page_list);
@@ -3673,6 +3683,7 @@ static void __init report_hugepages(void)
 #ifdef CONFIG_HIGHMEM
 static void try_to_free_low(struct hstate *h, unsigned long count,
 						nodemask_t *nodes_allowed)
+	__must_hold(&hugetlb_lock)
 {
 	int i;
 	LIST_HEAD(page_list);
@@ -3705,6 +3716,7 @@ out:
 #else
 static inline void try_to_free_low(struct hstate *h, unsigned long count,
 						nodemask_t *nodes_allowed)
+	__must_hold(&hugetlb_lock)
 {
 }
 #endif
@@ -4869,6 +4881,7 @@ hugetlb_install_folio(struct vm_area_struct *vma, pte_t *ptep, unsigned long add
 int copy_hugetlb_page_range(struct mm_struct *dst, struct mm_struct *src,
 			    struct vm_area_struct *dst_vma,
 			    struct vm_area_struct *src_vma)
+	__no_context_analysis /* conditional locking */
 {
 	pte_t *src_pte, *dst_pte, entry;
 	struct folio *pte_folio;
@@ -4922,6 +4935,7 @@ int copy_hugetlb_page_range(struct mm_struct *dst, struct mm_struct *src,
 #endif
 
 		dst_ptl = huge_pte_lock(h, dst, dst_pte);
+		__acquire(dst_ptl);
 		src_ptl = huge_pte_lockptr(h, src, src_pte);
 		spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
 		entry = huge_ptep_get(src_vma->vm_mm, addr, src_pte);
@@ -5000,6 +5014,7 @@ again:
 
 				/* Install the new hugetlb folio if src pte stable */
 				dst_ptl = huge_pte_lock(h, dst, dst_pte);
+				__acquire(dst_ptl);
 				src_ptl = huge_pte_lockptr(h, src, src_pte);
 				spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
 				entry = huge_ptep_get(src_vma->vm_mm, addr, src_pte);
@@ -5068,6 +5083,8 @@ static void move_huge_pte(struct vm_area_struct *vma, unsigned long old_addr,
 	 */
 	if (src_ptl != dst_ptl)
 		spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
+	else
+		__acquire(src_ptl);
 
 	pte = huge_ptep_get_and_clear(mm, old_addr, src_pte, sz);
 
@@ -5085,6 +5102,8 @@ static void move_huge_pte(struct vm_area_struct *vma, unsigned long old_addr,
 
 	if (src_ptl != dst_ptl)
 		spin_unlock(src_ptl);
+	else
+		__release(src_ptl);
 	spin_unlock(dst_ptl);
 }
 
@@ -5156,6 +5175,7 @@ int move_hugetlb_page_tables(struct vm_area_struct *vma,
 void __unmap_hugepage_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
 			    unsigned long start, unsigned long end,
 			    struct folio *folio, zap_flags_t zap_flags)
+	__no_context_analysis
 {
 	struct mm_struct *mm = vma->vm_mm;
 	const bool folio_provided = !!folio;
@@ -5311,6 +5331,7 @@ void __unmap_hugepage_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
 
 void __hugetlb_zap_begin(struct vm_area_struct *vma,
 			 unsigned long *start, unsigned long *end)
+	__no_context_analysis /* conditional locking */
 {
 	if (!vma->vm_file)	/* hugetlbfs_file_mmap error */
 		return;
@@ -5323,6 +5344,7 @@ void __hugetlb_zap_begin(struct vm_area_struct *vma,
 
 void __hugetlb_zap_end(struct vm_area_struct *vma,
 		       struct zap_details *details)
+	__no_context_analysis /* conditional locking */
 {
 	zap_flags_t zap_flags = details ? details->zap_flags : 0;
 
@@ -5432,6 +5454,7 @@ static void unmap_ref_private(struct mm_struct *mm, struct vm_area_struct *vma,
  * Keep the pte_same checks anyway to make transition from the mutex easier.
  */
 static vm_fault_t hugetlb_wp(struct vm_fault *vmf)
+	__no_context_analysis
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct mm_struct *mm = vma->vm_mm;
@@ -5672,6 +5695,7 @@ int hugetlb_add_to_page_cache(struct folio *folio, struct address_space *mapping
 static inline vm_fault_t hugetlb_handle_userfault(struct vm_fault *vmf,
 						  struct address_space *mapping,
 						  unsigned long reason)
+	__no_context_analysis
 {
 	u32 hash;
 
@@ -5705,6 +5729,7 @@ static bool hugetlb_pte_stable(struct hstate *h, struct mm_struct *mm, unsigned 
 
 static vm_fault_t hugetlb_no_page(struct address_space *mapping,
 			struct vm_fault *vmf)
+	__no_context_analysis
 {
 	u32 hash = hugetlb_fault_mutex_hash(mapping, vmf->pgoff);
 	bool new_folio, new_anon_folio = false;
@@ -5955,6 +5980,7 @@ u32 hugetlb_fault_mutex_hash(struct address_space *mapping, pgoff_t idx)
 
 vm_fault_t hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 			unsigned long address, unsigned int flags)
+	__no_context_analysis
 {
 	vm_fault_t ret;
 	u32 hash;
@@ -7245,6 +7271,7 @@ static void hugetlb_unshare_pmds(struct vm_area_struct *vma,
 				   unsigned long start,
 				   unsigned long end,
 				   bool take_locks)
+	__no_context_analysis /* conditional locking */
 {
 	struct hstate *h = hstate_vma(vma);
 	unsigned long sz = huge_page_size(h);

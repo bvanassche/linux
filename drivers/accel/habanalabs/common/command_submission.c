@@ -3242,6 +3242,7 @@ static int validate_and_get_ts_record(struct device *dev,
 
 static void unregister_timestamp_node(struct hl_device *hdev,
 			struct hl_user_pending_interrupt *record, bool need_lock)
+	__no_context_analysis /* conditional locking */
 {
 	struct hl_user_interrupt *interrupt = record->ts_reg_info.interrupt;
 	bool ts_rec_found = false;
@@ -3269,6 +3270,7 @@ static void unregister_timestamp_node(struct hl_device *hdev,
 static int ts_get_and_handle_kernel_record(struct hl_device *hdev, struct hl_ctx *ctx,
 					struct wait_interrupt_data *data, unsigned long *flags,
 					struct hl_user_pending_interrupt **pend)
+	__no_context_analysis /* conditional locking */
 {
 	struct hl_user_pending_interrupt *req_offset_record;
 	struct hl_ts_buff *ts_buff = data->buf->private;

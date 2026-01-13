@@ -344,6 +344,7 @@ static int proc_init_fs_context(struct fs_context *fc)
 }
 
 static void proc_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct proc_fs_info *fs_info = proc_sb_info(sb);
 

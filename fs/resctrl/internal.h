@@ -334,9 +334,11 @@ void rdt_last_cmd_puts(const char *s);
 __printf(1, 2)
 void rdt_last_cmd_printf(const char *fmt, ...);
 
-struct rdtgroup *rdtgroup_kn_lock_live(struct kernfs_node *kn);
+struct rdtgroup *rdtgroup_kn_lock_live(struct kernfs_node *kn)
+	__acquires(&rdtgroup_mutex);
 
-void rdtgroup_kn_unlock(struct kernfs_node *kn);
+void rdtgroup_kn_unlock(struct kernfs_node *kn)
+	__releases(&rdtgroup_mutex);
 
 int rdtgroup_kn_mode_restrict(struct rdtgroup *r, const char *name);
 

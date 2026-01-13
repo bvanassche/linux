@@ -136,6 +136,7 @@ static int migrate_vma_split_folio(struct folio *folio,
 static int migrate_vma_collect_huge_pmd(pmd_t *pmdp, unsigned long start,
 					unsigned long end, struct mm_walk *walk,
 					struct folio *fault_folio)
+	__no_context_analysis /* conditional locking */
 {
 	struct mm_struct *mm = walk->mm;
 	struct folio *folio;
@@ -251,6 +252,8 @@ static int migrate_vma_collect_pmd(pmd_t *pmdp,
 	struct folio *fault_folio = migrate->fault_page ?
 		page_folio(migrate->fault_page) : NULL;
 	pte_t *ptep;
+
+	__assume_shared_ctx_lock(RCU);
 
 again:
 	if (pmd_trans_huge(*pmdp) || !pmd_present(*pmdp)) {
@@ -850,7 +853,7 @@ static int migrate_vma_insert_huge_pmd_page(struct migrate_vma *migrate,
 	ptl = pmd_lock(vma->vm_mm, pmdp);
 	csa_ret = check_stable_address_space(vma->vm_mm);
 	if (csa_ret)
-		goto abort;
+		goto unlock_abort;
 
 	/*
 	 * Check for userfaultfd but do not deliver the fault. Instead,
@@ -981,6 +984,8 @@ static void migrate_vma_insert_page(struct migrate_vma *migrate,
 	pmd_t *pmdp;
 	pte_t *ptep;
 	pte_t orig_pte;
+
+	__assume_shared_ctx_lock(RCU);
 
 	/* Only allow populating anonymous memory */
 	if (!vma_is_anonymous(vma))

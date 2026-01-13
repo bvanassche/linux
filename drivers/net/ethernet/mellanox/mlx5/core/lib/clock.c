@@ -114,6 +114,7 @@ static struct mlx5_core_dev *mlx5_clock_mdev_get(struct mlx5_clock *clock)
 }
 
 static void mlx5_clock_lock(struct mlx5_clock *clock)
+	__no_context_analysis /* conditional locking */
 {
 	if (!clock->shared)
 		return;
@@ -122,6 +123,7 @@ static void mlx5_clock_lock(struct mlx5_clock *clock)
 }
 
 static void mlx5_clock_unlock(struct mlx5_clock *clock)
+	__no_context_analysis /* conditional locking */
 {
 	if (!clock->shared)
 		return;

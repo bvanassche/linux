@@ -896,6 +896,7 @@ static void ath11k_dp_rx_frags_cleanup(struct dp_rx_tid *rx_tid, bool rel_link_d
 }
 
 void ath11k_peer_frags_flush(struct ath11k *ar, struct ath11k_peer *peer)
+	__must_hold(&ar->ab->base_lock)
 {
 	struct dp_rx_tid *rx_tid;
 	int i;
@@ -914,6 +915,7 @@ void ath11k_peer_frags_flush(struct ath11k *ar, struct ath11k_peer *peer)
 }
 
 void ath11k_peer_rx_tid_cleanup(struct ath11k *ar, struct ath11k_peer *peer)
+	__must_hold(&ar->ab->base_lock)
 {
 	struct dp_rx_tid *rx_tid;
 	int i;

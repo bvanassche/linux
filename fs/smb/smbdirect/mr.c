@@ -116,6 +116,7 @@ static void smbdirect_mr_io_free_locked(struct kref *kref)
 }
 
 void smbdirect_connection_destroy_mr_list(struct smbdirect_socket *sc)
+	__context_unsafe(conditional locking)
 {
 	struct smbdirect_mr_io *mr, *tmp;
 	LIST_HEAD(all_list);
@@ -266,6 +267,7 @@ smbdirect_connection_register_mr_io(struct smbdirect_socket *sc,
 				    struct iov_iter *iter,
 				    bool writing,
 				    bool need_invalidate)
+	__context_unsafe(conditional locking)
 {
 	const struct smbdirect_socket_parameters *sp = &sc->parameters;
 	struct smbdirect_mr_io *mr;
@@ -409,6 +411,7 @@ EXPORT_SYMBOL_GPL(smbdirect_mr_io_fill_buffer_descriptor);
  * modified by remote peer after upper layer consumes it
  */
 void smbdirect_connection_deregister_mr_io(struct smbdirect_mr_io *mr)
+	__context_unsafe(conditional locking)
 {
 	struct smbdirect_socket *sc = mr->socket;
 	int ret = 0;

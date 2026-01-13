@@ -510,6 +510,7 @@ static void sunplus_uart_console_putchar(struct uart_port *port,
 static void sunplus_console_write(struct console *co,
 				  const char *s,
 				  unsigned int count)
+	__no_context_analysis
 {
 	unsigned long flags;
 	int locked = 1;

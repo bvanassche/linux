@@ -2992,6 +2992,7 @@ static int ql_init_misc_registers(struct ql3_adapter *qdev)
 }
 
 static int ql_adapter_initialize(struct ql3_adapter *qdev)
+	__must_hold(&qdev->hw_lock)
 {
 	u32 value;
 	struct ql3xxx_port_registers __iomem *port_regs =

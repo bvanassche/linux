@@ -2707,8 +2707,6 @@ nla_put_failure:
 
 static int neigh_fill_info(struct sk_buff *skb, struct neighbour *neigh,
 			   u32 pid, u32 seq, int type, unsigned int flags)
-	__releases(neigh->lock)
-	__acquires(neigh->lock)
 {
 	int err;
 
@@ -3422,8 +3420,8 @@ static void *neigh_get_idx_any(struct seq_file *seq, loff_t *pos)
 }
 
 void *neigh_seq_start(struct seq_file *seq, loff_t *pos, struct neigh_table *tbl, unsigned int neigh_seq_flags)
-	__acquires(tbl->lock)
-	__acquires(rcu)
+	__acquires(&tbl->lock)
+	__acquires_shared(RCU)
 {
 	struct neigh_seq_state *state = seq->private;
 
@@ -3467,8 +3465,8 @@ out:
 EXPORT_SYMBOL(neigh_seq_next);
 
 void neigh_seq_stop(struct seq_file *seq, void *v)
-	__releases(tbl->lock)
-	__releases(rcu)
+	__releases(&((struct neigh_seq_state *)seq->private)->tbl->lock)
+	__releases_shared(RCU)
 {
 	struct neigh_seq_state *state = seq->private;
 	struct neigh_table *tbl = state->tbl;

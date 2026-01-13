@@ -77,6 +77,7 @@ static unsigned long clk_factor_recalc_rate(struct clk_hw *hw,
 /* Configures new clock rate*/
 static int clk_factor_set_rate(struct clk_hw *hw, unsigned long drate,
 				unsigned long prate)
+	__no_context_analysis /* conditional locking */
 {
 	struct mmp_clk_factor *factor = to_clk_factor(hw);
 	struct mmp_clk_factor_masks *masks = factor->masks;
@@ -116,6 +117,7 @@ static int clk_factor_set_rate(struct clk_hw *hw, unsigned long drate,
 }
 
 static int clk_factor_init(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct mmp_clk_factor *factor = to_clk_factor(hw);
 	struct mmp_clk_factor_masks *masks = factor->masks;

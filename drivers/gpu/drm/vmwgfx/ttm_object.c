@@ -342,8 +342,8 @@ int ttm_ref_object_add(struct ttm_object_file *tfile,
 	return ret;
 }
 
-static void __releases(tfile->lock) __acquires(tfile->lock)
-ttm_ref_object_release(struct kref *kref)
+static void ttm_ref_object_release(struct kref *kref)
+	__no_context_analysis
 {
 	struct ttm_ref_object *ref =
 	    container_of(kref, struct ttm_ref_object, kref);

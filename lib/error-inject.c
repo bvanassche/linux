@@ -163,12 +163,14 @@ static __init int module_ei_init(void)
  * error injection.
  */
 static void *ei_seq_start(struct seq_file *m, loff_t *pos)
+	__acquires(ei_mutex)
 {
 	mutex_lock(&ei_mutex);
 	return seq_list_start(&error_injection_list, *pos);
 }
 
 static void ei_seq_stop(struct seq_file *m, void *v)
+	__releases(ei_mutex)
 {
 	mutex_unlock(&ei_mutex);
 }

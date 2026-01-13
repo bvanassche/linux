@@ -304,14 +304,14 @@ static int __intel_get_crtc_scanline(struct intel_crtc *crtc)
  */
 #ifdef I915
 static void intel_vblank_section_enter(struct intel_display *display)
-	__acquires(uncore->lock)
+	__acquires(to_intel_uncore(display->drm)->lock)
 {
 	struct intel_uncore *uncore = to_intel_uncore(display->drm);
 	spin_lock(&uncore->lock);
 }
 
 static void intel_vblank_section_exit(struct intel_display *display)
-	__releases(uncore->lock)
+	__releases(to_intel_uncore(display->drm)->lock)
 {
 	struct intel_uncore *uncore = to_intel_uncore(display->drm);
 	spin_unlock(&uncore->lock);

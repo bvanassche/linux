@@ -440,6 +440,7 @@ static int uverbs_set_attr(struct bundle_priv *pbundle,
 
 static int ib_uverbs_run_method(struct bundle_priv *pbundle,
 				unsigned int num_attrs)
+	__no_context_analysis
 {
 	int (*handler)(struct uverbs_attr_bundle *attrs);
 	struct uverbs_attr_bundle *bundle =

@@ -250,6 +250,7 @@ static void fuse_truncate_update_attr(struct inode *inode, struct file *file)
 }
 
 static int fuse_open(struct inode *inode, struct file *file)
+	__no_context_analysis /* conditional locking */
 {
 	struct fuse_mount *fm = get_fuse_mount(inode);
 	struct fuse_inode *fi = get_fuse_inode(inode);
@@ -1430,6 +1431,7 @@ static bool fuse_dio_wr_exclusive_lock(struct kiocb *iocb, struct iov_iter *from
 
 static void fuse_dio_lock(struct kiocb *iocb, struct iov_iter *from,
 			  bool *exclusive)
+	__no_context_analysis /* conditional locking */
 {
 	struct inode *inode = file_inode(iocb->ki_filp);
 	struct fuse_inode *fi = get_fuse_inode(inode);
@@ -1456,6 +1458,7 @@ static void fuse_dio_lock(struct kiocb *iocb, struct iov_iter *from,
 }
 
 static void fuse_dio_unlock(struct kiocb *iocb, bool exclusive)
+	__no_context_analysis /* conditional locking */
 {
 	struct inode *inode = file_inode(iocb->ki_filp);
 	struct fuse_inode *fi = get_fuse_inode(inode);
@@ -1645,6 +1648,7 @@ out:
 
 ssize_t fuse_direct_io(struct fuse_io_priv *io, struct iov_iter *iter,
 		       loff_t *ppos, int flags)
+	__no_context_analysis /* conditional locking */
 {
 	int write = flags & FUSE_DIO_WRITE;
 	int cuse = flags & FUSE_DIO_CUSE;
@@ -1914,8 +1918,7 @@ static void fuse_writepage_finish(struct fuse_writepage_args *wpa)
 /* Called under fi->lock, may release and reacquire it */
 static void fuse_send_writepage(struct fuse_mount *fm,
 				struct fuse_writepage_args *wpa, loff_t size)
-__releases(fi->lock)
-__acquires(fi->lock)
+	__must_hold(get_fuse_inode(wpa->inode)->lock)
 {
 	struct fuse_inode *fi = get_fuse_inode(wpa->inode);
 	struct fuse_args_pages *ap = &wpa->ia.ap;
@@ -1969,8 +1972,7 @@ __acquires(fi->lock)
  * Called with fi->lock
  */
 void fuse_flush_writepages(struct inode *inode)
-__releases(fi->lock)
-__acquires(fi->lock)
+	__must_hold(get_fuse_inode(inode)->lock)
 {
 	struct fuse_mount *fm = get_fuse_mount(inode);
 	struct fuse_inode *fi = get_fuse_inode(inode);
@@ -1980,6 +1982,7 @@ __acquires(fi->lock)
 	while (fi->writectr >= 0 && !list_empty(&fi->queued_writes)) {
 		wpa = list_entry(fi->queued_writes.next,
 				 struct fuse_writepage_args, queue_entry);
+		__assume_ctx_lock(&get_fuse_inode(wpa->inode)->lock);
 		list_del_init(&wpa->queue_entry);
 		fuse_send_writepage(fm, wpa, crop);
 	}
@@ -2926,6 +2929,7 @@ static int fuse_writeback_range(struct inode *inode, loff_t start, loff_t end)
 
 static long fuse_file_fallocate(struct file *file, int mode, loff_t offset,
 				loff_t length)
+	__no_context_analysis /* conditional locking */
 {
 	struct fuse_file *ff = file->private_data;
 	struct inode *inode = file_inode(file);

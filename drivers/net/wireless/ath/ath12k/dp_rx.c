@@ -534,6 +534,7 @@ void ath12k_dp_mark_tid_as_inactive(struct ath12k_dp *dp, int peer_id, u8 tid)
 EXPORT_SYMBOL(ath12k_dp_mark_tid_as_inactive);
 
 void ath12k_dp_rx_peer_tid_cleanup(struct ath12k *ar, struct ath12k_dp_link_peer *peer)
+	__must_hold(&ath12k_ab_to_dp(ar->ab)->dp_lock)
 {
 	struct ath12k_dp_rx_tid *rx_tid;
 	int i;

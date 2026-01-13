@@ -934,6 +934,7 @@ struct inode *__ext4_new_inode(struct mnt_idmap *idmap,
 			       __u32 goal, uid_t *owner, __u32 i_flags,
 			       int handle_type, unsigned int line_no,
 			       int nblocks)
+	__no_context_analysis /* conditional locking */
 {
 	struct super_block *sb;
 	struct buffer_head *inode_bitmap_bh = NULL;

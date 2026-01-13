@@ -5411,6 +5411,7 @@ static void rt5677_resume_irq_check(struct work_struct *work)
 }
 
 static void rt5677_irq_bus_lock(struct irq_data *data)
+	__acquires(&((struct rt5677_priv *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct rt5677_priv *rt5677 = irq_data_get_irq_chip_data(data);
 
@@ -5418,6 +5419,7 @@ static void rt5677_irq_bus_lock(struct irq_data *data)
 }
 
 static void rt5677_irq_bus_sync_unlock(struct irq_data *data)
+	__releases(&((struct rt5677_priv *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct rt5677_priv *rt5677 = irq_data_get_irq_chip_data(data);
 

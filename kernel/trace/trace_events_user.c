@@ -260,6 +260,7 @@ out:
 }
 
 static void user_event_put(struct user_event *user, bool locked)
+	__no_context_analysis
 {
 	bool delete;
 

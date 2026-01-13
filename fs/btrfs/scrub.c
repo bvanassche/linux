@@ -396,6 +396,7 @@ static void wait_scrub_stripe_io(struct scrub_stripe *stripe)
 static void scrub_put_ctx(struct scrub_ctx *sctx);
 
 static void __scrub_blocked_if_needed(struct btrfs_fs_info *fs_info)
+	__must_hold(fs_info->scrub_lock)
 {
 	while (atomic_read(&fs_info->scrub_pause_req)) {
 		mutex_unlock(&fs_info->scrub_lock);

@@ -208,6 +208,7 @@ nvkm_cgrp_ref(struct nvkm_cgrp *cgrp)
 
 void
 nvkm_cgrp_put(struct nvkm_cgrp **pcgrp, unsigned long irqflags)
+	__no_context_analysis /* conditional locking */
 {
 	struct nvkm_cgrp *cgrp = *pcgrp;
 

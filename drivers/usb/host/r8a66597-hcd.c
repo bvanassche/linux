@@ -811,8 +811,7 @@ static void enable_r8a66597_pipe(struct r8a66597 *r8a66597, struct urb *urb,
 
 static void r8a66597_urb_done(struct r8a66597 *r8a66597, struct urb *urb,
 			      int status)
-__releases(r8a66597->lock)
-__acquires(r8a66597->lock)
+	__no_context_analysis
 {
 	if (usb_pipein(urb->pipe) && usb_pipetype(urb->pipe) != PIPE_CONTROL) {
 		void *ptr;
@@ -1009,8 +1008,7 @@ static void start_root_hub_sampling(struct r8a66597 *r8a66597, int port,
 /* this function must be called with interrupt disabled */
 static void r8a66597_check_syssts(struct r8a66597 *r8a66597, int port,
 					u16 syssts)
-__releases(r8a66597->lock)
-__acquires(r8a66597->lock)
+	__no_context_analysis
 {
 	if (syssts == SE0) {
 		r8a66597_write(r8a66597, ~ATTCH, get_intsts_reg(port));
@@ -1266,7 +1264,7 @@ static void set_td_timer(struct r8a66597 *r8a66597, struct r8a66597_td *td)
 /* this function must be called with interrupt disabled */
 static void finish_request(struct r8a66597 *r8a66597, struct r8a66597_td *td,
 		u16 pipenum, struct urb *urb, int status)
-__releases(r8a66597->lock) __acquires(r8a66597->lock)
+	__no_context_analysis
 {
 	int restart = 0;
 	struct usb_hcd *hcd = r8a66597_to_hcd(r8a66597);
@@ -1976,8 +1974,7 @@ static int r8a66597_urb_dequeue(struct usb_hcd *hcd, struct urb *urb,
 
 static void r8a66597_endpoint_disable(struct usb_hcd *hcd,
 				      struct usb_host_endpoint *hep)
-__acquires(r8a66597->lock)
-__releases(r8a66597->lock)
+	__no_context_analysis
 {
 	struct r8a66597 *r8a66597 = hcd_to_r8a66597(hcd);
 	struct r8a66597_pipe *pipe = (struct r8a66597_pipe *)hep->hcpriv;

@@ -3209,6 +3209,7 @@ static int ocfs2_extend_dir(struct ocfs2_super *osb,
 			    unsigned int blocks_wanted,
 			    struct ocfs2_dir_lookup_result *lookup,
 			    struct buffer_head **new_de_bh)
+	__no_context_analysis /* conditional locking */
 {
 	int status = 0;
 	int credits, num_free_extents, drop_alloc_sem = 0;

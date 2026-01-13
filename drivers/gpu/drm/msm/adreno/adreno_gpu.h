@@ -255,7 +255,11 @@ struct adreno_gpu {
 
 	u64 uche_trap_base;
 };
-#define to_adreno_gpu(x) container_of(x, struct adreno_gpu, base)
+
+static inline struct adreno_gpu *to_adreno_gpu(struct msm_gpu *base)
+{
+	return container_of(base, struct adreno_gpu, base);
+}
 
 struct adreno_ocmem {
 	struct ocmem *ocmem;

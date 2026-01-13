@@ -131,6 +131,7 @@ static int clk_factors_determine_rate(struct clk_hw *hw,
 
 static int clk_factors_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate)
+	__no_context_analysis /* conditional locking */
 {
 	struct factors_request req = {
 		.rate = rate,

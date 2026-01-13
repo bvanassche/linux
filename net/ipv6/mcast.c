@@ -2627,6 +2627,7 @@ static void igmp6_join_group(struct ifmcaddr6 *ma)
 
 static int ip6_mc_leave_src(struct sock *sk, struct ipv6_mc_socklist *iml,
 			    struct inet6_dev *idev)
+	__no_context_analysis
 {
 	struct ip6_sf_socklist *psl;
 	int err;
@@ -2953,7 +2954,7 @@ static struct ifmcaddr6 *igmp6_mc_get_idx(struct seq_file *seq, loff_t pos)
 }
 
 static void *igmp6_mc_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return igmp6_mc_get_idx(seq, *pos);
@@ -2968,7 +2969,7 @@ static void *igmp6_mc_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void igmp6_mc_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	struct igmp6_mc_iter_state *state = igmp6_mc_seq_private(seq);
 
@@ -3071,7 +3072,7 @@ static struct ip6_sf_list *igmp6_mcf_get_idx(struct seq_file *seq, loff_t pos)
 }
 
 static void *igmp6_mcf_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return *pos ? igmp6_mcf_get_idx(seq, *pos - 1) : SEQ_START_TOKEN;
@@ -3089,7 +3090,7 @@ static void *igmp6_mcf_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void igmp6_mcf_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	struct igmp6_mcf_iter_state *state = igmp6_mcf_seq_private(seq);
 

@@ -660,7 +660,7 @@ static CLOSURE_CALLBACK(journal_write_done)
 }
 
 static CLOSURE_CALLBACK(journal_write_unlock)
-	__releases(&c->journal.lock)
+	__no_context_analysis /* __releases(&c->journal.lock) */
 {
 	closure_type(c, struct cache_set, journal.io);
 
@@ -669,7 +669,7 @@ static CLOSURE_CALLBACK(journal_write_unlock)
 }
 
 static CLOSURE_CALLBACK(journal_write_unlocked)
-	__releases(c->journal.lock)
+	__no_context_analysis /* __releases(c->journal.lock) */
 {
 	closure_type(c, struct cache_set, journal.io);
 	struct cache *ca = c->cache;
@@ -747,6 +747,7 @@ static CLOSURE_CALLBACK(journal_write_unlocked)
 }
 
 static CLOSURE_CALLBACK(journal_write)
+	__no_context_analysis
 {
 	closure_type(c, struct cache_set, journal.io);
 
@@ -755,7 +756,7 @@ static CLOSURE_CALLBACK(journal_write)
 }
 
 static void journal_try_write(struct cache_set *c)
-	__releases(c->journal.lock)
+	__no_context_analysis /*  __releases(c->journal.lock) */
 {
 	struct closure *cl = &c->journal.io;
 	struct journal_write *w = c->journal.cur;
@@ -772,7 +773,7 @@ static void journal_try_write(struct cache_set *c)
 
 static struct journal_write *journal_wait_for_write(struct cache_set *c,
 						    unsigned int nkeys)
-	__acquires(&c->journal.lock)
+	__no_context_analysis /* __acquires(&c->journal.lock) */
 {
 	size_t sectors;
 	struct closure cl;
@@ -827,6 +828,7 @@ static struct journal_write *journal_wait_for_write(struct cache_set *c,
 }
 
 static void journal_write_work(struct work_struct *work)
+	__no_context_analysis
 {
 	struct cache_set *c = container_of(to_delayed_work(work),
 					   struct cache_set,
@@ -847,6 +849,7 @@ static void journal_write_work(struct work_struct *work)
 atomic_t *bch_journal(struct cache_set *c,
 		      struct keylist *keys,
 		      struct closure *parent)
+	__no_context_analysis
 {
 	struct journal_write *w;
 	atomic_t *ret;

@@ -288,6 +288,7 @@ static struct rng_alg xtrng_trng_alg = {
 };
 
 static int xtrng_hwrng_trng_read(struct hwrng *hwrng, void *data, size_t max, bool wait)
+	__no_context_analysis /* TODO: remove the mutex_is_locked() call. */
 {
 	u8 buf[TRNG_SEC_STRENGTH_BYTES];
 	struct xilinx_rng *rng;

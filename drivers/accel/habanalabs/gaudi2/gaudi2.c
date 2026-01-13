@@ -7864,7 +7864,7 @@ static bool gaudi2_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask
 }
 
 static void gaudi2_hw_queues_lock(struct hl_device *hdev)
-	__acquires(&gaudi2->hw_queues_lock)
+	__acquires(&((struct gaudi2_device *)hdev->asic_specific)->hw_queues_lock)
 {
 	struct gaudi2_device *gaudi2 = hdev->asic_specific;
 
@@ -7872,7 +7872,7 @@ static void gaudi2_hw_queues_lock(struct hl_device *hdev)
 }
 
 static void gaudi2_hw_queues_unlock(struct hl_device *hdev)
-	__releases(&gaudi2->hw_queues_lock)
+	__releases(&((struct gaudi2_device *)hdev->asic_specific)->hw_queues_lock)
 {
 	struct gaudi2_device *gaudi2 = hdev->asic_specific;
 

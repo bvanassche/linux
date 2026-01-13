@@ -694,6 +694,7 @@ finish:
 }
 
 irqreturn_t mtu3_ep0_isr(struct mtu3 *mtu)
+	__no_context_analysis
 {
 	void __iomem *mbase = mtu->mac_base;
 	struct mtu3_request *mreq;

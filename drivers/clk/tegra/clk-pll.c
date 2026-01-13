@@ -438,6 +438,7 @@ static void pll_clk_stop_ss(struct tegra_clk_pll *pll)
 }
 
 static int clk_pll_enable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	unsigned long flags = 0;
@@ -462,6 +463,7 @@ static int clk_pll_enable(struct clk_hw *hw)
 }
 
 static void clk_pll_disable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	unsigned long flags = 0;
@@ -800,6 +802,7 @@ done:
 
 static int clk_pll_set_rate(struct clk_hw *hw, unsigned long rate,
 			unsigned long parent_rate)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	struct tegra_clk_pll_freq_table cfg, old_cfg;
@@ -1119,6 +1122,7 @@ static const struct utmi_clk_param utmi_parameters[] = {
 };
 
 static int clk_pllu_enable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	struct clk_hw *pll_ref = clk_hw_get_parent(hw);
@@ -1332,6 +1336,7 @@ out:
 
 static int clk_pllxc_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	struct tegra_clk_pll_freq_table cfg, old_cfg;
@@ -1399,6 +1404,7 @@ static void _pllcx_strobe(struct tegra_clk_pll *pll)
 }
 
 static int clk_pllc_enable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	u32 val;
@@ -1443,6 +1449,7 @@ static void _clk_pllc_disable(struct clk_hw *hw)
 }
 
 static void clk_pllc_disable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	unsigned long flags = 0;
@@ -1492,6 +1499,7 @@ static int _pllcx_update_dynamic_coef(struct tegra_clk_pll *pll,
 
 static int clk_pllc_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll_freq_table cfg, old_cfg;
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
@@ -1558,6 +1566,7 @@ static long _pllre_calc_rate(struct tegra_clk_pll *pll,
 
 static int clk_pllre_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll_freq_table cfg, old_cfg;
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
@@ -1617,6 +1626,7 @@ static int clk_pllre_determine_rate(struct clk_hw *hw,
 }
 
 static int clk_plle_tegra114_enable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	struct tegra_clk_pll_freq_table sel;
@@ -1728,6 +1738,7 @@ out:
 }
 
 static void clk_plle_tegra114_disable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	unsigned long flags = 0;
@@ -1748,6 +1759,7 @@ static void clk_plle_tegra114_disable(struct clk_hw *hw)
 }
 
 static int clk_pllu_tegra114_enable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	const struct utmi_clk_param *params = NULL;
@@ -2456,6 +2468,7 @@ static int clk_plle_tegra210_is_enabled(struct clk_hw *hw)
 }
 
 static int clk_plle_tegra210_enable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	struct tegra_clk_pll_freq_table sel;
@@ -2535,6 +2548,7 @@ out:
 }
 
 static void clk_plle_tegra210_disable(struct clk_hw *hw)
+	__no_context_analysis /* conditional locking */
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	unsigned long flags = 0;

@@ -204,14 +204,14 @@ int nfsd_minorversion(struct nfsd_net *nn, u32 minorversion, enum vers_op change
 	return 0;
 }
 
-bool nfsd_net_try_get(struct net *net) __must_hold(rcu)
+bool nfsd_net_try_get(struct net *net) __must_hold_shared(RCU)
 {
 	struct nfsd_net *nn = net_generic(net, nfsd_net_id);
 
 	return (nn && percpu_ref_tryget_live(&nn->nfsd_net_ref));
 }
 
-void nfsd_net_put(struct net *net) __must_hold(rcu)
+void nfsd_net_put(struct net *net) __must_hold_shared(RCU)
 {
 	struct nfsd_net *nn = net_generic(net, nfsd_net_id);
 
@@ -881,6 +881,7 @@ nfsd_init_request(struct svc_rqst *rqstp,
  */
 static int
 nfsd(void *vrqstp)
+	__no_context_analysis /* conditional locking */
 {
 	struct svc_rqst *rqstp = (struct svc_rqst *) vrqstp;
 	struct svc_pool *pool = rqstp->rq_pool;

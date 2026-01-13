@@ -1564,6 +1564,7 @@ static bool vma_permits_fault(struct vm_area_struct *vma,
 int fixup_user_fault(struct mm_struct *mm,
 		     unsigned long address, unsigned int fault_flags,
 		     bool *unlocked)
+	__no_context_analysis /* conditional locking */
 {
 	struct vm_area_struct *vma;
 	vm_fault_t ret;
@@ -1652,6 +1653,7 @@ static __always_inline long __get_user_pages_locked(struct mm_struct *mm,
 						struct page **pages,
 						int *locked,
 						unsigned int flags)
+	__no_context_analysis /* conditional locking */
 {
 	long ret, pages_done;
 	bool must_unlock = false;
@@ -1923,6 +1925,7 @@ long faultin_page_range(struct mm_struct *mm, unsigned long start,
  * mmap_lock must not be held.
  */
 int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
+	__no_context_analysis /* conditional locking */
 {
 	struct mm_struct *mm = current->mm;
 	unsigned long end, nstart, nend;

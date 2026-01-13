@@ -40,6 +40,7 @@ static void cdnsp_ep0_stall(struct cdnsp_device *pdev)
 
 static int cdnsp_ep0_delegate_req(struct cdnsp_device *pdev,
 				  struct usb_ctrlrequest *ctrl)
+	__no_context_analysis
 {
 	int ret;
 

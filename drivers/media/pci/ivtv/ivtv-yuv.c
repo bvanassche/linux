@@ -1142,6 +1142,7 @@ void ivtv_yuv_setup_stream_frame(struct ivtv *itv)
 
 /* Attempt to dma a frame from a user buffer */
 int ivtv_yuv_udma_stream_frame(struct ivtv *itv, void __user *src)
+	__must_hold(itv->serialize_lock)
 {
 	struct yuv_playback_info *yi = &itv->yuv_info;
 	struct ivtv_dma_frame dma_args;
@@ -1163,6 +1164,7 @@ int ivtv_yuv_udma_stream_frame(struct ivtv *itv, void __user *src)
 
 /* IVTV_IOC_DMA_FRAME ioctl handler */
 int ivtv_yuv_prep_frame(struct ivtv *itv, struct ivtv_dma_frame *args)
+	__must_hold(itv->serialize_lock)
 {
 	int res;
 
@@ -1179,6 +1181,7 @@ int ivtv_yuv_prep_frame(struct ivtv *itv, struct ivtv_dma_frame *args)
 }
 
 void ivtv_yuv_close(struct ivtv *itv)
+	__must_hold(itv->serialize_lock)
 {
 	struct yuv_playback_info *yi = &itv->yuv_info;
 	int h_filter, v_filter_1, v_filter_2;

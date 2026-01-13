@@ -30,7 +30,8 @@
 #include "internal.h"
 
 static void afs_i_init_once(void *foo);
-static void afs_kill_super(struct super_block *sb);
+static void afs_kill_super(struct super_block *sb)
+	__releases(&sb->s_umount);
 static struct inode *afs_alloc_inode(struct super_block *sb);
 static void afs_destroy_inode(struct inode *inode);
 static void afs_free_inode(struct inode *inode);

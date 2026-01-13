@@ -632,8 +632,10 @@ u64 nd_region_interleave_set_cookie(struct nd_region *nd_region,
 u64 nd_region_interleave_set_altcookie(struct nd_region *nd_region);
 void nvdimm_bus_lock(struct device *dev);
 void nvdimm_bus_unlock(struct device *dev);
-DEFINE_GUARD(nvdimm_bus, struct device *,
-	     if (_T) nvdimm_bus_lock(_T), if (_T) nvdimm_bus_unlock(_T));
+DEFINE_LOCK_GUARD_1(nvdimm_bus, struct device,
+	     if (_T) nvdimm_bus_lock(_T->lock), if (_T) nvdimm_bus_unlock(_T->lock));
+DECLARE_LOCK_GUARD_1_ATTRS(nvdimm_bus, __acquires(&_T->mutex), __releases(&(*(struct device **)_T)->mutex))
+#define class_nvdimm_bus_constructor(_T) WITH_LOCK_GUARD_1_ATTRS(nvdimm_bus, _T)
 
 bool is_nvdimm_bus_locked(struct device *dev);
 void nvdimm_check_and_set_ro(struct gendisk *disk);

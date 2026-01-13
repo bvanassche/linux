@@ -203,6 +203,7 @@ static void kunit_platform_device_probe_nb_remove(void *nb)
 int kunit_platform_device_prepare_wait_for_probe(struct kunit *test,
 						 struct platform_device *pdev,
 						 struct completion *x)
+	__no_context_analysis
 {
 	struct device *dev = &pdev->dev;
 	struct kunit_platform_device_probe_nb *knb;

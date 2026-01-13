@@ -963,6 +963,7 @@ static const char *jffs2_xattr_prefix(int xprefix, struct dentry *dentry)
 }
 
 ssize_t jffs2_listxattr(struct dentry *dentry, char *buffer, size_t size)
+	__no_context_analysis /* too complex */
 {
 	struct inode *inode = d_inode(dentry);
 	struct jffs2_inode_info *f = JFFS2_INODE_INFO(inode);
@@ -1033,6 +1034,7 @@ ssize_t jffs2_listxattr(struct dentry *dentry, char *buffer, size_t size)
 
 int do_jffs2_getxattr(struct inode *inode, int xprefix, const char *xname,
 		      char *buffer, size_t size)
+	__no_context_analysis /* too complex */
 {
 	struct jffs2_inode_info *f = JFFS2_INODE_INFO(inode);
 	struct jffs2_sb_info *c = JFFS2_SB_INFO(inode->i_sb);

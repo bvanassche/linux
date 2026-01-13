@@ -2493,6 +2493,7 @@ struct ksm_next_page_arg {
 
 static int ksm_next_page_pmd_entry(pmd_t *pmdp, unsigned long addr, unsigned long end,
 		struct mm_walk *walk)
+	__no_context_analysis /* too complex for Clang */
 {
 	struct ksm_next_page_arg *private = walk->private;
 	struct vm_area_struct *vma = walk->vma;
@@ -3292,6 +3293,7 @@ void folio_migrate_ksm(struct folio *newfolio, struct folio *folio)
 
 #ifdef CONFIG_MEMORY_HOTREMOVE
 static void wait_while_offlining(void)
+	__must_hold(ksm_thread_mutex)
 {
 	while (ksm_run & KSM_RUN_OFFLINE) {
 		mutex_unlock(&ksm_thread_mutex);

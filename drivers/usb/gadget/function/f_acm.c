@@ -495,6 +495,7 @@ static void acm_disable(struct usb_function *f)
  */
 static int acm_cdc_notify(struct f_acm *acm, u8 type, u16 value,
 		void *data, unsigned length)
+	__no_context_analysis
 {
 	struct usb_ep			*ep = acm->notify;
 	struct usb_request		*req;

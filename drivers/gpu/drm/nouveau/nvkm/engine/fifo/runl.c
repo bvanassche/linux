@@ -181,6 +181,7 @@ nvkm_runl_work(struct work_struct *work)
 
 struct nvkm_chan *
 nvkm_runl_chan_get_inst(struct nvkm_runl *runl, u64 inst, unsigned long *pirqflags)
+	__cond_acquires(nonnull, &runl->chid->lock)
 {
 	struct nvkm_chid *chid = runl->chid;
 	struct nvkm_chan *chan;
@@ -205,6 +206,7 @@ nvkm_runl_chan_get_inst(struct nvkm_runl *runl, u64 inst, unsigned long *pirqfla
 
 struct nvkm_chan *
 nvkm_runl_chan_get_chid(struct nvkm_runl *runl, int id, unsigned long *pirqflags)
+	__cond_acquires(nonnull, &runl->chid->lock)
 {
 	struct nvkm_chid *chid = runl->chid;
 	struct nvkm_chan *chan;
@@ -226,6 +228,7 @@ nvkm_runl_chan_get_chid(struct nvkm_runl *runl, int id, unsigned long *pirqflags
 
 struct nvkm_cgrp *
 nvkm_runl_cgrp_get_cgid(struct nvkm_runl *runl, int id, unsigned long *pirqflags)
+	__cond_acquires(nonnull, &runl->chid->lock)
 {
 	struct nvkm_chid *cgid = runl->cgid;
 	struct nvkm_cgrp *cgrp;

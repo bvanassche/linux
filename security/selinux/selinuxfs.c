@@ -1958,6 +1958,7 @@ static int sel_init_fs_context(struct fs_context *fc)
 }
 
 static void sel_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	selinux_fs_info_free(sb);
 	kill_anon_super(sb);

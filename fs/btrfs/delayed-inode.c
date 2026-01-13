@@ -1743,6 +1743,8 @@ bool btrfs_readdir_get_delayed_items(struct btrfs_inode *inode,
 void btrfs_readdir_put_delayed_items(struct btrfs_inode *inode,
 				     struct list_head *ins_list,
 				     struct list_head *del_list)
+	__releases(&inode->vfs_inode.i_rwsem)
+	__acquires_shared(&inode->vfs_inode.i_rwsem)
 {
 	struct btrfs_delayed_item *curr, *next;
 

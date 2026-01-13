@@ -344,6 +344,7 @@ nouveau_bo_alloc(struct nouveau_cli *cli, u64 *size, int *align, u32 domain,
 int
 nouveau_bo_init(struct nouveau_bo *nvbo, u64 size, int align, u32 domain,
 		struct sg_table *sg, struct dma_resv *robj)
+	__no_context_analysis /* conditional locking */
 {
 	int type = sg ? ttm_bo_type_sg : ttm_bo_type_device;
 	int ret;

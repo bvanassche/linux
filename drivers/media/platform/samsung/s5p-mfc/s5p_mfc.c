@@ -164,6 +164,7 @@ static void s5p_mfc_watchdog(struct timer_list *t)
 }
 
 static void s5p_mfc_watchdog_worker(struct work_struct *work)
+	__no_context_analysis /* conditional locking */
 {
 	struct s5p_mfc_dev *dev;
 	struct s5p_mfc_ctx *ctx;
@@ -968,6 +969,7 @@ err_enter:
 
 /* Release MFC context */
 static int s5p_mfc_release(struct file *file)
+	__no_context_analysis /* conditional locking */
 {
 	struct s5p_mfc_ctx *ctx = file_to_ctx(file);
 	struct s5p_mfc_dev *dev = ctx->dev;

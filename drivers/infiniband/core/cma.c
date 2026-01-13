@@ -1928,6 +1928,7 @@ static void cma_cancel_route(struct rdma_id_private *id_priv)
 }
 
 static void _cma_cancel_listens(struct rdma_id_private *id_priv)
+	__must_hold(lock)
 {
 	struct rdma_id_private *dev_id_priv;
 
@@ -2094,7 +2095,7 @@ static void _destroy_id(struct rdma_id_private *id_priv,
  * handlers can start running concurrently.
  */
 static void destroy_id_handler_unlock(struct rdma_id_private *id_priv)
-	__releases(&idprv->handler_mutex)
+	__releases(id_priv->handler_mutex)
 {
 	enum rdma_cm_state state;
 	unsigned long flags;
@@ -4753,6 +4754,7 @@ int rdma_accept_ece(struct rdma_cm_id *id, struct rdma_conn_param *conn_param,
 EXPORT_SYMBOL(rdma_accept_ece);
 
 void rdma_lock_handler(struct rdma_cm_id *id)
+	__no_context_analysis /* clang does not support container_of() */
 {
 	struct rdma_id_private *id_priv =
 		container_of(id, struct rdma_id_private, id);
@@ -4762,6 +4764,7 @@ void rdma_lock_handler(struct rdma_cm_id *id)
 EXPORT_SYMBOL(rdma_lock_handler);
 
 void rdma_unlock_handler(struct rdma_cm_id *id)
+	__no_context_analysis /* clang does not support container_of() */
 {
 	struct rdma_id_private *id_priv =
 		container_of(id, struct rdma_id_private, id);
@@ -5224,7 +5227,6 @@ static void cma_netevent_work_handler(struct work_struct *_work)
 	event.status = -ETIMEDOUT;
 
 	if (cma_cm_event_handler(id_priv, &event)) {
-		__acquire(&id_priv->handler_mutex);
 		id_priv->cm_id.ib = NULL;
 		cma_id_put(id_priv);
 		destroy_id_handler_unlock(id_priv);

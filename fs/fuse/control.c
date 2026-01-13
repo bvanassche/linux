@@ -347,6 +347,7 @@ static int fuse_ctl_init_fs_context(struct fs_context *fsc)
 }
 
 static void fuse_ctl_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	mutex_lock(&fuse_mutex);
 	fuse_control_sb = NULL;

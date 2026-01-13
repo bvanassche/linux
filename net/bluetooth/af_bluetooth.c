@@ -211,6 +211,7 @@ bool bt_sock_linked(struct bt_sock_list *l, struct sock *s)
 EXPORT_SYMBOL(bt_sock_linked);
 
 void bt_accept_enqueue(struct sock *parent, struct sock *sk, bool bh)
+	__no_context_analysis /* conditional locking */
 {
 	const struct cred *old_cred;
 	struct pid *old_pid;
@@ -383,6 +384,7 @@ int bt_sock_recvmsg(struct socket *sock, struct msghdr *msg, size_t len,
 EXPORT_SYMBOL(bt_sock_recvmsg);
 
 static long bt_sock_data_wait(struct sock *sk, long timeo)
+	__must_hold(sk)
 {
 	DECLARE_WAITQUEUE(wait, current);
 
@@ -700,6 +702,7 @@ EXPORT_SYMBOL(bt_sock_ioctl);
 
 /* This function expects the sk lock to be held when called */
 int bt_sock_wait_state(struct sock *sk, int state, unsigned long timeo)
+	__must_hold(sk)
 {
 	DECLARE_WAITQUEUE(wait, current);
 	int err = 0;
@@ -736,6 +739,7 @@ EXPORT_SYMBOL(bt_sock_wait_state);
 
 /* This function expects the sk lock to be held when called */
 int bt_sock_wait_ready(struct sock *sk, unsigned int msg_flags)
+	__must_hold(sk)
 {
 	DECLARE_WAITQUEUE(wait, current);
 	unsigned long timeo;
@@ -776,7 +780,7 @@ EXPORT_SYMBOL(bt_sock_wait_ready);
 
 #ifdef CONFIG_PROC_FS
 static void *bt_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(seq->private->l->lock)
+	__acquires_shared(((struct bt_sock_list *)pde_data(file_inode(seq->file)))->lock)
 {
 	struct bt_sock_list *l = pde_data(file_inode(seq->file));
 
@@ -792,7 +796,7 @@ static void *bt_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void bt_seq_stop(struct seq_file *seq, void *v)
-	__releases(seq->private->l->lock)
+	__releases_shared(((struct bt_sock_list *)pde_data(file_inode(seq->file)))->lock)
 {
 	struct bt_sock_list *l = pde_data(file_inode(seq->file));
 

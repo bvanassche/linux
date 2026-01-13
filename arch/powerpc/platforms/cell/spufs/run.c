@@ -174,6 +174,7 @@ out:
 }
 
 static int spu_run_init(struct spu_context *ctx, u32 *npc)
+	__must_hold(&ctx->state_mutex)
 {
 	unsigned long runcntl = SPU_RUNCNTL_RUNNABLE;
 	int ret;
@@ -243,6 +244,7 @@ static int spu_run_init(struct spu_context *ctx, u32 *npc)
 
 static int spu_run_fini(struct spu_context *ctx, u32 *npc,
 			       u32 *status)
+	__releases(&ctx->state_mutex)
 {
 	int ret = 0;
 
@@ -307,6 +309,7 @@ static int spu_handle_restartsys(struct spu_context *ctx, long *spu_ret,
 }
 
 static int spu_process_callback(struct spu_context *ctx)
+	__must_hold(&ctx->state_mutex)
 {
 	struct spu_syscall_block s;
 	u32 ls_pointer, npc;
@@ -351,6 +354,7 @@ static int spu_process_callback(struct spu_context *ctx)
 }
 
 long spufs_run_spu(struct spu_context *ctx, u32 *npc, u32 *event)
+	__no_context_analysis /* too complex for Clang */
 {
 	int ret;
 	u32 status;

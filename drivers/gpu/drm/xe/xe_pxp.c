@@ -686,6 +686,7 @@ start:
 ALLOW_ERROR_INJECTION(xe_pxp_exec_queue_add, ERRNO);
 
 static void __pxp_exec_queue_remove(struct xe_pxp *pxp, struct xe_exec_queue *q, bool lock)
+	__no_context_analysis /* conditional locking */
 {
 	bool need_pm_put = false;
 

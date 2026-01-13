@@ -288,10 +288,9 @@ static int __hidpp_send_report(struct hid_device *hdev,
 static int __do_hidpp_send_message_sync(struct hidpp_device *hidpp,
 	struct hidpp_report *message,
 	struct hidpp_report *response)
+	__must_hold(&hidpp->send_mutex)
 {
 	int ret;
-
-	__must_hold(&hidpp->send_mutex);
 
 	hidpp->send_receive_buf = response;
 	hidpp->answer_available = false;

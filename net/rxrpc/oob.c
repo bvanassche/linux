@@ -173,6 +173,7 @@ static int rxrpc_sendmsg_oob_cmsg(struct msghdr *msg, struct rxrpc_oob_params *p
 static int rxrpc_respond_to_oob(struct rxrpc_sock *rx,
 				struct rxrpc_oob_params *p,
 				struct msghdr *msg)
+	__releases(&rx->sk)
 {
 	struct rxrpc_connection *conn;
 	struct rxrpc_skb_priv *sp;

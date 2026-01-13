@@ -897,8 +897,7 @@ static struct r8a66597_request *get_request_from_ep(struct r8a66597_ep *ep)
 /*-------------------------------------------------------------------------*/
 static void transfer_complete(struct r8a66597_ep *ep,
 		struct r8a66597_request *req, int status)
-__releases(r8a66597->lock)
-__acquires(r8a66597->lock)
+	__no_context_analysis
 {
 	int restart = 0;
 
@@ -1157,8 +1156,7 @@ static void irq_pipe_empty(struct r8a66597 *r8a66597, u16 status, u16 enb)
 }
 
 static void get_status(struct r8a66597 *r8a66597, struct usb_ctrlrequest *ctrl)
-__releases(r8a66597->lock)
-__acquires(r8a66597->lock)
+	__no_context_analysis
 {
 	struct r8a66597_ep *ep;
 	u16 pid;
@@ -1196,6 +1194,7 @@ __acquires(r8a66597->lock)
 
 static void clear_feature(struct r8a66597 *r8a66597,
 				struct usb_ctrlrequest *ctrl)
+	__no_context_analysis
 {
 	switch (ctrl->bRequestType & USB_RECIP_MASK) {
 	case USB_RECIP_DEVICE:
@@ -1333,6 +1332,7 @@ static void r8a66597_update_usb_speed(struct r8a66597 *r8a66597)
 }
 
 static void irq_device_state(struct r8a66597 *r8a66597)
+	__no_context_analysis
 {
 	u16 dvsq;
 

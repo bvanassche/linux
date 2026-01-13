@@ -554,6 +554,8 @@ static void collect_procs_anon(const struct folio *folio,
 	if (av == NULL)	/* Not actually mapped anymore */
 		return;
 
+	__acquire_shared(&av->root->rwsem);
+
 	pgoff = page_pgoff(folio, page);
 	rcu_read_lock();
 	for_each_process(tsk) {
@@ -749,6 +751,7 @@ static int hwpoison_pte_range(pmd_t *pmdp, unsigned long addr,
 
 	ptl = pmd_trans_huge_lock(pmdp, walk->vma);
 	if (ptl) {
+		__acquire(ptl);
 		ret = check_hwpoisoned_pmd_entry(pmdp, addr, hwp);
 		spin_unlock(ptl);
 		goto out;
@@ -1564,6 +1567,8 @@ int unmap_poisoned_folio(struct folio *folio, unsigned long pfn, bool must_kill)
 			return -EBUSY;
 		}
 
+		__release(&folio_mapping(folio)->i_mmap_rwsem);
+		__acquire(&mapping->i_mmap_rwsem);
 		try_to_unmap(folio, ttu|TTU_RMAP_LOCKED);
 		i_mmap_unlock_write(mapping);
 	} else {

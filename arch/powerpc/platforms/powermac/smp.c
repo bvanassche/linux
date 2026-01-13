@@ -560,6 +560,7 @@ static void smp_core99_pulsar_tb_freeze(int freeze)
 }
 
 static void __init smp_core99_setup_i2c_hwsync(int ncpus)
+	__no_context_analysis /* because of pmac_i2c_open() */
 {
 	struct device_node *cc = NULL;	
 	struct device_node *p;
@@ -850,6 +851,7 @@ static void smp_core99_setup_cpu(int cpu_nr)
 static unsigned int smp_core99_host_open;
 
 static int smp_core99_cpu_prepare(unsigned int cpu)
+	__no_context_analysis /* because of pmac_i2c_open() */
 {
 	int rc;
 
@@ -866,6 +868,7 @@ static int smp_core99_cpu_prepare(unsigned int cpu)
 }
 
 static int smp_core99_cpu_online(unsigned int cpu)
+	__no_context_analysis /* because of pmac_i2c_open() */
 {
 	/* Close i2c bus if it was used for tb sync */
 	if (pmac_tb_clock_chip_host && smp_core99_host_open) {
@@ -877,6 +880,7 @@ static int smp_core99_cpu_online(unsigned int cpu)
 #endif /* CONFIG_HOTPLUG_CPU */
 
 static void __init smp_core99_bringup_done(void)
+	__no_context_analysis /* because of pmac_i2c_open() */
 {
 	/* Close i2c bus if it was used for tb sync */
 	if (pmac_tb_clock_chip_host)

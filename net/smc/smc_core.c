@@ -1784,6 +1784,7 @@ void smcr_port_add(struct smc_ib_device *smcibdev, u8 ibport)
  * must be called under lgr->llc_conf_mutex lock
  */
 static void smcr_link_down(struct smc_link *lnk)
+	__must_hold(&lnk->lgr->llc_conf_mutex)
 {
 	struct smc_link_group *lgr = lnk->lgr;
 	struct smc_link *to_lnk;
@@ -1825,6 +1826,7 @@ static void smcr_link_down(struct smc_link *lnk)
 
 /* must be called under lgr->llc_conf_mutex lock */
 void smcr_link_down_cond(struct smc_link *lnk)
+	__must_hold(&lnk->lgr->llc_conf_mutex)
 {
 	if (smc_link_downing(&lnk->state)) {
 		trace_smcr_link_down(lnk, __builtin_return_address(0));

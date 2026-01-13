@@ -119,6 +119,7 @@ static DEFINE_MUTEX(recursed_function_lock);
 static struct trace_seq *tseq;
 
 static void *recursed_function_seq_start(struct seq_file *m, loff_t *pos)
+	__acquires(recursed_function_lock)
 {
 	void *ret = NULL;
 	int index;
@@ -150,6 +151,7 @@ static void *recursed_function_seq_next(struct seq_file *m, void *v, loff_t *pos
 }
 
 static void recursed_function_seq_stop(struct seq_file *m, void *v)
+	__releases(recursed_function_lock)
 {
 	kfree(tseq);
 	mutex_unlock(&recursed_function_lock);

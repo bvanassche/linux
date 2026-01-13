@@ -329,6 +329,7 @@ bool bnxt_rx_xdp(struct bnxt *bp, struct bnxt_rx_ring_info *rxr, u16 cons,
 
 int bnxt_xdp_xmit(struct net_device *dev, int num_frames,
 		  struct xdp_frame **frames, u32 flags)
+	__no_context_analysis /* conditional locking */
 {
 	struct bnxt *bp = netdev_priv(dev);
 	struct bpf_prog *xdp_prog = READ_ONCE(bp->xdp_prog);

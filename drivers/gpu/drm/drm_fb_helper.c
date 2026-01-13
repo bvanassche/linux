@@ -1615,6 +1615,7 @@ static void drm_setup_crtcs_fb(struct drm_fb_helper *fb_helper)
 /* Note: Drops fb_helper->lock before returning. */
 static int
 __drm_fb_helper_initial_config_and_unlock(struct drm_fb_helper *fb_helper)
+	__releases(&fb_helper->lock)
 {
 	struct drm_device *dev = fb_helper->dev;
 	struct fb_info *info;

@@ -479,6 +479,7 @@ static void mei_gsc_pxp_check(struct mei_device *dev)
  * Return: 0 on success, error otherwise
  */
 static int mei_me_hw_ready_wait(struct mei_device *dev)
+	__must_hold(dev->device_lock)
 {
 	mutex_unlock(&dev->device_lock);
 	wait_event_timeout(dev->wait_hw_ready,
@@ -504,6 +505,7 @@ static int mei_me_hw_ready_wait(struct mei_device *dev)
  * Return: 0 on success, error otherwise
  */
 static int mei_me_hw_start(struct mei_device *dev)
+	__must_hold(dev->device_lock)
 {
 	int ret = mei_me_hw_ready_wait(dev);
 
@@ -753,6 +755,7 @@ static void mei_me_pg_unset(struct mei_device *dev)
  * Return: 0 on success an error code otherwise
  */
 static int mei_me_pg_legacy_enter_sync(struct mei_device *dev)
+	__must_hold(dev->device_lock)
 {
 	struct mei_me_hw *hw = to_me_hw(dev);
 	int ret;
@@ -790,6 +793,7 @@ static int mei_me_pg_legacy_enter_sync(struct mei_device *dev)
  * Return: 0 on success an error code otherwise
  */
 static int mei_me_pg_legacy_exit_sync(struct mei_device *dev)
+	__must_hold(dev->device_lock)
 {
 	struct mei_me_hw *hw = to_me_hw(dev);
 	int ret;
@@ -934,6 +938,7 @@ static u32 mei_me_d0i3_unset(struct mei_device *dev)
  * Return: 0 on success an error code otherwise
  */
 static int mei_me_d0i3_enter_sync(struct mei_device *dev)
+	__must_hold(dev->device_lock)
 {
 	struct mei_me_hw *hw = to_me_hw(dev);
 	int ret;
@@ -1037,6 +1042,7 @@ on:
  * Return: 0 on success an error code otherwise
  */
 static int mei_me_d0i3_exit_sync(struct mei_device *dev)
+	__must_hold(dev->device_lock)
 {
 	struct mei_me_hw *hw = to_me_hw(dev);
 	int ret;
@@ -1167,6 +1173,7 @@ static void mei_me_pg_intr(struct mei_device *dev, u32 intr_source)
  * Return: 0 on success an error code otherwise
  */
 int mei_me_pg_enter_sync(struct mei_device *dev)
+	__must_hold(dev->device_lock)
 {
 	struct mei_me_hw *hw = to_me_hw(dev);
 
@@ -1184,6 +1191,7 @@ int mei_me_pg_enter_sync(struct mei_device *dev)
  * Return: 0 on success an error code otherwise
  */
 int mei_me_pg_exit_sync(struct mei_device *dev)
+	__must_hold(dev->device_lock)
 {
 	struct mei_me_hw *hw = to_me_hw(dev);
 
@@ -1202,6 +1210,7 @@ int mei_me_pg_exit_sync(struct mei_device *dev)
  * Return: 0 on success an error code otherwise
  */
 static int mei_me_hw_reset(struct mei_device *dev, bool intr_enable)
+	__must_hold(dev->device_lock)
 {
 	struct mei_me_hw *hw = to_me_hw(dev);
 	int ret;

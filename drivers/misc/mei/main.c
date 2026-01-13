@@ -412,6 +412,7 @@ out:
 static int mei_ioctl_connect_client(struct file *file,
 				    const uuid_le *in_client_uuid,
 				    struct mei_client *client)
+	__must_hold(&((struct mei_cl *)file->private_data)->dev->device_lock)
 {
 	struct mei_device *dev;
 	struct mei_me_client *me_cl;
@@ -533,6 +534,7 @@ static int mei_ioctl_connect_vtag(struct file *file,
 				  const uuid_le *in_client_uuid,
 				  struct mei_client *client,
 				  u8 vtag)
+	__no_context_analysis /* __must_hold(dev->device_lock) */
 {
 	struct mei_device *dev;
 	struct mei_cl *cl;

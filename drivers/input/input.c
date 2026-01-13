@@ -1049,6 +1049,7 @@ static __poll_t input_proc_devices_poll(struct file *file, poll_table *wait)
 }
 
 static void *input_devices_seq_start(struct seq_file *seq, loff_t *pos)
+	__no_context_analysis /* conditional locking + returns a pointer */
 {
 	struct input_seq_state *state = seq->private;
 	int error;
@@ -1070,6 +1071,7 @@ static void *input_devices_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void input_seq_stop(struct seq_file *seq, void *v)
+	__no_context_analysis /* conditional unlock */
 {
 	struct input_seq_state *state = seq->private;
 
@@ -1170,6 +1172,7 @@ static const struct proc_ops input_devices_proc_ops = {
 };
 
 static void *input_handlers_seq_start(struct seq_file *seq, loff_t *pos)
+	__no_context_analysis /* conditional locking + returns a pointer */
 {
 	struct input_seq_state *state = seq->private;
 	int error;

@@ -378,6 +378,7 @@ static void vxlan_fdb_miss(struct vxlan_dev *vxlan, const u8 eth_addr[ETH_ALEN])
 /* Look up Ethernet address in forwarding table */
 static struct vxlan_fdb *vxlan_find_mac_rcu(struct vxlan_dev *vxlan,
 					    const u8 *mac, __be32 vni)
+	__must_hold_shared(RCU)
 {
 	struct vxlan_fdb_key key;
 
@@ -394,6 +395,7 @@ static struct vxlan_fdb *vxlan_find_mac_rcu(struct vxlan_dev *vxlan,
 
 static struct vxlan_fdb *vxlan_find_mac_tx(struct vxlan_dev *vxlan,
 					   const u8 *mac, __be32 vni)
+	__must_hold_shared(RCU)
 {
 	struct vxlan_fdb *f;
 
@@ -1436,6 +1438,8 @@ static enum skb_drop_reason vxlan_snoop(struct net_device *dev,
 	    (ipv6_addr_type(&src_ip->sin6.sin6_addr) & IPV6_ADDR_LINKLOCAL))
 		ifindex = src_ifindex;
 #endif
+
+	__assume_ctx_lock(RCU); /* TODO: review this statement */
 
 	f = vxlan_find_mac_rcu(vxlan, src_mac, vni);
 	if (likely(f)) {

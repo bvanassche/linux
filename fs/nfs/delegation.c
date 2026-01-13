@@ -1184,6 +1184,7 @@ int nfs_async_inode_return_delegation(struct inode *inode,
 static struct inode *
 nfs_delegation_find_inode_server(struct nfs_server *server,
 				 const struct nfs_fh *fhandle)
+	__must_hold_shared(RCU)
 {
 	struct hlist_head *head = nfs_delegation_hash(server, fhandle);
 	struct nfs_delegation *delegation;

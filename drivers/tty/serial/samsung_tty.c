@@ -2260,6 +2260,7 @@ s3c24xx_serial_console_putchar(struct uart_port *port, unsigned char ch)
 static void
 s3c24xx_serial_console_write(struct console *co, const char *s,
 			     unsigned int count)
+	__no_context_analysis
 {
 	u32 ucon = rd_regl(cons_uart, S3C2410_UCON);
 	unsigned long flags;

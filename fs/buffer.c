@@ -178,6 +178,7 @@ EXPORT_SYMBOL(end_buffer_write_sync);
 
 static struct buffer_head *
 __find_get_block_slow(struct block_device *bdev, sector_t block, bool atomic)
+	__no_context_analysis
 {
 	struct address_space *bd_mapping = bdev->bd_mapping;
 	const int blkbits = bd_mapping->host->i_blkbits;

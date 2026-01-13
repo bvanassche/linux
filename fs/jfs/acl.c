@@ -91,6 +91,7 @@ static int __jfs_set_acl(tid_t tid, struct inode *inode, int type,
 
 int jfs_set_acl(struct mnt_idmap *idmap, struct dentry *dentry,
 		struct posix_acl *acl, int type)
+	__no_context_analysis /* clang bug? */
 {
 	int rc;
 	tid_t tid;

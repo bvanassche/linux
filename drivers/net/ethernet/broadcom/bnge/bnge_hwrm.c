@@ -226,6 +226,7 @@ static int bnge_map_hwrm_error(u32 hwrm_err)
 
 static struct bnge_hwrm_wait_token *
 bnge_hwrm_create_token(struct bnge_dev *bd, enum bnge_hwrm_chnl dst)
+	__no_context_analysis /* caller not appropriate for static analysis */
 {
 	struct bnge_hwrm_wait_token *token;
 
@@ -249,6 +250,7 @@ bnge_hwrm_create_token(struct bnge_dev *bd, enum bnge_hwrm_chnl dst)
 
 static void
 bnge_hwrm_destroy_token(struct bnge_dev *bd, struct bnge_hwrm_wait_token *token)
+	__no_context_analysis
 {
 	if (token->dst == BNGE_HWRM_CHNL_CHIMP) {
 		hlist_del_rcu(&token->node);

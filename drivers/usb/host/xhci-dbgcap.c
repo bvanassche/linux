@@ -171,8 +171,7 @@ static void xhci_dbc_init_contexts(struct xhci_dbc *dbc)
 }
 
 static void xhci_dbc_giveback(struct dbc_request *req, int status)
-	__releases(&dbc->lock)
-	__acquires(&dbc->lock)
+	__no_context_analysis
 {
 	struct xhci_dbc		*dbc = req->dbc;
 	struct device		*dev = dbc->dev;

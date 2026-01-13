@@ -1536,6 +1536,7 @@ static void usbf_epn_fifo_flush(struct usbf_ep *epn)
 
 static void usbf_ep_req_done(struct usbf_ep *ep, struct usbf_req *req,
 			     int status)
+	__no_context_analysis
 {
 	list_del_init(&req->queue);
 
@@ -2214,6 +2215,7 @@ static struct usbf_ep *usbf_get_ep_by_addr(struct usbf_udc *udc, u8 address)
 
 static int usbf_req_delegate(struct usbf_udc *udc,
 			     const struct usb_ctrlrequest *ctrlrequest)
+	__no_context_analysis
 {
 	int ret;
 
@@ -2405,6 +2407,7 @@ delegate:
 
 static int usbf_req_set_configuration(struct usbf_udc *udc,
 				      const struct usb_ctrlrequest *ctrlrequest)
+	__no_context_analysis
 {
 	u16 wLength;
 	u16 wValue;
@@ -2837,6 +2840,7 @@ static void usbf_ep_reset(struct usbf_ep *ep)
 }
 
 static void usbf_reset(struct usbf_udc *udc)
+	__no_context_analysis
 {
 	int i;
 
@@ -2867,6 +2871,7 @@ static void usbf_reset(struct usbf_udc *udc)
 }
 
 static void usbf_driver_suspend(struct usbf_udc *udc)
+	__no_context_analysis
 {
 	if (udc->is_usb_suspended) {
 		dev_dbg(udc->dev, "already suspended\n");
@@ -2892,6 +2897,7 @@ static void usbf_driver_suspend(struct usbf_udc *udc)
 }
 
 static void usbf_driver_resume(struct usbf_udc *udc)
+	__no_context_analysis
 {
 	if (!udc->is_usb_suspended)
 		return;

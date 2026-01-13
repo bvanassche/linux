@@ -141,6 +141,7 @@ static pmd_t *alloc_new_pmd(struct mm_struct *mm, unsigned long addr)
 }
 
 static void take_rmap_locks(struct vm_area_struct *vma)
+	__no_context_analysis
 {
 	if (vma->vm_file)
 		i_mmap_lock_write(vma->vm_file->f_mapping);
@@ -149,6 +150,7 @@ static void take_rmap_locks(struct vm_area_struct *vma)
 }
 
 static void drop_rmap_locks(struct vm_area_struct *vma)
+	__no_context_analysis
 {
 	if (vma->anon_vma)
 		anon_vma_unlock_write(vma->anon_vma);
@@ -259,6 +261,8 @@ static int move_ptes(struct pagetable_move_control *pmc,
 	}
 	if (new_ptl != old_ptl)
 		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
+	else
+		__acquire(new_ptl);
 	flush_tlb_batched_pending(vma->vm_mm);
 	lazy_mmu_mode_enable();
 
@@ -310,6 +314,8 @@ static int move_ptes(struct pagetable_move_control *pmc,
 		flush_tlb_range(vma, old_end - len, old_end);
 	if (new_ptl != old_ptl)
 		spin_unlock(new_ptl);
+	else
+		__release(new_ptl);
 	pte_unmap(new_ptep - 1);
 	pte_unmap_unlock(old_ptep - 1, old_ptl);
 out:
@@ -394,6 +400,8 @@ static bool move_normal_pmd(struct pagetable_move_control *pmc,
 	new_ptl = pmd_lockptr(mm, new_pmd);
 	if (new_ptl != old_ptl)
 		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
+	else
+		__acquire(new_ptl);
 
 	pmd = *old_pmd;
 
@@ -411,6 +419,8 @@ static bool move_normal_pmd(struct pagetable_move_control *pmc,
 out_unlock:
 	if (new_ptl != old_ptl)
 		spin_unlock(new_ptl);
+	else
+		__release(new_ptl);
 	spin_unlock(old_ptl);
 
 	return res;
@@ -451,6 +461,8 @@ static bool move_normal_pud(struct pagetable_move_control *pmc,
 	new_ptl = pud_lockptr(mm, new_pud);
 	if (new_ptl != old_ptl)
 		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
+	else
+		__acquire(new_ptl);
 
 	/* Clear the pud */
 	pud = *old_pud;
@@ -462,6 +474,8 @@ static bool move_normal_pud(struct pagetable_move_control *pmc,
 	flush_tlb_range(vma, pmc->old_addr, pmc->old_addr + PUD_SIZE);
 	if (new_ptl != old_ptl)
 		spin_unlock(new_ptl);
+	else
+		__release(new_ptl);
 	spin_unlock(old_ptl);
 
 	return true;
@@ -498,6 +512,8 @@ static bool move_huge_pud(struct pagetable_move_control *pmc,
 	new_ptl = pud_lockptr(mm, new_pud);
 	if (new_ptl != old_ptl)
 		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
+	else
+		__acquire(new_ptl);
 
 	/* Clear the pud */
 	pud = *old_pud;
@@ -511,6 +527,8 @@ static bool move_huge_pud(struct pagetable_move_control *pmc,
 	flush_pud_tlb_range(vma, pmc->old_addr, pmc->old_addr + HPAGE_PUD_SIZE);
 	if (new_ptl != old_ptl)
 		spin_unlock(new_ptl);
+	else
+		__release(new_ptl);
 	spin_unlock(old_ptl);
 
 	return true;
@@ -1966,6 +1984,7 @@ static unsigned long remap_move(struct vma_remap_struct *vrm)
 }
 
 static unsigned long do_mremap(struct vma_remap_struct *vrm)
+	__no_context_analysis /* conditional locking */
 {
 	struct mm_struct *mm = current->mm;
 	unsigned long res;

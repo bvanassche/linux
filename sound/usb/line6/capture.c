@@ -126,6 +126,7 @@ void line6_capture_copy(struct snd_line6_pcm *line6pcm, char *fbuf, int fsize)
 }
 
 void line6_capture_check_period(struct snd_line6_pcm *line6pcm, int length)
+	__must_hold(&line6pcm->in.lock)
 {
 	struct snd_pcm_substream *substream =
 	    get_substream(line6pcm, SNDRV_PCM_STREAM_CAPTURE);

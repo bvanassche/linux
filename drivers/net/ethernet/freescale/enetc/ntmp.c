@@ -133,6 +133,7 @@ static void ntmp_clean_cbdr(struct netc_cbdr *cbdr)
 
 static void ntmp_select_and_lock_cbdr(struct ntmp_user *user,
 				      struct netc_cbdr **cbdr)
+	__no_context_analysis /* TO DO */
 {
 	/* Currently only ENETC is supported, and it has only one command
 	 * BD ring.
@@ -143,6 +144,7 @@ static void ntmp_select_and_lock_cbdr(struct ntmp_user *user,
 }
 
 static void ntmp_unlock_cbdr(struct netc_cbdr *cbdr)
+	__no_context_analysis /* TO DO */
 {
 	mutex_unlock(&cbdr->ring_lock);
 }

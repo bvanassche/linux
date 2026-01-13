@@ -334,7 +334,7 @@ static void inode_cgwb_move_to_attached(struct inode *inode,
 static struct bdi_writeback *
 locked_inode_to_wb_and_lock_list(struct inode *inode)
 	__releases(&inode->i_lock)
-	__acquires(&wb->list_lock)
+	__acquires(&inode_to_wb(inode)->list_lock)
 {
 	while (true) {
 		struct bdi_writeback *wb = inode_to_wb(inode);
@@ -370,7 +370,7 @@ locked_inode_to_wb_and_lock_list(struct inode *inode)
  * on entry.
  */
 static struct bdi_writeback *inode_to_wb_and_lock_list(struct inode *inode)
-	__acquires(&wb->list_lock)
+	__acquires(&inode_to_wb(inode)->list_lock)
 {
 	spin_lock(&inode->i_lock);
 	return locked_inode_to_wb_and_lock_list(inode);
@@ -392,11 +392,13 @@ struct inode_switch_wbs_context {
 };
 
 static void bdi_down_write_wb_switch_rwsem(struct backing_dev_info *bdi)
+	__acquires(&bdi->wb_switch_rwsem)
 {
 	down_write(&bdi->wb_switch_rwsem);
 }
 
 static void bdi_up_write_wb_switch_rwsem(struct backing_dev_info *bdi)
+	__releases(&bdi->wb_switch_rwsem)
 {
 	up_write(&bdi->wb_switch_rwsem);
 }
@@ -1259,7 +1261,7 @@ static void inode_cgwb_move_to_attached(struct inode *inode,
 static struct bdi_writeback *
 locked_inode_to_wb_and_lock_list(struct inode *inode)
 	__releases(&inode->i_lock)
-	__acquires(&wb->list_lock)
+	__acquires(&inode_to_wb(inode)->list_lock)
 {
 	struct bdi_writeback *wb = inode_to_wb(inode);
 
@@ -1269,7 +1271,7 @@ locked_inode_to_wb_and_lock_list(struct inode *inode)
 }
 
 static struct bdi_writeback *inode_to_wb_and_lock_list(struct inode *inode)
-	__acquires(&wb->list_lock)
+	__acquires(&inode_to_wb(inode)->list_lock)
 {
 	struct bdi_writeback *wb = inode_to_wb(inode);
 
@@ -1369,6 +1371,8 @@ void inode_io_list_del(struct inode *inode)
 		return;
 
 	wb = inode_to_wb_and_lock_list(inode);
+	__release(&inode_to_wb(inode)->list_lock);
+	__acquire(&wb->list_lock);
 	spin_lock(&inode->i_lock);
 
 	inode_state_clear(inode, I_SYNC_QUEUED);
@@ -1593,6 +1597,7 @@ static int write_inode(struct inode *inode, struct writeback_control *wbc)
  * Caller must make sure inode cannot go away when we drop i_lock.
  */
 void inode_wait_for_writeback(struct inode *inode)
+	__must_hold(&inode->i_lock)
 {
 	struct wait_bit_queue_entry wqe;
 	struct wait_queue_head *wq_head;
@@ -1885,6 +1890,8 @@ static int writeback_single_inode(struct inode *inode,
 	wbc_detach_inode(wbc);
 
 	wb = inode_to_wb_and_lock_list(inode);
+	__release(&inode_to_wb(inode)->list_lock);
+	__acquire(&wb->list_lock);
 	spin_lock(&inode->i_lock);
 	/*
 	 * If the inode is freeing, its i_io_list shoudn't be updated
@@ -1957,6 +1964,7 @@ static long writeback_chunk_size(struct super_block *sb,
 static long writeback_sb_inodes(struct super_block *sb,
 				struct bdi_writeback *wb,
 				struct wb_writeback_work *work)
+	__must_hold(&wb->list_lock)
 {
 	struct writeback_control wbc = {
 		.sync_mode		= work->sync_mode,
@@ -2084,6 +2092,8 @@ static long writeback_sb_inodes(struct super_block *sb,
 		 * have been switched to another wb in the meantime.
 		 */
 		tmp_wb = inode_to_wb_and_lock_list(inode);
+		__release(&inode_to_wb(inode)->list_lock);
+		__acquire(&tmp_wb->list_lock);
 		spin_lock(&inode->i_lock);
 		if (!(inode_state_read(inode) & I_DIRTY_ALL))
 			total_wrote++;
@@ -2094,6 +2104,9 @@ static long writeback_sb_inodes(struct super_block *sb,
 		if (unlikely(tmp_wb != wb)) {
 			spin_unlock(&tmp_wb->list_lock);
 			spin_lock(&wb->list_lock);
+		} else {
+			__release(&tmp_wb->list_lock);
+			__acquire(&wb->list_lock);
 		}
 
 		/*
@@ -2112,6 +2125,7 @@ static long writeback_sb_inodes(struct super_block *sb,
 
 static long __writeback_inodes_wb(struct bdi_writeback *wb,
 				  struct wb_writeback_work *work)
+	__must_hold(&wb->list_lock)
 {
 	unsigned long start_time = jiffies;
 	long wrote = 0;
@@ -2586,6 +2600,7 @@ __initcall(start_dirtytime_writeback);
  * blockdev inode.
  */
 void __mark_inode_dirty(struct inode *inode, int flags)
+	__no_context_analysis
 {
 	struct super_block *sb = inode->i_sb;
 	int dirtytime = 0;
@@ -2741,6 +2756,7 @@ EXPORT_SYMBOL(__mark_inode_dirty);
  * in progress regardless of the order callers are granted the lock.
  */
 static void wait_sb_inodes(struct super_block *sb)
+	__must_hold_shared(&sb->s_umount)
 {
 	LIST_HEAD(sync_list);
 
@@ -2905,6 +2921,7 @@ EXPORT_SYMBOL(try_to_writeback_inodes_sb);
  * super_block.
  */
 void sync_inodes_sb(struct super_block *sb)
+	__must_hold_shared(&sb->s_umount)
 {
 	struct backing_dev_info *bdi = sb->s_bdi;
 	DEFINE_WB_COMPLETION(done, bdi);

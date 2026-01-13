@@ -600,6 +600,7 @@ void fuse_try_prune_one_inode(struct fuse_conn *fc, u64 nodeid)
 }
 
 bool fuse_lock_inode(struct inode *inode)
+	__no_context_analysis
 {
 	bool locked = false;
 
@@ -612,6 +613,7 @@ bool fuse_lock_inode(struct inode *inode)
 }
 
 void fuse_unlock_inode(struct inode *inode, bool locked)
+	__no_context_analysis
 {
 	if (locked)
 		mutex_unlock(&get_fuse_inode(inode)->mutex);
@@ -2148,6 +2150,7 @@ void fuse_mount_destroy(struct fuse_mount *fm)
 EXPORT_SYMBOL(fuse_mount_destroy);
 
 static void fuse_kill_sb_anon(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	fuse_sb_destroy(sb);
 	kill_anon_super(sb);
@@ -2166,6 +2169,7 @@ MODULE_ALIAS_FS("fuse");
 
 #ifdef CONFIG_BLOCK
 static void fuse_kill_sb_blk(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	fuse_sb_destroy(sb);
 	kill_block_super(sb);

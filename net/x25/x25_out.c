@@ -45,6 +45,7 @@ static int x25_pacsize_to_bytes(unsigned int pacsize)
  *      or a negative error code on failure.
  */
 int x25_output(struct sock *sk, struct sk_buff *skb)
+	__must_hold(sk)
 {
 	struct sk_buff *skbn;
 	unsigned char header[X25_EXT_MIN_LEN];

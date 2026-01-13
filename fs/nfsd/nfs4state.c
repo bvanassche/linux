@@ -539,6 +539,7 @@ same_owner_str(struct nfs4_stateowner *sop, struct xdr_netobj *owner)
 static struct nfs4_openowner *
 find_openstateowner_str(unsigned int hashval, struct nfsd4_open *open,
 			struct nfs4_client *clp)
+	__must_hold(&clp->cl_lock)
 {
 	struct nfs4_stateowner *so;
 
@@ -1605,6 +1606,7 @@ static bool unhash_lock_stateid(struct nfs4_ol_stateid *stp)
 }
 
 static void release_lock_stateid(struct nfs4_ol_stateid *stp)
+	__must_not_hold(&stp->st_stid.sc_client->cl_lock)
 {
 	struct nfs4_client *clp = stp->st_stid.sc_client;
 	bool unhashed;
@@ -1687,6 +1689,7 @@ static void release_open_stateid(struct nfs4_ol_stateid *stp)
 }
 
 static bool nfs4_openowner_unhashed(struct nfs4_openowner *oo)
+	__must_hold(&oo->oo_owner.so_client->cl_lock)
 {
 	lockdep_assert_held(&oo->oo_owner.so_client->cl_lock);
 
@@ -2863,7 +2866,7 @@ static int client_info_show(struct seq_file *m, void *v)
 DEFINE_SHOW_ATTRIBUTE(client_info);
 
 static void *states_start(struct seq_file *s, loff_t *pos)
-	__acquires(&clp->cl_lock)
+	__acquires(&((struct nfs4_client *)s->private)->cl_lock)
 {
 	struct nfs4_client *clp = s->private;
 	unsigned long id = *pos;
@@ -2889,7 +2892,7 @@ static void *states_next(struct seq_file *s, void *v, loff_t *pos)
 }
 
 static void states_stop(struct seq_file *s, void *v)
-	__releases(&clp->cl_lock)
+	__releases(&((struct nfs4_client *)s->private)->cl_lock)
 {
 	struct nfs4_client *clp = s->private;
 
@@ -4995,6 +4998,7 @@ static inline void *alloc_stateowner(struct kmem_cache *slab, struct xdr_netobj 
 }
 
 static void hash_openowner(struct nfs4_openowner *oo, struct nfs4_client *clp, unsigned int strhashval)
+	__must_hold(&clp->cl_lock)
 {
 	lockdep_assert_held(&clp->cl_lock);
 
@@ -5095,10 +5099,13 @@ static void nfsd40_drop_revoked_stid(struct nfs4_client *cl,
 
 		spin_lock(&cl->cl_lock);
 		st = find_stateid_locked(cl, stid);
-		if (st)
+		if (st) {
+			__release(&cl->cl_lock);
+			__acquire(&st->sc_client->cl_lock);
 			nfsd4_drop_revoked_stid(st);
-		else
+		} else {
 			spin_unlock(&cl->cl_lock);
+		}
 	}
 }
 
@@ -5119,6 +5126,7 @@ nfsd4_verify_open_stid(struct nfs4_stid *s)
 /* Lock the stateid st_mutex, and deal with races with CLOSE */
 static __be32
 nfsd4_lock_ol_stateid(struct nfs4_ol_stateid *stp)
+	__cond_acquires(0, stp->st_mutex)
 {
 	__be32 ret;
 
@@ -5193,6 +5201,7 @@ retry:
 
 static struct nfs4_ol_stateid *
 init_open_stateid(struct nfs4_file *fp, struct nfsd4_open *open)
+	__no_context_analysis
 {
 
 	struct nfs4_openowner *oo = open->op_openowner;
@@ -6440,6 +6449,7 @@ static bool open_xor_delegation(struct nfsd4_open *open)
  */
 __be32
 nfsd4_process_open2(struct svc_rqst *rqstp, struct svc_fh *current_fh, struct nfsd4_open *open)
+	__no_context_analysis
 {
 	struct nfsd4_compoundres *resp = rqstp->rq_resp;
 	struct nfs4_client *cl = open->op_openowner->oo_owner.so_client;
@@ -6925,6 +6935,8 @@ retry:
 			if (stid->sc_status & SC_STATUS_ADMIN_REVOKED) {
 				refcount_inc(&stid->sc_count);
 				spin_unlock(&nn->client_lock);
+				__release(&clp->cl_lock);
+				__acquire(&stid->sc_client->cl_lock);
 				/* this function drops ->cl_lock */
 				nfsd4_drop_revoked_stid(stid);
 				nfs4_put_stid(stid);
@@ -7571,6 +7583,8 @@ nfsd4_free_stateid(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 	if (!s || s->sc_status & SC_STATUS_CLOSED)
 		goto out_unlock;
 	if (s->sc_status & SC_STATUS_ADMIN_REVOKED) {
+		__release(&cl->cl_lock);
+		__acquire(&s->sc_client->cl_lock);
 		nfsd4_drop_revoked_stid(s);
 		ret = nfs_ok;
 		goto out;
@@ -7620,6 +7634,7 @@ setlkflg (int type)
 }
 
 static __be32 nfs4_seqid_op_checks(struct nfsd4_compound_state *cstate, stateid_t *stateid, u32 seqid, struct nfs4_ol_stateid *stp)
+	__no_context_analysis
 {
 	struct svc_fh *current_fh = &cstate->current_fh;
 	struct nfs4_stateowner *sop = stp->st_stateowner;
@@ -7688,6 +7703,7 @@ retry:
 
 static __be32 nfs4_preprocess_confirmed_seqid_op(struct nfsd4_compound_state *cstate, u32 seqid,
 						 stateid_t *stateid, struct nfs4_ol_stateid **stpp, struct nfsd_net *nn)
+	__no_context_analysis
 {
 	__be32 status;
 	struct nfs4_openowner *oo;
@@ -7710,6 +7726,7 @@ static __be32 nfs4_preprocess_confirmed_seqid_op(struct nfsd4_compound_state *cs
 __be32
 nfsd4_open_confirm(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 		   union nfsd4_op_u *u)
+	__no_context_analysis
 {
 	struct nfsd4_open_confirm *oc = &u->open_confirm;
 	__be32 status;
@@ -7777,6 +7794,7 @@ static inline void nfs4_stateid_downgrade(struct nfs4_ol_stateid *stp, u32 to_ac
 __be32
 nfsd4_open_downgrade(struct svc_rqst *rqstp,
 		     struct nfsd4_compound_state *cstate, union nfsd4_op_u *u)
+	__no_context_analysis
 {
 	struct nfsd4_open_downgrade *od = &u->open_downgrade;
 	__be32 status;
@@ -7849,6 +7867,7 @@ static bool nfsd4_close_open_stateid(struct nfs4_ol_stateid *s)
 __be32
 nfsd4_close(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 		union nfsd4_op_u *u)
+	__no_context_analysis
 {
 	struct nfsd4_close *close = &u->close;
 	__be32 status;
@@ -8169,6 +8188,7 @@ static struct nfs4_ol_stateid *
 init_lock_stateid(struct nfs4_ol_stateid *stp, struct nfs4_lockowner *lo,
 		  struct nfs4_file *fp, struct inode *inode,
 		  struct nfs4_ol_stateid *open_stp)
+	__no_context_analysis
 {
 	struct nfs4_client *clp = lo->lo_owner.so_client;
 	struct nfs4_ol_stateid *retstp;
@@ -8311,6 +8331,7 @@ out:
 __be32
 nfsd4_lock(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 	   union nfsd4_op_u *u)
+	__no_context_analysis
 {
 	struct nfsd4_lock *lock = &u->lock;
 	struct nfs4_openowner *open_sop = NULL;
@@ -8658,6 +8679,7 @@ void nfsd4_lockt_release(union nfsd4_op_u *u)
 __be32
 nfsd4_locku(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
 	    union nfsd4_op_u *u)
+	__no_context_analysis
 {
 	struct nfsd4_locku *locku = &u->locku;
 	struct nfs4_ol_stateid *stp;

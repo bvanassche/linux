@@ -1291,6 +1291,7 @@ static void l2cap_sock_kill(struct sock *sk)
 }
 
 static int __l2cap_wait_ack(struct sock *sk, struct l2cap_chan *chan)
+	__must_hold(sk)
 {
 	DECLARE_WAITQUEUE(wait, current);
 	int err = 0;
@@ -1336,6 +1337,7 @@ static int __l2cap_wait_ack(struct sock *sk, struct l2cap_chan *chan)
 }
 
 static int l2cap_sock_shutdown(struct socket *sock, int how)
+	__no_context_analysis
 {
 	struct sock *sk = sock->sk;
 	struct l2cap_chan *chan;
@@ -1672,6 +1674,7 @@ static void l2cap_sock_state_change_cb(struct l2cap_chan *chan, int state,
 static struct sk_buff *l2cap_sock_alloc_skb_cb(struct l2cap_chan *chan,
 					       unsigned long hdr_len,
 					       unsigned long len, int nb)
+	__no_context_analysis
 {
 	struct sock *sk = chan->data;
 	struct sk_buff *skb;

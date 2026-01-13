@@ -74,6 +74,7 @@ static void lp8788_irq_disable(struct irq_data *data)
 }
 
 static void lp8788_irq_bus_lock(struct irq_data *data)
+	__acquires(&((struct lp8788_irq_data *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct lp8788_irq_data *irqd = irq_data_get_irq_chip_data(data);
 
@@ -81,6 +82,7 @@ static void lp8788_irq_bus_lock(struct irq_data *data)
 }
 
 static void lp8788_irq_bus_sync_unlock(struct irq_data *data)
+	__releases(&((struct lp8788_irq_data *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct lp8788_irq_data *irqd = irq_data_get_irq_chip_data(data);
 	enum lp8788_int_id irq = data->hwirq;

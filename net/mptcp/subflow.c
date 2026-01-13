@@ -1891,6 +1891,7 @@ static void subflow_state_change(struct sock *sk)
 }
 
 void mptcp_subflow_queue_clean(struct sock *listener_sk, struct sock *listener_ssk)
+	__must_hold(listener_ssk)
 {
 	struct request_sock_queue *queue = &inet_csk(listener_ssk)->icsk_accept_queue;
 	struct request_sock *req, *head, *tail;

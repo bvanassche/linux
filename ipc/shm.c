@@ -122,6 +122,7 @@ void shm_init_ns(struct ipc_namespace *ns)
  * Only shm_ids.rwsem remains locked on exit.
  */
 static void do_shm_rmid(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
+	__no_context_analysis
 {
 	struct shmid_kernel *shp;
 
@@ -191,6 +192,7 @@ static inline struct shmid_kernel *shm_obtain_object_check(struct ipc_namespace 
  * is not necessarily held.
  */
 static inline struct shmid_kernel *shm_lock(struct ipc_namespace *ns, int id)
+	__no_context_analysis
 {
 	struct kern_ipc_perm *ipcp;
 
@@ -223,6 +225,7 @@ err:
 }
 
 static inline void shm_lock_by_ptr(struct shmid_kernel *ipcp)
+	__no_context_analysis
 {
 	rcu_read_lock();
 	ipc_lock_object(&ipcp->shm_perm);
@@ -279,6 +282,7 @@ static inline void shm_rmid(struct shmid_kernel *s)
 
 
 static int __shm_open(struct shm_file_data *sfd)
+	__no_context_analysis
 {
 	struct shmid_kernel *shp;
 
@@ -329,6 +333,7 @@ static void shm_open(struct vm_area_struct *vma)
  * but returns with shp unlocked and freed.
  */
 static void shm_destroy(struct ipc_namespace *ns, struct shmid_kernel *shp)
+	__no_context_analysis
 {
 	struct file *shm_file;
 
@@ -369,6 +374,7 @@ static bool shm_may_destroy(struct shmid_kernel *shp)
  * and will later be kfree()d.
  */
 static void __shm_close(struct shm_file_data *sfd)
+	__no_context_analysis
 {
 	struct shmid_kernel *shp;
 	struct ipc_namespace *ns = sfd->ns;
@@ -443,6 +449,7 @@ void shm_destroy_orphaned(struct ipc_namespace *ns)
 
 /* Locking assumes this will only be called with task == current */
 void exit_shm(struct task_struct *task)
+	__no_context_analysis
 {
 	for (;;) {
 		struct shmid_kernel *shp;
@@ -700,6 +707,7 @@ static const struct vm_operations_struct shm_vm_ops = {
  * Called with shm_ids.rwsem held as a writer.
  */
 static int newseg(struct ipc_namespace *ns, struct ipc_params *params)
+	__no_context_analysis
 {
 	key_t key = params->key;
 	int shmflg = params->flg;
@@ -992,6 +1000,7 @@ static void shm_get_stat(struct ipc_namespace *ns, unsigned long *rss,
  */
 static int shmctl_down(struct ipc_namespace *ns, int shmid, int cmd,
 		       struct shmid64_ds *shmid64)
+	__no_context_analysis
 {
 	struct kern_ipc_perm *ipcp;
 	struct shmid_kernel *shp;
@@ -1518,6 +1527,7 @@ COMPAT_SYSCALL_DEFINE3(old_shmctl, int, shmid, int, cmd, void __user *, uptr)
  */
 long do_shmat(int shmid, char __user *shmaddr, int shmflg,
 	      ulong *raddr, unsigned long shmlba)
+	__no_context_analysis
 {
 	struct shmid_kernel *shp;
 	unsigned long addr = (unsigned long)shmaddr;

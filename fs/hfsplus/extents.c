@@ -392,6 +392,7 @@ found:
 
 int hfsplus_free_fork(struct super_block *sb, u32 cnid,
 		struct hfsplus_fork_raw *fork, int type)
+	__no_context_analysis
 {
 	struct hfs_find_data fd;
 	hfsplus_extent_rec ext_entry;
@@ -542,6 +543,7 @@ insert_extent:
 }
 
 void hfsplus_file_truncate(struct inode *inode)
+	__no_context_analysis
 {
 	struct super_block *sb = inode->i_sb;
 	struct hfsplus_inode_info *hip = HFSPLUS_I(inode);

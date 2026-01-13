@@ -948,8 +948,7 @@ static void create_ptd_int(struct isp1760_qh *qh,
 }
 
 static void isp1760_urb_done(struct usb_hcd *hcd, struct urb *urb)
-__releases(priv->lock)
-__acquires(priv->lock)
+	__no_context_analysis /* __must_hold(((struct isp1760_hcd *)hcd_to_priv(hcd))->lock) */
 {
 	struct isp1760_hcd *priv = hcd_to_priv(hcd);
 

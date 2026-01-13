@@ -328,6 +328,7 @@ error:
 }
 
 static struct siw_wqe *siw_rqe_get(struct siw_qp *qp)
+	__no_context_analysis /* conditional locking */
 {
 	struct siw_rqe *rqe;
 	struct siw_srq *srq;

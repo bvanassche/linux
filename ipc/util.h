@@ -206,11 +206,13 @@ static inline int ipc_checkid(struct kern_ipc_perm *ipcp, int id)
 }
 
 static inline void ipc_lock_object(struct kern_ipc_perm *perm)
+	__acquires(&perm->lock)
 {
 	spin_lock(&perm->lock);
 }
 
 static inline void ipc_unlock_object(struct kern_ipc_perm *perm)
+	__releases(&perm->lock)
 {
 	spin_unlock(&perm->lock);
 }
@@ -221,6 +223,8 @@ static inline void ipc_assert_locked_object(struct kern_ipc_perm *perm)
 }
 
 static inline void ipc_unlock(struct kern_ipc_perm *perm)
+	__releases(&perm->lock)
+	__releases_shared(RCU)
 {
 	ipc_unlock_object(perm);
 	rcu_read_unlock();

@@ -325,6 +325,7 @@ static int shstk_push_sigframe(unsigned long *ssp)
 }
 
 static int shstk_pop_sigframe(unsigned long *ssp)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long token_addr;
 	unsigned int seq;

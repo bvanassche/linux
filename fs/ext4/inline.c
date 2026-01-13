@@ -571,6 +571,7 @@ int ext4_readpage_inline(struct inode *inode, struct folio *folio)
 
 static int ext4_convert_inline_data_to_extent(struct address_space *mapping,
 					      struct inode *inode)
+	__no_context_analysis
 {
 	int ret, needed_blocks, no_expand;
 	handle_t *handle = NULL;

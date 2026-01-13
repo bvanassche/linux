@@ -333,6 +333,7 @@ static void advance_oldest_read(struct t4_wq *wq)
  * prior unsignalled WRs.
  */
 void c4iw_flush_hw_cq(struct c4iw_cq *chp, struct c4iw_qp *flush_qhp)
+	__no_context_analysis /* conditional locking */
 {
 	struct t4_cqe *hw_cqe, *swcqe, read_cqe;
 	struct c4iw_qp *qhp;
@@ -919,6 +920,7 @@ out:
  *	any other -errno	fatal error
  */
 static int c4iw_poll_cq_one(struct c4iw_cq *chp, struct ib_wc *wc)
+	__no_context_analysis /* conditional locking */
 {
 	struct c4iw_srq *srq = NULL;
 	struct c4iw_qp *qhp = NULL;

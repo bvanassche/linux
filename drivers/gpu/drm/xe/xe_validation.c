@@ -49,6 +49,7 @@ void xe_validation_assert_exec(const struct xe_device *xe,
 #endif
 
 static int xe_validation_lock(struct xe_validation_ctx *ctx)
+	__no_context_analysis
 {
 	struct xe_validation_device *val = ctx->val;
 	int ret = 0;
@@ -74,6 +75,7 @@ static int xe_validation_lock(struct xe_validation_ctx *ctx)
 }
 
 static int xe_validation_trylock(struct xe_validation_ctx *ctx)
+	__no_context_analysis /* condiitonal locking */
 {
 	struct xe_validation_device *val = ctx->val;
 	bool locked;
@@ -92,6 +94,7 @@ static int xe_validation_trylock(struct xe_validation_ctx *ctx)
 }
 
 static void xe_validation_unlock(struct xe_validation_ctx *ctx)
+	__no_context_analysis
 {
 	if (!ctx->lock_held)
 		return;

@@ -102,6 +102,7 @@ static int tcf_skbmod_init(struct net *net, struct nlattr *nla,
 			   struct nlattr *est, struct tc_action **a,
 			   struct tcf_proto *tp, u32 flags,
 			   struct netlink_ext_ack *extack)
+	__no_context_analysis
 {
 	struct tc_action_net *tn = net_generic(net, act_skbmod_ops.net_id);
 	bool ovr = flags & TCA_ACT_FLAGS_REPLACE;

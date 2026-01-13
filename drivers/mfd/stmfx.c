@@ -164,6 +164,7 @@ int stmfx_function_disable(struct stmfx *stmfx, u32 func)
 EXPORT_SYMBOL_GPL(stmfx_function_disable);
 
 static void stmfx_irq_bus_lock(struct irq_data *data)
+	__acquires(&((struct stmfx *)irq_data_get_irq_chip_data(data))->lock)
 {
 	struct stmfx *stmfx = irq_data_get_irq_chip_data(data);
 
@@ -171,6 +172,7 @@ static void stmfx_irq_bus_lock(struct irq_data *data)
 }
 
 static void stmfx_irq_bus_sync_unlock(struct irq_data *data)
+	__releases(&((struct stmfx *)irq_data_get_irq_chip_data(data))->lock)
 {
 	struct stmfx *stmfx = irq_data_get_irq_chip_data(data);
 

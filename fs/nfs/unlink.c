@@ -61,6 +61,7 @@ static void nfs_async_unlink_done(struct rpc_task *task, void *calldata)
  * rpc_task would be freed too.
  */
 static void nfs_async_unlink_release(void *calldata)
+	__releases_shared(&NFS_I(d_inode(((struct nfs_unlinkdata *)calldata)->dentry->d_parent))->rmdir_sem)
 {
 	struct nfs_unlinkdata	*data = calldata;
 	struct dentry *dentry = data->dentry;
@@ -160,6 +161,8 @@ static int nfs_call_unlink(struct dentry *dentry, struct inode *inode, struct nf
 	}
 	data->dentry = alias;
 	nfs_do_call_unlink(inode, data);
+	/* See also nfs_async_unlink_release(). */
+	__release_shared(&NFS_I(dir)->rmdir_sem);
 	return 1;
 }
 

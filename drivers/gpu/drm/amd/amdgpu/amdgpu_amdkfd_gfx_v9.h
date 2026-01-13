@@ -59,10 +59,12 @@ void kgd_gfx_v9_program_trap_handler_settings(struct amdgpu_device *adev,
 		uint32_t vmid, uint64_t tba_addr, uint64_t tma_addr,
 		uint32_t inst);
 void kgd_gfx_v9_acquire_queue(struct amdgpu_device *adev, uint32_t pipe_id,
-				uint32_t queue_id, uint32_t inst);
+				uint32_t queue_id, uint32_t inst)
+	__acquires(adev->srbm_mutex);
 uint64_t kgd_gfx_v9_get_queue_mask(struct amdgpu_device *adev,
 				uint32_t pipe_id, uint32_t queue_id);
-void kgd_gfx_v9_release_queue(struct amdgpu_device *adev, uint32_t inst);
+void kgd_gfx_v9_release_queue(struct amdgpu_device *adev, uint32_t inst)
+	__releases(adev->srbm_mutex);
 void kgd_gfx_v9_set_wave_launch_stall(struct amdgpu_device *adev,
 					uint32_t vmid,
 					bool stall);

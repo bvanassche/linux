@@ -316,6 +316,7 @@ int mips_cm_probe(void)
 
 void mips_cm_lock_other(unsigned int cluster, unsigned int core,
 			unsigned int vp, unsigned int block)
+	__no_context_analysis /* this_cpu_ptr() */
 {
 	unsigned int curr_core, cm_rev;
 	u32 val;
@@ -375,6 +376,7 @@ void mips_cm_lock_other(unsigned int cluster, unsigned int core,
 }
 
 void mips_cm_unlock_other(void)
+	__no_context_analysis /* this_cpu_ptr() */
 {
 	unsigned int curr_core;
 

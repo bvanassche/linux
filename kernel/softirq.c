@@ -154,6 +154,7 @@ bool local_bh_blocked(void)
 }
 
 void __local_bh_disable_ip(unsigned long ip, unsigned int cnt)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long flags;
 	int newcnt;
@@ -214,6 +215,7 @@ void __local_bh_disable_ip(unsigned long ip, unsigned int cnt)
 EXPORT_SYMBOL(__local_bh_disable_ip);
 
 static void __local_bh_enable(unsigned int cnt, bool unlock)
+	__no_context_analysis /* conditional locking */
 {
 	unsigned long flags;
 	bool sirq_en = false;
@@ -873,11 +875,13 @@ static DEFINE_PER_CPU(struct tasklet_sync_callback, tasklet_sync_callback) = {
 };
 
 static void tasklet_lock_callback(void)
+	__no_context_analysis /* this_cpu_ptr() */
 {
 	spin_lock(this_cpu_ptr(&tasklet_sync_callback.cb_lock));
 }
 
 static void tasklet_unlock_callback(void)
+	__no_context_analysis /* this_cpu_ptr() */
 {
 	spin_unlock(this_cpu_ptr(&tasklet_sync_callback.cb_lock));
 }
@@ -893,6 +897,7 @@ static void tasklet_callback_cancel_wait_running(void)
 }
 
 static void tasklet_callback_sync_wait_running(void)
+	__no_context_analysis /* this_cpu_ptr() */
 {
 	struct tasklet_sync_callback *sync_cb = this_cpu_ptr(&tasklet_sync_callback);
 

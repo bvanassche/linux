@@ -1126,6 +1126,7 @@ static struct dma_chan *nbpf_of_xlate(struct of_phandle_args *dma_spec,
 }
 
 static void nbpf_chan_tasklet(struct tasklet_struct *t)
+	__no_context_analysis /* conditional locking */
 {
 	struct nbpf_channel *chan = from_tasklet(chan, t, tasklet);
 	struct nbpf_desc *desc, *tmp;

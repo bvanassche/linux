@@ -42,15 +42,15 @@ void __libeth_xdpsq_put(struct libeth_xdpsq_lock *lock,
 }
 EXPORT_SYMBOL_GPL(__libeth_xdpsq_put);
 
-void __acquires(&lock->lock)
-__libeth_xdpsq_lock(struct libeth_xdpsq_lock *lock)
+void __libeth_xdpsq_lock(struct libeth_xdpsq_lock *lock)
+	 __acquires(&lock->lock)
 {
 	spin_lock(&lock->lock);
 }
 EXPORT_SYMBOL_GPL(__libeth_xdpsq_lock);
 
-void __releases(&lock->lock)
-__libeth_xdpsq_unlock(struct libeth_xdpsq_lock *lock)
+void __libeth_xdpsq_unlock(struct libeth_xdpsq_lock *lock)
+	__releases(&lock->lock)
 {
 	spin_unlock(&lock->lock);
 }

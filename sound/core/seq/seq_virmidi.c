@@ -72,6 +72,7 @@ static int dump_to_rawmidi(void *ptr, void *buf, int count)
 static int snd_virmidi_dev_receive_event(struct snd_virmidi_dev *rdev,
 					 struct snd_seq_event *ev,
 					 bool atomic)
+	__no_context_analysis /* conditional locking */
 {
 	struct snd_virmidi *vmidi;
 	unsigned char msg[4];

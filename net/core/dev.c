@@ -230,6 +230,7 @@ static bool use_backlog_threads(void)
 
 static inline void backlog_lock_irq_save(struct softnet_data *sd,
 					 unsigned long *flags)
+	__no_context_analysis /* conditional locking */
 {
 	if (IS_ENABLED(CONFIG_PREEMPT_RT)) {
 		spin_lock_irqsave(&sd->input_pkt_queue.lock, *flags);
@@ -241,6 +242,7 @@ static inline void backlog_lock_irq_save(struct softnet_data *sd,
 }
 
 static inline void backlog_lock_irq_disable(struct softnet_data *sd)
+	__no_context_analysis /* conditional locking */
 {
 	if (IS_ENABLED(CONFIG_RPS) || use_backlog_threads())
 		spin_lock_irq(&sd->input_pkt_queue.lock);
@@ -250,6 +252,7 @@ static inline void backlog_lock_irq_disable(struct softnet_data *sd)
 
 static inline void backlog_unlock_irq_restore(struct softnet_data *sd,
 					      unsigned long flags)
+	__no_context_analysis /* conditional locking */
 {
 	if (IS_ENABLED(CONFIG_PREEMPT_RT)) {
 		spin_unlock_irqrestore(&sd->input_pkt_queue.lock, flags);
@@ -261,6 +264,7 @@ static inline void backlog_unlock_irq_restore(struct softnet_data *sd,
 }
 
 static inline void backlog_unlock_irq_enable(struct softnet_data *sd)
+	__no_context_analysis /* conditional locking */
 {
 	if (IS_ENABLED(CONFIG_RPS) || use_backlog_threads())
 		spin_unlock_irq(&sd->input_pkt_queue.lock);
@@ -834,6 +838,7 @@ netdev_napi_by_id(struct net *net, unsigned int napi_id)
  */
 struct napi_struct *
 netdev_napi_by_id_lock(struct net *net, unsigned int napi_id)
+	__no_context_analysis /*__cond_acquires(nonnull, &dev->lock)*/
 {
 	struct napi_struct *napi;
 	struct net_device *dev;
@@ -1101,6 +1106,7 @@ __netdev_put_lock_ops_compat(struct net_device *dev, struct net *net)
  *	Return: pointer to a device with lock held, NULL if not found.
  */
 struct net_device *netdev_get_by_index_lock(struct net *net, int ifindex)
+	__cond_acquires(nonnull, &dev_get_by_index(net, ifindex)->lock)
 {
 	struct net_device *dev;
 
@@ -1126,6 +1132,7 @@ netdev_get_by_index_lock_ops_compat(struct net *net, int ifindex)
 struct net_device *
 netdev_xa_find_lock(struct net *net, struct net_device *dev,
 		    unsigned long *index)
+	__no_context_analysis
 {
 	if (dev)
 		netdev_unlock(dev);
@@ -5778,6 +5785,7 @@ int netif_rx(struct sk_buff *skb)
 EXPORT_SYMBOL(netif_rx);
 
 static __latent_entropy void net_tx_action(void)
+	__no_context_analysis /* conditional locking */
 {
 	struct softnet_data *sd = this_cpu_ptr(&softnet_data);
 
@@ -6563,6 +6571,7 @@ static struct flush_backlogs *flush_backlogs_fallback;
 static DEFINE_MUTEX(flush_backlogs_mutex);
 
 static void flush_all_backlogs(void)
+	__no_context_analysis
 {
 	struct flush_backlogs *ptr = flush_backlogs_alloc();
 	unsigned int cpu;
@@ -6935,6 +6944,7 @@ static void busy_poll_stop(struct napi_struct *napi, void *have_poll_lock,
 static void __napi_busy_loop(unsigned int napi_id,
 		      bool (*loop_end)(void *, unsigned long),
 		      void *loop_end_arg, unsigned flags, u16 budget)
+	__must_hold_shared(RCU)
 {
 	unsigned long start_time = loop_end ? busy_loop_current_time() : 0;
 	int (*napi_poll)(struct napi_struct *napi, int budget);
@@ -7019,6 +7029,7 @@ count:
 void napi_busy_loop_rcu(unsigned int napi_id,
 			bool (*loop_end)(void *, unsigned long),
 			void *loop_end_arg, bool prefer_busy_poll, u16 budget)
+	__must_hold_shared(RCU)
 {
 	unsigned flags = NAPI_F_END_ON_RESCHED;
 
@@ -12309,6 +12320,7 @@ static void dev_memory_provider_uninstall(struct net_device *dev)
 
 /* devices must be UP and netdev_lock()'d */
 static void netif_close_many_and_unlock(struct list_head *close_head)
+	__no_context_analysis /* unlock loop */
 {
 	struct net_device *dev, *tmp;
 
@@ -12344,6 +12356,7 @@ bool unregister_netdevice_queued(const struct net_device *dev)
 
 void unregister_netdevice_many_notify(struct list_head *head,
 				      u32 portid, const struct nlmsghdr *nlh)
+	__no_context_analysis /* too complex */
 {
 	struct net_device *dev, *tmp;
 	LIST_HEAD(close_head);
@@ -12507,6 +12520,7 @@ EXPORT_SYMBOL(unregister_netdev);
 int __dev_change_net_namespace(struct net_device *dev, struct net *net,
 			       const char *pat, int new_ifindex,
 			       struct netlink_ext_ack *extack)
+	__no_context_analysis /* conditional locking */
 {
 	struct netdev_name_node *name_node;
 	struct net *net_old = dev_net(dev);

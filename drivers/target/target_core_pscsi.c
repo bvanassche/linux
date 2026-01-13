@@ -348,7 +348,7 @@ static struct se_device *pscsi_alloc_device(struct se_hba *hba,
  * Called with struct Scsi_Host->host_lock called.
  */
 static int pscsi_create_type_disk(struct se_device *dev, struct scsi_device *sd)
-	__releases(sh->host_lock)
+	__releases(sd->host->host_lock)
 {
 	struct pscsi_hba_virt *phv = dev->se_hba->hba_ptr;
 	struct pscsi_dev_virt *pdv = PSCSI_DEV(dev);
@@ -393,7 +393,7 @@ static int pscsi_create_type_disk(struct se_device *dev, struct scsi_device *sd)
  * Called with struct Scsi_Host->host_lock called.
  */
 static int pscsi_create_type_nondisk(struct se_device *dev, struct scsi_device *sd)
-	__releases(sh->host_lock)
+	__releases(sd->host->host_lock)
 {
 	struct pscsi_hba_virt *phv = dev->se_hba->hba_ptr;
 	struct Scsi_Host *sh = sd->host;
@@ -497,6 +497,8 @@ static int pscsi_configure_device(struct se_device *dev)
 		    (pdv->pdv_target_id != sd->id) ||
 		    (pdv->pdv_lun_id != sd->lun))
 			continue;
+		__acquire(sd->host->host_lock);
+		__release(sh->host_lock);
 		/*
 		 * Functions will release the held struct scsi_host->host_lock
 		 * before calling pscsi_add_device_to_list() to register

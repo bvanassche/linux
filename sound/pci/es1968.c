@@ -1795,6 +1795,7 @@ static void snd_es1968_suppress_jitter(struct es1968 *chip, struct esschan *es)
  * update pointer
  */
 static void snd_es1968_update_pcm(struct es1968 *chip, struct esschan *es)
+	__must_hold(&chip->substream_lock)
 {
 	unsigned int hwptr;
 	unsigned int diff;

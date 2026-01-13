@@ -87,11 +87,13 @@ int nouveau_uvmm_ioctl_vm_bind(struct drm_device *dev, void *data,
 			       struct drm_file *file_priv);
 
 static inline void nouveau_uvmm_lock(struct nouveau_uvmm *uvmm)
+	__acquires(uvmm->mutex)
 {
 	mutex_lock(&uvmm->mutex);
 }
 
 static inline void nouveau_uvmm_unlock(struct nouveau_uvmm *uvmm)
+	__releases(uvmm->mutex)
 {
 	mutex_unlock(&uvmm->mutex);
 }

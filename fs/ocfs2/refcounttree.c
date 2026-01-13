@@ -153,7 +153,7 @@ ocfs2_refcount_cache_get_super(struct ocfs2_caching_info *ci)
 }
 
 static void ocfs2_refcount_cache_lock(struct ocfs2_caching_info *ci)
-__acquires(&rf->rf_lock)
+	__acquires(&cache_info_to_refcount(ci)->rf_lock)
 {
 	struct ocfs2_refcount_tree *rf = cache_info_to_refcount(ci);
 
@@ -161,7 +161,7 @@ __acquires(&rf->rf_lock)
 }
 
 static void ocfs2_refcount_cache_unlock(struct ocfs2_caching_info *ci)
-__releases(&rf->rf_lock)
+	__releases(&cache_info_to_refcount(ci)->rf_lock)
 {
 	struct ocfs2_refcount_tree *rf = cache_info_to_refcount(ci);
 
@@ -169,6 +169,7 @@ __releases(&rf->rf_lock)
 }
 
 static void ocfs2_refcount_cache_io_lock(struct ocfs2_caching_info *ci)
+	__acquires(&cache_info_to_refcount(ci)->rf_io_mutex)
 {
 	struct ocfs2_refcount_tree *rf = cache_info_to_refcount(ci);
 
@@ -176,6 +177,7 @@ static void ocfs2_refcount_cache_io_lock(struct ocfs2_caching_info *ci)
 }
 
 static void ocfs2_refcount_cache_io_unlock(struct ocfs2_caching_info *ci)
+	__releases(&cache_info_to_refcount(ci)->rf_io_mutex)
 {
 	struct ocfs2_refcount_tree *rf = cache_info_to_refcount(ci);
 
@@ -415,6 +417,7 @@ out:
 
 static int __ocfs2_lock_refcount_tree(struct ocfs2_super *osb,
 				      struct ocfs2_refcount_tree *tree, int rw)
+	__no_context_analysis /* conditional locking */
 {
 	int ret;
 
@@ -516,6 +519,7 @@ out:
 
 void ocfs2_unlock_refcount_tree(struct ocfs2_super *osb,
 				struct ocfs2_refcount_tree *tree, int rw)
+	__no_context_analysis /* conditional locking */
 {
 	if (rw)
 		up_write(&tree->rf_sem);
@@ -753,6 +757,7 @@ out:
 }
 
 int ocfs2_remove_refcount_tree(struct inode *inode, struct buffer_head *di_bh)
+	__no_context_analysis /* conditional locking */
 {
 	int ret, delete_tree = 0;
 	handle_t *handle = NULL;

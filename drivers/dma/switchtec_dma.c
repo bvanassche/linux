@@ -612,14 +612,18 @@ static void switchtec_dma_synchronize(struct dma_chan *chan)
 	spin_unlock_bh(&swdma_chan->complete_lock);
 }
 
+static struct switchtec_dma_chan *to_swdma_chan(struct dma_chan *c)
+{
+	return container_of(c, struct switchtec_dma_chan, dma_chan);
+}
+
 static struct dma_async_tx_descriptor *
 switchtec_dma_prep_desc(struct dma_chan *c, u16 dst_fid, dma_addr_t dma_dst,
 			u16 src_fid, dma_addr_t dma_src, u64 data,
 			size_t len, unsigned long flags)
-	__acquires(swdma_chan->submit_lock)
+	__cond_acquires(nonnull, &to_swdma_chan(c)->submit_lock)
 {
-	struct switchtec_dma_chan *swdma_chan =
-		container_of(c, struct switchtec_dma_chan, dma_chan);
+	struct switchtec_dma_chan *swdma_chan = to_swdma_chan(c);
 	struct switchtec_dma_desc *desc;
 	int head, tail;
 
@@ -667,12 +671,6 @@ switchtec_dma_prep_desc(struct dma_chan *c, u16 dst_fid, dma_addr_t dma_dst,
 	return &desc->txd;
 
 err_unlock:
-	/*
-	 * Keep sparse happy by restoring an even lock count on
-	 * this lock.
-	 */
-	__acquire(swdma_chan->submit_lock);
-
 	spin_unlock_bh(&swdma_chan->submit_lock);
 	return NULL;
 }
@@ -680,16 +678,10 @@ err_unlock:
 static struct dma_async_tx_descriptor *
 switchtec_dma_prep_memcpy(struct dma_chan *c, dma_addr_t dma_dst,
 			  dma_addr_t dma_src, size_t len, unsigned long flags)
-	__acquires(swdma_chan->submit_lock)
+	__cond_acquires(nonnull, &to_swdma_chan(c)->submit_lock)
 {
-	if (len > SWITCHTEC_DESC_MAX_SIZE) {
-		/*
-		 * Keep sparse happy by restoring an even lock count on
-		 * this lock.
-		 */
-		__acquire(swdma_chan->submit_lock);
+	if (len > SWITCHTEC_DESC_MAX_SIZE)
 		return NULL;
-	}
 
 	return switchtec_dma_prep_desc(c, SWITCHTEC_INVALID_HFID, dma_dst,
 				       SWITCHTEC_INVALID_HFID, dma_src, 0, len,
@@ -698,10 +690,9 @@ switchtec_dma_prep_memcpy(struct dma_chan *c, dma_addr_t dma_dst,
 
 static dma_cookie_t
 switchtec_dma_tx_submit(struct dma_async_tx_descriptor *desc)
-	__releases(swdma_chan->submit_lock)
+	__releases(&to_swdma_chan(desc->chan)->submit_lock)
 {
-	struct switchtec_dma_chan *swdma_chan =
-		container_of(desc->chan, struct switchtec_dma_chan, dma_chan);
+	struct switchtec_dma_chan *swdma_chan = to_swdma_chan(desc->chan);
 	dma_cookie_t cookie;
 	int head;
 

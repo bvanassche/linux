@@ -211,6 +211,7 @@ static void fpga_mgr_test_get(struct kunit *test)
 }
 
 static void fpga_mgr_test_lock(struct kunit *test)
+	__no_context_analysis /* double lock call on purpose */
 {
 	struct mgr_ctx *ctx = test->priv;
 	int ret;

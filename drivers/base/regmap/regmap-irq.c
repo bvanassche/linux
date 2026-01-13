@@ -74,6 +74,7 @@ static bool regmap_irq_can_bulk_read_status(struct regmap_irq_chip_data *data)
 }
 
 static void regmap_irq_lock(struct irq_data *data)
+	__acquires(((struct regmap_irq_chip_data *)irq_data_get_irq_chip_data(data))->lock)
 {
 	struct regmap_irq_chip_data *d = irq_data_get_irq_chip_data(data);
 
@@ -81,6 +82,7 @@ static void regmap_irq_lock(struct irq_data *data)
 }
 
 static void regmap_irq_sync_unlock(struct irq_data *data)
+	__releases(((struct regmap_irq_chip_data *)irq_data_get_irq_chip_data(data))->lock)
 {
 	struct regmap_irq_chip_data *d = irq_data_get_irq_chip_data(data);
 	struct regmap *map = d->map;

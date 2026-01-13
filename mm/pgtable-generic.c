@@ -283,6 +283,7 @@ static void pmdp_get_lockless_end(unsigned long irqflags) { }
 #endif
 
 pte_t *__pte_offset_map(pmd_t *pmd, unsigned long addr, pmd_t *pmdvalp)
+	__cond_acquires_shared(nonnull, RCU)
 {
 	unsigned long irqflags;
 	pmd_t pmdval;
@@ -310,6 +311,7 @@ nomap:
 
 pte_t *pte_offset_map_ro_nolock(struct mm_struct *mm, pmd_t *pmd,
 				unsigned long addr, spinlock_t **ptlp)
+	__cond_acquires_shared(nonnull, RCU)
 {
 	pmd_t pmdval;
 	pte_t *pte;
@@ -323,6 +325,7 @@ pte_t *pte_offset_map_ro_nolock(struct mm_struct *mm, pmd_t *pmd,
 pte_t *pte_offset_map_rw_nolock(struct mm_struct *mm, pmd_t *pmd,
 				unsigned long addr, pmd_t *pmdvalp,
 				spinlock_t **ptlp)
+	__cond_acquires_shared(nonnull, RCU)
 {
 	pte_t *pte;
 

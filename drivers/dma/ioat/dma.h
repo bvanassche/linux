@@ -348,31 +348,39 @@ ioat_set_chainaddr(struct ioatdma_chan *ioat_chan, u64 addr)
 /* IOAT Prep functions */
 struct dma_async_tx_descriptor *
 ioat_dma_prep_memcpy_lock(struct dma_chan *c, dma_addr_t dma_dest,
-			   dma_addr_t dma_src, size_t len, unsigned long flags);
+			   dma_addr_t dma_src, size_t len, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(c)->prep_lock);
 struct dma_async_tx_descriptor *
-ioat_prep_interrupt_lock(struct dma_chan *c, unsigned long flags);
+ioat_prep_interrupt_lock(struct dma_chan *c, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(c)->prep_lock);
 struct dma_async_tx_descriptor *
 ioat_prep_xor(struct dma_chan *chan, dma_addr_t dest, dma_addr_t *src,
-	       unsigned int src_cnt, size_t len, unsigned long flags);
+	       unsigned int src_cnt, size_t len, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(chan)->prep_lock);
 struct dma_async_tx_descriptor *
 ioat_prep_xor_val(struct dma_chan *chan, dma_addr_t *src,
 		    unsigned int src_cnt, size_t len,
-		    enum sum_check_flags *result, unsigned long flags);
+		    enum sum_check_flags *result, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(chan)->prep_lock);
 struct dma_async_tx_descriptor *
 ioat_prep_pq(struct dma_chan *chan, dma_addr_t *dst, dma_addr_t *src,
 	      unsigned int src_cnt, const unsigned char *scf, size_t len,
-	      unsigned long flags);
+	      unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(chan)->prep_lock);
 struct dma_async_tx_descriptor *
 ioat_prep_pq_val(struct dma_chan *chan, dma_addr_t *pq, dma_addr_t *src,
 		  unsigned int src_cnt, const unsigned char *scf, size_t len,
-		  enum sum_check_flags *pqres, unsigned long flags);
+		  enum sum_check_flags *pqres, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(chan)->prep_lock);
 struct dma_async_tx_descriptor *
 ioat_prep_pqxor(struct dma_chan *chan, dma_addr_t dst, dma_addr_t *src,
-		 unsigned int src_cnt, size_t len, unsigned long flags);
+		 unsigned int src_cnt, size_t len, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(chan)->prep_lock);
 struct dma_async_tx_descriptor *
 ioat_prep_pqxor_val(struct dma_chan *chan, dma_addr_t *src,
 		     unsigned int src_cnt, size_t len,
-		     enum sum_check_flags *result, unsigned long flags);
+		     enum sum_check_flags *result, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(chan)->prep_lock);
 
 /* IOAT Operation functions */
 irqreturn_t ioat_dma_do_interrupt(int irq, void *data);
@@ -387,7 +395,8 @@ ioat_tx_status(struct dma_chan *c, dma_cookie_t cookie,
 		struct dma_tx_state *txstate);
 void ioat_cleanup_event(struct tasklet_struct *t);
 void ioat_timer_event(struct timer_list *t);
-int ioat_check_space_lock(struct ioatdma_chan *ioat_chan, int num_descs);
+int ioat_check_space_lock(struct ioatdma_chan *ioat_chan, int num_descs)
+	__cond_acquires(0, &ioat_chan->prep_lock);
 void ioat_issue_pending(struct dma_chan *chan);
 
 /* IOAT Init functions */

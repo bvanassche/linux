@@ -1378,6 +1378,7 @@ int io_recvzc(struct io_kiocb *req, unsigned int issue_flags)
 }
 
 void io_send_zc_cleanup(struct io_kiocb *req)
+	__context_unsafe(/* conditional locking */)
 {
 	struct io_sr_msg *zc = io_kiocb_to_cmd(req, struct io_sr_msg);
 	struct io_async_msghdr *io = req->async_data;
@@ -1548,6 +1549,7 @@ static int io_send_zc_import(struct io_kiocb *req,
 }
 
 int io_sendmsg_zc(struct io_kiocb *req, unsigned int issue_flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct io_sr_msg *sr = io_kiocb_to_cmd(req, struct io_sr_msg);
 	struct io_async_msghdr *kmsg = req->async_data;

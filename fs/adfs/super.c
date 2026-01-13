@@ -457,6 +457,7 @@ static int adfs_init_fs_context(struct fs_context *fc)
 }
 
 static void adfs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct adfs_sb_info *asb = ADFS_SB(sb);
 

@@ -282,6 +282,7 @@ void scx_ops_cid_sched_updated_disable(struct scx_sched *sch)
 }
 
 static struct scx_sched *scx_find_sub_sched(u64 cgroup_id)
+	__context_unsafe(/* callers hold RCU or disable IRQs */)
 {
 	return rhashtable_lookup(&scx_sched_hash, &cgroup_id,
 				 scx_sched_hash_params);

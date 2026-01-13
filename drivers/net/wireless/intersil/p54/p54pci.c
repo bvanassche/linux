@@ -495,6 +495,7 @@ static int p54p_open(struct ieee80211_hw *dev)
 
 static void p54p_firmware_step2(const struct firmware *fw,
 				void *context)
+	__context_unsafe(/* conditional locking */)
 {
 	struct p54p_priv *priv = context;
 	struct ieee80211_hw *dev = priv->common.hw;

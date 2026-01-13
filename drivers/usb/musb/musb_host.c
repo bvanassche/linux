@@ -276,8 +276,7 @@ start:
 
 /* Context: caller owns controller lock, IRQs are blocked */
 static void musb_giveback(struct musb *musb, struct urb *urb, int status)
-__releases(musb->lock)
-__acquires(musb->lock)
+	__must_hold(&musb->lock)
 {
 	trace_musb_urb_gb(musb, urb);
 
@@ -296,6 +295,7 @@ __acquires(musb->lock)
  */
 static void musb_advance_schedule(struct musb *musb, struct urb *urb,
 				  struct musb_hw_ep *hw_ep, int is_in)
+	__must_hold(&musb->lock)
 {
 	struct musb_qh		*qh = musb_ep_get_qh(hw_ep, is_in);
 	struct musb_hw_ep	*ep = qh->hw_ep;
@@ -1052,6 +1052,7 @@ static bool musb_h_ep0_continue(struct musb *musb, u16 len, struct urb *urb)
  * called with controller irqlocked
  */
 irqreturn_t musb_h_ep0_irq(struct musb *musb)
+	__must_hold(&musb->lock)
 {
 	struct urb		*urb;
 	u16			csr, len;
@@ -1193,6 +1194,7 @@ done:
 
 /* Service a Tx-Available or dma completion irq for the endpoint */
 void musb_host_tx(struct musb *musb, u8 epnum)
+	__must_hold(&musb->lock)
 {
 	int			pipe;
 	bool			done = false;
@@ -1727,6 +1729,7 @@ static inline int musb_rx_dma_in_inventra_cppi41(struct dma_controller *dma,
  * and high-bandwidth IN transfer cases.
  */
 void musb_host_rx(struct musb *musb, u8 epnum)
+	__must_hold(&musb->lock)
 {
 	struct urb		*urb;
 	struct musb_hw_ep	*hw_ep = musb->endpoints + epnum;
@@ -2318,6 +2321,7 @@ done:
  * that hardware queue advances to the next transfer, unless prevented
  */
 static int musb_cleanup_urb(struct urb *urb, struct musb_qh *qh)
+	__must_hold(&qh->hw_ep->musb->lock)
 {
 	struct musb_hw_ep	*ep = qh->hw_ep;
 	struct musb		*musb = ep->musb;
@@ -2391,6 +2395,9 @@ static int musb_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
 	if (!qh)
 		goto done;
 
+	/* qh->hw_ep->musb == musb */
+	lockdep_assume_ctx_held(&qh->hw_ep->musb->lock);
+
 	/*
 	 * Any URB not actively programmed into endpoint hardware can be
 	 * immediately given back; that's any URB not at the head of an
@@ -2443,6 +2450,9 @@ musb_h_disable(struct usb_hcd *hcd, struct usb_host_endpoint *hep)
 	qh = hep->hcpriv;
 	if (qh == NULL)
 		goto exit;
+
+	/* qh->hw_ep->musb == musb */
+	lockdep_assume_ctx_held(&qh->hw_ep->musb->lock);
 
 	/* NOTE: qh is invalid unless !list_empty(&hep->urb_list) */
 

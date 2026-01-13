@@ -131,6 +131,7 @@ mt7615_tm_reg_backup_restore(struct mt7615_phy *phy)
 
 static void
 mt7615_tm_init(struct mt7615_phy *phy)
+	__must_hold(&phy->dev->mt76.mutex)
 {
 	struct mt7615_dev *dev = phy->dev;
 	unsigned int total_flags = ~0;
@@ -257,6 +258,7 @@ mt7615_tm_update_params(struct mt7615_phy *phy, u32 changed)
 
 static int
 mt7615_tm_set_state(struct mt76_phy *mphy, enum mt76_testmode_state state)
+	__must_hold(&((struct mt7615_phy *)mphy->priv)->dev->mt76.mutex)
 {
 	struct mt7615_phy *phy = mphy->priv;
 	struct mt76_testmode_data *td = &mphy->test;

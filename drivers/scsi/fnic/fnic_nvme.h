@@ -90,17 +90,21 @@ void nvfnic_free_fcpio_tag(struct fnic_iport_s *iport,
 			   struct fnic_io_req *io_req);
 void nvfnic_delete_lport(struct fnic_iport_s *iport);
 int nvfnic_add_tport(struct fnic *fnic, struct fnic_tport_s *tport,
-		     unsigned long flags);
+		     unsigned long flags)
+	__must_hold(&fnic->fnic_lock);
 void nvfnic_cleanup_all_nvme_ios(struct fnic *fnic);
 void nvfnic_delete_tport_work(struct work_struct *work);
 void nvfnic_delete_tport(struct fnic_iport_s *iport,
-			 struct fnic_tport_s *tport, unsigned long flags);
+			 struct fnic_tport_s *tport, unsigned long flags)
+	__must_hold(&iport->fnic->fnic_lock);
 void nvfnic_fcpio_nvme_fast_cmpl_handler(struct fnic *fnic,
 					 struct fcpio_fw_req *desc);
 void nvfnic_ls_rsp_recv(struct fnic_iport_s *iport,
-			struct fc_frame_header *fchdr, int len);
+			struct fc_frame_header *fchdr, int len)
+	__must_hold(&iport->fnic->fnic_lock);
 void nvfnic_process_ls_abts_rsp(struct fnic_iport_s *iport,
-				struct fc_frame_header *fchdr);
+				struct fc_frame_header *fchdr)
+	__must_hold(&iport->fnic->fnic_lock);
 void nvfnic_admin_io_timeout(struct timer_list *t);
 void nvfnic_fcpio_nvme_itmf_cmpl_handler(struct fnic *fnic,
 					 struct fcpio_fw_req *desc);

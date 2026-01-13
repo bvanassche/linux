@@ -265,6 +265,8 @@ static int damon_mkold_pmd_entry(pmd_t *pmd, unsigned long addr,
 	if (ptl) {
 		pmd_t pmde = pmdp_get(pmd);
 
+		__acquire(ptl);
+
 		if (pmd_present(pmde))
 			damon_pmdp_mkold(pmd, walk->vma, addr);
 		spin_unlock(ptl);
@@ -362,6 +364,8 @@ static int damon_young_pmd_entry(pmd_t *pmd, unsigned long addr,
 	ptl = pmd_trans_huge_lock(pmd, walk->vma);
 	if (ptl) {
 		pmd_t pmde = pmdp_get(pmd);
+
+		__acquire(ptl);
 
 		if (!pmd_present(pmde))
 			goto huge_out;
@@ -602,7 +606,8 @@ static void damon_va_probe_folio(struct damon_ctx *ctx,
 }
 
 static int damon_va_probe_pmd_entry(pmd_t *pmd, unsigned long addr,
-		unsigned long next, struct mm_walk *walk)
+				    unsigned long next, struct mm_walk *walk)
+	__context_unsafe(/* to do */)
 {
 	pte_t *pte;
 	pte_t ptent;
@@ -851,6 +856,8 @@ static int damos_va_migrate_pmd_entry(pmd_t *pmd, unsigned long addr,
 	if (ptl) {
 		pmd_t pmde = pmdp_get(pmd);
 
+		__acquire(ptl);
+
 		if (!pmd_present(pmde))
 			goto huge_out;
 		folio = vm_normal_folio_pmd(walk->vma, addr, pmde);
@@ -999,6 +1006,7 @@ static inline bool damos_va_invalid_folio(struct folio *folio,
 
 static int damos_va_stat_pmd_entry(pmd_t *pmd, unsigned long addr,
 		unsigned long next, struct mm_walk *walk)
+	__context_unsafe(/* pmd_trans_huge_lock() and pte_offset_map_lock() acquire ptl conditionally */)
 {
 	struct damos_va_stat_private *priv = walk->private;
 	struct damos *s = priv->scheme;

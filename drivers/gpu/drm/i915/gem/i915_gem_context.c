@@ -77,6 +77,7 @@
 #include "gt/intel_engine_heartbeat.h"
 #include "gt/intel_engine_user.h"
 #include "gt/intel_gpu_commands.h"
+#include "gt/intel_reset.h"
 #include "gt/intel_ring.h"
 #include "gt/shmem_utils.h"
 

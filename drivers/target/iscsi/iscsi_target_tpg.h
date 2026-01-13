@@ -3,6 +3,7 @@
 #define ISCSI_TARGET_TPG_H
 
 #include <linux/types.h>
+#include <target/iscsi/iscsi_target_core.h>
 
 struct iscsi_np;
 struct iscsit_session;
@@ -16,8 +17,10 @@ extern int iscsit_load_discovery_tpg(void);
 extern void iscsit_release_discovery_tpg(void);
 extern struct iscsi_portal_group *iscsit_get_tpg_from_np(struct iscsi_tiqn *,
 			struct iscsi_np *, struct iscsi_tpg_np **);
-extern int iscsit_get_tpg(struct iscsi_portal_group *);
-extern void iscsit_put_tpg(struct iscsi_portal_group *);
+extern int iscsit_get_tpg(struct iscsi_portal_group *tpg)
+	__cond_acquires(0, &tpg->tpg_access_lock);
+extern void iscsit_put_tpg(struct iscsi_portal_group *tpg)
+	__releases(&tpg->tpg_access_lock);
 extern int iscsit_tpg_add_portal_group(struct iscsi_tiqn *, struct iscsi_portal_group *);
 extern int iscsit_tpg_del_portal_group(struct iscsi_tiqn *, struct iscsi_portal_group *,
 			int);

@@ -674,6 +674,7 @@ static void pcnet32_poll_controller(struct net_device *dev)
  */
 static int pcnet32_suspend(struct net_device *dev, unsigned long *flags,
 			   int can_sleep)
+	__must_hold(&((struct pcnet32_private *)netdev_priv(dev))->lock)
 {
 	int csr5;
 	struct pcnet32_private *lp = netdev_priv(dev);

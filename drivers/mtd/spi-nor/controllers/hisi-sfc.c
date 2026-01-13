@@ -145,6 +145,7 @@ static void hisi_spi_nor_init(struct hifmc_host *host)
 }
 
 static int hisi_spi_nor_prep(struct spi_nor *nor)
+	__cond_acquires(0, &((struct hifmc_priv *)nor->priv)->host->lock)
 {
 	struct hifmc_priv *priv = nor->priv;
 	struct hifmc_host *host = priv->host;
@@ -168,6 +169,7 @@ out:
 }
 
 static void hisi_spi_nor_unprep(struct spi_nor *nor)
+	__releases(&((struct hifmc_priv *)nor->priv)->host->lock)
 {
 	struct hifmc_priv *priv = nor->priv;
 	struct hifmc_host *host = priv->host;

@@ -213,6 +213,7 @@ int ice_txclk_set_clk(struct ice_pf *pf, enum ice_e825c_ref_clk clk)
  * of a previously triggered transition and performs cleanup of unused clocks.
  */
 void ice_txclk_update_and_notify(struct ice_pf *pf)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ice_ptp_port *ptp_port = &pf->ptp.port;
 	struct ice_pf *ctrl_pf = ice_get_ctrl_pf(pf);

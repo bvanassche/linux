@@ -3044,6 +3044,7 @@ int ni_write_parents(struct ntfs_inode *ni, int sync)
  */
 static bool ni_update_parent(struct ntfs_inode *ni, struct NTFS_DUP_INFO *dup,
 			     int sync)
+	__context_unsafe(/* ni_trylock() locks conditionally */)
 {
 	struct ATTRIB *attr;
 	struct mft_inode *mi;
@@ -3168,6 +3169,7 @@ static bool ni_update_parent(struct ntfs_inode *ni, struct NTFS_DUP_INFO *dup,
  * ni_write_inode - Write MFT base record and all subrecords to disk.
  */
 int ni_write_inode(struct inode *inode, int sync, const char *hint)
+	__context_unsafe(/* ni_trylock() locks conditionally */)
 {
 	int err = 0, err2;
 	struct ntfs_inode *ni = ntfs_i(inode);

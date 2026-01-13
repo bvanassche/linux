@@ -123,6 +123,7 @@ static int clk_pll_determine_rate(struct clk_hw *hw,
 
 static unsigned long clk_pll_recalc_rate(struct clk_hw *hw, unsigned long
 		parent_rate)
+	__context_unsafe(/* conditional locking */)
 {
 	struct clk_pll *pll = to_clk_pll(hw);
 	unsigned long flags = 0;
@@ -143,6 +144,7 @@ static unsigned long clk_pll_recalc_rate(struct clk_hw *hw, unsigned long
 
 static int clk_pll_set_rate(struct clk_hw *hw, unsigned long drate,
 				unsigned long prate)
+	__context_unsafe(/* conditional locking */)
 {
 	struct clk_pll *pll = to_clk_pll(hw);
 	struct pll_rate_tbl *rtbl = pll->vco->rtbl;
@@ -193,6 +195,7 @@ static int clk_vco_determine_rate(struct clk_hw *hw,
 
 static unsigned long clk_vco_recalc_rate(struct clk_hw *hw,
 		unsigned long parent_rate)
+	__context_unsafe(/* conditional locking */)
 {
 	struct clk_vco *vco = to_clk_vco(hw);
 	unsigned long flags = 0;
@@ -231,6 +234,7 @@ static unsigned long clk_vco_recalc_rate(struct clk_hw *hw,
 /* Configures new clock rate of vco */
 static int clk_vco_set_rate(struct clk_hw *hw, unsigned long drate,
 				unsigned long prate)
+	__context_unsafe(/* conditional locking */)
 {
 	struct clk_vco *vco = to_clk_vco(hw);
 	struct pll_rate_tbl *rtbl = vco->rtbl;

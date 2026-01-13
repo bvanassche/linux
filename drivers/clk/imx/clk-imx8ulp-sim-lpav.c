@@ -43,14 +43,16 @@ static struct clk_imx8ulp_sim_lpav_gate gates[] = {
 	IMX8ULP_HIFI_CLK_GATE("hifi_plat", PLAT, "plat", 19)
 };
 
-static void clk_imx8ulp_sim_lpav_lock(void *arg) __acquires(&data->lock)
+static void clk_imx8ulp_sim_lpav_lock(void *arg)
+	__acquires(&((struct clk_imx8ulp_sim_lpav_data *)dev_get_drvdata(arg))->lock)
 {
 	struct clk_imx8ulp_sim_lpav_data *data = dev_get_drvdata(arg);
 
 	spin_lock_irqsave(&data->lock, data->flags);
 }
 
-static void clk_imx8ulp_sim_lpav_unlock(void *arg) __releases(&data->lock)
+static void clk_imx8ulp_sim_lpav_unlock(void *arg)
+	__releases(&((struct clk_imx8ulp_sim_lpav_data *)dev_get_drvdata(arg))->lock)
 {
 	struct clk_imx8ulp_sim_lpav_data *data = dev_get_drvdata(arg);
 

@@ -303,6 +303,7 @@ out:
  */
 static struct key *request_user_key(const char *master_desc, const u8 **master_key,
 				    size_t *master_keylen)
+	__context_unsafe(/* returns ERR_PTR() */)
 {
 	const struct user_key_payload *upayload;
 	struct key *ukey;
@@ -696,6 +697,8 @@ static int encrypted_key_decrypt(struct encrypted_key_payload *epayload,
 	if (IS_ERR(mkey))
 		return PTR_ERR(mkey);
 
+	__acquire_shared(&mkey->sem);
+
 	ret = datablob_hmac_verify(epayload, format, master_key, master_keylen);
 	if (ret < 0) {
 		pr_err("encrypted_key: bad hmac (%d)\n", ret);
@@ -936,6 +939,8 @@ static long encrypted_read(const struct key *key, char *buffer,
 	mkey = request_master_key(epayload, &master_key, &master_keylen);
 	if (IS_ERR(mkey))
 		return PTR_ERR(mkey);
+
+	__acquire_shared(&mkey->sem);
 
 	ret = get_derived_key(derived_key, ENC_KEY, master_key, master_keylen);
 	if (ret < 0)

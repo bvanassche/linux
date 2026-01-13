@@ -228,6 +228,7 @@ static int hclge_fd_set_user_def_cmd(struct hclge_dev *hdev,
 }
 
 static void hclge_sync_fd_user_def_cfg(struct hclge_dev *hdev, bool locked)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 

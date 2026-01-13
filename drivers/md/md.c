@@ -2702,6 +2702,7 @@ static void export_array(struct mddev *mddev)
 }
 
 static bool set_in_sync(struct mddev *mddev)
+	__must_hold(&mddev->lock)
 {
 	lockdep_assert_held(&mddev->lock);
 	if (!mddev->in_sync) {
@@ -3763,6 +3764,7 @@ rdev_attr_store(struct kobject *kobj, struct attribute *attr,
 
 	rv = suspend ? mddev_suspend_and_lock(mddev) : mddev_lock(mddev);
 	if (!rv) {
+		lockdep_assume_ctx_held(&mddev->reconfig_mutex);
 		if (rdev->mddev == NULL)
 			rv = -ENODEV;
 		else
@@ -5182,6 +5184,7 @@ action_show(struct mddev *mddev, char *page)
  *		function return.
  */
 static void stop_sync_thread(struct mddev *mddev, bool locked)
+	__context_unsafe(/* conditional locking */)
 {
 	int sync_seq = atomic_read(&mddev->sync_seq);
 
@@ -5212,6 +5215,7 @@ static void stop_sync_thread(struct mddev *mddev, bool locked)
 }
 
 void md_idle_sync_thread(struct mddev *mddev)
+	__must_hold(&mddev->reconfig_mutex)
 {
 	lockdep_assert_held(&mddev->reconfig_mutex);
 
@@ -5221,6 +5225,7 @@ void md_idle_sync_thread(struct mddev *mddev)
 EXPORT_SYMBOL_GPL(md_idle_sync_thread);
 
 void md_frozen_sync_thread(struct mddev *mddev)
+	__must_hold(&mddev->reconfig_mutex)
 {
 	lockdep_assert_held(&mddev->reconfig_mutex);
 
@@ -5230,6 +5235,7 @@ void md_frozen_sync_thread(struct mddev *mddev)
 EXPORT_SYMBOL_GPL(md_frozen_sync_thread);
 
 void md_unfrozen_sync_thread(struct mddev *mddev)
+	__must_hold(&mddev->reconfig_mutex)
 {
 	lockdep_assert_held(&mddev->reconfig_mutex);
 
@@ -7112,6 +7118,7 @@ EXPORT_SYMBOL_GPL(md_stop);
 
 /* ensure 'mddev->pers' exist before calling md_set_readonly() */
 static int md_set_readonly(struct mddev *mddev)
+	__context_unsafe(/* conditional locking */)
 {
 	int err = 0;
 	int did_freeze = 0;
@@ -8403,6 +8410,7 @@ static int md_ioctl(struct block_device *bdev, blk_mode_t mode,
 			 err, cmd);
 		goto out;
 	}
+	lockdep_assume_ctx_held(&mddev->reconfig_mutex);
 	if (suspend)
 		noio_flags = memalloc_noio_save();
 
@@ -9028,6 +9036,7 @@ static void md_bitmap_status(struct seq_file *seq, struct mddev *mddev)
 }
 
 static int md_seq_show(struct seq_file *seq, void *v)
+	__must_hold(&all_mddevs_lock)
 {
 	struct mddev *mddev;
 	sector_t sectors;

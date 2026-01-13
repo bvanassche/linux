@@ -309,6 +309,7 @@ static int adp5585_gpio_key_event(struct notifier_block *nb, unsigned long key,
 }
 
 static void adp5585_irq_bus_lock(struct irq_data *d)
+	__acquires(&((struct adp5585_gpio_dev *)gpiochip_get_data(irq_data_get_irq_chip_data(d)))->bus_lock)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct adp5585_gpio_dev *adp5585_gpio = gpiochip_get_data(gc);
@@ -317,6 +318,7 @@ static void adp5585_irq_bus_lock(struct irq_data *d)
 }
 
 static void adp5585_irq_bus_sync_unlock(struct irq_data *d)
+	__releases(&((struct adp5585_gpio_dev *)gpiochip_get_data(irq_data_get_irq_chip_data(d)))->bus_lock)
 {
 	struct gpio_chip *chip = irq_data_get_irq_chip_data(d);
 	struct adp5585_gpio_dev *adp5585_gpio = gpiochip_get_data(chip);

@@ -191,6 +191,7 @@ static int aie2_hwctx_suspend_cb(struct amdxdna_hwctx *hwctx, void *arg)
 }
 
 void aie2_hwctx_suspend(struct amdxdna_client *client)
+	__must_hold(&client->xdna->dev_lock)
 {
 	struct amdxdna_dev *xdna = client->xdna;
 
@@ -734,6 +735,7 @@ static void aie2_hwctx_sched_free(struct amdxdna_dev_hdl *ndev,
 }
 
 int aie2_hwctx_init(struct amdxdna_hwctx *hwctx)
+	__must_hold(&hwctx->client->xdna->dev_lock)
 {
 	struct amdxdna_client *client = hwctx->client;
 	struct amdxdna_dev *xdna = client->xdna;
@@ -874,6 +876,7 @@ free_priv:
 }
 
 void aie2_hwctx_fini(struct amdxdna_hwctx *hwctx)
+	__must_hold(&hwctx->client->xdna->dev_lock)
 {
 	struct amdxdna_dev_hdl *ndev;
 	struct amdxdna_dev *xdna;
@@ -928,6 +931,7 @@ static int aie2_config_cu_resp_handler(void *handle, void __iomem *data, size_t 
 }
 
 static int aie2_hwctx_cu_config(struct amdxdna_hwctx *hwctx, void *buf, u32 size)
+	__must_hold(&hwctx->client->xdna->dev_lock)
 {
 	struct amdxdna_hwctx_param_config_cu *config = buf;
 	struct amdxdna_dev *xdna = hwctx->client->xdna;
@@ -981,6 +985,7 @@ free_cus:
 }
 
 static void aie2_cmd_wait(struct amdxdna_hwctx *hwctx, u64 seq)
+	__must_hold(&hwctx->client->xdna->dev_lock)
 {
 	struct dma_fence *out_fence = aie2_cmd_get_out_fence(hwctx, seq);
 	struct amdxdna_dev *xdna = hwctx->client->xdna;
@@ -998,6 +1003,7 @@ static void aie2_cmd_wait(struct amdxdna_hwctx *hwctx, u64 seq)
 
 static int aie2_hwctx_cfg_debug_bo(struct amdxdna_hwctx *hwctx, u32 bo_hdl,
 				   bool attach)
+	__must_hold(&hwctx->client->xdna->dev_lock)
 {
 	struct amdxdna_client *client = hwctx->client;
 	struct amdxdna_dev *xdna = client->xdna;
@@ -1062,6 +1068,7 @@ put_obj:
 }
 
 int aie2_hwctx_config(struct amdxdna_hwctx *hwctx, u32 type, u64 value, void *buf, u32 size)
+	__must_hold(&hwctx->client->xdna->dev_lock)
 {
 	struct amdxdna_dev *xdna = hwctx->client->xdna;
 
@@ -1080,6 +1087,7 @@ int aie2_hwctx_config(struct amdxdna_hwctx *hwctx, u32 type, u64 value, void *bu
 }
 
 int aie2_hwctx_sync_debug_bo(struct amdxdna_hwctx *hwctx, u32 debug_bo_hdl)
+	__must_hold(&hwctx->client->xdna->dev_lock)
 {
 	struct amdxdna_client *client = hwctx->client;
 	struct amdxdna_dev *xdna = client->xdna;

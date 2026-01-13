@@ -1157,7 +1157,7 @@ static int fscache_cookies_seq_show(struct seq_file *m, void *v)
 }
 
 static void *fscache_cookies_seq_start(struct seq_file *m, loff_t *_pos)
-	__acquires(fscache_cookies_lock)
+	__acquires_shared(&fscache_cookies_lock)
 {
 	read_lock(&fscache_cookies_lock);
 	return seq_list_start_head(&fscache_cookies, *_pos);
@@ -1169,7 +1169,7 @@ static void *fscache_cookies_seq_next(struct seq_file *m, void *v, loff_t *_pos)
 }
 
 static void fscache_cookies_seq_stop(struct seq_file *m, void *v)
-	__releases(rcu)
+	__releases_shared(&fscache_cookies_lock)
 {
 	read_unlock(&fscache_cookies_lock);
 }

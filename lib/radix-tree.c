@@ -320,6 +320,7 @@ radix_tree_node_free(struct radix_tree_node *node)
  * __GFP_DIRECT_RECLAIM being passed to INIT_RADIX_TREE().
  */
 static __must_check int __radix_tree_preload(gfp_t gfp_mask, unsigned nr)
+	__cond_acquires(0, &radix_tree_preloads.lock)
 {
 	struct radix_tree_preload *rtp;
 	struct radix_tree_node *node;

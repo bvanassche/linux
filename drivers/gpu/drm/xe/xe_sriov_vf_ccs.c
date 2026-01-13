@@ -463,6 +463,7 @@ err_unwind:
  * Returns: 0 if successful.
  */
 int xe_sriov_vf_ccs_detach_bo(struct xe_bo *bo)
+	__context_unsafe(/* conditional locking */)
 {
 	struct xe_device *xe = xe_bo_device(bo);
 	enum xe_sriov_vf_ccs_rw_ctxs ctx_id;

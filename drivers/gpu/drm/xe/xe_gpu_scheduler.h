@@ -32,11 +32,13 @@ void xe_sched_add_msg_head(struct xe_gpu_scheduler *sched,
 			   struct xe_sched_msg *msg);
 
 static inline void xe_sched_msg_lock(struct xe_gpu_scheduler *sched)
+	__acquires(&sched->msg_lock)
 {
 	spin_lock(&sched->msg_lock);
 }
 
 static inline void xe_sched_msg_unlock(struct xe_gpu_scheduler *sched)
+	__releases(&sched->msg_lock)
 {
 	spin_unlock(&sched->msg_lock);
 }

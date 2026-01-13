@@ -602,6 +602,7 @@ static void inode_unpin_lru_isolating(struct inode *inode)
 }
 
 static void inode_wait_for_lru_isolating(struct inode *inode)
+	__must_hold(&inode->i_lock)
 {
 	struct wait_bit_queue_entry wqe;
 	struct wait_queue_head *wq_head;
@@ -931,6 +932,7 @@ EXPORT_SYMBOL_GPL(evict_inodes);
  */
 static enum lru_status inode_lru_isolate(struct list_head *item,
 		struct list_lru_one *lru, void *arg)
+	__context_unsafe(/* releases lru->lock held by caller */)
 {
 	struct list_head *freeable = arg;
 	struct inode	*inode = container_of(item, struct inode, i_lru);
@@ -1022,6 +1024,7 @@ static struct inode *find_inode(struct super_block *sb,
 				int (*test)(struct inode *, void *),
 				void *data, bool hash_locked,
 				bool *isnew)
+	__context_unsafe(/* locks in a loop */)
 {
 	struct inode *inode = NULL;
 
@@ -1069,6 +1072,7 @@ repeat:
 static struct inode *find_inode_fast(struct super_block *sb,
 				struct hlist_head *head, u64 ino,
 				bool hash_locked, bool *isnew)
+	__context_unsafe(/* locks in a loop */)
 {
 	struct inode *inode = NULL;
 
@@ -1242,6 +1246,7 @@ EXPORT_SYMBOL(discard_new_inode);
  * @inode2: second inode to lock
  */
 void lock_two_nondirectories(struct inode *inode1, struct inode *inode2)
+	__context_unsafe(/* locks multiple objects conditionally */)
 {
 	if (inode1)
 		WARN_ON_ONCE(S_ISDIR(inode1->i_mode));
@@ -1262,6 +1267,7 @@ EXPORT_SYMBOL(lock_two_nondirectories);
  * @inode2: second inode to unlock
  */
 void unlock_two_nondirectories(struct inode *inode1, struct inode *inode2)
+	__context_unsafe(/* unlocks multiple objects conditionally */)
 {
 	if (inode1) {
 		WARN_ON_ONCE(S_ISDIR(inode1->i_mode));
@@ -1879,6 +1885,7 @@ struct inode *find_inode_by_ino_rcu(struct super_block *sb,
 EXPORT_SYMBOL(find_inode_by_ino_rcu);
 
 int insert_inode_locked(struct inode *inode)
+	__context_unsafe(/* conditional locking */)
 {
 	struct super_block *sb = inode->i_sb;
 	u64 ino = inode->i_ino;
@@ -1968,6 +1975,7 @@ EXPORT_SYMBOL(inode_just_drop);
  * shutting down.
  */
 static void iput_final(struct inode *inode)
+	__context_unsafe(/* releases inode->i_lock held by caller */)
 {
 	struct super_block *sb = inode->i_sb;
 	const struct super_operations *op = inode->i_sb->s_op;
@@ -2024,6 +2032,7 @@ static void iput_final(struct inode *inode)
  *	Consequently, iput() can sleep.
  */
 void iput(struct inode *inode)
+	__context_unsafe(/* iput_final() releases inode->i_lock */)
 {
 	might_sleep();
 	if (unlikely(!inode))
@@ -2589,6 +2598,7 @@ EXPORT_SYMBOL(inode_needs_sync);
  * will DTRT.
  */
 static void __wait_on_freeing_inode(struct inode *inode, bool hash_locked, bool rcu_locked)
+	__context_unsafe(/* releases locks held by caller */)
 {
 	struct wait_bit_queue_entry wqe;
 	struct wait_queue_head *wq_head;

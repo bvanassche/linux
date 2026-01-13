@@ -309,6 +309,7 @@ int ramfs_init_fs_context(struct fs_context *fc)
 }
 
 void ramfs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	kfree(sb->s_fs_info);
 	kill_anon_super(sb);

@@ -1872,6 +1872,7 @@ static struct inode *f2fs_alloc_inode(struct super_block *sb)
 }
 
 static int f2fs_drop_inode(struct inode *inode)
+	__must_hold(&inode->i_lock)
 {
 	int ret;
 
@@ -3500,6 +3501,7 @@ out:
 }
 
 int f2fs_do_quota_sync(struct super_block *sb, int type)
+	__context_unsafe(/* conditional locking */)
 {
 	struct f2fs_sb_info *sbi = F2FS_SB(sb);
 	struct quota_info *dqopt = sb_dqopt(sb);
@@ -5753,6 +5755,7 @@ static const struct fs_context_operations f2fs_context_ops = {
 };
 
 static void kill_f2fs_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct f2fs_sb_info *sbi = F2FS_SB(sb);
 

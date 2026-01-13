@@ -379,7 +379,9 @@ static int send_to_group(__u32 mask, const void *data, int data_type,
 				     file_name, cookie, iter_info);
 }
 
-static struct fsnotify_mark *fsnotify_first_mark(struct fsnotify_mark_connector *const *connp)
+static struct fsnotify_mark *
+fsnotify_first_mark(struct fsnotify_mark_connector *const *connp)
+	__must_hold_shared(&fsnotify_mark_srcu)
 {
 	struct fsnotify_mark_connector *conn;
 	struct hlist_node *node = NULL;
@@ -392,6 +394,7 @@ static struct fsnotify_mark *fsnotify_first_mark(struct fsnotify_mark_connector 
 }
 
 struct fsnotify_mark *fsnotify_next_mark(struct fsnotify_mark *mark)
+	__must_hold_shared(&fsnotify_mark_srcu)
 {
 	struct hlist_node *node = NULL;
 
@@ -455,6 +458,7 @@ static bool fsnotify_iter_select_report_types(
  * current iteration step.
  */
 static void fsnotify_iter_next(struct fsnotify_iter_info *iter_info)
+	__must_hold_shared(&fsnotify_mark_srcu)
 {
 	struct fsnotify_mark *mark;
 	int type;

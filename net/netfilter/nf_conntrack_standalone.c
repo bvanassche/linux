@@ -146,7 +146,7 @@ restart:
 }
 
 static void *ct_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	struct ct_iter_state *st = seq->private;
 	struct net *net = seq_file_net(seq);
@@ -177,7 +177,7 @@ static void *ct_seq_next(struct seq_file *s, void *v, loff_t *pos)
 }
 
 static void ct_seq_stop(struct seq_file *s, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

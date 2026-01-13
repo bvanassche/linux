@@ -737,6 +737,7 @@ static inline void dentry_unlist(struct dentry *dentry)
  * inode (if any) locked in addition to dentry itself.
  */
 static bool lock_for_kill(struct dentry *dentry)
+	__context_unsafe(/* conditional locking */)
 {
 	struct inode *inode = dentry->d_inode;
 
@@ -811,6 +812,8 @@ static bool lock_for_kill(struct dentry *dentry)
  * Othewise freeing is left to the owner of the shrink list in question.
  */
 static struct dentry *dentry_kill(struct dentry *dentry)
+	__releases(&dentry->d_lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct dentry *parent = NULL;
 	bool can_free = true;
@@ -941,6 +944,7 @@ EXPORT_SYMBOL(d_mark_dontcache);
  * decided that it's not worth keeping around.
  */
 static inline bool fast_dput(struct dentry *dentry)
+	__cond_acquires(0, &dentry->d_lock)
 {
 	int ret;
 
@@ -1010,7 +1014,8 @@ locked:
 }
 
 static void finish_dput(struct dentry *dentry)
-	__releases(dentry->d_lock)
+	__releases(&dentry->d_lock)
+	__context_unsafe(/* locks in a loop */)
 {
 	while ((dentry = dentry_kill(dentry)) != NULL) {
 		if (retain_dentry(dentry, true)) {
@@ -1047,6 +1052,7 @@ static void finish_dput(struct dentry *dentry)
  * they too may now get deleted.
  */
 void dput(struct dentry *dentry)
+	__context_unsafe(/* fast_dput() locks conditionally */)
 {
 	if (!dentry)
 		return;
@@ -1285,12 +1291,15 @@ void d_prune_aliases(struct inode *inode)
 EXPORT_SYMBOL(d_prune_aliases);
 
 static inline void shrink_kill(struct dentry *victim)
+	__releases(&victim->d_lock)
+	__context_unsafe(/* locks in a loop */)
 {
 	while ((victim = dentry_kill(victim)) != NULL)
 		;
 }
 
 void shrink_dentry_list(struct list_head *list)
+	__context_unsafe(/* locks in a loop */)
 {
 	while (!list_empty(list)) {
 		struct dentry *dentry;
@@ -1453,6 +1462,7 @@ enum d_walk_ret {
  */
 static void d_walk(struct dentry *parent, void *data,
 		   enum d_walk_ret (*enter)(void *, struct dentry *))
+	__context_unsafe(/* locks in a loop */)
 {
 	struct dentry *this_parent, *dentry;
 	unsigned seq = 0;
@@ -1653,6 +1663,7 @@ struct select_data {
 };
 
 static enum d_walk_ret select_collect(void *_data, struct dentry *dentry)
+	__context_unsafe(/* caller holds dentry->d_lock */)
 {
 	struct select_data *data = _data;
 	enum d_walk_ret ret = D_WALK_CONTINUE;
@@ -1685,6 +1696,7 @@ static enum d_walk_ret select_collect_umount(void *_data, struct dentry *dentry)
 }
 
 static enum d_walk_ret select_collect2(void *_data, struct dentry *dentry)
+	__context_unsafe(/* RCU lock is conditional */)
 {
 	struct select_data *data = _data;
 	enum d_walk_ret ret = D_WALK_CONTINUE;
@@ -1727,6 +1739,7 @@ out:
  * Prune the dcache to remove unused children of the parent dentry.
  */
 static void shrink_dcache_tree(struct dentry *parent, bool for_umount)
+	__context_unsafe(/* RCU unlock is conditional */)
 {
 	for (;;) {
 		struct completion_list wait;
@@ -1823,6 +1836,7 @@ static void do_one_tree(struct dentry *dentry)
  * destroy the dentries attached to a superblock on unmounting
  */
 void shrink_dcache_for_umount(struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct dentry *dentry;
 
@@ -2638,6 +2652,7 @@ struct dentry *__d_lookup_rcu(const struct dentry *parent,
  * finished using it. %NULL is returned if the dentry does not exist.
  */
 struct dentry *d_lookup(const struct dentry *parent, const struct qstr *name)
+	__context_unsafe(/* conditional locking */)
 {
 	struct dentry *dentry;
 	unsigned seq;
@@ -2831,6 +2846,7 @@ static inline void end_dir_add(struct inode *dir, unsigned int n)
 }
 
 static void d_wait_lookup(struct dentry *dentry)
+	__must_hold(&dentry->d_lock)
 {
 	if (likely(d_in_lookup(dentry))) {
 		/*
@@ -2858,6 +2874,7 @@ static inline
 struct dentry *__d_alloc_parallel(struct dentry *parent,
 				  const struct qstr *name,
 				  enum alloc_para how)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned int hash = name->hash;
 	struct hlist_bl_head *b = in_lookup_hash(parent, hash);
@@ -3089,6 +3106,7 @@ EXPORT_SYMBOL(__d_lookup_unhash_wake);
 
 static inline void __d_add(struct dentry *dentry, struct inode *inode,
 			   const struct dentry_operations *ops)
+	__context_unsafe(/* releases inode->i_lock held by caller */)
 {
 	struct inode *dir = NULL;
 	unsigned n;
@@ -3123,6 +3141,7 @@ static inline void __d_add(struct dentry *dentry, struct inode *inode,
  */
 
 void d_add(struct dentry *entry, struct inode *inode)
+	__context_unsafe(/* conditional locking */)
 {
 	if (inode) {
 		security_d_instantiate(entry, inode);
@@ -3218,6 +3237,7 @@ static void copy_name(struct dentry *dentry, struct dentry *target)
  */
 static void __d_move(struct dentry *dentry, struct dentry *target,
 		     bool exchange)
+	__context_unsafe(/* conditional locking */)
 {
 	struct dentry *old_parent, *p;
 	struct inode *dir = NULL;
@@ -3367,6 +3387,7 @@ struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)
  * remember to update this too...
  */
 static int __d_unalias(struct dentry *dentry, struct dentry *alias)
+	__context_unsafe(/* locks are accessed through aliases */)
 {
 	struct mutex *m1 = NULL;
 	struct rw_semaphore *m2 = NULL;
@@ -3401,6 +3422,7 @@ out_err:
 
 struct dentry *d_splice_alias_ops(struct inode *inode, struct dentry *dentry,
 				  const struct dentry_operations *ops)
+	__context_unsafe(/* conditional locking */)
 {
 	if (IS_ERR(inode))
 		return ERR_CAST(inode);

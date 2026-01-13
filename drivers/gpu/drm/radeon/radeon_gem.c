@@ -46,6 +46,7 @@ int radeon_gem_prime_pin(struct drm_gem_object *obj);
 void radeon_gem_prime_unpin(struct drm_gem_object *obj);
 
 static vm_fault_t radeon_gem_fault(struct vm_fault *vmf)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ttm_buffer_object *bo = vmf->vma->vm_private_data;
 	struct radeon_device *rdev = radeon_get_rdev(bo->bdev);

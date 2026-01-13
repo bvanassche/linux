@@ -44,12 +44,14 @@ static struct kmem_cache *dax_cache __read_mostly;
 static struct super_block *dax_superblock __read_mostly;
 
 int dax_read_lock(void)
+	__acquires_shared(&dax_srcu)
 {
 	return srcu_read_lock(&dax_srcu);
 }
 EXPORT_SYMBOL_GPL(dax_read_lock);
 
 void dax_read_unlock(int id)
+	__releases_shared(&dax_srcu)
 {
 	srcu_read_unlock(&dax_srcu, id);
 }

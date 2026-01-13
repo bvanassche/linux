@@ -1849,6 +1849,7 @@ static inline void mas_topiary_node(struct ma_state *mas,
  */
 static inline void mas_topiary_replace(struct ma_state *mas,
 		struct maple_enode *old_enode, unsigned char new_height)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	struct ma_state tmp[3], tmp_next[3];
 	MA_TOPIARY(subtrees, mas->tree);
@@ -1954,6 +1955,7 @@ unsigned long node_copy(struct ma_state *mas, struct maple_node *src,
 	unsigned char start, unsigned char size, unsigned long s_max,
 	enum maple_type s_mt, struct maple_node *dst, unsigned char d_start,
 	enum maple_type d_mt)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	unsigned long *s_pivots, *d_pivots;
 	void __rcu **s_slots, **d_slots;
@@ -3147,6 +3149,7 @@ static void mas_wr_spanning_store(struct ma_wr_state *wr_mas)
  * Attempts to reuse the node, but may allocate.
  */
 static inline void mas_wr_node_store(struct ma_wr_state *wr_mas)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	unsigned char dst_offset, offset_end;
 	unsigned char copy_size, node_pivots, node_slots;
@@ -5855,6 +5858,7 @@ EXPORT_SYMBOL(mtree_store);
  */
 int mtree_insert_range(struct maple_tree *mt, unsigned long first,
 		unsigned long last, void *entry, gfp_t gfp)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	MA_STATE(ms, mt, first, last);
 	int ret = 0;
@@ -5900,6 +5904,7 @@ EXPORT_SYMBOL(mtree_insert);
 int mtree_alloc_range(struct maple_tree *mt, unsigned long *startp,
 		void *entry, unsigned long size, unsigned long min,
 		unsigned long max, gfp_t gfp)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	int ret = 0;
 
@@ -5982,6 +5987,7 @@ EXPORT_SYMBOL(mtree_alloc_cyclic);
 int mtree_alloc_rrange(struct maple_tree *mt, unsigned long *startp,
 		void *entry, unsigned long size, unsigned long min,
 		unsigned long max, gfp_t gfp)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	int ret = 0;
 

@@ -43,6 +43,7 @@
 
 static vm_fault_t ttm_bo_vm_fault_idle(struct ttm_buffer_object *bo,
 				struct vm_fault *vmf)
+	__context_unsafe(/* conditional locking */)
 {
 	long err = 0;
 
@@ -118,6 +119,7 @@ static unsigned long ttm_bo_io_mem_pfn(struct ttm_buffer_object *bo,
  */
 vm_fault_t ttm_bo_vm_reserve(struct ttm_buffer_object *bo,
 			     struct vm_fault *vmf)
+	__cond_acquires(0, &bo->base.resv->lock)
 {
 	/*
 	 * Work around locking order reversal in fault / nopfn
@@ -320,6 +322,7 @@ vm_fault_t ttm_bo_vm_dummy_page(struct vm_fault *vmf, pgprot_t prot)
 EXPORT_SYMBOL(ttm_bo_vm_dummy_page);
 
 vm_fault_t ttm_bo_vm_fault(struct vm_fault *vmf)
+	__context_unsafe(/* conditional locking */)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct ttm_buffer_object *bo = vma->vm_private_data;

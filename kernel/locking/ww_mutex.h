@@ -311,6 +311,7 @@ __ww_ctx_less(struct ww_acquire_ctx *a, struct ww_acquire_ctx *b)
 static bool
 __ww_mutex_die(struct MUTEX *lock, struct MUTEX_WAITER *waiter,
 	       struct ww_acquire_ctx *ww_ctx, struct wake_q_head *wake_q)
+	__must_hold(&lock->WAIT_LOCK)
 {
 	if (!ww_ctx->is_wait_die)
 		return false;

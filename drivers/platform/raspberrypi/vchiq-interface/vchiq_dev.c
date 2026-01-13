@@ -203,6 +203,7 @@ static int vchiq_ioc_create_service(struct vchiq_instance *instance,
 
 static int vchiq_ioc_dequeue_message(struct vchiq_instance *instance,
 				     struct vchiq_dequeue_message *args)
+	__context_unsafe(/* conditional locking */)
 {
 	struct user_service *user_service;
 	struct vchiq_service *service;

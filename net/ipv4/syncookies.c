@@ -197,6 +197,7 @@ EXPORT_SYMBOL_GPL(__cookie_v4_check);
 struct sock *tcp_get_cookie_sock(struct sock *sk, struct sk_buff *skb,
 				 struct request_sock *req,
 				 struct dst_entry *dst)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct inet_connection_sock *icsk = inet_csk(sk);
 	struct sock *child;

@@ -3167,6 +3167,7 @@ static int update_log_root(struct btrfs_trans_handle *trans,
 
 /* Returns true if we had to wait, false otherwise. */
 static bool wait_log_commit(struct btrfs_root *root, int transid)
+	__must_hold(&root->log_mutex)
 {
 	DEFINE_WAIT(wait);
 	const int index = (transid >= 0 ? transid % 2 : -transid % 2);
@@ -3197,6 +3198,7 @@ static bool wait_log_commit(struct btrfs_root *root, int transid)
 }
 
 static void wait_for_writer(struct btrfs_root *root)
+	__must_hold(&root->log_mutex)
 {
 	DEFINE_WAIT(wait);
 

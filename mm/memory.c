@@ -100,6 +100,7 @@ static bool vmf_pte_changed(struct vm_fault *vmf);
 
 static inline pte_t *pte_alloc_map_lock(struct mm_struct *mm, pmd_t *pmd,
 					unsigned long addr, spinlock_t **ptlp)
+	__cond_acquires(nonnull, *ptlp)
 {
 	return pte_alloc(mm, pmd) ? NULL :
 				    pte_offset_map_lock(mm, pmd, addr, ptlp);
@@ -1951,6 +1952,7 @@ static bool pte_table_reclaim_possible(unsigned long start, unsigned long end,
 
 static bool zap_empty_pte_table(struct mm_struct *mm, pmd_t *pmd,
 		spinlock_t *ptl, pmd_t *pmdval)
+	__context_unsafe(/* conditional locking */)
 {
 	spinlock_t *pml = pmd_lockptr(mm, pmd);
 
@@ -1966,6 +1968,7 @@ static bool zap_empty_pte_table(struct mm_struct *mm, pmd_t *pmd,
 
 static bool zap_pte_table_if_empty(struct mm_struct *mm, pmd_t *pmd,
 		unsigned long addr, pmd_t *pmdval)
+	__context_unsafe(/* conditional locking */)
 {
 	spinlock_t *pml, *ptl = NULL;
 	pte_t *start_pte, *pte;
@@ -2601,6 +2604,7 @@ out:
  */
 int vm_insert_pages(struct vm_area_struct *vma, unsigned long addr,
 			struct page **pages, unsigned long *num)
+	__context_unsafe(/* conditional locking */)
 {
 	const unsigned long nr_pages = *num;
 	const unsigned long end = addr + PAGE_SIZE * nr_pages;
@@ -2629,6 +2633,7 @@ static void __map_kernel_pages_prepare(struct vm_area_desc *desc)
 }
 
 int map_kernel_pages_prepare(struct vm_area_desc *desc)
+	__context_unsafe(/* conditional locking */)
 {
 	const struct mmap_action *action = &desc->action;
 	const unsigned long addr = action->map_kernel.start;
@@ -3513,6 +3518,7 @@ static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
 				     unsigned long addr, unsigned long end,
 				     pte_fn_t fn, void *data, bool create,
 				     pgtbl_mod_mask *mask)
+	__context_unsafe(/* conditional locking */)
 {
 	pte_t *pte, *mapped_pte;
 	int err = 0;
@@ -3756,6 +3762,7 @@ static inline int pte_unmap_same(struct vm_fault *vmf)
  */
 static inline int __wp_page_copy_user(struct page *dst, struct page *src,
 				      struct vm_fault *vmf)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 	void *kaddr;
@@ -4018,6 +4025,7 @@ static inline vm_fault_t vmf_can_call_fault(const struct vm_fault *vmf)
  * returned to the caller.
  */
 vm_fault_t __vmf_anon_prepare(struct vm_fault *vmf)
+	__context_unsafe(/* conditional locking */)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	vm_fault_t ret = 0;
@@ -4053,6 +4061,7 @@ vm_fault_t __vmf_anon_prepare(struct vm_fault *vmf)
  * - In any case, unlock the PTL and drop the reference we took to the old page.
  */
 static vm_fault_t wp_page_copy(struct vm_fault *vmf)
+	__context_unsafe(/* conditional locking */)
 {
 	const bool unshare = vmf->flags & FAULT_FLAG_UNSHARE;
 	struct vm_area_struct *vma = vmf->vma;
@@ -4227,6 +4236,7 @@ static vm_fault_t finish_mkwrite_fault(struct vm_fault *vmf, struct folio *folio
 				       &vmf->ptl);
 	if (!vmf->pte)
 		return VM_FAULT_NOPAGE;
+	__acquire(vmf->ptl);
 	/*
 	 * We might have raced with another page fault while we released the
 	 * pte_offset_map_lock.
@@ -4245,6 +4255,7 @@ static vm_fault_t finish_mkwrite_fault(struct vm_fault *vmf, struct folio *folio
  * mapping
  */
 static vm_fault_t wp_pfn_shared(struct vm_fault *vmf)
+	__releases(vmf->ptl)
 {
 	struct vm_area_struct *vma = vmf->vma;
 
@@ -4701,8 +4712,10 @@ static vm_fault_t remove_device_exclusive_entry(struct vm_fault *vmf)
 		restore_exclusive_pte(vma, folio, vmf->page, vmf->address,
 				      vmf->pte, vmf->orig_pte);
 
-	if (vmf->pte)
+	if (vmf->pte) {
+		__acquire(vmf->ptl);
 		pte_unmap_unlock(vmf->pte, vmf->ptl);
+	}
 	folio_unlock(folio);
 	folio_put(folio);
 
@@ -4748,6 +4761,7 @@ static vm_fault_t pte_marker_clear(struct vm_fault *vmf)
 				       vmf->address, &vmf->ptl);
 	if (!vmf->pte)
 		return 0;
+	__acquire(vmf->ptl);
 	/*
 	 * Be careful so that we will only recover a special uffd-wp pte into a
 	 * none pte.  Otherwise it means the pte could have changed, so retry.
@@ -4949,6 +4963,7 @@ static void check_swap_exclusive(struct folio *folio, swp_entry_t entry,
  * as done by filemap_fault().
  */
 vm_fault_t do_swap_page(struct vm_fault *vmf)
+	__context_unsafe(/* conditional locking */)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct folio *swapcache = NULL, *folio;
@@ -5501,6 +5516,7 @@ static void map_anon_folio_pte_pf(struct folio *folio, pte_t *pte,
  * If VM_FAULT_RETRY is returned, the lock may have been released.
  */
 static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
+	__context_unsafe(/* conditional locking */)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	unsigned long addr = vmf->address;
@@ -5833,6 +5849,7 @@ static bool vmf_pte_changed(struct vm_fault *vmf)
  * Return: %0 on success, %VM_FAULT_ code in case of error.
  */
 vm_fault_t finish_fault(struct vm_fault *vmf)
+	__context_unsafe(/* conditional locking */)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page;
@@ -6194,6 +6211,7 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 		if (unlikely(!vmf->pte))
 			ret = VM_FAULT_SIGBUS;
 		else {
+			__acquire(vmf->ptl);
 			/*
 			 * Make sure this is not a temporary clearing of pte
 			 * by holding ptl and checking again. A R/M/W update
@@ -6432,6 +6450,7 @@ static vm_fault_t do_numa_page(struct vm_fault *vmf)
 				       vmf->address, &vmf->ptl);
 	if (unlikely(!vmf->pte))
 		return 0;
+	__acquire(vmf->ptl);
 	if (unlikely(!pte_same(ptep_get(vmf->pte), vmf->orig_pte))) {
 		pte_unmap_unlock(vmf->pte, vmf->ptl);
 		return 0;
@@ -7116,6 +7135,7 @@ static inline void pfnmap_lockdep_assert(struct vm_area_struct *vma)
  * Return: zero on success, negative otherwise.
  */
 int follow_pfnmap_start(struct follow_pfnmap_args *args)
+	__context_unsafe(/* acquires lock for caller */)
 {
 	struct vm_area_struct *vma = args->vma;
 	unsigned long address = args->address;
@@ -7211,6 +7231,7 @@ EXPORT_SYMBOL_GPL(follow_pfnmap_start);
  * above for more information.
  */
 void follow_pfnmap_end(struct follow_pfnmap_args *args)
+	__context_unsafe(/* conditional locking */)
 {
 	if (args->lock)
 		spin_unlock(args->lock);
@@ -7308,6 +7329,7 @@ EXPORT_SYMBOL_GPL(generic_access_phys);
  */
 static int __access_remote_vm(struct mm_struct *mm, unsigned long addr,
 			      void *buf, int len, unsigned int gup_flags)
+	__context_unsafe(/* conditional locking */)
 {
 	void *old_buf = buf;
 	int write = gup_flags & FOLL_WRITE;

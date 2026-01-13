@@ -26,6 +26,7 @@ module_param(force_bulk, bool, 0444);
 MODULE_PARM_DESC(force_bulk, "Force use of vchiq bulk for audio");
 
 static void bcm2835_audio_lock(struct bcm2835_audio_instance *instance)
+	__acquires(&instance->vchi_mutex)
 {
 	mutex_lock(&instance->vchi_mutex);
 	vchiq_use_service(instance->alsa_stream->chip->vchi_ctx->instance,
@@ -33,6 +34,7 @@ static void bcm2835_audio_lock(struct bcm2835_audio_instance *instance)
 }
 
 static void bcm2835_audio_unlock(struct bcm2835_audio_instance *instance)
+	__releases(&instance->vchi_mutex)
 {
 	vchiq_release_service(instance->alsa_stream->chip->vchi_ctx->instance,
 			      instance->service_handle);

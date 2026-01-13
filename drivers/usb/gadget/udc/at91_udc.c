@@ -258,6 +258,7 @@ static inline void remove_debug_file(struct at91_udc *udc) {}
 /*-------------------------------------------------------------------------*/
 
 static void done(struct at91_ep *ep, struct at91_request *req, int status)
+	__must_hold(&ep->udc->lock)
 {
 	unsigned	stopped = ep->stopped;
 	struct at91_udc	*udc = ep->udc;
@@ -309,6 +310,7 @@ static void done(struct at91_ep *ep, struct at91_request *req, int status)
 
 /* pull OUT packet data from the endpoint's fifo */
 static int read_fifo (struct at91_ep *ep, struct at91_request *req)
+	__must_hold(&ep->udc->lock)
 {
 	u32 __iomem	*creg = ep->creg;
 	u8 __iomem	*dreg = ep->creg + (AT91_UDP_FDR(0) - AT91_UDP_CSR(0));
@@ -384,6 +386,7 @@ rescan:
 
 /* load fifo for an IN packet */
 static int write_fifo(struct at91_ep *ep, struct at91_request *req)
+	__must_hold(&ep->udc->lock)
 {
 	u32 __iomem	*creg = ep->creg;
 	u32		csr = __raw_readl(creg);
@@ -452,6 +455,7 @@ static int write_fifo(struct at91_ep *ep, struct at91_request *req)
 }
 
 static void nuke(struct at91_ep *ep, int status)
+	__must_hold(&ep->udc->lock)
 {
 	struct at91_request *req;
 
@@ -848,6 +852,7 @@ static void udc_reinit(struct at91_udc *udc)
 }
 
 static void reset_gadget(struct at91_udc *udc)
+	__must_hold(&udc->lock)
 {
 	struct usb_gadget_driver *driver = udc->driver;
 	int i;
@@ -861,6 +866,7 @@ static void reset_gadget(struct at91_udc *udc)
 		struct at91_ep *ep = &udc->ep[i];
 
 		ep->stopped = 1;
+		lockdep_assume_ctx_held(&ep->udc->lock);
 		nuke(ep, -ESHUTDOWN);
 	}
 	if (driver) {
@@ -873,6 +879,7 @@ static void reset_gadget(struct at91_udc *udc)
 }
 
 static void stop_activity(struct at91_udc *udc)
+	__must_hold(&udc->lock)
 {
 	struct usb_gadget_driver *driver = udc->driver;
 	int i;
@@ -885,6 +892,7 @@ static void stop_activity(struct at91_udc *udc)
 	for (i = 0; i < NUM_ENDPOINTS; i++) {
 		struct at91_ep *ep = &udc->ep[i];
 		ep->stopped = 1;
+		lockdep_assume_ctx_held(&ep->udc->lock);
 		nuke(ep, -ESHUTDOWN);
 	}
 	if (driver) {
@@ -921,6 +929,7 @@ static void clk_off(struct at91_udc *udc)
  * inactive links by cutting clocks and transceiver power.
  */
 static void pullup(struct at91_udc *udc, int is_on)
+	__must_hold(&udc->lock)
 {
 	if (!udc->enabled || !udc->vbus)
 		is_on = 0;
@@ -1004,6 +1013,7 @@ static const struct usb_gadget_ops at91_udc_ops = {
 /*-------------------------------------------------------------------------*/
 
 static int handle_ep(struct at91_ep *ep)
+	__must_hold(&ep->udc->lock)
 {
 	struct at91_request	*req;
 	u32 __iomem		*creg = ep->creg;
@@ -1046,6 +1056,7 @@ union setup {
 };
 
 static void handle_setup(struct at91_udc *udc, struct at91_ep *ep, u32 csr)
+	__must_hold(&udc->lock)
 {
 	u32 __iomem	*creg = ep->creg;
 	u8 __iomem	*dreg = ep->creg + (AT91_UDP_FDR(0) - AT91_UDP_CSR(0));
@@ -1235,8 +1246,10 @@ static void handle_setup(struct at91_udc *udc, struct at91_ep *ep, u32 csr)
 		tmp |= CLR_FX;
 		tmp &= ~(SET_FX | AT91_UDP_FORCESTALL);
 		__raw_writel(tmp, ep->creg);
-		if (!list_empty(&ep->queue))
+		if (!list_empty(&ep->queue)) {
+			lockdep_assume_ctx_held(&ep->udc->lock);
 			handle_ep(ep);
+		}
 		goto succeed;
 	}
 
@@ -1272,11 +1285,14 @@ write_in:
 }
 
 static void handle_ep0(struct at91_udc *udc)
+	__must_hold(&udc->lock)
 {
 	struct at91_ep		*ep0 = &udc->ep[0];
 	u32 __iomem		*creg = ep0->creg;
 	u32			csr = __raw_readl(creg);
 	struct at91_request	*req;
+
+	lockdep_assume_ctx_held(&ep0->udc->lock);
 
 	if (unlikely(csr & AT91_UDP_STALLSENT)) {
 		nuke(ep0, -EPROTO);
@@ -1494,8 +1510,10 @@ static irqreturn_t at91_udc_irq (int irq, void *_udc)
 				handle_ep0(udc);
 			for (i = 1; i < NUM_ENDPOINTS; i++) {
 				mask <<= 1;
-				if (status & mask)
+				if (status & mask) {
+					lockdep_assume_ctx_held(&ep->udc->lock);
 					handle_ep(ep);
+				}
 				ep++;
 			}
 		}
@@ -1589,7 +1607,7 @@ static void at91udc_shutdown(struct platform_device *dev)
 
 	/* force disconnect on reboot */
 	spin_lock_irqsave(&udc->lock, flags);
-	pullup(platform_get_drvdata(dev), 0);
+	pullup(udc, 0);
 	spin_unlock_irqrestore(&udc->lock, flags);
 }
 

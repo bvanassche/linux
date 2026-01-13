@@ -957,6 +957,7 @@ int snd_compr_stop_error(struct snd_compr_stream *stream,
 EXPORT_SYMBOL_GPL(snd_compr_stop_error);
 
 static int snd_compress_wait_for_drain(struct snd_compr_stream *stream)
+	__must_hold(&stream->device->lock)
 {
 	int ret;
 
@@ -994,6 +995,7 @@ static int snd_compress_wait_for_drain(struct snd_compr_stream *stream)
 }
 
 static int snd_compr_drain(struct snd_compr_stream *stream)
+	__must_hold(&stream->device->lock)
 {
 	snd_pcm_state_t state;
 	int retval;
@@ -1058,6 +1060,7 @@ static int snd_compr_next_track(struct snd_compr_stream *stream)
 }
 
 static int snd_compr_partial_drain(struct snd_compr_stream *stream)
+	__must_hold(&stream->device->lock)
 {
 	snd_pcm_state_t state;
 	int retval;

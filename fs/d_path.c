@@ -156,6 +156,7 @@ static int __prepend_path(const struct dentry *dentry, const struct mount *mnt,
 static int prepend_path(const struct path *path,
 			const struct path *root,
 			struct prepend_buffer *p)
+	__context_unsafe(/* RCU lock is conditional */)
 {
 	unsigned seq, m_seq = 0;
 	struct prepend_buffer b;
@@ -331,6 +332,7 @@ char *simple_dname(struct dentry *dentry, char *buffer, int buflen)
  * Write full pathname from the root of the filesystem into the buffer.
  */
 static char *__dentry_path(const struct dentry *d, struct prepend_buffer *p)
+	__context_unsafe(/* RCU lock is conditional */)
 {
 	const struct dentry *dentry;
 	struct prepend_buffer b;

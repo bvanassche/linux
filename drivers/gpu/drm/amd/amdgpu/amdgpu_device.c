@@ -5538,6 +5538,7 @@ static void amdgpu_device_recovery_prepare(struct amdgpu_device *adev,
 
 static void amdgpu_device_recovery_get_reset_lock(struct amdgpu_device *adev,
 						  struct list_head *device_list)
+	__context_unsafe(/* conditional locking */)
 {
 	struct amdgpu_device *tmp_adev = NULL;
 
@@ -5550,6 +5551,7 @@ static void amdgpu_device_recovery_get_reset_lock(struct amdgpu_device *adev,
 
 static void amdgpu_device_recovery_put_reset_lock(struct amdgpu_device *adev,
 						  struct list_head *device_list)
+	__context_unsafe(/* conditional locking */)
 {
 	struct amdgpu_device *tmp_adev = NULL;
 
@@ -5778,6 +5780,7 @@ static void amdgpu_device_gpu_resume(struct amdgpu_device *adev,
 int amdgpu_device_gpu_recover(struct amdgpu_device *adev,
 			      struct amdgpu_job *job,
 			      struct amdgpu_reset_context *reset_context)
+	__context_unsafe(/* conditional locking */)
 {
 	struct list_head device_list;
 	bool job_signaled = false;
@@ -6246,6 +6249,7 @@ int amdgpu_device_baco_exit(struct amdgpu_device *adev)
  * Return: PCI_ERS_RESULT_NEED_RESET or PCI_ERS_RESULT_DISCONNECT.
  */
 pci_ers_result_t amdgpu_pci_error_detected(struct pci_dev *pdev, pci_channel_state_t state)
+	__context_unsafe(/* conditional locking */)
 {
 	struct drm_device *dev = pci_get_drvdata(pdev);
 	struct amdgpu_device *adev = drm_to_adev(dev);
@@ -6334,6 +6338,7 @@ pci_ers_result_t amdgpu_pci_mmio_enabled(struct pci_dev *pdev)
  * should resume normal operations.
  */
 pci_ers_result_t amdgpu_pci_slot_reset(struct pci_dev *pdev)
+	__context_unsafe(/* conditional locking */)
 {
 	struct drm_device *dev = pci_get_drvdata(pdev);
 	struct amdgpu_device *adev = drm_to_adev(dev);
@@ -6439,6 +6444,7 @@ out:
  * OK to resume normal operation.
  */
 void amdgpu_pci_resume(struct pci_dev *pdev)
+	__context_unsafe(/* conditional locking */)
 {
 	struct drm_device *dev = pci_get_drvdata(pdev);
 	struct amdgpu_device *adev = drm_to_adev(dev);

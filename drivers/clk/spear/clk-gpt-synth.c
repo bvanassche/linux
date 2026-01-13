@@ -53,6 +53,7 @@ static int clk_gpt_determine_rate(struct clk_hw *hw,
 
 static unsigned long clk_gpt_recalc_rate(struct clk_hw *hw,
 		unsigned long parent_rate)
+	__context_unsafe(/* conditional locking */)
 {
 	struct clk_gpt *gpt = to_clk_gpt(hw);
 	unsigned long flags = 0;
@@ -78,6 +79,7 @@ static unsigned long clk_gpt_recalc_rate(struct clk_hw *hw,
 /* Configures new clock rate of gpt */
 static int clk_gpt_set_rate(struct clk_hw *hw, unsigned long drate,
 				unsigned long prate)
+	__context_unsafe(/* conditional locking */)
 {
 	struct clk_gpt *gpt = to_clk_gpt(hw);
 	struct gpt_rate_tbl *rtbl = gpt->rtbl;

@@ -344,6 +344,7 @@ EXPORT_SYMBOL_GPL(wm_adsp_fw_get);
 
 int wm_adsp_fw_put(struct snd_kcontrol *kcontrol,
 		   struct snd_ctl_elem_value *ucontrol)
+	__context_unsafe(/* private_value int-to-pointer cast confuses analyzer */)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;

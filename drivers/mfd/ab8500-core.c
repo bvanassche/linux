@@ -332,6 +332,7 @@ static struct abx500_ops ab8500_ops = {
 };
 
 static void ab8500_irq_lock(struct irq_data *data)
+	__acquires(&((struct ab8500 *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct ab8500 *ab8500 = irq_data_get_irq_chip_data(data);
 
@@ -340,6 +341,7 @@ static void ab8500_irq_lock(struct irq_data *data)
 }
 
 static void ab8500_irq_sync_unlock(struct irq_data *data)
+	__releases(&((struct ab8500 *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct ab8500 *ab8500 = irq_data_get_irq_chip_data(data);
 	int i;

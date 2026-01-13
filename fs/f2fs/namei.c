@@ -367,6 +367,7 @@ fail_drop:
 
 static int f2fs_create(const struct mnt_idmap *idmap, struct inode *dir,
 		       struct dentry *dentry, umode_t mode)
+	__context_unsafe(/* f2fs_handle_failed_inode() unlocks lc on error */)
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(dir);
 	struct f2fs_lock_context lc;
@@ -665,6 +666,7 @@ static const char *f2fs_get_link(struct dentry *dentry,
 
 static int f2fs_symlink(const struct mnt_idmap *idmap, struct inode *dir,
 			struct dentry *dentry, const char *symname)
+	__context_unsafe(/* f2fs_handle_failed_inode() unlocks lc on error */)
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(dir);
 	struct f2fs_lock_context lc;
@@ -754,6 +756,7 @@ free_inode:
 
 static struct dentry *f2fs_mkdir(const struct mnt_idmap *idmap, struct inode *dir,
 				 struct dentry *dentry, umode_t mode)
+	__context_unsafe(/* f2fs_handle_failed_inode() unlocks lc on error */)
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(dir);
 	struct f2fs_lock_context lc;
@@ -813,6 +816,7 @@ static int f2fs_rmdir(struct inode *dir, struct dentry *dentry)
 
 static int f2fs_mknod(const struct mnt_idmap *idmap, struct inode *dir,
 		      struct dentry *dentry, umode_t mode, dev_t rdev)
+	__context_unsafe(/* f2fs_handle_failed_inode() unlocks lc on error */)
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(dir);
 	struct f2fs_lock_context lc;
@@ -861,6 +865,7 @@ out:
 static int __f2fs_tmpfile(const struct mnt_idmap *idmap, struct inode *dir,
 			  struct file *file, umode_t mode, bool is_whiteout,
 			  struct inode **new_inode, struct f2fs_filename *fname)
+	__context_unsafe(/* f2fs_handle_failed_inode() unlocks lc on error */)
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(dir);
 	struct f2fs_lock_context lc;

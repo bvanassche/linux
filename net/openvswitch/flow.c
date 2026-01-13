@@ -59,6 +59,7 @@ u64 ovs_flow_used_time(unsigned long flow_jiffies)
 
 void ovs_flow_stats_update(struct sw_flow *flow, __be16 tcp_flags,
 			   const struct sk_buff *skb)
+	__context_unsafe(/* stats points to different locks across branches */)
 {
 	struct sw_flow_stats *stats;
 	unsigned int cpu = smp_processor_id();

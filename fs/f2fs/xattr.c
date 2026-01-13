@@ -517,6 +517,7 @@ in_page_out:
 
 int f2fs_getxattr(struct inode *inode, int index, const char *name,
 		void *buffer, size_t buffer_size, struct f2fs_cached_block *ientry)
+	__context_unsafe(/* conditional locking */)
 {
 	struct f2fs_xattr_entry *xe = NULL;
 	int error;

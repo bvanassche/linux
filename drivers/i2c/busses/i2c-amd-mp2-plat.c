@@ -95,6 +95,7 @@ static void i2c_amd_cmd_completion(struct amd_i2c_common *i2c_common)
 }
 
 static int i2c_amd_check_cmd_completion(struct amd_i2c_dev *i2c_dev)
+	__releases(&i2c_dev->common.mp2_dev->c2p_lock)
 {
 	struct amd_i2c_common *i2c_common = &i2c_dev->common;
 	unsigned long time_left;

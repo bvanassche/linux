@@ -423,7 +423,8 @@ static void finish_request(
 	struct sl811h_ep	*ep,
 	struct urb		*urb,
 	int			status
-) __releases(sl811->lock) __acquires(sl811->lock)
+)
+	__context_unsafe(/* drops and reacquires sl811->lock */)
 {
 	unsigned		i;
 

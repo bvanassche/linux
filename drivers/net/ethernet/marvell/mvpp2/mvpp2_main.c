@@ -1000,6 +1000,7 @@ static int mvpp2_enable_global_fc(struct mvpp2 *priv)
 static inline void mvpp2_bm_pool_put(struct mvpp2_port *port, int pool,
 				     dma_addr_t buf_dma_addr,
 				     phys_addr_t buf_phys_addr)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned int thread = mvpp2_cpu_to_thread(port->priv, get_cpu());
 	unsigned long flags = 0;
@@ -4370,6 +4371,7 @@ release:
 
 /* Main tx processing */
 static netdev_tx_t mvpp2_tx(struct sk_buff *skb, struct net_device *dev)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mvpp2_port *port = netdev_priv(dev);
 	struct mvpp2_tx_queue *txq, *aggr_txq;

@@ -430,7 +430,8 @@ static int ext4_mb_scan_group(struct ext4_allocation_context *ac,
 
 static int ext4_try_to_trim_range(struct super_block *sb,
 		struct ext4_buddy *e4b, ext4_grpblk_t start,
-		ext4_grpblk_t max, ext4_grpblk_t minblocks);
+		ext4_grpblk_t max, ext4_grpblk_t minblocks)
+	__must_hold(ext4_group_lock_ptr(sb, e4b->bd_group));
 
 /*
  * The algorithm using this percpu seq counter goes below:
@@ -3677,6 +3678,8 @@ static void ext4_discard_work(struct work_struct *work)
 			}
 
 			ext4_lock_group(sb, grp);
+			lockdep_assume_ctx_held(
+				ext4_group_lock_ptr(sb, e4b.bd_group));
 			ext4_try_to_trim_range(sb, &e4b, fd->efd_start_cluster,
 						fd->efd_start_cluster + fd->efd_count - 1, 1);
 			ext4_unlock_group(sb, grp);
@@ -5827,6 +5830,7 @@ static inline void ext4_mb_show_ac(struct ext4_allocation_context *ac)
  * One can tune this size via /sys/fs/ext4/<partition>/mb_stream_req
  */
 static void ext4_mb_group_or_file(struct ext4_allocation_context *ac)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ext4_sb_info *sbi = EXT4_SB(ac->ac_sb);
 	int bsbits = ac->ac_sb->s_blocksize_bits;
@@ -6063,6 +6067,7 @@ static void ext4_mb_add_n_trim(struct ext4_allocation_context *ac)
  * release all resource we used in allocation
  */
 static void ext4_mb_release_context(struct ext4_allocation_context *ac)
+	__context_unsafe(/* releases lg_mutex held by caller */)
 {
 	struct ext4_sb_info *sbi = EXT4_SB(ac->ac_sb);
 	struct ext4_prealloc_space *pa = ac->ac_pa;
@@ -6867,8 +6872,7 @@ error_out:
  */
 static int ext4_trim_extent(struct super_block *sb,
 		int start, int count, struct ext4_buddy *e4b)
-__releases(bitlock)
-__acquires(bitlock)
+	__must_hold(ext4_group_lock_ptr(sb, e4b->bd_group))
 {
 	struct ext4_free_extent ex;
 	ext4_group_t group = e4b->bd_group;
@@ -6887,9 +6891,9 @@ __acquires(bitlock)
 	 * being trimmed.
 	 */
 	mb_mark_used(e4b, &ex);
-	ext4_unlock_group(sb, group);
+	ext4_unlock_group(sb, e4b->bd_group);
 	ret = ext4_issue_discard(sb, group, start, count);
-	ext4_lock_group(sb, group);
+	ext4_lock_group(sb, e4b->bd_group);
 	mb_free_blocks(NULL, e4b, start, ex.fe_len);
 	return ret;
 }
@@ -6917,8 +6921,6 @@ static bool ext4_trim_interrupted(void)
 static int ext4_try_to_trim_range(struct super_block *sb,
 		struct ext4_buddy *e4b, ext4_grpblk_t start,
 		ext4_grpblk_t max, ext4_grpblk_t minblocks)
-__acquires(ext4_group_lock_ptr(sb, e4b->bd_group))
-__releases(ext4_group_lock_ptr(sb, e4b->bd_group))
 {
 	ext4_grpblk_t next, count, free_count, last, origin_start;
 	bool set_trimmed = false;
@@ -6991,6 +6993,7 @@ static ext4_grpblk_t
 ext4_trim_all_free(struct super_block *sb, ext4_group_t group,
 		   ext4_grpblk_t start, ext4_grpblk_t max,
 		   ext4_grpblk_t minblocks)
+	__must_not_hold(ext4_group_lock_ptr(sb, group))
 {
 	struct ext4_buddy e4b;
 	int ret;
@@ -7005,6 +7008,7 @@ ext4_trim_all_free(struct super_block *sb, ext4_group_t group,
 	}
 
 	ext4_lock_group(sb, group);
+	lockdep_assume_ctx_held(ext4_group_lock_ptr(sb, e4b.bd_group));
 
 	if (!EXT4_MB_GRP_WAS_TRIMMED(e4b.bd_info) ||
 	    minblocks < EXT4_SB(sb)->s_last_trim_minblks)

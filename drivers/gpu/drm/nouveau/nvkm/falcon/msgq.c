@@ -24,6 +24,7 @@
 
 static void
 nvkm_falcon_msgq_open(struct nvkm_falcon_msgq *msgq)
+	__acquires(&msgq->lock)
 {
 	spin_lock(&msgq->lock);
 	msgq->position = nvkm_falcon_rd32(msgq->qmgr->falcon, msgq->tail_reg);
@@ -31,6 +32,7 @@ nvkm_falcon_msgq_open(struct nvkm_falcon_msgq *msgq)
 
 static void
 nvkm_falcon_msgq_close(struct nvkm_falcon_msgq *msgq, bool commit)
+	__releases(&msgq->lock)
 {
 	struct nvkm_falcon *falcon = msgq->qmgr->falcon;
 

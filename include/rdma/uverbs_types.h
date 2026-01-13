@@ -6,6 +6,7 @@
 #ifndef _UVERBS_TYPES_
 #define _UVERBS_TYPES_
 
+#include <linux/cdev.h>
 #include <linux/kernel.h>
 #include <rdma/ib_verbs.h>
 
@@ -105,23 +106,6 @@ struct uverbs_obj_idr_type {
 					   struct uverbs_attr_bundle *attrs);
 };
 
-struct ib_uobject *rdma_lookup_get_uobject(const struct uverbs_api_object *obj,
-					   struct ib_uverbs_file *ufile, s64 id,
-					   enum rdma_lookup_mode mode,
-					   struct uverbs_attr_bundle *attrs);
-void rdma_lookup_put_uobject(struct ib_uobject *uobj,
-			     enum rdma_lookup_mode mode);
-struct ib_uobject *rdma_alloc_begin_uobject(const struct uverbs_api_object *obj,
-					    struct uverbs_attr_bundle *attrs);
-void rdma_alloc_abort_uobject(struct ib_uobject *uobj,
-			      struct uverbs_attr_bundle *attrs,
-			      bool hw_obj_valid);
-void rdma_alloc_commit_uobject(struct ib_uobject *uobj,
-			       struct uverbs_attr_bundle *attrs);
-void rdma_assign_uobject(struct ib_uobject *to_uobj,
-			 struct ib_uobject *new_uobj,
-			 struct uverbs_attr_bundle *attrs);
-
 /*
  * uverbs_uobject_get is called in order to increase the reference count on
  * an uobject. This is useful when a handler wants to keep the uobject's memory
@@ -151,6 +135,26 @@ struct uverbs_obj_fd_type {
 	const struct file_operations	*fops;
 	const char			*name;
 	int				flags;
+};
+
+struct uverbs_api;
+
+struct ib_uverbs_device {
+	refcount_t				refcount;
+	u32					num_comp_vectors;
+	struct completion			comp;
+	struct device				dev;
+	/* First group for device attributes, NULL terminated array */
+	const struct attribute_group		*groups[2];
+	struct ib_device	__rcu	       *ib_dev;
+	int					devnum;
+	struct cdev			        cdev;
+	struct rb_root				xrcd_tree;
+	struct mutex				xrcd_tree_mutex;
+	struct srcu_struct			disassociate_srcu;
+	struct mutex				lists_mutex; /* protect lists */
+	struct list_head			uverbs_file_list;
+	struct uverbs_api			*uapi;
 };
 
 struct ib_uverbs_file {

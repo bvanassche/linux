@@ -8,6 +8,8 @@
 
 #include <linux/types.h>
 
+#include "intel_display_core.h"
+
 struct intel_display;
 
 enum intel_sbi_destination {
@@ -17,8 +19,10 @@ enum intel_sbi_destination {
 
 void intel_sbi_init(struct intel_display *display);
 void intel_sbi_fini(struct intel_display *display);
-void intel_sbi_lock(struct intel_display *display);
-void intel_sbi_unlock(struct intel_display *display);
+void intel_sbi_lock(struct intel_display *display)
+	__acquires(&display->sbi.lock);
+void intel_sbi_unlock(struct intel_display *display)
+	__releases(&display->sbi.lock);
 u32 intel_sbi_read(struct intel_display *display, u16 reg,
 		   enum intel_sbi_destination destination);
 void intel_sbi_write(struct intel_display *display, u16 reg, u32 value,

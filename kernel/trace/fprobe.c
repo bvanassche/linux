@@ -50,6 +50,9 @@ static struct fgraph_ops fprobe_graph_ops;
 DEFINE_LOCK_GUARD_0(rcu_sched_notrace,
 		    rcu_read_lock_sched_notrace(),
 		    rcu_read_unlock_sched_notrace())
+DECLARE_LOCK_GUARD_0_ATTRS(rcu_sched_notrace,
+			   __acquires_shared(RCU) __acquires_shared(RCU_SCHED),
+			   __releases_shared(RCU) __releases_shared(RCU_SCHED))
 
 static u32 fprobe_node_hashfn(const void *data, u32 len, u32 seed)
 {
@@ -707,8 +710,10 @@ struct fprobe_addr_list {
 	unsigned long *addrs;
 };
 
-static int fprobe_remove_node_in_module(struct module *mod, struct fprobe_hlist_node *node,
-					 struct fprobe_addr_list *alist)
+static int fprobe_remove_node_in_module(struct module *mod,
+					struct fprobe_hlist_node *node,
+					struct fprobe_addr_list *alist)
+	__must_hold_shared(RCU)
 {
 	lockdep_assert_in_rcu_read_lock();
 

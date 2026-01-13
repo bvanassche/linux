@@ -190,6 +190,7 @@ static inline unsigned amdgpu_mem_type_to_domain(u32 mem_type)
  * a signal. Release all buffer reservations and return to user-space.
  */
 static inline int amdgpu_bo_reserve(struct amdgpu_bo *bo, bool no_intr)
+	__context_unsafe(/* __cond_acquires(0, &bo->tbo.base.resv->lock) */)
 {
 	struct amdgpu_device *adev = amdgpu_ttm_adev(bo->tbo.bdev);
 	int r;
@@ -204,6 +205,7 @@ static inline int amdgpu_bo_reserve(struct amdgpu_bo *bo, bool no_intr)
 }
 
 static inline void amdgpu_bo_unreserve(struct amdgpu_bo *bo)
+	__context_unsafe(/* __releases(&bo->tbo.base.resv->lock) */)
 {
 	ttm_bo_unreserve(&bo->tbo);
 }

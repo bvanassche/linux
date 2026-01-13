@@ -1650,6 +1650,7 @@ static u32 cgroup_calc_subtree_ss_mask(u32 subtree_control, u32 this_ss_mask)
  * cgroup, it should pin it before invoking this function.
  */
 void cgroup_kn_unlock(struct kernfs_node *kn)
+	__releases(&cgroup_mutex)
 {
 	struct cgroup *cgrp;
 
@@ -1683,6 +1684,7 @@ void cgroup_kn_unlock(struct kernfs_node *kn)
  * including self-removal.
  */
 struct cgroup *cgroup_kn_lock_live(struct kernfs_node *kn, bool drain_offline)
+	__context_unsafe(/* returns with a lock held that depends on the return value */)
 {
 	struct cgroup *cgrp;
 	int ret;
@@ -2540,6 +2542,7 @@ EXPORT_SYMBOL_GPL(cgroup_path_ns);
  */
 void cgroup_attach_lock(enum cgroup_attach_lock_mode lock_mode,
 			struct task_struct *tsk)
+	__context_unsafe(/* conditional locking */)
 {
 	cpus_read_lock();
 
@@ -2565,6 +2568,7 @@ void cgroup_attach_lock(enum cgroup_attach_lock_mode lock_mode,
  */
 void cgroup_attach_unlock(enum cgroup_attach_lock_mode lock_mode,
 			  struct task_struct *tsk)
+	__context_unsafe(/* conditional locking */)
 {
 	switch (lock_mode) {
 	case CGRP_ATTACH_LOCK_NONE:
@@ -3628,6 +3632,7 @@ static int cgroup_vet_subtree_control_enable(struct cgroup *cgrp, u32 enable)
 static ssize_t cgroup_subtree_control_write(struct kernfs_open_file *of,
 					    char *buf, size_t nbytes,
 					    loff_t off)
+	__context_unsafe(/* cgroup_kn_lock_live() locks conditionally */)
 {
 	u32 enable = 0, disable = 0;
 	struct cgroup *cgrp, *child;
@@ -3794,6 +3799,7 @@ static int cgroup_type_show(struct seq_file *seq, void *v)
 
 static ssize_t cgroup_type_write(struct kernfs_open_file *of, char *buf,
 				 size_t nbytes, loff_t off)
+	__context_unsafe(/* cgroup_kn_lock_live() locks conditionally */)
 {
 	struct cgroup *cgrp;
 	int ret;
@@ -3829,6 +3835,7 @@ static int cgroup_max_descendants_show(struct seq_file *seq, void *v)
 
 static ssize_t cgroup_max_descendants_write(struct kernfs_open_file *of,
 					   char *buf, size_t nbytes, loff_t off)
+	__context_unsafe(/* cgroup_kn_lock_live() locks conditionally */)
 {
 	struct cgroup *cgrp;
 	int descendants;
@@ -3872,6 +3879,7 @@ static int cgroup_max_depth_show(struct seq_file *seq, void *v)
 
 static ssize_t cgroup_max_depth_write(struct kernfs_open_file *of,
 				      char *buf, size_t nbytes, loff_t off)
+	__context_unsafe(/* cgroup_kn_lock_live() locks conditionally */)
 {
 	struct cgroup *cgrp;
 	ssize_t ret;
@@ -4080,6 +4088,7 @@ static int cgroup_cpu_pressure_show(struct seq_file *seq, void *v)
 
 static ssize_t pressure_write(struct kernfs_open_file *of, char *buf,
 			      size_t nbytes, enum psi_res res)
+	__context_unsafe(/* cgroup_kn_lock_live() locks conditionally */)
 {
 	struct cgroup_file_ctx *ctx;
 	struct psi_trigger *new;
@@ -4192,6 +4201,7 @@ static int cgroup_pressure_show(struct seq_file *seq, void *v)
 static ssize_t cgroup_pressure_write(struct kernfs_open_file *of,
 				     char *buf, size_t nbytes,
 				     loff_t off)
+	__context_unsafe(/* cgroup_kn_lock_live() locks conditionally */)
 {
 	ssize_t ret;
 	int enable;
@@ -4269,6 +4279,7 @@ static int cgroup_freeze_show(struct seq_file *seq, void *v)
 
 static ssize_t cgroup_freeze_write(struct kernfs_open_file *of,
 				   char *buf, size_t nbytes, loff_t off)
+	__context_unsafe(/* cgroup_kn_lock_live() locks conditionally */)
 {
 	struct cgroup *cgrp;
 	ssize_t ret;
@@ -4331,6 +4342,7 @@ static void cgroup_kill(struct cgroup *cgrp)
 
 static ssize_t cgroup_kill_write(struct kernfs_open_file *of, char *buf,
 				 size_t nbytes, loff_t off)
+	__context_unsafe(/* cgroup_kn_lock_live() locks conditionally */)
 {
 	ssize_t ret = 0;
 	int kill;
@@ -5494,6 +5506,7 @@ static int cgroup_attach_permissions(struct cgroup *src_cgrp,
 
 static ssize_t __cgroup_procs_write(struct kernfs_open_file *of, char *buf,
 				    bool threadgroup)
+	__context_unsafe(/* cgroup_kn_lock_live() locks conditionally */)
 {
 	struct cgroup_file_ctx *ctx = of->priv;
 	struct cgroup *src_cgrp, *dst_cgrp;
@@ -5706,6 +5719,7 @@ static struct cftype cgroup_psi_files[] = {
  * steps to the already complex sequence.
  */
 static void css_free_rwork_fn(struct work_struct *work)
+	__context_unsafe(/* cgroup_idr_remove() requires cgroup_mutex */)
 {
 	struct cgroup_subsys_state *css = container_of(to_rcu_work(work),
 				struct cgroup_subsys_state, destroy_rwork);
@@ -6150,6 +6164,7 @@ fail:
 }
 
 int cgroup_mkdir(struct kernfs_node *parent_kn, const char *name, umode_t mode)
+	__context_unsafe(/* cgroup_kn_lock_live() locks conditionally */)
 {
 	struct cgroup *parent, *cgrp;
 	int ret;
@@ -6431,6 +6446,7 @@ static int cgroup_destroy_locked(struct cgroup *cgrp)
 };
 
 int cgroup_rmdir(struct kernfs_node *kn)
+	__context_unsafe(/* cgroup_kn_lock_live() locks conditionally */)
 {
 	struct cgroup *cgrp;
 	int ret = 0;
@@ -7056,6 +7072,7 @@ static void cgroup_css_set_put_fork(struct kernel_clone_args *kargs)
  * allows for a cgroup subsystem to conditionally allow or deny new forks.
  */
 int cgroup_can_fork(struct task_struct *child, struct kernel_clone_args *kargs)
+	__context_unsafe(/* cgroup_css_set_fork() locks conditionally */)
 {
 	struct cgroup_subsys *ss;
 	int i, j, ret;
@@ -7097,6 +7114,7 @@ out_revert:
  */
 void cgroup_cancel_fork(struct task_struct *child,
 			struct kernel_clone_args *kargs)
+	__context_unsafe(/* cgroup_css_set_fork() locks conditionally */)
 {
 	struct cgroup_subsys *ss;
 	int i;

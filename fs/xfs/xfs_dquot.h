@@ -214,13 +214,16 @@ int		xfs_qm_dqget(struct xfs_mount *mp, xfs_dqid_t id,
 int		xfs_qm_dqget_inode(struct xfs_inode *ip, xfs_dqtype_t type,
 				bool can_alloc, struct xfs_dquot **dqpp);
 int		xfs_qm_dqget_next(struct xfs_mount *mp, xfs_dqid_t id,
-				xfs_dqtype_t type, struct xfs_dquot **dqpp);
+				xfs_dqtype_t type, struct xfs_dquot **dqpp)
+	__cond_acquires(0, &(*dqpp)->q_qlock);
 int		xfs_qm_dqget_uncached(struct xfs_mount *mp,
 				xfs_dqid_t id, xfs_dqtype_t type,
 				struct xfs_dquot **dqpp);
 
-void		xfs_dqlock2(struct xfs_dquot *, struct xfs_dquot *);
-void		xfs_dqlockn(struct xfs_dqtrx *q);
+void		xfs_dqlock2(struct xfs_dquot *d1, struct xfs_dquot *d2)
+	__context_unsafe(/* conditional locking */);
+void		xfs_dqlockn(struct xfs_dqtrx *q)
+	__context_unsafe(/* locks in a loop */);
 
 void		xfs_dquot_set_prealloc_limits(struct xfs_dquot *);
 

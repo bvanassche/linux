@@ -27,6 +27,8 @@
 #include <linux/kthread.h>
 #include <linux/types.h>
 
+#include <drm/drm_device.h>
+#include <drm/drm_gem.h>
 #include <drm/drm_ioctl.h>
 #include <drm/drm_vblank.h>
 
@@ -156,8 +158,10 @@ int drm_dropmaster_ioctl(struct drm_device *dev, void *data,
 			 struct drm_file *file_priv);
 int drm_master_open(struct drm_file *file_priv);
 void drm_master_release(struct drm_file *file_priv);
-bool drm_master_internal_acquire(struct drm_device *dev);
-void drm_master_internal_release(struct drm_device *dev);
+bool drm_master_internal_acquire(struct drm_device *dev)
+	__cond_acquires(true, &dev->master_mutex);
+void drm_master_internal_release(struct drm_device *dev)
+	__releases(&dev->master_mutex);
 
 /* drm_sysfs.c */
 extern struct class *drm_class;
@@ -178,7 +182,8 @@ bool drm_gem_object_handle_get_if_exists_unlocked(struct drm_gem_object *obj);
 void drm_gem_object_handle_put_unlocked(struct drm_gem_object *obj);
 int drm_gem_handle_create_tail(struct drm_file *file_priv,
 			       struct drm_gem_object *obj,
-			       u32 *handlep);
+			       u32 *handlep)
+	__releases(&obj->dev->object_name_lock);
 int drm_gem_close_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
 int drm_gem_flink_ioctl(struct drm_device *dev, void *data,

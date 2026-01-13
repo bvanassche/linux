@@ -2576,6 +2576,7 @@ out:
 
 int __ceph_setattr(const struct mnt_idmap *idmap, struct inode *inode,
 		   struct iattr *attr, struct ceph_iattr *cia)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ceph_inode_info *ci = ceph_inode(inode);
 	unsigned int ia_valid = attr->ia_valid;

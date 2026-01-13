@@ -964,6 +964,7 @@ static struct renesas_usb3_request *usb3_get_request(struct renesas_usb3_ep
 static void __usb3_request_done(struct renesas_usb3_ep *usb3_ep,
 				struct renesas_usb3_request *usb3_req,
 				int status)
+	__context_unsafe(/* drops and reacquires usb3->lock */)
 {
 	struct renesas_usb3 *usb3 = usb3_ep_to_usb3(usb3_ep);
 

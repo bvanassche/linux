@@ -1738,6 +1738,8 @@ static void aio_poll_put_work(struct work_struct *work)
  * request was already removed from its waitqueue (which might no longer exist).
  */
 static bool poll_iocb_lock_wq(struct poll_iocb *req)
+	__cond_acquires_shared(true, RCU)
+	__cond_acquires(true, &req->head->lock)
 {
 	wait_queue_head_t *head;
 
@@ -1769,6 +1771,8 @@ static bool poll_iocb_lock_wq(struct poll_iocb *req)
 }
 
 static void poll_iocb_unlock_wq(struct poll_iocb *req)
+	__releases(&req->head->lock)
+	__releases_shared(RCU)
 {
 	spin_unlock(&req->head->lock);
 	rcu_read_unlock();
@@ -1950,6 +1954,7 @@ aio_poll_queue_proc(struct file *file, struct wait_queue_head *head,
 }
 
 static int aio_poll(struct aio_kiocb *aiocb, const struct iocb *iocb)
+	__context_unsafe(/* too complex for clang */)
 {
 	struct kioctx *ctx = aiocb->ki_ctx;
 	struct poll_iocb *req = &aiocb->poll;

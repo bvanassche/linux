@@ -557,6 +557,7 @@ amdgpu_userq_destroy(struct amdgpu_userq_mgr *uq_mgr, struct amdgpu_usermode_que
 	cancel_delayed_work_sync(&queue->hang_detect_work);
 
 	mutex_lock(&uq_mgr->userq_mutex);
+	lockdep_assume_ctx_held(&queue->userq_mgr->userq_mutex);
 	amdgpu_userq_wait_for_last_fence(queue);
 
 	amdgpu_userq_detach_doorbell(queue);

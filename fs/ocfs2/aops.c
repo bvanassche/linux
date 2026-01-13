@@ -426,6 +426,7 @@ int walk_page_buffers(	handle_t *handle,
 }
 
 static sector_t ocfs2_bmap(struct address_space *mapping, sector_t block)
+	__context_unsafe(/* conditional locking */)
 {
 	sector_t status;
 	u64 p_blkno = 0;
@@ -1862,6 +1863,7 @@ static int ocfs2_write_begin(const struct kiocb *iocb,
 			     struct address_space *mapping,
 			     loff_t pos, unsigned len,
 			     struct folio **foliop, void **fsdata)
+	__cond_acquires(0, &OCFS2_I(mapping->host)->ip_alloc_sem)
 {
 	int ret;
 	struct buffer_head *di_bh = NULL;
@@ -2054,6 +2056,7 @@ static int ocfs2_write_end(const struct kiocb *iocb,
 			   struct address_space *mapping,
 			   loff_t pos, unsigned len, unsigned copied,
 			   struct folio *folio, void *fsdata)
+	__releases(&OCFS2_I(mapping->host)->ip_alloc_sem)
 {
 	int ret;
 	struct inode *inode = mapping->host;

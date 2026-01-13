@@ -181,6 +181,7 @@ static int sctp_v6_err(struct sk_buff *skb, struct inet6_skb_parm *opt,
 		return -ENOENT;
 	}
 
+	__acquire(&sk->sk_lock.slock);
 	sctp_v6_err_handle(transport, skb, type, code, ntohl(info));
 	sctp_err_finish(sk, transport);
 
@@ -202,6 +203,7 @@ int sctp_udp_v6_err(struct sock *sk, struct sk_buff *skb)
 		return -ENOENT;
 	}
 
+	__acquire(&sk->sk_lock.slock);
 	skb->transport_header -= sizeof(struct udphdr);
 	hdr = (struct icmp6hdr *)(skb_network_header(skb) - sizeof(struct icmp6hdr));
 	if (hdr->icmp6_type == NDISC_REDIRECT) {

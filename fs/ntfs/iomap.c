@@ -82,6 +82,7 @@ const struct iomap_write_ops ntfs_iomap_folio_ops = {
 
 static int ntfs_read_iomap_begin_resident(struct inode *inode, loff_t offset, loff_t length,
 		unsigned int flags, struct iomap *iomap, bool keep_mrec_lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ntfs_inode *base_ni, *ni = NTFS_I(inode);
 	struct ntfs_attr_search_ctx *ctx;
@@ -285,6 +286,7 @@ static int ntfs_read_iomap_begin(struct inode *inode, loff_t offset, loff_t leng
 
 static int ntfs_read_iomap_end(struct inode *inode, loff_t pos, loff_t length,
 		ssize_t written, unsigned int flags, struct iomap *iomap)
+	__context_unsafe(/* releases lock acquired by ntfs_read_iomap_begin() */)
 {
 	struct ntfs_inode *base_ni = iomap->private;
 
@@ -385,6 +387,7 @@ static int ntfs_zero_range(struct inode *inode, loff_t offset, loff_t length)
 
 static int ntfs_write_simple_iomap_begin_non_resident(struct inode *inode, loff_t offset,
 						      loff_t length, struct iomap *iomap)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ntfs_inode *ni = NTFS_I(inode);
 	struct ntfs_inode *mrec_ni = ntfs_inode_is_named_stream(ni) ?
@@ -583,6 +586,7 @@ remap_rl:
 static int ntfs_write_da_iomap_begin_non_resident(struct inode *inode,
 		loff_t offset, loff_t length, unsigned int flags,
 		struct iomap *iomap, int ntfs_iomap_flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ntfs_inode *ni = NTFS_I(inode);
 	struct ntfs_inode *mrec_ni = ntfs_inode_is_named_stream(ni) ?
@@ -668,6 +672,7 @@ static int ntfs_write_da_iomap_begin_non_resident(struct inode *inode,
 
 static int ntfs_write_iomap_begin_resident(struct inode *inode, loff_t offset,
 		struct iomap *iomap)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ntfs_inode *ni = NTFS_I(inode);
 	struct ntfs_inode *mrec_ni = ntfs_inode_is_named_stream(ni) ?
@@ -716,6 +721,7 @@ out:
 static int ntfs_write_iomap_begin_non_resident(struct inode *inode, loff_t offset,
 					       loff_t length, unsigned int flags,
 					       struct iomap *iomap, int ntfs_iomap_flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ntfs_inode *ni = NTFS_I(inode);
 	struct ntfs_inode *mrec_ni = ntfs_inode_is_named_stream(ni) ?
@@ -736,6 +742,7 @@ static int ntfs_write_iomap_begin_non_resident(struct inode *inode, loff_t offse
 static int __ntfs_write_iomap_begin(struct inode *inode, loff_t offset,
 				    loff_t length, unsigned int flags,
 				    struct iomap *iomap, int ntfs_iomap_flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ntfs_inode *ni = NTFS_I(inode);
 	struct ntfs_inode *mrec_ni;
@@ -764,6 +771,7 @@ static int ntfs_write_iomap_begin(struct inode *inode, loff_t offset,
 static int ntfs_write_iomap_end_resident(struct inode *inode, loff_t pos,
 					 loff_t length, ssize_t written,
 					 unsigned int flags, struct iomap *iomap)
+	__context_unsafe(/* releases lock acquired by ntfs_write_iomap_begin() */)
 {
 	struct ntfs_inode *base_ni = iomap->private;
 

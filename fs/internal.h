@@ -135,8 +135,10 @@ void fput_close(struct file *);
 /*
  * super.c
  */
-extern int reconfigure_super(struct fs_context *);
-extern bool super_trylock_shared(struct super_block *sb);
+extern int reconfigure_super(struct fs_context *fc)
+	__must_hold(&fc->root->d_sb->s_umount);
+extern bool super_trylock_shared(struct super_block *sb)
+	__cond_acquires_shared(true, &sb->s_umount);
 struct super_block *user_get_super(dev_t, bool excl);
 void put_super(struct super_block *sb);
 void __init super_dev_init(void);

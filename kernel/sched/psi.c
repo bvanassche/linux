@@ -1209,6 +1209,7 @@ void cgroup_move_task(struct task_struct *task, struct css_set *to)
 }
 
 void psi_cgroup_restart(struct psi_group *group)
+	__context_unsafe(/* locks in a loop */)
 {
 	int cpu;
 

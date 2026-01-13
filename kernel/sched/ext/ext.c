@@ -376,6 +376,7 @@ static struct scx_dispatch_q *find_global_dsq(struct scx_sched *sch, s32 cpu)
 }
 
 static struct scx_dispatch_q *find_user_dsq(struct scx_sched *sch, u64 dsq_id)
+	__context_unsafe(/* RCU read lock held by caller */)
 {
 	return rhashtable_lookup(&sch->dsq_hash, &dsq_id, dsq_hash_params);
 }
@@ -516,6 +517,8 @@ static void scx_rq_lock_drop(struct rq *rq)
 }
 
 static void switch_rq_lock(struct rq *from, struct rq *to)
+	__releases(rq_lockp(from))
+	__acquires(rq_lockp(to))
 {
 	bool tracked = scx_locked_rq() == from;
 
@@ -805,6 +808,7 @@ void scx_set_task_state(struct task_struct *p, u32 state)
  * visited as long as they are not dead.
  */
 void scx_task_iter_start(struct scx_task_iter *iter, struct cgroup *cgrp)
+	__context_unsafe(/* conditional locking */)
 {
 	memset(iter, 0, sizeof(*iter));
 
@@ -826,6 +830,7 @@ void scx_task_iter_start(struct scx_task_iter *iter, struct cgroup *cgrp)
 }
 
 static void __scx_task_iter_rq_unlock(struct scx_task_iter *iter)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (iter->locked_task) {
 		__balance_callbacks(iter->rq, &iter->rf);
@@ -844,6 +849,7 @@ static void __scx_task_iter_rq_unlock(struct scx_task_iter *iter)
  * iterator operation will automatically restore the necessary locking.
  */
 void scx_task_iter_unlock(struct scx_task_iter *iter)
+	__context_unsafe(/* conditional locking */)
 {
 	__scx_task_iter_rq_unlock(iter);
 	if (iter->list_locked) {
@@ -853,6 +859,7 @@ void scx_task_iter_unlock(struct scx_task_iter *iter)
 }
 
 static void __scx_task_iter_maybe_relock(struct scx_task_iter *iter)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!iter->list_locked) {
 		raw_spin_lock_irq(&scx_tasks_lock);
@@ -870,6 +877,7 @@ static void __scx_task_iter_maybe_relock(struct scx_task_iter *iter)
  */
 static void scx_task_iter_relock(struct scx_task_iter *iter,
 				 struct task_struct *p)
+	__context_unsafe(/* conditional locking */)
 {
 	__scx_task_iter_maybe_relock(iter);
 	if (p) {
@@ -962,6 +970,7 @@ static struct task_struct *scx_task_iter_next(struct scx_task_iter *iter)
  * for details.
  */
 struct task_struct *scx_task_iter_next_locked(struct scx_task_iter *iter)
+	__context_unsafe(/* conditional locking */)
 {
 	struct task_struct *p;
 
@@ -1844,6 +1853,7 @@ static void rq_owned_post_enq(struct scx_sched *sch, struct rq *rq,
 static void scx_dispatch_enqueue(struct scx_sched *sch, struct rq *rq,
 				 struct scx_dispatch_q *dsq, struct task_struct *p,
 				 u64 slice, u64 vtime, u64 enq_flags)
+	__context_unsafe(/* conditional locking */)
 {
 	bool is_rq_owned = dsq_is_rq_owned(dsq);
 
@@ -2013,6 +2023,7 @@ void scx_task_unlink_from_dsq(struct task_struct *p, struct scx_dispatch_q *dsq)
 }
 
 void scx_dispatch_dequeue(struct rq *rq, struct task_struct *p)
+	__context_unsafe(/* conditional locking */)
 {
 	struct scx_dispatch_q *dsq = p->scx.dsq;
 	bool is_rq_owned = dsq && dsq_is_rq_owned(dsq);
@@ -2716,6 +2727,7 @@ static void wakeup_preempt_scx(struct rq *rq, struct task_struct *p, int wake_fl
 
 void scx_move_local_task_to_local_dsq(struct scx_sched *sch, struct task_struct *p,
 				      u64 enq_flags, struct rq *dst_rq)
+	__must_hold(rq_lockp(dst_rq))
 {
 	struct scx_dispatch_q *dst_dsq;
 
@@ -2750,6 +2762,8 @@ void scx_move_local_task_to_local_dsq(struct scx_sched *sch, struct task_struct 
 static void move_remote_task_to_local_dsq(struct scx_sched *sch,
 					  struct task_struct *p, u64 enq_flags,
 					  struct rq *src_rq, struct rq *dst_rq)
+	__releases(rq_lockp(src_rq))
+	__acquires(rq_lockp(dst_rq))
 {
 	lockdep_assert_rq_held(src_rq);
 
@@ -2960,6 +2974,9 @@ static bool unlink_dsq_and_switch_rq_lock(struct task_struct *p,
 					  struct scx_dispatch_q *dsq,
 					  struct rq *locked_rq,
 					  struct rq *src_rq)
+	__releases(&dsq->lock)
+	__releases(rq_lockp(locked_rq))
+	__acquires(rq_lockp(src_rq))
 {
 	s32 cpu = raw_smp_processor_id();
 
@@ -2994,6 +3011,7 @@ static bool unlink_dsq_and_switch_rq_lock(struct task_struct *p,
 static bool consume_remote_task(struct scx_sched *sch, struct rq *this_rq,
 				struct task_struct *p, u64 enq_flags,
 				struct scx_dispatch_q *dsq, struct rq *src_rq)
+	__context_unsafe(/* releases dsq lock held by caller */)
 {
 	if (unlink_dsq_and_switch_rq_lock(p, dsq, this_rq, src_rq)) {
 		/*
@@ -3037,6 +3055,7 @@ static struct rq *move_task_between_dsqs(struct scx_sched *sch,
 					 struct task_struct *p, u64 enq_flags,
 					 struct scx_dispatch_q *src_dsq,
 					 struct scx_dispatch_q *dst_dsq)
+	__context_unsafe(/* releases src_dsq lock held by caller */)
 {
 	struct rq *src_rq = task_rq(p), *dst_rq;
 
@@ -3103,6 +3122,7 @@ static struct rq *move_task_between_dsqs(struct scx_sched *sch,
 
 bool scx_consume_dispatch_q(struct scx_sched *sch, struct rq *rq,
 			    struct scx_dispatch_q *dsq, u64 enq_flags)
+	__context_unsafe(/* drops and reacquires dsq lock */)
 {
 	struct task_struct *p;
 retry:
@@ -3175,6 +3195,7 @@ bool scx_consume_global_dsq(struct scx_sched *sch, struct rq *rq)
 static void dispatch_to_local_dsq(struct scx_sched *sch, struct rq *rq,
 				  struct scx_dispatch_q *dst_dsq, struct task_struct *p,
 				  u64 slice, u64 vtime, u64 enq_flags)
+	__context_unsafe(/* switches rq lock */)
 {
 	struct rq *src_rq = task_rq(p);
 	struct rq *dst_rq = container_of(dst_dsq, struct rq, scx.local_dsq);
@@ -3847,6 +3868,7 @@ switch_class:
 }
 
 static void kick_sync_wait_bal_cb(struct rq *rq)
+	__context_unsafe(/* drops and reacquires rq lock */)
 {
 	struct scx_kick_syncs __rcu *ks;
 	unsigned long *ksyncs;
@@ -4823,6 +4845,7 @@ static void scx_tid_hash_insert(struct task_struct *p)
 }
 
 void scx_pre_fork(struct task_struct *p)
+	__acquires_shared(&scx_fork_rwsem)
 {
 	/*
 	 * BPF scheduler enable/disable paths want to be able to iterate and
@@ -4834,6 +4857,7 @@ void scx_pre_fork(struct task_struct *p)
 }
 
 int scx_fork(struct task_struct *p, struct kernel_clone_args *kargs)
+	__must_hold_shared(&scx_fork_rwsem)
 {
 	s32 ret;
 
@@ -4861,6 +4885,7 @@ int scx_fork(struct task_struct *p, struct kernel_clone_args *kargs)
 }
 
 void scx_post_fork(struct task_struct *p)
+	__releases_shared(&scx_fork_rwsem)
 {
 	if (scx_init_task_enabled) {
 		scx_set_task_state(p, SCX_TASK_READY);
@@ -4890,6 +4915,7 @@ void scx_post_fork(struct task_struct *p)
 }
 
 void scx_cancel_fork(struct task_struct *p)
+	__releases_shared(&scx_fork_rwsem)
 {
 	if (scx_init_task_enabled) {
 		struct rq *rq;
@@ -5298,6 +5324,7 @@ static bool user_task_should_reenq(struct task_struct *p, u64 reenq_flags, u32 *
 }
 
 static void reenq_user(struct rq *rq, struct scx_dispatch_q *dsq, u64 reenq_flags)
+	__context_unsafe(/* switches rq lock */)
 {
 	struct rq *locked_rq = rq;
 	struct scx_sched *sch = dsq->sched;
@@ -5831,6 +5858,7 @@ static struct cgroup *root_cgroup(void)
  * draining a set_* file write blocked on the rwsem behind the writer.
  */
 void scx_cgroup_lock(void)
+	__context_unsafe(/* acquires cgroup locks for caller */)
 {
 	cgroup_lock();
 #ifdef CONFIG_EXT_GROUP_SCHED
@@ -5839,6 +5867,7 @@ void scx_cgroup_lock(void)
 }
 
 void scx_cgroup_unlock(void)
+	__context_unsafe(/* releases cgroup locks held by caller */)
 {
 #ifdef CONFIG_EXT_GROUP_SCHED
 	percpu_up_write(&scx_cgroup_ops_rwsem);
@@ -7500,6 +7529,7 @@ void scx_log_sched_disable(struct scx_sched *sch)
 }
 
 static void scx_root_disable(struct scx_sched *sch)
+	__context_unsafe(/* conditional locking */)
 {
 	struct scx_task_iter sti;
 	struct task_struct *p;
@@ -8604,6 +8634,7 @@ int scx_validate_ops(struct scx_sched *sch, const struct sched_ext_ops *ops)
 }
 
 static void scx_root_enable_workfn(struct kthread_work *work)
+	__context_unsafe(/* conditional locking */)
 {
 	struct scx_enable_cmd *cmd = container_of(work, struct scx_enable_cmd, work);
 	struct sched_ext_ops *ops = cmd->ops;
@@ -10204,6 +10235,7 @@ static void kf_restore_rq_lock(struct rq *rq, struct rq *entry_rq, unsigned long
 static bool scx_dsq_move(struct bpf_iter_scx_dsq_kern *kit,
 			 struct task_struct *p, u64 dsq_id, u64 enq_flags,
 			 bool priq)
+	__context_unsafe(/* conditional locking */)
 {
 	struct scx_dispatch_q *src_dsq = kit->dsq, *dst_dsq;
 	struct scx_sched *sch;
@@ -11511,6 +11543,7 @@ __bpf_kfunc u32 scx_bpf_cidperf_cur(s32 cid, const struct bpf_prog_aux *aux)
 
 /* validate and apply a cpuperf target, see scx_bpf_cpuperf_set() */
 static s32 scx_cpuperf_set(struct scx_sched *sch, s32 cpu, u32 perf)
+	__context_unsafe(/* conditional locking */)
 {
 	struct rq *rq, *locked_rq;
 	struct rq_flags rf;
@@ -11581,6 +11614,7 @@ static s32 scx_cpuperf_set(struct scx_sched *sch, s32 cpu, u32 perf)
  * current performance level can be monitored using scx_bpf_cpuperf_cur().
  */
 __bpf_kfunc void scx_bpf_cpuperf_set(s32 cpu, u32 perf, const struct bpf_prog_aux *aux)
+	__context_unsafe(/* guard(rcu) unlocks via cleanup */)
 {
 	struct scx_sched *sch;
 
@@ -11886,6 +11920,7 @@ __bpf_kfunc struct task_struct *scx_bpf_cid_curr(s32 cid, const struct bpf_prog_
  * scheduler; otherwise an error is raised and NULL returned.
  */
 __bpf_kfunc struct task_struct *scx_bpf_tid_to_task(u64 tid)
+	__must_hold_shared(RCU)
 {
 	struct sched_ext_entity *scx;
 

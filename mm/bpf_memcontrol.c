@@ -45,6 +45,7 @@ __bpf_kfunc struct mem_cgroup *bpf_get_root_mem_cgroup(void)
  */
 __bpf_kfunc struct mem_cgroup *
 bpf_get_mem_cgroup(struct cgroup_subsys_state *css)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mem_cgroup *memcg = NULL;
 	bool rcu_unlock = false;

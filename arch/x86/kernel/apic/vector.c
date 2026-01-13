@@ -59,6 +59,7 @@ static DEFINE_PER_CPU(struct vector_cleanup, vector_cleanup) = {
 #endif
 
 void lock_vector_lock(void)
+	__acquires(&vector_lock)
 {
 	/* Used to the online set of cpus does not change
 	 * during assign_irq_vector.
@@ -67,6 +68,7 @@ void lock_vector_lock(void)
 }
 
 void unlock_vector_lock(void)
+	__releases(&vector_lock)
 {
 	raw_spin_unlock(&vector_lock);
 }

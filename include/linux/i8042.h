@@ -4,6 +4,7 @@
 
 
 #include <linux/errno.h>
+#include <linux/mutex.h>
 #include <linux/types.h>
 
 /*
@@ -70,10 +71,14 @@ struct serio;
 typedef bool (*i8042_filter_t)(unsigned char data, unsigned char str, struct serio *serio,
 			       void *context);
 
+extern struct mutex i8042_mutex;
+
 #if defined(CONFIG_SERIO_I8042) || defined(CONFIG_SERIO_I8042_MODULE)
 
-void i8042_lock_chip(void);
-void i8042_unlock_chip(void);
+void i8042_lock_chip(void)
+	__acquires(&i8042_mutex);
+void i8042_unlock_chip(void)
+	__releases(&i8042_mutex);
 int i8042_command(unsigned char *param, int command);
 int i8042_install_filter(i8042_filter_t filter, void *context);
 int i8042_remove_filter(i8042_filter_t filter);
@@ -81,11 +86,15 @@ int i8042_remove_filter(i8042_filter_t filter);
 #else
 
 static inline void i8042_lock_chip(void)
+	__acquires(&i8042_mutex)
 {
+	__acquire(&i8042_mutex);
 }
 
 static inline void i8042_unlock_chip(void)
+	__releases(&i8042_mutex)
 {
+	__release(&i8042_mutex);
 }
 
 static inline int i8042_command(unsigned char *param, int command)

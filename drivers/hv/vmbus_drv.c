@@ -1731,6 +1731,7 @@ static ssize_t target_cpu_show(struct vmbus_channel *channel, char *buf)
 }
 
 int vmbus_channel_set_cpu(struct vmbus_channel *channel, u32 target_cpu)
+	__must_hold(&vmbus_connection.channel_mutex)
 {
 	u32 origin_cpu;
 	int ret = 0;

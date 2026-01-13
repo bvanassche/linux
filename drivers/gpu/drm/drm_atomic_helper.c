@@ -3678,6 +3678,7 @@ EXPORT_SYMBOL(drm_atomic_helper_reset_crtc);
  * and it is the atomic version of drm_helper_force_disable_all().
  */
 void drm_atomic_helper_shutdown(struct drm_device *dev)
+	__context_unsafe(/* DRM_MODESET_LOCK */)
 {
 	struct drm_modeset_acquire_ctx ctx;
 	int ret;
@@ -3818,6 +3819,7 @@ EXPORT_SYMBOL(drm_atomic_helper_duplicate_state);
  * drm_atomic_helper_resume(), drm_atomic_helper_commit_duplicated_state()
  */
 struct drm_atomic_commit *drm_atomic_helper_suspend(struct drm_device *dev)
+	__context_unsafe(/* DRM_MODESET_LOCK */)
 {
 	struct drm_modeset_acquire_ctx ctx;
 	struct drm_atomic_commit *state;
@@ -3916,6 +3918,7 @@ EXPORT_SYMBOL(drm_atomic_helper_commit_duplicated_state);
  */
 int drm_atomic_helper_resume(struct drm_device *dev,
 			     struct drm_atomic_commit *state)
+	__context_unsafe(/* DRM_MODESET_LOCK */)
 {
 	struct drm_modeset_acquire_ctx ctx;
 	int err;

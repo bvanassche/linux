@@ -21,6 +21,7 @@
 
 /* called with udc->lock held */
 int get_gadget_descs(struct vudc *udc)
+	__must_hold(&udc->lock)
 {
 	struct vrequest *usb_req;
 	struct vep *ep0 = to_vep(udc->gadget.ep0);

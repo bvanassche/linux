@@ -253,6 +253,7 @@ EXPORT_IF_KUNIT(hdcp_get_link_display_adjustments);
 
 STATIC_IFN_KUNIT
 void link_lock(struct hdcp_workqueue *work, bool lock)
+	__context_unsafe(/* conditional locking */)
 {
 	int i = 0;
 

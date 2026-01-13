@@ -1536,11 +1536,13 @@ static void __o2hb_fill_node_map(unsigned long *map, unsigned int bits)
 }
 
 void o2hb_callback_read_lock(void)
+	__acquires_shared(&o2hb_callback_sem)
 {
 	down_read(&o2hb_callback_sem);
 }
 
 void o2hb_callback_read_unlock(void)
+	__releases_shared(&o2hb_callback_sem)
 {
 	up_read(&o2hb_callback_sem);
 }
@@ -2411,6 +2413,7 @@ EXPORT_SYMBOL_GPL(o2hb_setup_callback);
  * regions.
  */
 static int o2hb_region_pin(const char *region_uuid, bool from_callback)
+	__must_hold(&o2hb_live_lock)
 {
 	int ret = 0, found;
 	struct o2hb_region *reg, *pinned;

@@ -2274,18 +2274,21 @@ struct dm_test_i2c_adapter {
 
 static void dm_test_i2c_lock_bus(struct i2c_adapter *adapter,
 					 unsigned int flags)
+	__acquires(&adapter->bus_lock)
 {
 	rt_mutex_lock(&adapter->bus_lock);
 }
 
 static int dm_test_i2c_trylock_bus(struct i2c_adapter *adapter,
 					   unsigned int flags)
+	__cond_acquires(true, &adapter->bus_lock)
 {
 	return rt_mutex_trylock(&adapter->bus_lock);
 }
 
 static void dm_test_i2c_unlock_bus(struct i2c_adapter *adapter,
 					   unsigned int flags)
+	__releases(&adapter->bus_lock)
 {
 	rt_mutex_unlock(&adapter->bus_lock);
 }

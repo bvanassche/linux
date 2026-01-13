@@ -1130,6 +1130,7 @@ static irqreturn_t stmpe_irq(int irq, void *data)
 }
 
 static void stmpe_irq_lock(struct irq_data *data)
+	__acquires(&((struct stmpe *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct stmpe *stmpe = irq_data_get_irq_chip_data(data);
 
@@ -1137,6 +1138,7 @@ static void stmpe_irq_lock(struct irq_data *data)
 }
 
 static void stmpe_irq_sync_unlock(struct irq_data *data)
+	__releases(&((struct stmpe *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct stmpe *stmpe = irq_data_get_irq_chip_data(data);
 	struct stmpe_variant_info *variant = stmpe->variant;

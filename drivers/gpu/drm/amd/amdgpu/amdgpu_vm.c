@@ -154,6 +154,7 @@ static void amdgpu_vm_bo_status_init(struct amdgpu_vm_bo_status *lists)
  */
 static struct amdgpu_vm_bo_status *
 amdgpu_vm_bo_lock_lists(struct amdgpu_vm_bo_base *vm_bo)
+	__context_unsafe(/* conditional locking */)
 {
 	struct amdgpu_vm *vm = vm_bo->vm;
 	struct amdgpu_bo *bo = vm_bo->bo;
@@ -174,6 +175,7 @@ amdgpu_vm_bo_lock_lists(struct amdgpu_vm_bo_base *vm_bo)
 
 /* Eventually unlock the status list lock again */
 static void amdgpu_vm_bo_unlock_lists(struct amdgpu_vm_bo_base *vm_bo)
+	__context_unsafe(/* conditional locking */)
 {
 	if (amdgpu_vm_is_bo_always_valid(vm_bo->vm, vm_bo->bo))
 		amdgpu_vm_assert_locked(vm_bo->vm);
@@ -1235,6 +1237,7 @@ int amdgpu_vm_update_range(struct amdgpu_device *adev, struct amdgpu_vm *vm,
 		}
 
 		tmp = start + num_entries;
+		lockdep_assume_ctx_held(&params.vm->eviction_lock);
 		r = amdgpu_vm_ptes_update(&params, start, tmp, addr, flags);
 		if (r)
 			goto error_free;
@@ -1640,6 +1643,7 @@ error_free:
 int amdgpu_vm_handle_moved(struct amdgpu_device *adev,
 			   struct amdgpu_vm *vm,
 			   struct ww_acquire_ctx *ticket)
+	__context_unsafe(/* conditional locking */)
 {
 	struct amdgpu_bo_va *bo_va, *tmp;
 	struct dma_resv *resv;

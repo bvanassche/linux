@@ -1002,6 +1002,7 @@ static int blocks_are_unmapped_or_clean(struct dm_cache_metadata *cmd,
 }
 
 static bool cmd_write_lock(struct dm_cache_metadata *cmd)
+	__cond_acquires(true, &cmd->root_lock)
 {
 	down_write(&cmd->root_lock);
 	if (cmd->fail_io || dm_bm_is_read_only(cmd->bm)) {
@@ -1033,6 +1034,7 @@ static bool cmd_write_lock(struct dm_cache_metadata *cmd)
 	up_write(&(cmd)->root_lock)
 
 static bool cmd_read_lock(struct dm_cache_metadata *cmd)
+	__cond_acquires_shared(true, &cmd->root_lock)
 {
 	down_read(&cmd->root_lock);
 	if (cmd->fail_io) {

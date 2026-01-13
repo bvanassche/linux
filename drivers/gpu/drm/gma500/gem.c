@@ -27,6 +27,7 @@
  */
 
 int psb_gem_pin(struct psb_gem_object *pobj)
+	__context_unsafe(/* return value tested in drm_WARN_ONCE() */)
 {
 	struct drm_gem_object *obj = &pobj->base;
 	struct drm_device *dev = obj->dev;
@@ -75,6 +76,7 @@ err_dma_resv_unlock:
 }
 
 void psb_gem_unpin(struct psb_gem_object *pobj)
+	__context_unsafe(/* return value tested in drm_WARN_ONCE() */)
 {
 	struct drm_gem_object *obj = &pobj->base;
 	struct drm_device *dev = obj->dev;

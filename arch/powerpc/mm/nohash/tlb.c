@@ -232,6 +232,7 @@ EXPORT_SYMBOL(flush_tlb_mm);
 
 void __flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
 		      int tsize, int ind)
+	__context_unsafe(/* conditional locking */)
 {
 	struct cpumask *cpu_mask;
 	unsigned int pid;

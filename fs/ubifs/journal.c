@@ -96,6 +96,7 @@ static void ubifs_add_auth_dirt(struct ubifs_info *c, int lnum)
  * be done, and other negative error codes in case of other failures.
  */
 static int reserve_space(struct ubifs_info *c, int jhead, int len)
+	__context_unsafe(/* conditionally acquires io_mutex for caller */)
 {
 	int err = 0, err1, retries = 0, avail, lnum, offs, squeeze;
 	struct ubifs_wbuf *wbuf = &c->jheads[jhead].wbuf;
@@ -300,6 +301,7 @@ static int write_head(struct ubifs_info *c, int jhead, void *buf, int len,
  * up. This function should be called with @c->reserve_space_wq locked.
  */
 static void __queue_and_wait(struct ubifs_info *c)
+	__releases(&c->reserve_space_wq.lock)
 {
 	DEFINE_WAIT(wait);
 
@@ -408,6 +410,7 @@ again:
 	err = reserve_space(c, jhead, len);
 	if (!err) {
 		/* c->commit_sem will get released via finish_reservation(). */
+		__release_shared(&c->commit_sem);
 		goto out_wake_up;
 	}
 	up_read(&c->commit_sem);
@@ -520,6 +523,7 @@ out_wake_up:
  * 'make_reservation()' invocation.
  */
 static inline void release_head(struct ubifs_info *c, int jhead)
+	__context_unsafe(/* releases io_mutex held by caller */)
 {
 	mutex_unlock(&c->jheads[jhead].wbuf.io_mutex);
 }
@@ -532,6 +536,7 @@ static inline void release_head(struct ubifs_info *c, int jhead)
  * 'make_reservation()'.
  */
 static void finish_reservation(struct ubifs_info *c)
+	__context_unsafe(/* releases commit_sem held by caller */)
 {
 	up_read(&c->commit_sem);
 }
@@ -855,6 +860,7 @@ out_ro:
 int ubifs_jnl_write_data(struct ubifs_info *c, const struct inode *inode,
 			 const union ubifs_key *key, struct folio *folio,
 			 size_t offset, int len)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ubifs_data_node *data;
 	int err, lnum, offs, compr_type, out_len, compr_len, auth_len;

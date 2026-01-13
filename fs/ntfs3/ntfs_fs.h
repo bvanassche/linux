@@ -1246,21 +1246,25 @@ static inline void mi_clear(struct mft_inode *mi)
 }
 
 static inline void ni_lock(struct ntfs_inode *ni)
+	__acquires(&ni->base->ni_lock)
 {
 	mutex_lock_nested(&ni->base->ni_lock, NTFS_INODE_MUTEX_NORMAL);
 }
 
 static inline void ni_lock_dir(struct ntfs_inode *ni)
+	__acquires(&ni->base->ni_lock)
 {
 	mutex_lock_nested(&ni->base->ni_lock, NTFS_INODE_MUTEX_PARENT);
 }
 
 static inline void ni_lock_dir2(struct ntfs_inode *ni)
+	__acquires(&ni->base->ni_lock)
 {
 	mutex_lock_nested(&ni->base->ni_lock, NTFS_INODE_MUTEX_PARENT2);
 }
 
 static inline void ni_unlock(struct ntfs_inode *ni)
+	__releases(&ni->base->ni_lock)
 {
 	mutex_unlock(&ni->base->ni_lock);
 }

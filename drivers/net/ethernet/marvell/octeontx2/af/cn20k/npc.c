@@ -3928,6 +3928,7 @@ static void npc_defrag_list_clear(void)
 }
 
 static void npc_lock_all_subbank(void)
+	__context_unsafe(/* locking loop */)
 {
 	int i;
 
@@ -3936,6 +3937,7 @@ static void npc_lock_all_subbank(void)
 }
 
 static void npc_unlock_all_subbank(void)
+	__context_unsafe(/* locking loop */)
 {
 	int i;
 

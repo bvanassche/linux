@@ -88,7 +88,8 @@ extern struct usb_device_driver stub_driver;
 
 /* stub_main.c */
 struct bus_id_priv *get_busid_priv(const char *busid);
-void put_busid_priv(struct bus_id_priv *bid);
+void put_busid_priv(struct bus_id_priv *bid)
+	__releases(&bid->busid_lock);
 int del_match_busid(char *busid);
 void stub_free_priv_and_urb(struct stub_priv *priv);
 void stub_device_cleanup_urbs(struct stub_device *sdev);

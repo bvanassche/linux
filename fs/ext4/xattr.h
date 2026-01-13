@@ -148,6 +148,7 @@ extern const struct xattr_handler ext4_xattr_hurd_handler;
  * NO_EXPAND state flag appropriately.
  */
 static inline void ext4_write_lock_xattr(struct inode *inode, int *save)
+	__acquires(&EXT4_I(inode)->xattr_sem)
 {
 	down_write(&EXT4_I(inode)->xattr_sem);
 	*save = ext4_test_inode_state(inode, EXT4_STATE_NO_EXPAND);
@@ -155,6 +156,7 @@ static inline void ext4_write_lock_xattr(struct inode *inode, int *save)
 }
 
 static inline int ext4_write_trylock_xattr(struct inode *inode, int *save)
+	__cond_acquires(true, &EXT4_I(inode)->xattr_sem)
 {
 	if (down_write_trylock(&EXT4_I(inode)->xattr_sem) == 0)
 		return 0;
@@ -164,6 +166,7 @@ static inline int ext4_write_trylock_xattr(struct inode *inode, int *save)
 }
 
 static inline void ext4_write_unlock_xattr(struct inode *inode, int *save)
+	__releases(&EXT4_I(inode)->xattr_sem)
 {
 	if (*save == 0)
 		ext4_clear_inode_state(inode, EXT4_STATE_NO_EXPAND);

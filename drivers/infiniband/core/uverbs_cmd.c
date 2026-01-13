@@ -166,6 +166,7 @@ static int uverbs_request_finish(struct uverbs_req_iter *iter)
 
 static struct ib_uverbs_completion_event_file *
 _ib_uverbs_lookup_comp_file(s32 fd, struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uobject *uobj = ufd_get_read(UVERBS_OBJECT_COMP_CHANNEL,
 					       fd, attrs);
@@ -183,6 +184,7 @@ _ib_uverbs_lookup_comp_file(s32 fd, struct uverbs_attr_bundle *attrs)
 	_ib_uverbs_lookup_comp_file((_fd)*typecheck(s32, _fd), _ufile)
 
 int ib_alloc_ucontext(struct uverbs_attr_bundle *attrs)
+	__context_unsafe(/* caller holds disassociate_srcu */)
 {
 	struct ib_uverbs_file *ufile = attrs->ufile;
 	struct ib_ucontext *ucontext;
@@ -463,6 +465,7 @@ err:
 }
 
 static int ib_uverbs_dealloc_pd(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_dealloc_pd cmd;
 	int ret;
@@ -652,6 +655,7 @@ err_tree_mutex_unlock:
 }
 
 static int ib_uverbs_close_xrcd(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_close_xrcd cmd;
 	int ret;
@@ -688,6 +692,7 @@ int ib_uverbs_dealloc_xrcd(struct ib_uobject *uobject, struct ib_xrcd *xrcd,
 }
 
 static int ib_uverbs_reg_mr(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_reg_mr_resp resp = {};
 	struct ib_uverbs_reg_mr      cmd;
@@ -757,6 +762,7 @@ err_free:
 }
 
 static int ib_uverbs_rereg_mr(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_rereg_mr      cmd;
 	struct ib_uverbs_rereg_mr_resp resp;
@@ -894,6 +900,7 @@ put_uobjs:
 }
 
 static int ib_uverbs_dereg_mr(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_dereg_mr cmd;
 	int ret;
@@ -906,6 +913,7 @@ static int ib_uverbs_dereg_mr(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_alloc_mw(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_alloc_mw      cmd;
 	struct ib_uverbs_alloc_mw_resp resp = {};
@@ -969,6 +977,7 @@ err_free:
 }
 
 static int ib_uverbs_dealloc_mw(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_dealloc_mw cmd;
 	int ret;
@@ -1008,6 +1017,7 @@ static int ib_uverbs_create_comp_channel(struct uverbs_attr_bundle *attrs)
 
 static int create_cq(struct uverbs_attr_bundle *attrs,
 		     struct ib_uverbs_ex_create_cq *cmd)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_ucq_object           *obj;
 	struct ib_uverbs_completion_event_file    *ev_file = NULL;
@@ -1090,6 +1100,7 @@ err:
 }
 
 static int ib_uverbs_create_cq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_create_cq      cmd;
 	struct ib_uverbs_ex_create_cq	cmd_ex;
@@ -1109,6 +1120,7 @@ static int ib_uverbs_create_cq(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_ex_create_cq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_ex_create_cq  cmd;
 	int ret;
@@ -1127,6 +1139,7 @@ static int ib_uverbs_ex_create_cq(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_resize_cq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_resize_cq	cmd;
 	struct ib_uverbs_resize_cq_resp	resp = {};
@@ -1189,6 +1202,7 @@ static int copy_wc_to_user(struct ib_device *ib_dev, void __user *dest,
 }
 
 static int ib_uverbs_poll_cq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_poll_cq       cmd;
 	struct ib_uverbs_poll_cq_resp  resp;
@@ -1242,6 +1256,7 @@ out_put:
 }
 
 static int ib_uverbs_req_notify_cq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_req_notify_cq cmd;
 	struct ib_cq                  *cq;
@@ -1264,6 +1279,7 @@ static int ib_uverbs_req_notify_cq(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_destroy_cq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_destroy_cq      cmd;
 	struct ib_uverbs_destroy_cq_resp resp;
@@ -1291,6 +1307,7 @@ static int ib_uverbs_destroy_cq(struct uverbs_attr_bundle *attrs)
 
 static int create_qp(struct uverbs_attr_bundle *attrs,
 		     struct ib_uverbs_ex_create_qp *cmd)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uqp_object		*obj;
 	struct ib_device		*device;
@@ -1522,6 +1539,7 @@ err_put:
 }
 
 static int ib_uverbs_create_qp(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_create_qp      cmd;
 	struct ib_uverbs_ex_create_qp	cmd_ex;
@@ -1550,6 +1568,7 @@ static int ib_uverbs_create_qp(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_ex_create_qp(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_ex_create_qp cmd;
 	int ret;
@@ -1568,6 +1587,7 @@ static int ib_uverbs_ex_create_qp(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_open_qp(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_create_qp_resp resp = {};
 	struct ib_uverbs_open_qp        cmd;
@@ -1656,6 +1676,7 @@ static void copy_ah_attr_to_uverbs(struct ib_uverbs_qp_dest *uverb_attr,
 }
 
 static int ib_uverbs_query_qp(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_query_qp      cmd;
 	struct ib_uverbs_query_qp_resp resp;
@@ -1771,6 +1792,7 @@ static void copy_ah_attr_from_uverbs(struct ib_device *dev,
 
 static int modify_qp(struct uverbs_attr_bundle *attrs,
 		     struct ib_uverbs_ex_modify_qp *cmd)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_qp_attr *attr;
 	struct ib_qp *qp;
@@ -1937,6 +1959,7 @@ out:
 }
 
 static int ib_uverbs_modify_qp(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_ex_modify_qp cmd;
 	int ret;
@@ -1952,6 +1975,7 @@ static int ib_uverbs_modify_qp(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_ex_modify_qp(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_ex_modify_qp cmd;
 	struct ib_uverbs_ex_modify_qp_resp resp = {
@@ -1978,6 +2002,7 @@ static int ib_uverbs_ex_modify_qp(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_destroy_qp(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_destroy_qp      cmd;
 	struct ib_uverbs_destroy_qp_resp resp;
@@ -2014,6 +2039,7 @@ static void *alloc_wr(size_t wr_size, __u32 num_sge)
 }
 
 static int ib_uverbs_post_send(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_post_send      cmd;
 	struct ib_uverbs_post_send_resp resp;
@@ -2311,6 +2337,7 @@ err:
 }
 
 static int ib_uverbs_post_recv(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_post_recv      cmd;
 	struct ib_uverbs_post_recv_resp resp;
@@ -2362,6 +2389,7 @@ out:
 }
 
 static int ib_uverbs_post_srq_recv(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_post_srq_recv      cmd;
 	struct ib_uverbs_post_srq_recv_resp resp;
@@ -2414,6 +2442,7 @@ out:
 }
 
 static int ib_uverbs_create_ah(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_create_ah	 cmd;
 	struct ib_uverbs_create_ah_resp	 resp;
@@ -2484,6 +2513,7 @@ err:
 }
 
 static int ib_uverbs_destroy_ah(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_destroy_ah cmd;
 	int ret;
@@ -2496,6 +2526,7 @@ static int ib_uverbs_destroy_ah(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_attach_mcast(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_attach_mcast cmd;
 	struct ib_qp                 *qp;
@@ -2545,6 +2576,7 @@ out_put:
 }
 
 static int ib_uverbs_detach_mcast(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_detach_mcast cmd;
 	struct ib_uqp_object         *obj;
@@ -2591,6 +2623,7 @@ static int kern_spec_to_ib_spec_action(struct uverbs_attr_bundle *attrs,
 				       struct ib_uverbs_flow_spec *kern_spec,
 				       union ib_flow_spec *ib_spec,
 				       struct ib_uflow_resources *uflow_res)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	ib_spec->type = kern_spec->type;
 	switch (ib_spec->type) {
@@ -2818,6 +2851,7 @@ static int kern_spec_to_ib_spec(struct uverbs_attr_bundle *attrs,
 				struct ib_uverbs_flow_spec *kern_spec,
 				union ib_flow_spec *ib_spec,
 				struct ib_uflow_resources *uflow_res)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	if (kern_spec->reserved)
 		return -EINVAL;
@@ -2830,6 +2864,7 @@ static int kern_spec_to_ib_spec(struct uverbs_attr_bundle *attrs,
 }
 
 static int ib_uverbs_ex_create_wq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_ex_create_wq cmd;
 	struct ib_uverbs_ex_create_wq_resp resp = {};
@@ -2917,6 +2952,7 @@ err_uobj:
 }
 
 static int ib_uverbs_ex_destroy_wq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_ex_destroy_wq	cmd;
 	struct ib_uverbs_ex_destroy_wq_resp	resp = {};
@@ -2945,6 +2981,7 @@ static int ib_uverbs_ex_destroy_wq(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_ex_modify_wq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_ex_modify_wq cmd;
 	struct ib_wq *wq;
@@ -2996,6 +3033,7 @@ static int ib_uverbs_ex_modify_wq(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_ex_create_rwq_ind_table(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_ex_create_rwq_ind_table cmd;
 	struct ib_uverbs_ex_create_rwq_ind_table_resp  resp = {};
@@ -3110,6 +3148,7 @@ err_free:
 }
 
 static int ib_uverbs_ex_destroy_rwq_ind_table(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_ex_destroy_rwq_ind_table cmd;
 	int ret;
@@ -3126,6 +3165,7 @@ static int ib_uverbs_ex_destroy_rwq_ind_table(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_ex_create_flow(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_create_flow	  cmd;
 	struct ib_uverbs_create_flow_resp resp = {};
@@ -3292,6 +3332,7 @@ err_free_attr:
 }
 
 static int ib_uverbs_ex_destroy_flow(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_destroy_flow	cmd;
 	int				ret;
@@ -3309,6 +3350,7 @@ static int ib_uverbs_ex_destroy_flow(struct uverbs_attr_bundle *attrs)
 static int __uverbs_create_xsrq(struct uverbs_attr_bundle *attrs,
 				struct ib_uverbs_create_xsrq *cmd,
 				struct ib_udata *udata)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_create_srq_resp resp = {};
 	struct ib_usrq_object           *obj;
@@ -3418,6 +3460,7 @@ err:
 }
 
 static int ib_uverbs_create_srq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_create_srq      cmd;
 	struct ib_uverbs_create_xsrq     xcmd;
@@ -3440,6 +3483,7 @@ static int ib_uverbs_create_srq(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_create_xsrq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_create_xsrq     cmd;
 	int ret;
@@ -3452,6 +3496,7 @@ static int ib_uverbs_create_xsrq(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_modify_srq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_modify_srq cmd;
 	struct ib_srq              *srq;
@@ -3479,6 +3524,7 @@ static int ib_uverbs_modify_srq(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_query_srq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_query_srq      cmd;
 	struct ib_uverbs_query_srq_resp resp;
@@ -3512,6 +3558,7 @@ static int ib_uverbs_query_srq(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_destroy_srq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_destroy_srq      cmd;
 	struct ib_uverbs_destroy_srq_resp resp;
@@ -3603,6 +3650,7 @@ static int ib_uverbs_ex_query_device(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_ex_modify_cq(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_ex_modify_cq cmd;
 	struct ib_cq *cq;

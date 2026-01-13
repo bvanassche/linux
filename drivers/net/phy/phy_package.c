@@ -60,6 +60,7 @@ EXPORT_SYMBOL_GPL(phy_package_get_priv);
  * with phy_package_unlock().
  */
 void phy_package_lock(struct phy_device *phydev)
+	__acquires(&phydev->mdio.bus->shared_lock)
 {
 	mutex_lock(&phydev->mdio.bus->shared_lock);
 }
@@ -70,6 +71,7 @@ EXPORT_SYMBOL_GPL(phy_package_lock);
  * @phydev: PHY device that has joined the package
  */
 void phy_package_unlock(struct phy_device *phydev)
+	__releases(&phydev->mdio.bus->shared_lock)
 {
 	mutex_unlock(&phydev->mdio.bus->shared_lock);
 }

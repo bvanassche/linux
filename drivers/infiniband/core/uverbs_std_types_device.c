@@ -242,8 +242,9 @@ static int UVERBS_HANDLER(UVERBS_METHOD_QUERY_PORT_SPEED)(
 			      &speed, sizeof(speed));
 }
 
-static int UVERBS_HANDLER(UVERBS_METHOD_GET_CONTEXT)(
-	struct uverbs_attr_bundle *attrs)
+static int
+UVERBS_HANDLER(UVERBS_METHOD_GET_CONTEXT)(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	u32 num_comp = attrs->ufile->device->num_comp_vectors;
 	u64 core_support = IB_UVERBS_CORE_SUPPORT_OPTIONAL_MR_ACCESS;

@@ -681,6 +681,7 @@ out_unlock:
 }
 
 static void __nvmet_passthru_ctrl_disable(struct nvmet_subsys *subsys)
+	__must_hold(&subsys->lock)
 {
 	struct nvmet_passthru *passthru = subsys->passthru;
 

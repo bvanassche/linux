@@ -111,7 +111,8 @@ struct ws16c48_gpio {
 	u8 irq_mask[WS16C48_NUM_IRQS / WS16C48_NGPIO_PER_REG];
 };
 
-static int ws16c48_handle_pre_irq(void *const irq_drv_data) __acquires(&ws16c48gpio->lock)
+static int ws16c48_handle_pre_irq(void *const irq_drv_data)
+	__acquires(&((struct ws16c48_gpio *)irq_drv_data)->lock)
 {
 	struct ws16c48_gpio *const ws16c48gpio = irq_drv_data;
 
@@ -121,7 +122,8 @@ static int ws16c48_handle_pre_irq(void *const irq_drv_data) __acquires(&ws16c48g
 	return 0;
 }
 
-static int ws16c48_handle_post_irq(void *const irq_drv_data) __releases(&ws16c48gpio->lock)
+static int ws16c48_handle_post_irq(void *const irq_drv_data)
+	__releases(&((struct ws16c48_gpio *)irq_drv_data)->lock)
 {
 	struct ws16c48_gpio *const ws16c48gpio = irq_drv_data;
 

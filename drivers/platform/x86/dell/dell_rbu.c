@@ -92,7 +92,8 @@ static void init_packet_head(void)
 	rbu_data.imagesize = 0;
 }
 
-static int create_packet(void *data, size_t length) __must_hold(&rbu_data.lock)
+static int create_packet(void *data, size_t length)
+	__must_hold(&rbu_data.lock)
 {
 	struct packet_data *newpacket;
 	int ordernum = 0;
@@ -209,6 +210,7 @@ out_noalloc:
 }
 
 static int packetize_data(const u8 *data, size_t length)
+	__must_hold(&rbu_data.lock)
 {
 	int rc = 0;
 	int done = 0;
@@ -373,6 +375,7 @@ static void img_update_free(void)
  * called with lock held and returns with lock held.
  */
 static int img_update_realloc(unsigned long size)
+	__must_hold(&rbu_data.lock)
 {
 	unsigned char *image_update_buffer = NULL;
 	unsigned long img_buf_phys_addr;

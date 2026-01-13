@@ -587,6 +587,7 @@ static int __ctr_aes_crypt(struct s390_aes_ctx *sctx,
 }
 
 static int ctr_aes_crypt(struct skcipher_request *req)
+	__context_unsafe(/* conditional locking */)
 {
 	struct crypto_skcipher *tfm = crypto_skcipher_reqtfm(req);
 	struct s390_aes_ctx *sctx = crypto_skcipher_ctx(tfm);

@@ -125,7 +125,8 @@ int amdgpu_vm_pde_update(struct amdgpu_vm_update_params *params,
 			 struct amdgpu_vm_bo_base *entry);
 int amdgpu_vm_ptes_update(struct amdgpu_vm_update_params *params,
 			  uint64_t start, uint64_t end,
-			  uint64_t dst, uint64_t flags);
+			  uint64_t dst, uint64_t flags)
+	__must_hold(&params->vm->eviction_lock);
 void amdgpu_vm_pt_free_work(struct work_struct *work);
 void amdgpu_vm_pt_free_list(struct amdgpu_device *adev,
 			    struct amdgpu_vm_update_params *params);
@@ -144,6 +145,7 @@ int amdgpu_vm_pt_map_tables(struct amdgpu_device *adev, struct amdgpu_vm *vm);
  * Even on error amdgpu_vm_end_critical() must still be called to clean up!
  */
 static inline int amdgpu_vm_begin_critical(struct amdgpu_vm_update_params *p)
+	__acquires(&p->vm->eviction_lock)
 {
 	mutex_lock(&p->vm->eviction_lock);
 	p->saved_flags = memalloc_noreclaim_save();
@@ -159,6 +161,7 @@ static inline int amdgpu_vm_begin_critical(struct amdgpu_vm_update_params *p)
  * Restore the GFP flags and drop the lock.
  */
 static inline void amdgpu_vm_end_critical(struct amdgpu_vm_update_params *p)
+	__releases(&p->vm->eviction_lock)
 {
 	memalloc_noreclaim_restore(p->saved_flags);
 	mutex_unlock(&p->vm->eviction_lock);

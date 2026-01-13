@@ -25,7 +25,7 @@
 
 #include <drm/drm_mm.h>
 
-#include "gt/intel_reset.h"
+#include "gt/intel_reset_types.h"
 #include "i915_selftest.h"
 #include "i915_vma_resource.h"
 #include "i915_vma_types.h"

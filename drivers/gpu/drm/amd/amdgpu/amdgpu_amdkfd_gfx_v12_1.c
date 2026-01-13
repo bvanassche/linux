@@ -29,12 +29,14 @@
 
 static void lock_srbm(struct amdgpu_device *adev, uint32_t mec, uint32_t pipe,
 			uint32_t queue, uint32_t vmid, uint32_t inst)
+	__acquires(&adev->srbm_mutex)
 {
 	mutex_lock(&adev->srbm_mutex);
 	amdgpu_gfx_select_me_pipe_q(adev, mec, pipe, queue, vmid, inst);
 }
 
 static void unlock_srbm(struct amdgpu_device *adev, uint32_t inst)
+	__releases(&adev->srbm_mutex)
 {
 	amdgpu_gfx_select_me_pipe_q(adev, 0, 0, 0, 0, inst);
 	mutex_unlock(&adev->srbm_mutex);
@@ -42,6 +44,7 @@ static void unlock_srbm(struct amdgpu_device *adev, uint32_t inst)
 
 static void acquire_queue(struct amdgpu_device *adev, uint32_t pipe_id,
 				uint32_t queue_id, uint32_t inst)
+	__acquires(&adev->srbm_mutex)
 {
 	uint32_t mec = (pipe_id / adev->gfx.mec.num_pipe_per_mec) + 1;
 	uint32_t pipe = (pipe_id % adev->gfx.mec.num_pipe_per_mec);
@@ -50,6 +53,7 @@ static void acquire_queue(struct amdgpu_device *adev, uint32_t pipe_id,
 }
 
 static void release_queue(struct amdgpu_device *adev, uint32_t inst)
+	__releases(&adev->srbm_mutex)
 {
 	unlock_srbm(adev, inst);
 }
@@ -372,6 +376,8 @@ static uint32_t kgd_gfx_v12_1_hqd_sdma_get_doorbell(struct amdgpu_device *adev,
 }
 
 static void lock_spi_csq_mutexes(struct amdgpu_device *adev)
+	__acquires(&adev->srbm_mutex)
+	__acquires(&adev->grbm_idx_mutex)
 {
 	mutex_lock(&adev->srbm_mutex);
 	mutex_lock(&adev->grbm_idx_mutex);
@@ -379,6 +385,8 @@ static void lock_spi_csq_mutexes(struct amdgpu_device *adev)
 }
 
 static void unlock_spi_csq_mutexes(struct amdgpu_device *adev)
+	__releases(&adev->grbm_idx_mutex)
+	__releases(&adev->srbm_mutex)
 {
 	mutex_unlock(&adev->grbm_idx_mutex);
 	mutex_unlock(&adev->srbm_mutex);

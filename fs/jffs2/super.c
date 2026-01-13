@@ -343,6 +343,7 @@ static void jffs2_put_super (struct super_block *sb)
 }
 
 static void jffs2_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct jffs2_sb_info *c = JFFS2_SB_INFO(sb);
 	if (c && !sb_rdonly(sb))

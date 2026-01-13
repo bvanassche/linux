@@ -98,24 +98,6 @@ ib_uverbs_init_udata_buf_or_null(struct ib_udata *udata,
  * and released when the CQ is destroyed.
  */
 
-struct ib_uverbs_device {
-	refcount_t				refcount;
-	u32					num_comp_vectors;
-	struct completion			comp;
-	struct device				dev;
-	/* First group for device attributes, NULL terminated array */
-	const struct attribute_group		*groups[2];
-	struct ib_device	__rcu	       *ib_dev;
-	int					devnum;
-	struct cdev			        cdev;
-	struct rb_root				xrcd_tree;
-	struct mutex				xrcd_tree_mutex;
-	struct srcu_struct			disassociate_srcu;
-	struct mutex				lists_mutex; /* protect lists */
-	struct list_head			uverbs_file_list;
-	struct uverbs_api			*uapi;
-};
-
 struct ib_uverbs_event_queue {
 	spinlock_t				lock;
 	int					is_closed;

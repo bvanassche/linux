@@ -604,6 +604,7 @@ static int __scan_channels(struct ipmi_smi *intf,
 
 static void ipmi_lock_xmit_msgs(struct ipmi_smi *intf, int run_to_completion,
 				unsigned long *flags)
+	__context_unsafe(/* conditional locking */)
 {
 	if (run_to_completion)
 		return;
@@ -612,6 +613,7 @@ static void ipmi_lock_xmit_msgs(struct ipmi_smi *intf, int run_to_completion,
 
 static void ipmi_unlock_xmit_msgs(struct ipmi_smi *intf, int run_to_completion,
 				  unsigned long *flags)
+	__context_unsafe(/* conditional locking */)
 {
 	if (run_to_completion)
 		return;
@@ -1887,6 +1889,7 @@ static struct ipmi_smi_msg *smi_add_send_msg(struct ipmi_smi *intf,
 static int smi_send(struct ipmi_smi *intf,
 		     const struct ipmi_smi_handlers *handlers,
 		     struct ipmi_smi_msg *smi_msg, int priority)
+	__context_unsafe(/* conditional locking */)
 {
 	int run_to_completion = READ_ONCE(intf->run_to_completion);
 	unsigned long flags = 0;
@@ -2317,6 +2320,7 @@ static int i_ipmi_request(struct ipmi_user     *user,
 			  unsigned char        source_lun,
 			  int                  retries,
 			  unsigned int         retry_time_ms)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ipmi_smi_msg *smi_msg;
 	struct ipmi_recv_msg *recv_msg;
@@ -3149,6 +3153,7 @@ static void ipmi_bmc_unregister(struct ipmi_smi *intf)
 static int __ipmi_bmc_register(struct ipmi_smi *intf,
 			       struct ipmi_device_id *id,
 			       bool guid_set, guid_t *guid, int intf_num)
+	__must_hold(&intf->bmc_reg_mutex)
 {
 	int               rv;
 	struct bmc_device *bmc;
@@ -4818,6 +4823,7 @@ process_response_response:
  * If there are messages in the queue or pretimeouts, handle them.
  */
 static void handle_new_recv_msgs(struct ipmi_smi *intf)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ipmi_smi_msg *smi_msg;
 	unsigned long flags = 0;
@@ -4859,6 +4865,7 @@ static void handle_new_recv_msgs(struct ipmi_smi *intf)
 }
 
 static void smi_work(struct work_struct *t)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long flags = 0; /* keep us warning-free. */
 	struct ipmi_smi *intf = from_work(intf, t, smi_work);
@@ -4956,6 +4963,7 @@ restart:
 /* Handle a new message from the lower layer. */
 void ipmi_smi_msg_received(struct ipmi_smi *intf,
 			   struct ipmi_smi_msg *msg)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long flags = 0; /* keep us warning-free. */
 	int run_to_completion = READ_ONCE(intf->run_to_completion);
@@ -5023,6 +5031,7 @@ static void check_msg_timeout(struct ipmi_smi *intf, struct seq_table *ent,
 			      struct list_head *timeouts,
 			      unsigned long timeout_period,
 			      int slot, bool *need_timer)
+	__must_hold(&intf->seq_lock)
 {
 	struct ipmi_recv_msg *msg;
 

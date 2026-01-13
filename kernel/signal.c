@@ -2575,6 +2575,7 @@ static int ptrace_stop(int exit_code, int why, unsigned long message,
 }
 
 static int ptrace_do_notify(int signr, int exit_code, int why, unsigned long message)
+	__context_unsafe(/* drops and reacquires siglock */)
 {
 	kernel_siginfo_t info;
 
@@ -2743,6 +2744,7 @@ static bool do_signal_stop(int signr)
  * released and re-acquired before returning with intervening sleep.
  */
 static void do_jobctl_trap(void)
+	__context_unsafe(/* drops and reacquires siglock */)
 {
 	struct signal_struct *signal = current->signal;
 	int signr = current->jobctl & JOBCTL_STOP_SIGMASK;
@@ -2806,6 +2808,7 @@ static void do_freezer_trap(void)
 }
 
 static int ptrace_signal(int signr, kernel_siginfo_t *info, enum pid_type type)
+	__context_unsafe(/* drops and reacquires siglock */)
 {
 	/*
 	 * We do not check sig_kernel_stop(signr) but set this marker
@@ -2874,6 +2877,7 @@ static void hide_si_addr_tag_bits(struct ksignal *ksig)
 }
 
 bool get_signal(struct ksignal *ksig)
+	__context_unsafe(/* conditional locking */)
 {
 	struct sighand_struct *sighand = current->sighand;
 	struct signal_struct *signal = current->signal;

@@ -9411,6 +9411,7 @@ static LIST_HEAD(ice_block_cb_list);
 static int
 ice_setup_tc(struct net_device *netdev, enum tc_setup_type type,
 	     void *type_data)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ice_netdev_priv *np = netdev_priv(netdev);
 	enum flow_block_binder_type binder_type;

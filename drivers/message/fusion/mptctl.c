@@ -177,6 +177,7 @@ static struct fasync_struct *async_queue=NULL;
  */
 static inline int
 mptctl_syscall_down(MPT_ADAPTER *ioc, int nonblock)
+	__cond_acquires(0, &ioc->ioctl_cmds.mutex)
 {
 	int rc = 0;
 
@@ -1728,6 +1729,7 @@ mptctl_mpt_command (MPT_ADAPTER *ioc, unsigned long arg)
  */
 static int
 mptctl_do_mpt_command (MPT_ADAPTER *ioc, struct mpt_ioctl_command karg, void __user *mfPtr)
+	__context_unsafe(/* conditional locking */)
 {
 	MPT_FRAME_HDR	*mf = NULL;
 	MPIHeader_t	*hdr;

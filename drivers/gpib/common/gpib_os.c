@@ -557,6 +557,7 @@ int ibopen(struct inode *inode, struct file *filep)
 }
 
 int ibclose(struct inode *inode, struct file *filep)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned int minor = iminor(inode);
 	struct gpib_board *board;
@@ -603,6 +604,7 @@ int ibclose(struct inode *inode, struct file *filep)
 }
 
 long ibioctl(struct file *filep, unsigned int cmd, unsigned long arg)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned int minor = iminor(file_inode(filep));
 	struct gpib_board *board;
@@ -1690,6 +1692,7 @@ static int autospoll_ioctl(struct gpib_board *board, struct gpib_file_private *f
 
 static int mutex_ioctl(struct gpib_board *board, struct gpib_file_private *file_priv,
 		       unsigned long arg)
+	__context_unsafe(/* conditional locking */)
 {
 	int retval, lock_mutex;
 

@@ -2292,6 +2292,7 @@ EXPORT_SYMBOL_GPL(ucsi_set_drvdata);
  * Returns true on success, false if the connector is disconnected
  */
 bool ucsi_con_mutex_lock(struct ucsi_connector *con)
+	__context_unsafe(/* conditional locking */)
 {
 	bool mutex_locked = false;
 	bool connected = true;
@@ -2315,6 +2316,7 @@ bool ucsi_con_mutex_lock(struct ucsi_connector *con)
  * @con: The connector interface to unlock
  */
 void ucsi_con_mutex_unlock(struct ucsi_connector *con)
+	__context_unsafe(/* to match ucsi_con_mutex_lock() */)
 {
 	mutex_unlock(&con->lock);
 }

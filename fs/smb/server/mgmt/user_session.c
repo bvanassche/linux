@@ -878,8 +878,8 @@ void ksmbd_preauth_session_destroy(struct ksmbd_conn *conn)
 	}
 }
 
-void destroy_previous_session(struct ksmbd_conn *conn,
-			      struct ksmbd_user *user, u64 id)
+void destroy_previous_session(struct ksmbd_conn *conn, struct ksmbd_user *user,
+			      u64 id) __must_hold(&conn->srv_mutex)
 {
 	struct ksmbd_session *prev_sess;
 	struct ksmbd_user *prev_user;

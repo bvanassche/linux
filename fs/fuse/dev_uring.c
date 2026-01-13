@@ -1132,7 +1132,7 @@ static void fuse_uring_add_req_to_ring_ent(struct fuse_ring_ent *ent,
 
 /* Fetch the next fuse request if available */
 static struct fuse_req *fuse_uring_ent_assign_req(struct fuse_ring_ent *ent)
-	__must_hold(&queue->lock)
+	__must_hold(&ent->queue->lock)
 {
 	struct fuse_req *req;
 	struct fuse_ring_queue *queue = ent->queue;
@@ -1193,6 +1193,7 @@ static bool fuse_uring_get_next_fuse_req(struct fuse_ring_ent *ent,
 
 retry:
 	spin_lock(&queue->lock);
+	lockdep_assume_ctx_held(&ent->queue->lock);
 	fuse_uring_ent_avail(ent, queue);
 	req = fuse_uring_ent_assign_req(ent);
 	spin_unlock(&queue->lock);

@@ -808,6 +808,7 @@ static void mtty_disable_files(struct mdev_state *mdev_state)
 }
 
 static void mtty_state_mutex_unlock(struct mdev_state *mdev_state)
+	__releases(&mdev_state->state_mutex)
 {
 again:
 	mutex_lock(&mdev_state->reset_mutex);

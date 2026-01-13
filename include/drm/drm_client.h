@@ -10,6 +10,8 @@
 
 #include <drm/drm_connector.h>
 #include <drm/drm_crtc.h>
+#include <drm/drm_framebuffer.h>
+#include <drm/drm_gem.h>
 
 struct drm_client_dev;
 struct drm_device;
@@ -217,8 +219,10 @@ drm_client_buffer_create_dumb(struct drm_client_dev *client, u32 width, u32 heig
 void drm_client_buffer_delete(struct drm_client_buffer *buffer);
 int drm_client_buffer_flush(struct drm_client_buffer *buffer, struct drm_rect *rect);
 int drm_client_buffer_vmap_local(struct drm_client_buffer *buffer,
-				 struct iosys_map *map_copy);
-void drm_client_buffer_vunmap_local(struct drm_client_buffer *buffer);
+				 struct iosys_map *map_copy)
+	__cond_acquires(0, &buffer->fb->obj[0]->resv->lock);
+void drm_client_buffer_vunmap_local(struct drm_client_buffer *buffer)
+	__releases(&buffer->fb->obj[0]->resv->lock);
 int drm_client_buffer_vmap(struct drm_client_buffer *buffer,
 			   struct iosys_map *map);
 void drm_client_buffer_vunmap(struct drm_client_buffer *buffer);

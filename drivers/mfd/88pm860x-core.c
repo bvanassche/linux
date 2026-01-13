@@ -481,6 +481,7 @@ static irqreturn_t pm860x_irq(int irq, void *data)
 }
 
 static void pm860x_irq_lock(struct irq_data *data)
+	__acquires(&((struct pm860x_chip *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct pm860x_chip *chip = irq_data_get_irq_chip_data(data);
 
@@ -488,6 +489,7 @@ static void pm860x_irq_lock(struct irq_data *data)
 }
 
 static void pm860x_irq_sync_unlock(struct irq_data *data)
+	__releases(&((struct pm860x_chip *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct pm860x_chip *chip = irq_data_get_irq_chip_data(data);
 	struct pm860x_irq_data *irq_data;

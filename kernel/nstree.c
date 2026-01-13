@@ -308,6 +308,7 @@ static struct ns_tree_root *ns_tree_from_type(int ns_type)
 }
 
 static struct ns_common *__ns_unified_tree_lookup_rcu(u64 ns_id)
+	__context_unsafe(/* early break out of seqlock read loop */)
 {
 	struct rb_node *node;
 	unsigned int seq;
@@ -323,6 +324,7 @@ static struct ns_common *__ns_unified_tree_lookup_rcu(u64 ns_id)
 }
 
 static struct ns_common *__ns_tree_lookup_rcu(u64 ns_id, int ns_type)
+	__context_unsafe(/* early break out of seqlock read loop */)
 {
 	struct ns_tree_root *ns_tree;
 	struct rb_node *node;

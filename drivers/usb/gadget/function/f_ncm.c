@@ -535,6 +535,7 @@ static inline void ncm_reset_values(struct f_ncm *ncm)
  * Context: ncm->lock held
  */
 static void ncm_do_notify(struct f_ncm *ncm)
+	__must_hold(&ncm->lock)
 {
 	struct usb_request		*req = ncm->notify_req;
 	struct usb_cdc_notification	*event;
@@ -603,6 +604,7 @@ static void ncm_do_notify(struct f_ncm *ncm)
  * Context: ncm->lock held
  */
 static void ncm_notify(struct f_ncm *ncm)
+	__must_hold(&ncm->lock)
 {
 	/*
 	 * NOTE on most versions of Linux, host side cdc-ethernet

@@ -807,6 +807,7 @@ enum ls_lock_class {
 
 static void ns_ls_double_lock(struct aa_ns *ns1, struct aa_ns *ns2,
 	unsigned long *flags)
+	__context_unsafe(/* conditional double locking */)
 {
 	if (likely(ns1 == ns2)) {
 		write_lock_irqsave(&ns1->labels.lock, *flags);
@@ -826,6 +827,7 @@ static void ns_ls_double_lock(struct aa_ns *ns1, struct aa_ns *ns2,
 
 static void ns_ls_double_unlock(struct aa_ns *ns1, struct aa_ns *ns2,
 			     unsigned long flags)
+	__context_unsafe(/* conditional double locking */)
 {
 	if (likely(ns1 == ns2)) {
 		write_unlock_irqrestore(&ns1->labels.lock, flags);
@@ -848,6 +850,7 @@ static void ns_ls_double_unlock(struct aa_ns *ns1, struct aa_ns *ns2,
  * handled very careful, as a double lock may be required.
  */
 bool aa_label_replace(struct aa_label *old, struct aa_label *new)
+	__context_unsafe(/* too complex for static analysis */)
 {
 	struct aa_ns *ons = labels_ns(old);
 	struct aa_ns *nns = labels_ns(new);

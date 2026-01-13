@@ -281,6 +281,7 @@ struct stack_map_vma_lock {
  */
 static struct vm_area_struct *
 stack_map_lock_vma(struct stack_map_vma_lock *lock, unsigned long ip)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mm_struct *mm = lock->mm;
 	struct vm_area_struct *vma;
@@ -316,6 +317,7 @@ stack_map_lock_vma(struct stack_map_vma_lock *lock, unsigned long ip)
 }
 
 static void stack_map_unlock_vma(struct stack_map_vma_lock *lock)
+	__context_unsafe(/* conditional unlocking */)
 {
 #ifdef CONFIG_MMU
 	vma_end_read(lock->vma);
@@ -777,6 +779,7 @@ static long callchain_finalize(void *buf, u32 size, u32 trace_nr, u32 elem_size,
 
 static long __bpf_get_stack(struct pt_regs *regs, struct task_struct *task,
 			    void *buf, u32 size, u64 flags, bool may_fault)
+	__context_unsafe(/* conditional locking */)
 {
 	bool user_build_id = flags & BPF_F_USER_BUILD_ID;
 	bool crosstask = task && task != current;

@@ -2380,6 +2380,7 @@ static void complete_request(struct ceph_osd_request *req, int err);
 static void send_map_check(struct ceph_osd_request *req);
 
 static void __submit_request(struct ceph_osd_request *req, bool wrlocked)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ceph_osd_client *osdc = req->r_osdc;
 	struct ceph_osd *osd;

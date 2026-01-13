@@ -66,6 +66,7 @@ static int clk_frac_determine_rate(struct clk_hw *hw,
 
 static unsigned long clk_frac_recalc_rate(struct clk_hw *hw,
 		unsigned long parent_rate)
+	__context_unsafe(/* conditional locking */)
 {
 	struct clk_frac *frac = to_clk_frac(hw);
 	unsigned long flags = 0;
@@ -93,6 +94,7 @@ static unsigned long clk_frac_recalc_rate(struct clk_hw *hw,
 /* Configures new clock rate of frac */
 static int clk_frac_set_rate(struct clk_hw *hw, unsigned long drate,
 				unsigned long prate)
+	__context_unsafe(/* conditional locking */)
 {
 	struct clk_frac *frac = to_clk_frac(hw);
 	struct frac_rate_tbl *rtbl = frac->rtbl;

@@ -698,6 +698,7 @@ static void ocfs2_nfs_sync_lock_init(struct ocfs2_super *osb)
 }
 
 void ocfs2_trim_fs_lock_res_init(struct ocfs2_super *osb)
+	__acquires(&osb->obs_trim_fs_mutex)
 {
 	struct ocfs2_lock_res *lockres = &osb->osb_trim_fs_lockres;
 
@@ -711,6 +712,7 @@ void ocfs2_trim_fs_lock_res_init(struct ocfs2_super *osb)
 }
 
 void ocfs2_trim_fs_lock_res_uninit(struct ocfs2_super *osb)
+	__releases(&osb->obs_trim_fs_mutex)
 {
 	struct ocfs2_lock_res *lockres = &osb->osb_trim_fs_lockres;
 
@@ -2864,6 +2866,7 @@ void ocfs2_rename_unlock(struct ocfs2_super *osb)
 }
 
 int ocfs2_nfs_sync_lock(struct ocfs2_super *osb, int ex, unsigned int *nofs_flag)
+	__context_unsafe(/* conditional locking */)
 {
 	int status;
 	unsigned int flags;
@@ -2912,6 +2915,7 @@ int ocfs2_nfs_sync_lock(struct ocfs2_super *osb, int ex, unsigned int *nofs_flag
 
 void ocfs2_nfs_sync_unlock(struct ocfs2_super *osb, int ex,
 			   unsigned int nofs_flag)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ocfs2_lock_res *lockres = &osb->osb_nfs_sync_lockres;
 

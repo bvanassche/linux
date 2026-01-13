@@ -49,6 +49,7 @@ static struct rdma_cm_id *rds6_rdma_listen_id;
 static int rds_rdma_cm_event_handler_cmn(struct rdma_cm_id *cm_id,
 					 struct rdma_cm_event *event,
 					 bool isv6)
+	__context_unsafe(/* conditional locking */)
 {
 	/* this can be null in the listening path */
 	struct rds_connection *conn = cm_id->context;

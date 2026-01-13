@@ -554,6 +554,7 @@ static void disarm_timer(struct k_itimer *timer, struct task_struct *p)
  *    timer wont expire anymore.
  */
 static struct task_struct *timer_lock_sighand(struct k_itimer *timer, unsigned long *flags)
+	__context_unsafe(/* lock_task_sighand() locks conditionally */)
 {
 	enum pid_type type = clock_pid_type(timer->it_clock);
 	struct cpu_timer *ctmr = &timer->it.cpu;
@@ -631,6 +632,7 @@ static int posix_cpu_timer_del(struct k_itimer *timer)
 	p = timer_lock_sighand(timer, &flags);
 
 	if (likely(p)) {
+		__acquire(&p->sighand->siglock);
 		if (posix_cpu_timer_on_expiry_list(timer))
 			ret = TIMER_RETRY;
 		else
@@ -809,6 +811,8 @@ static int posix_cpu_timer_set(struct k_itimer *timer, int timer_flags,
 	 * value to KTIME_MAX and avoid multiplication overflows.
 	 */
 	new_expires = ktime_to_ns(timespec64_to_ktime(new->it_value));
+
+	__acquire(&p->sighand->siglock);
 
 	/* Retrieve the current expiry time before disarming the timer */
 	old_expires = cpu_timer_getexpires(ctmr);
@@ -1165,6 +1169,8 @@ static bool posix_cpu_timer_rearm(struct k_itimer *timer)
 	if (unlikely(!p))
 		return true;
 
+	__acquire(&p->sighand->siglock);
+
 	/*
 	 * Fetch the current sample and update the timer's expiry time.
 	 */
@@ -1292,6 +1298,7 @@ static inline void posix_cpu_timers_exit_work(void)
  * protects the timer and the task which is expiring it from being freed.
  */
 static void posix_cpu_timer_wait_running(struct k_itimer *timr)
+	__must_hold_shared(RCU)
 {
 	struct task_struct *tsk = rcu_dereference(timr->it.cpu.handling);
 
@@ -1314,6 +1321,7 @@ static void posix_cpu_timer_wait_running(struct k_itimer *timr)
 }
 
 static void posix_cpu_timer_wait_running_nsleep(struct k_itimer *timr)
+	__must_hold(&timr->it_lock)
 {
 	/* Ensure that timr->it.cpu.handling task cannot go away */
 	rcu_read_lock();
@@ -1424,6 +1432,7 @@ static void posix_cpu_timer_wait_running(struct k_itimer *timr)
 }
 
 static void posix_cpu_timer_wait_running_nsleep(struct k_itimer *timr)
+	__must_hold(&timr->it_lock)
 {
 	spin_unlock_irq(&timr->it_lock);
 	cpu_relax();

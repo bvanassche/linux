@@ -265,6 +265,7 @@ static void noinline __kprobes bogus_32bit_fault_tpc(struct pt_regs *regs)
 }
 
 asmlinkage void __kprobes do_sparc64_fault(struct pt_regs *regs)
+	__context_unsafe(/* handle_mm_fault() unlocks conditionally */)
 {
 	enum ctx_state prev_state = exception_enter();
 	struct mm_struct *mm = current->mm;

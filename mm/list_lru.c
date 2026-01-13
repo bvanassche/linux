@@ -17,6 +17,7 @@
 
 static inline void lock_list_lru(struct list_lru_one *l, bool irq,
 				 unsigned long *irq_flags)
+	__context_unsafe(/* conditional locking */)
 {
 	if (irq_flags)
 		spin_lock_irqsave(&l->lock, *irq_flags);
@@ -28,6 +29,7 @@ static inline void lock_list_lru(struct list_lru_one *l, bool irq,
 
 static inline void unlock_list_lru(struct list_lru_one *l, bool irq_off,
 				   unsigned long *irq_flags)
+	__context_unsafe(/* conditional locking */)
 {
 	if (irq_flags)
 		spin_unlock_irqrestore(&l->lock, *irq_flags);

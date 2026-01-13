@@ -173,6 +173,7 @@ static void ntmp_clean_cbdr(struct netc_cbdr *cbdr)
 
 static void ntmp_select_and_lock_cbdr(struct ntmp_user *user,
 				      struct netc_cbdr **cbdr)
+	__context_unsafe(/* locks dynamically selected ring */)
 {
 	for (int i = 0; i < user->cbdr_num; i++) {
 		*cbdr = &user->ring[i];
@@ -188,6 +189,7 @@ static void ntmp_select_and_lock_cbdr(struct ntmp_user *user,
 }
 
 static void ntmp_unlock_cbdr(struct netc_cbdr *cbdr)
+	__context_unsafe(/* matches ntmp_select_and_lock_cbdr() */)
 {
 	mutex_unlock(&cbdr->ring_lock);
 }

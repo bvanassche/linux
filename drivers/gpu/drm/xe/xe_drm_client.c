@@ -199,6 +199,7 @@ static void bo_meminfo(struct xe_bo *bo,
 }
 
 static void show_meminfo(struct drm_printer *p, struct drm_file *file)
+	__context_unsafe(/* conditional locking */)
 {
 	struct drm_memory_stats stats[TTM_NUM_MEM_TYPES] = {};
 	struct xe_file *xef = file->driver_priv;

@@ -86,9 +86,11 @@ struct drm_pagemap_owner_list {
 
 void drm_pagemap_shrinker_add(struct drm_pagemap *dpagemap);
 
-int drm_pagemap_cache_lock_lookup(struct drm_pagemap_cache *cache);
+int drm_pagemap_cache_lock_lookup(struct drm_pagemap_cache *cache)
+	__cond_acquires(0, &cache->lookup_mutex);
 
-void drm_pagemap_cache_unlock_lookup(struct drm_pagemap_cache *cache);
+void drm_pagemap_cache_unlock_lookup(struct drm_pagemap_cache *cache)
+	__releases(&cache->lookup_mutex);
 
 struct drm_pagemap_shrinker *drm_pagemap_shrinker_create_devm(struct drm_device *drm);
 

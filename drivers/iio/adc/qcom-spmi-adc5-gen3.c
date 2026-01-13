@@ -43,31 +43,6 @@ struct adc5_channel_prop {
 	struct adc5_chip *chip;
 };
 
-/**
- * struct adc5_chip - ADC private structure.
- * @dev: SPMI ADC5 Gen3 device.
- * @dev_data: Top-level ADC device data.
- * @nchannels: number of ADC channels.
- * @chan_props: array of ADC channel properties.
- * @iio_chans: array of IIO channels specification.
- * @complete: ADC result notification after interrupt is received.
- * @lock: ADC lock for access to the peripheral, to prevent concurrent
- *	requests from multiple clients.
- * @data: software configuration data.
- * @n_tm_channels: number of ADC channels used for TM measurements.
- */
-struct adc5_chip {
-	struct device *dev;
-	struct adc5_device_data dev_data;
-	unsigned int nchannels;
-	struct adc5_channel_prop *chan_props;
-	struct iio_chan_spec *iio_chans;
-	struct completion complete;
-	struct mutex lock;
-	const struct adc5_data *data;
-	unsigned int n_tm_channels;
-};
-
 int adc5_gen3_read(struct adc5_device_data *adc, unsigned int sdam_index,
 		   u16 offset, u8 *data, int len)
 {
@@ -663,7 +638,7 @@ static int adc5_gen3_add_aux_tm_device(struct adc5_chip *adc)
 }
 
 void adc5_gen3_mutex_lock(struct device *dev)
-	__acquires(&adc->lock)
+	__acquires(&((struct adc5_chip *)iio_priv(dev_get_drvdata(dev->parent)))->lock)
 {
 	struct iio_dev *indio_dev = dev_get_drvdata(dev->parent);
 	struct adc5_chip *adc = iio_priv(indio_dev);
@@ -673,7 +648,7 @@ void adc5_gen3_mutex_lock(struct device *dev)
 EXPORT_SYMBOL_NS_GPL(adc5_gen3_mutex_lock, "QCOM_SPMI_ADC5_GEN3");
 
 void adc5_gen3_mutex_unlock(struct device *dev)
-	__releases(&adc->lock)
+	__releases(&((struct adc5_chip *)iio_priv(dev_get_drvdata(dev->parent)))->lock)
 {
 	struct iio_dev *indio_dev = dev_get_drvdata(dev->parent);
 	struct adc5_chip *adc = iio_priv(indio_dev);

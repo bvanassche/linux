@@ -50,7 +50,8 @@ static u64 __get_oldest_flush_tid(struct ceph_mds_client *mdsc);
 static void __kick_flushing_caps(struct ceph_mds_client *mdsc,
 				 struct ceph_mds_session *session,
 				 struct ceph_inode_info *ci,
-				 u64 oldest_flush_tid);
+				 u64 oldest_flush_tid)
+	__must_hold(&ci->i_ceph_lock);
 
 /*
  * Generate readable cap strings for debugging output.
@@ -203,6 +204,7 @@ static void __ceph_unreserve_caps(struct ceph_mds_client *mdsc, int nr_caps)
  */
 int ceph_reserve_caps(struct ceph_mds_client *mdsc,
 		      struct ceph_cap_reservation *ctx, int need)
+	__context_unsafe(/* drops and reacquires mdsc->mutex */)
 {
 	struct ceph_client *cl = mdsc->fsc->client;
 	int i, j;
@@ -1650,8 +1652,7 @@ static inline int __send_flush_snap(struct inode *inode,
  */
 static void __ceph_flush_snaps(struct ceph_inode_info *ci,
 			       struct ceph_mds_session *session)
-		__releases(ci->i_ceph_lock)
-		__acquires(ci->i_ceph_lock)
+	__must_hold(&ci->i_ceph_lock)
 {
 	struct inode *inode = &ci->netfs.inode;
 	struct ceph_mds_client *mdsc = session->s_mdsc;
@@ -1993,8 +1994,7 @@ static u64 __mark_caps_flushing(struct inode *inode,
  * try to invalidate mapping pages without blocking.
  */
 static int try_nonblocking_invalidate(struct inode *inode)
-	__releases(ci->i_ceph_lock)
-	__acquires(ci->i_ceph_lock)
+	__must_hold(&ceph_inode(inode)->i_ceph_lock)
 {
 	struct ceph_client *cl = ceph_inode_to_client(inode);
 	struct ceph_inode_info *ci = ceph_inode(inode);
@@ -2062,6 +2062,7 @@ void ceph_check_caps(struct ceph_inode_info *ci, int flags)
 	struct ceph_mds_session *session = NULL;
 
 	spin_lock(&ci->i_ceph_lock);
+	lockdep_assume_ctx_held(&ceph_inode(&ci->netfs.inode)->i_ceph_lock);
 	if (ci->i_ceph_flags & CEPH_I_ASYNC_CREATE) {
 		set_bit(CEPH_I_ASYNC_CHECK_CAPS_BIT, &ci->i_ceph_flags);
 
@@ -2607,8 +2608,6 @@ static void __kick_flushing_caps(struct ceph_mds_client *mdsc,
 				 struct ceph_mds_session *session,
 				 struct ceph_inode_info *ci,
 				 u64 oldest_flush_tid)
-	__releases(ci->i_ceph_lock)
-	__acquires(ci->i_ceph_lock)
 {
 	struct inode *inode = &ci->netfs.inode;
 	struct ceph_client *cl = mdsc->fsc->client;
@@ -2783,6 +2782,7 @@ void ceph_kick_flushing_caps(struct ceph_mds_client *mdsc,
 
 void ceph_kick_flushing_inode_caps(struct ceph_mds_session *session,
 				   struct ceph_inode_info *ci)
+	__must_hold(&ci->i_ceph_lock)
 {
 	struct ceph_mds_client *mdsc = session->s_mdsc;
 	struct ceph_cap *cap = ci->i_auth_cap;
@@ -2865,6 +2865,7 @@ enum {
 
 static int try_get_cap_refs(struct inode *inode, int need, int want,
 			    loff_t endoff, int flags, int *got)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ceph_inode_info *ci = ceph_inode(inode);
 	struct ceph_mds_client *mdsc = ceph_inode_to_fs_client(inode)->mdsc;
@@ -3553,8 +3554,8 @@ static void handle_cap_grant(struct inode *inode,
 			     struct ceph_mds_caps *grant,
 			     struct ceph_buffer *xattr_buf,
 			     struct cap_extra_info *extra_info)
-	__releases(ci->i_ceph_lock)
-	__releases(session->s_mdsc->snap_rwsem)
+	__releases(&ceph_inode(inode)->i_ceph_lock)
+	__context_unsafe(/* conditionally releases snap_rwsem */)
 {
 	struct ceph_client *cl = ceph_inode_to_client(inode);
 	struct ceph_inode_info *ci = ceph_inode(inode);
@@ -3894,7 +3895,7 @@ static void handle_cap_flush_ack(struct inode *inode, u64 flush_tid,
 				 struct ceph_mds_caps *m,
 				 struct ceph_mds_session *session,
 				 struct ceph_cap *cap)
-	__releases(ci->i_ceph_lock)
+	__releases(&ceph_inode(inode)->i_ceph_lock)
 {
 	struct ceph_inode_info *ci = ceph_inode(inode);
 	struct ceph_mds_client *mdsc = ceph_sb_to_fs_client(inode->i_sb)->mdsc;
@@ -4154,6 +4155,7 @@ static bool handle_cap_trunc(struct inode *inode,
 static void handle_cap_export(struct inode *inode, struct ceph_mds_caps *ex,
 			      struct ceph_mds_cap_peer *ph,
 			      struct ceph_mds_session *session)
+	__context_unsafe(/* releases session->s_mutex held by caller */)
 {
 	struct ceph_mds_client *mdsc = ceph_inode_to_fs_client(inode)->mdsc;
 	struct ceph_client *cl = mdsc->fsc->client;
@@ -4290,6 +4292,7 @@ static void handle_cap_import(struct ceph_mds_client *mdsc,
 			      struct ceph_mds_cap_peer *ph,
 			      struct ceph_mds_session *session,
 			      struct ceph_cap **target_cap, int *old_issued)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ceph_inode_info *ci = ceph_inode(inode);
 	struct ceph_client *cl = mdsc->fsc->client;
@@ -4416,6 +4419,7 @@ bad:
  */
 void ceph_handle_caps(struct ceph_mds_session *session,
 		      struct ceph_msg *msg)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ceph_mds_client *mdsc = session->s_mdsc;
 	struct ceph_client *cl = mdsc->fsc->client;

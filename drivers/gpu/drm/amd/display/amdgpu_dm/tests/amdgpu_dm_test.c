@@ -3400,6 +3400,7 @@ static void dm_test_oem_i2c_hw_init_no_device(struct kunit *test)
  * @test: The KUnit test context
  */
 static void dm_test_resume_mst_no_primary(struct kunit *test)
+	__context_unsafe(/* TODO */)
 {
 	struct drm_dp_mst_topology_mgr *mgr;
 

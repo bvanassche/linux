@@ -12,11 +12,13 @@
 static DEFINE_MUTEX(sigio_mutex);
 
 void sigio_lock(void)
+	__acquires(&sigio_mutex)
 {
 	mutex_lock(&sigio_mutex);
 }
 
 void sigio_unlock(void)
+	__releases(&sigio_mutex)
 {
 	mutex_unlock(&sigio_mutex);
 }

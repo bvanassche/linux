@@ -11,6 +11,7 @@
 void _intel_modeset_lock_begin(struct drm_modeset_acquire_ctx *ctx,
 			       struct intel_atomic_state *state,
 			       unsigned int flags, int *ret)
+	__context_unsafe(/* balanced by _intel_modeset_lock_end() */)
 {
 	drm_modeset_acquire_init(ctx, flags);
 
@@ -33,6 +34,7 @@ bool _intel_modeset_lock_loop(int *ret)
 void _intel_modeset_lock_end(struct drm_modeset_acquire_ctx *ctx,
 			     struct intel_atomic_state *state,
 			     int *ret)
+	__context_unsafe(/* conditional release */)
 {
 	if (*ret == -EDEADLK) {
 		if (state)

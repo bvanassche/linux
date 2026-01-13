@@ -582,6 +582,7 @@ unlock:
  */
 static int __folio_migrate_mapping(struct address_space *mapping,
 		struct folio *newfolio, struct folio *folio, int expected_count)
+	__context_unsafe(/* conditional locking */)
 {
 	XA_STATE(xas, &mapping->i_pages, folio->index);
 	struct swap_cluster_info *ci = NULL;
@@ -1480,6 +1481,7 @@ static int unmap_and_move_hugetlb_folio(new_folio_t get_new_folio,
 		free_folio_t put_new_folio, unsigned long private,
 		struct folio *src, int force, enum migrate_mode mode,
 		enum migrate_reason reason, struct list_head *ret)
+	__context_unsafe(/* conditional locking */)
 {
 	struct folio *dst;
 	int rc = -EAGAIN;

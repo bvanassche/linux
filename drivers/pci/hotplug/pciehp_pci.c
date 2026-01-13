@@ -30,6 +30,7 @@
  * %-ENODEV if enumeration failed.
  */
 int pciehp_configure_device(struct controller *ctrl)
+	__must_hold_shared(&ctrl->reset_lock)
 {
 	struct pci_dev *dev;
 	struct pci_dev *bridge = ctrl->pcie->port;
@@ -93,6 +94,7 @@ int pciehp_configure_device(struct controller *ctrl)
  * removed devices are marked as such to prevent further accesses.
  */
 void pciehp_unconfigure_device(struct controller *ctrl, bool presence)
+	__must_hold_shared(&ctrl->reset_lock)
 {
 	struct pci_dev *dev, *temp;
 	struct pci_bus *parent = ctrl->pcie->port->subordinate;

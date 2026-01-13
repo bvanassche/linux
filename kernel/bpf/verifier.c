@@ -23802,6 +23802,7 @@ static void log_program(struct bpf_verifier_env *env)
 
 int bpf_check(struct bpf_prog **prog, union bpf_attr *attr, bpfptr_t uattr,
 	      struct bpf_log_attr *attr_log)
+	__context_unsafe(/* conditional locking */)
 {
 	u64 start_time = ktime_get_ns();
 	struct bpf_verifier_env *env;

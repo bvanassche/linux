@@ -449,6 +449,7 @@ static int p54u_bulk_msg(struct p54u_priv *priv, unsigned int ep,
 }
 
 static int p54u_device_reset(struct ieee80211_hw *dev)
+	__context_unsafe(/* conditional locking */)
 {
 	struct p54u_priv *priv = dev->priv;
 	int ret, lock = (priv->intf->condition != USB_INTERFACE_BINDING);

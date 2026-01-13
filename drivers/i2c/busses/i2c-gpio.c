@@ -88,6 +88,7 @@ static int i2c_gpio_getscl(void *data)
 }
 
 static void i2c_gpio_lock_bus(struct i2c_adapter *adap, unsigned int flags)
+	__acquires(&adap->bus_lock, &adap_to_priv(adap)->scl->lock)
 {
 	/* Take care about adapter lock. See i2c_adapter_lock_bus() and others. */
 	rt_mutex_lock_nested(&adap->bus_lock, i2c_adapter_depth(adap));
@@ -95,6 +96,8 @@ static void i2c_gpio_lock_bus(struct i2c_adapter *adap, unsigned int flags)
 }
 
 static int i2c_gpio_trylock_bus(struct i2c_adapter *adap, unsigned int flags)
+	__cond_acquires(nonzero, &adap->bus_lock)
+	__cond_acquires(nonzero, &adap_to_priv(adap)->scl->lock)
 {
 	if (!rt_mutex_trylock(&adap->bus_lock))
 		return 0;
@@ -108,6 +111,7 @@ static int i2c_gpio_trylock_bus(struct i2c_adapter *adap, unsigned int flags)
 }
 
 static void i2c_gpio_unlock_bus(struct i2c_adapter *adap, unsigned int flags)
+	__releases(&adap->bus_lock, &adap_to_priv(adap)->scl->lock)
 {
 	rt_mutex_unlock(&adap_to_priv(adap)->scl->lock);
 	rt_mutex_unlock(&adap->bus_lock);

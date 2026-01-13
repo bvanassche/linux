@@ -656,7 +656,7 @@ static void ioeventfd_mmio_write(int doorbell_id, void *data)
 
 static bool ioeventfd_check_collision(struct mshv_partition *pt,
 				      struct mshv_ioeventfd *p)
-	__must_hold(&pt->mutex)
+	__must_hold(&pt->pt_mutex)
 {
 	struct mshv_ioeventfd *_p;
 
@@ -672,7 +672,7 @@ static bool ioeventfd_check_collision(struct mshv_partition *pt,
 
 static int mshv_assign_ioeventfd(struct mshv_partition *pt,
 				 struct mshv_user_ioeventfd *args)
-	__must_hold(&pt->mutex)
+	__must_hold(&pt->pt_mutex)
 {
 	struct mshv_ioeventfd *p;
 	struct eventfd_ctx *eventfd;
@@ -772,7 +772,7 @@ fail:
 
 static int mshv_deassign_ioeventfd(struct mshv_partition *pt,
 				   struct mshv_user_ioeventfd *args)
-	__must_hold(&pt->mutex)
+	__must_hold(&pt->pt_mutex)
 {
 	struct mshv_ioeventfd *p;
 	struct eventfd_ctx *eventfd;
@@ -819,7 +819,7 @@ static int mshv_deassign_ioeventfd(struct mshv_partition *pt,
 
 int mshv_set_unset_ioeventfd(struct mshv_partition *pt,
 			     struct mshv_user_ioeventfd *args)
-	__must_hold(&pt->mutex)
+	__must_hold(&pt->pt_mutex)
 {
 	if ((args->flags & ~MSHV_IOEVENTFD_FLAGS_MASK) ||
 	    mshv_field_nonzero(*args, rsvd))

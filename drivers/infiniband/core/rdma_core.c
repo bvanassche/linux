@@ -256,6 +256,7 @@ EXPORT_SYMBOL_NS_GPL(uobj_destroy, "rdma_core");
  */
 struct ib_uobject *__uobj_get_destroy(const struct uverbs_api_object *obj,
 				      u32 id, struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uobject *uobj;
 	int ret;
@@ -281,6 +282,7 @@ EXPORT_SYMBOL_NS_GPL(__uobj_get_destroy, "rdma_core");
  */
 int __uobj_perform_destroy(const struct uverbs_api_object *obj, u32 id,
 			   struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uobject *uobj;
 
@@ -410,6 +412,7 @@ struct ib_uobject *rdma_lookup_get_uobject(const struct uverbs_api_object *obj,
 					   struct ib_uverbs_file *ufile, s64 id,
 					   enum rdma_lookup_mode mode,
 					   struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&ufile->device->disassociate_srcu)
 {
 	struct ib_uobject *uobj;
 	int ret;
@@ -537,6 +540,7 @@ err_fd:
 
 struct ib_uobject *rdma_alloc_begin_uobject(const struct uverbs_api_object *obj,
 					    struct uverbs_attr_bundle *attrs)
+	__context_unsafe(/* returns ERR_PTR() */)
 {
 	struct ib_uverbs_file *ufile = attrs->ufile;
 	struct ib_uobject *ret;
@@ -688,6 +692,7 @@ static void alloc_commit_fd_uobject(struct ib_uobject *uobj)
  */
 void rdma_alloc_commit_uobject(struct ib_uobject *uobj,
 			       struct uverbs_attr_bundle *attrs)
+	__context_unsafe(/* rdma_alloc_begin_uobject() is not annotated */)
 {
 	struct ib_uverbs_file *ufile = attrs->ufile;
 
@@ -746,6 +751,7 @@ EXPORT_SYMBOL_NS_GPL(rdma_assign_uobject, "rdma_core");
 void rdma_alloc_abort_uobject(struct ib_uobject *uobj,
 			      struct uverbs_attr_bundle *attrs,
 			      bool hw_obj_valid)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ib_uverbs_file *ufile = uobj->ufile;
 	int ret;
@@ -984,6 +990,7 @@ EXPORT_SYMBOL(uverbs_fd_class);
 struct ib_uobject *
 uverbs_get_uobject_from_file(u16 object_id, enum uverbs_obj_access access,
 			     s64 id, struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	const struct uverbs_api_object *obj =
 		uapi_get_object(attrs->ufile->device->uapi, object_id);
@@ -1011,6 +1018,7 @@ EXPORT_SYMBOL_NS_GPL(uverbs_get_uobject_from_file, "rdma_core");
 void uverbs_finalize_object(struct ib_uobject *uobj,
 			    enum uverbs_obj_access access, bool hw_obj_valid,
 			    bool commit, struct uverbs_attr_bundle *attrs)
+	__context_unsafe(/* conditional locking */)
 {
 	/*
 	 * refcounts should be handled at the object level and not at the

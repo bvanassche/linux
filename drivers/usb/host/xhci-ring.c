@@ -495,6 +495,7 @@ static void xhci_handle_stopped_cmd_ring(struct xhci_hcd *xhci,
 
 /* Must be called with xhci->lock held, releases and acquires lock back */
 static int xhci_abort_cmd_ring(struct xhci_hcd *xhci, unsigned long flags)
+	__must_hold(&xhci->lock)
 {
 	struct xhci_segment *new_seg	= xhci->cmd_ring->deq_seg;
 	union xhci_trb *new_deq		= xhci->cmd_ring->dequeue;
@@ -2014,6 +2015,7 @@ static void xhci_cavium_reset_phy_quirk(struct xhci_hcd *xhci)
 }
 
 static void handle_port_status(struct xhci_hcd *xhci, union xhci_trb *event)
+	__context_unsafe(/* drops and reacquires xhci->lock */)
 {
 	struct xhci_virt_device *vdev = NULL;
 	struct xhci_bus_state *bus_state;

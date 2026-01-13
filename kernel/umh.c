@@ -205,6 +205,7 @@ static DECLARE_WAIT_QUEUE_HEAD(usermodehelper_disabled_waitq);
 #define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
 
 int usermodehelper_read_trylock(void)
+	__cond_acquires_shared(0, &umhelper_sem)
 {
 	DEFINE_WAIT(wait);
 	int ret = 0;
@@ -235,6 +236,7 @@ int usermodehelper_read_trylock(void)
 EXPORT_SYMBOL_GPL(usermodehelper_read_trylock);
 
 long usermodehelper_read_lock_wait(long timeout)
+	__context_unsafe(/* umhelper_sem is held iff the return value > 0 */)
 {
 	DEFINE_WAIT(wait);
 
@@ -262,6 +264,7 @@ long usermodehelper_read_lock_wait(long timeout)
 EXPORT_SYMBOL_GPL(usermodehelper_read_lock_wait);
 
 void usermodehelper_read_unlock(void)
+	__releases_shared(&umhelper_sem)
 {
 	up_read(&umhelper_sem);
 }

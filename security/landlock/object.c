@@ -56,12 +56,12 @@ void landlock_put_object(struct landlock_object *const object)
 	 * get_inode_object().
 	 */
 	if (refcount_dec_and_lock(&object->usage, &object->lock)) {
-		__acquire(&object->lock);
 		/*
 		 * With @object->lock initially held, remove the reference from
 		 * @object->underobj to @object (if it still exists).
 		 */
 		object->underops->release(object);
+		__release(&object->lock);
 		kfree_rcu(object, rcu_free);
 	}
 }

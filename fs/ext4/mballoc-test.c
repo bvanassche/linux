@@ -167,6 +167,7 @@ static struct super_block *mbt_ext4_alloc_super_block(void)
 	sbi->s_sb = sb;
 	sb->s_fs_info = sbi;
 
+	__acquire(&sb->s_umount);
 	up_write(&sb->s_umount);
 	return sb;
 

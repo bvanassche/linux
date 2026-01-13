@@ -173,6 +173,7 @@ static const struct mm_walk_ops ptdump_ops = {
 };
 
 void ptdump_walk_pgd(struct ptdump_state *st, struct mm_struct *mm, pgd_t *pgd)
+	__context_unsafe(/* conditional locking of init_mm.mmap_lock */)
 {
 	const struct ptdump_range *range = st->range;
 

@@ -251,7 +251,7 @@ static void plx_dma_desc_task(struct tasklet_struct *t)
 static struct dma_async_tx_descriptor *plx_dma_prep_memcpy(struct dma_chan *c,
 		dma_addr_t dma_dst, dma_addr_t dma_src, size_t len,
 		unsigned long flags)
-	__acquires(plxdev->ring_lock)
+	__cond_acquires(nonnull, &chan_to_plx_dma_dev(c)->ring_lock)
 {
 	struct plx_dma_dev *plxdev = chan_to_plx_dma_dev(c);
 	struct plx_dma_desc *plxdesc;
@@ -287,18 +287,12 @@ static struct dma_async_tx_descriptor *plx_dma_prep_memcpy(struct dma_chan *c,
 	return &plxdesc->txd;
 
 err_unlock:
-	/*
-	 * Keep sparse happy by restoring an even lock count on
-	 * this lock.
-	 */
-	__acquire(plxdev->ring_lock);
-
 	spin_unlock_bh(&plxdev->ring_lock);
 	return NULL;
 }
 
 static dma_cookie_t plx_dma_tx_submit(struct dma_async_tx_descriptor *desc)
-	__releases(plxdev->ring_lock)
+	__releases(&chan_to_plx_dma_dev(desc->chan)->ring_lock)
 {
 	struct plx_dma_dev *plxdev = chan_to_plx_dma_dev(desc->chan);
 	struct plx_dma_desc *plxdesc = to_plx_desc(desc);

@@ -305,6 +305,7 @@ EXPORT_SYMBOL_GPL(usb_stor_reset_resume);
  */
 
 int usb_stor_pre_reset(struct usb_interface *iface)
+	__acquires(&((struct us_data *)usb_get_intfdata(iface))->dev_mutex)
 {
 	struct us_data *us = usb_get_intfdata(iface);
 
@@ -315,6 +316,7 @@ int usb_stor_pre_reset(struct usb_interface *iface)
 EXPORT_SYMBOL_GPL(usb_stor_pre_reset);
 
 int usb_stor_post_reset(struct usb_interface *iface)
+	__releases(&((struct us_data *)usb_get_intfdata(iface))->dev_mutex)
 {
 	struct us_data *us = usb_get_intfdata(iface);
 

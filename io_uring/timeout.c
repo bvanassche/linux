@@ -163,6 +163,7 @@ static void io_kill_timeout(struct io_kiocb *req, struct list_head *list)
 }
 
 __cold void io_flush_timeouts(struct io_ring_ctx *ctx)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	struct io_timeout *timeout, *tmp;
 	LIST_HEAD(list);
@@ -808,6 +809,7 @@ __cold unsigned int io_timeouts_armed(struct io_ring_ctx *ctx,
 /* Returns true if we found and killed one or more timeouts */
 __cold bool io_kill_timeouts(struct io_ring_ctx *ctx, struct io_uring_task *tctx,
 			     bool cancel_all)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	struct io_timeout *timeout, *tmp;
 	LIST_HEAD(list);

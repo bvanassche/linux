@@ -7671,6 +7671,7 @@ u16 tcp_get_syncookie_mss(struct request_sock_ops *rsk_ops,
 int tcp_conn_request(struct request_sock_ops *rsk_ops,
 		     const struct tcp_request_sock_ops *af_ops,
 		     struct sock *sk, struct sk_buff *skb)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct tcp_fastopen_cookie foc = { .len = -1 };
 	u32 isn = TCP_SKB_CB(skb)->tcp_tw_isn;

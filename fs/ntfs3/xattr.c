@@ -253,6 +253,7 @@ out:
 
 static int ntfs_get_ea(struct inode *inode, const char *name, size_t name_len,
 		       void *buffer, size_t size, size_t *required)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ntfs_inode *ni = ntfs_i(inode);
 	const struct EA_INFO *info;
@@ -317,6 +318,7 @@ static noinline int ntfs_set_ea(struct inode *inode, const char *name,
 				size_t name_len, const void *value,
 				size_t val_size, int flags, bool locked,
 				__le32 *ea_size)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ntfs_inode *ni = ntfs_i(inode);
 	struct ntfs_sb_info *sbi = ni->mi.sbi;

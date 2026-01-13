@@ -128,6 +128,7 @@ static void rcu_nocb_bypass_unlock(struct rcu_data *rdp)
  * if it corresponds to a no-CBs CPU.
  */
 static void rcu_nocb_lock(struct rcu_data *rdp)
+	__context_unsafe(/* conditional locking */)
 {
 	lockdep_assert_irqs_disabled();
 	if (!rcu_rdp_is_offloaded(rdp))
@@ -140,6 +141,7 @@ static void rcu_nocb_lock(struct rcu_data *rdp)
  * if it corresponds to a no-CBs CPU.
  */
 static void rcu_nocb_unlock(struct rcu_data *rdp)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (rcu_rdp_is_offloaded(rdp)) {
 		lockdep_assert_irqs_disabled();
@@ -153,6 +155,7 @@ static void rcu_nocb_unlock(struct rcu_data *rdp)
  */
 static void rcu_nocb_unlock_irqrestore(struct rcu_data *rdp,
 				       unsigned long flags)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (rcu_rdp_is_offloaded(rdp)) {
 		lockdep_assert_irqs_disabled();
@@ -367,6 +370,7 @@ static void wake_nocb_gp_defer(struct rcu_data *rdp, int waketype,
  */
 static bool rcu_nocb_do_flush_bypass(struct rcu_data *rdp, struct rcu_head *rhp_in,
 				     unsigned long j, bool lazy)
+	__context_unsafe(/* releases nocb_bypass_lock held by caller */)
 {
 	struct rcu_cblist rcl;
 	struct rcu_head *rhp = rhp_in;
@@ -411,6 +415,7 @@ static bool rcu_nocb_do_flush_bypass(struct rcu_data *rdp, struct rcu_head *rhp_
  */
 static bool rcu_nocb_flush_bypass(struct rcu_data *rdp, struct rcu_head *rhp,
 				  unsigned long j, bool lazy)
+	__context_unsafe(/* rcu_nocb_do_flush_bypass() releases lock */)
 {
 	if (!rcu_rdp_is_offloaded(rdp))
 		return true;
@@ -710,6 +715,7 @@ static void nocb_gp_sleep(struct rcu_data *my_rdp, int cpu)
  * or for grace periods to end.
  */
 static noinline_for_stack void nocb_gp_wait(struct rcu_data *my_rdp)
+	__context_unsafe(/* locks in a loop */)
 {
 	bool bypass = false;
 	int __maybe_unused cpu = my_rdp->cpu;
@@ -937,6 +943,7 @@ static inline bool nocb_cb_wait_cond(struct rcu_data *rdp)
  * then, if there are no more, wait for more to appear.
  */
 static void nocb_cb_wait(struct rcu_data *rdp)
+	__context_unsafe(/* conditional locking */)
 {
 	struct rcu_segcblist *cblist = &rdp->cblist;
 	struct rcu_gp_seq cur_gp_seq;
@@ -1113,6 +1120,7 @@ static bool rcu_nocb_rdp_deoffload_wait_cond(struct rcu_data *rdp)
 }
 
 static int rcu_nocb_rdp_deoffload(struct rcu_data *rdp)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long flags;
 	int wake_gp;
@@ -1286,6 +1294,7 @@ lazy_rcu_shrink_count(struct shrinker *shrink, struct shrink_control *sc)
 
 static unsigned long
 lazy_rcu_shrink_scan(struct shrinker *shrink, struct shrink_control *sc)
+	__context_unsafe(/* conditional locking */)
 {
 	int cpu;
 	unsigned long flags;

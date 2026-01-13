@@ -20,7 +20,7 @@ static void *dev_seq_from_index(struct seq_file *seq, loff_t *pos)
 }
 
 static void *dev_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	if (!*pos)
@@ -36,7 +36,7 @@ static void *dev_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void dev_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }
@@ -220,7 +220,7 @@ static void *ptype_get_idx(struct seq_file *seq, loff_t pos)
 }
 
 static void *ptype_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return *pos ? ptype_get_idx(seq, *pos - 1) : SEQ_START_TOKEN;
@@ -285,7 +285,7 @@ found:
 }
 
 static void ptype_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

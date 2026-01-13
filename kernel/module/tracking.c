@@ -65,7 +65,7 @@ void print_unloaded_tainted_modules(void)
 
 #ifdef CONFIG_DEBUG_FS
 static void *unloaded_tainted_modules_seq_start(struct seq_file *m, loff_t *pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return seq_list_start_rcu(&unloaded_tainted_modules, *pos);
@@ -77,7 +77,7 @@ static void *unloaded_tainted_modules_seq_next(struct seq_file *m, void *p, loff
 }
 
 static void unloaded_tainted_modules_seq_stop(struct seq_file *m, void *p)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

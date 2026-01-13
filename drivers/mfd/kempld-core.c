@@ -234,6 +234,7 @@ EXPORT_SYMBOL_GPL(kempld_write32);
  * @pld: kempld_device_data structure describing the PLD
  */
 void kempld_get_mutex(struct kempld_device_data *pld)
+	__acquires(&pld->lock)
 {
 	const struct kempld_platform_data *pdata = dev_get_platdata(pld->dev);
 
@@ -247,6 +248,7 @@ EXPORT_SYMBOL_GPL(kempld_get_mutex);
  * @pld: kempld_device_data structure describing the PLD
  */
 void kempld_release_mutex(struct kempld_device_data *pld)
+	__releases(&pld->lock)
 {
 	const struct kempld_platform_data *pdata = dev_get_platdata(pld->dev);
 

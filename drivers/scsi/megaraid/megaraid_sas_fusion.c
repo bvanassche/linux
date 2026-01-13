@@ -4541,6 +4541,7 @@ static int
 megasas_issue_tm(struct megasas_instance *instance, u16 device_handle,
 	uint channel, uint id, u16 smid_task, u8 type,
 	struct MR_PRIV_DEVICE *mr_device_priv_data)
+	__must_hold(&instance->reset_mutex)
 {
 	struct MR_TASK_MANAGE_REQUEST *mr_request;
 	struct MPI2_SCSI_TASK_MANAGE_REQUEST *mpi_request;

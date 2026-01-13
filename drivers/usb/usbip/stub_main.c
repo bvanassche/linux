@@ -63,6 +63,7 @@ static int get_busid_idx(const char *busid)
 
 /* Returns holding busid_lock. Should call put_busid_priv() to unlock */
 struct bus_id_priv *get_busid_priv(const char *busid)
+	__context_unsafe(/* returns with bid->busid_lock held if bid != NULL */)
 {
 	int idx;
 	struct bus_id_priv *bid = NULL;
@@ -196,6 +197,7 @@ static ssize_t match_busid_store(struct device_driver *dev, const char *buf,
 static DRIVER_ATTR_RW(match_busid);
 
 static int do_rebind(char *busid, struct bus_id_priv *busid_priv)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret = 0;
 
@@ -254,6 +256,9 @@ static ssize_t rebind_store(struct device_driver *dev, const char *buf,
 	bid = get_busid_priv(buf);
 	if (!bid)
 		return -ENODEV;
+
+	/* get_busid_priv() returned with busid_lock held */
+	__acquire(&bid->busid_lock);
 
 	/* mark the device for deletion so probe ignores it during rescan */
 	bid->status = STUB_BUSID_OTHER;

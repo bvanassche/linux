@@ -158,6 +158,7 @@ out:
 static ssize_t orangefs_devreq_read(struct file *file,
 				 char __user *buf,
 				 size_t count, loff_t *offset)
+	__context_unsafe(/* conditional locking */)
 {
 	struct orangefs_kernel_op_s *op, *temp;
 	__s32 proto_ver = ORANGEFS_KERNEL_PROTO_VERSION;

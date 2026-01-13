@@ -1653,11 +1653,94 @@ void vmbus_setevent(struct vmbus_channel *channel);
 
 extern __u32 vmbus_proto_version;
 
+enum vmbus_connect_state {
+	DISCONNECTED,
+	CONNECTING,
+	CONNECTED,
+	DISCONNECTING
+};
+
+struct vmbus_connection {
+	u32 msg_conn_id;
+
+	atomic_t offer_in_progress;
+
+	enum vmbus_connect_state conn_state;
+
+	atomic_t next_gpadl_handle;
+
+	struct completion  unload_event;
+	/*
+	 * Represents channel interrupts. Each bit position represents a
+	 * channel.  When a channel sends an interrupt via VMBUS, it finds its
+	 * bit in the sendInterruptPage, set it and calls Hv to generate a port
+	 * event. The other end receives the port event and parse the
+	 * recvInterruptPage to see which bit is set
+	 */
+	void *int_page;
+	void *send_int_page;
+	void *recv_int_page;
+
+	/*
+	 * 2 pages - 1st page for parent->child notification and 2nd
+	 * is child->parent notification
+	 */
+	struct hv_monitor_page *monitor_pages[2];
+	struct list_head chn_msg_list;
+	spinlock_t channelmsg_lock;
+
+	/* List of channels */
+	struct list_head chn_list;
+	struct mutex channel_mutex;
+
+	/* Array of channel pointers, indexed by relid */
+	struct vmbus_channel **channels;
+	u32 relid_hiwater;
+
+	/*
+	 * An offer message is handled first on the work_queue, and then
+	 * is further handled on handle_primary_chan_wq or
+	 * handle_sub_chan_wq.
+	 */
+	struct workqueue_struct *work_queue;
+	struct workqueue_struct *handle_primary_chan_wq;
+	struct workqueue_struct *handle_sub_chan_wq;
+	struct workqueue_struct *rescind_work_queue;
+
+	/*
+	 * On suspension of the vmbus, the accumulated offer messages
+	 * must be dropped.
+	 */
+	bool ignore_any_offer_msg;
+
+	/*
+	 * The number of sub-channels and hv_sock channels that should be
+	 * cleaned up upon suspend: sub-channels will be re-created upon
+	 * resume, and hv_sock channels should not survive suspend.
+	 */
+	atomic_t nr_chan_close_on_suspend;
+	/*
+	 * vmbus_bus_suspend() waits for "nr_chan_close_on_suspend" to
+	 * drop to zero.
+	 */
+	struct completion ready_for_suspend_event;
+
+	/*
+	 * Completed once the host has offered all boot-time channels.
+	 * Note that some channels may still be under process on a workqueue.
+	 */
+	struct completion all_offers_delivered_event;
+};
+
+extern struct vmbus_connection vmbus_connection;
+
 int vmbus_send_tl_connect_request(const guid_t *shv_guest_servie_id,
 				  const guid_t *shv_host_servie_id);
-int vmbus_send_modifychannel(struct vmbus_channel *channel, u32 target_vp);
+int vmbus_send_modifychannel(struct vmbus_channel *channel, u32 target_vp)
+	__must_hold(&vmbus_connection.channel_mutex);
 void vmbus_set_event(struct vmbus_channel *channel);
-int vmbus_channel_set_cpu(struct vmbus_channel *channel, u32 target_cpu);
+int vmbus_channel_set_cpu(struct vmbus_channel *channel, u32 target_cpu)
+	__must_hold(&vmbus_connection.channel_mutex);
 
 /* Get the start of the ring buffer. */
 static inline void *

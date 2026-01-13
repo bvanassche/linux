@@ -426,6 +426,7 @@ enum bpf_task_vma_iter_find_op {
 
 static struct vm_area_struct *
 task_vma_seq_get_next(struct bpf_iter_seq_task_vma_info *info)
+	__context_unsafe(/* conditional locking */)
 {
 	enum bpf_task_vma_iter_find_op op;
 	struct vm_area_struct *curr_vma;
@@ -629,6 +630,7 @@ static int task_vma_seq_show(struct seq_file *seq, void *v)
 }
 
 static void task_vma_seq_stop(struct seq_file *seq, void *v)
+	__context_unsafe(/* conditional locking */)
 {
 	struct bpf_iter_seq_task_vma_info *info = seq->private;
 
@@ -872,6 +874,7 @@ __bpf_kfunc_start_defs();
 
 __bpf_kfunc int bpf_iter_task_vma_new(struct bpf_iter_task_vma *it,
 				      struct task_struct *task, u64 addr)
+	__context_unsafe(/* spin_trylock() locks conditionally */)
 {
 	struct bpf_iter_task_vma_kern *kit = (void *)it;
 	int err;
@@ -1033,6 +1036,7 @@ __bpf_kfunc struct vm_area_struct *bpf_iter_task_vma_next(struct bpf_iter_task_v
 }
 
 __bpf_kfunc void bpf_iter_task_vma_destroy(struct bpf_iter_task_vma *it)
+	__context_unsafe(/* releases vma lock held by caller */)
 {
 	struct bpf_iter_task_vma_kern *kit = (void *)it;
 
@@ -1197,6 +1201,7 @@ __bpf_kfunc_end_defs();
 DEFINE_PER_CPU(struct mmap_unlock_irq_work, mmap_unlock_work);
 
 static void do_mmap_read_unlock(struct irq_work *entry)
+	__context_unsafe(/* releases mmap_lock held by caller */)
 {
 	struct mmap_unlock_irq_work *work;
 

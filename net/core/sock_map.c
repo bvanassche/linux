@@ -116,14 +116,16 @@ put_prog:
 }
 
 static void sock_map_sk_acquire(struct sock *sk)
-	__acquires(&sk->sk_lock.slock)
+	__acquires(sk)
+	__acquires_shared(RCU)
 {
 	lock_sock(sk);
 	rcu_read_lock();
 }
 
 static void sock_map_sk_release(struct sock *sk)
-	__releases(&sk->sk_lock.slock)
+	__releases_shared(RCU)
+	__releases(sk)
 {
 	rcu_read_unlock();
 	release_sock(sk);
@@ -733,7 +735,7 @@ static void *sock_map_seq_lookup_elem(struct sock_map_seq_info *info)
 }
 
 static void *sock_map_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	struct sock_map_seq_info *info = seq->private;
 
@@ -746,7 +748,7 @@ static void *sock_map_seq_start(struct seq_file *seq, loff_t *pos)
 }
 
 static void *sock_map_seq_next(struct seq_file *seq, void *v, loff_t *pos)
-	__must_hold(rcu)
+	__must_hold_shared(RCU)
 {
 	struct sock_map_seq_info *info = seq->private;
 
@@ -757,7 +759,7 @@ static void *sock_map_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static int sock_map_seq_show(struct seq_file *seq, void *v)
-	__must_hold(rcu)
+	__must_hold_shared(RCU)
 {
 	struct sock_map_seq_info *info = seq->private;
 	struct bpf_iter__sockmap ctx = {};
@@ -780,7 +782,7 @@ static int sock_map_seq_show(struct seq_file *seq, void *v)
 }
 
 static void sock_map_seq_stop(struct seq_file *seq, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	if (!v)
 		(void)sock_map_seq_show(seq, NULL);
@@ -1347,7 +1349,7 @@ static void *sock_hash_seq_find_next(struct sock_hash_seq_info *info,
 }
 
 static void *sock_hash_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	struct sock_hash_seq_info *info = seq->private;
 
@@ -1360,7 +1362,7 @@ static void *sock_hash_seq_start(struct seq_file *seq, loff_t *pos)
 }
 
 static void *sock_hash_seq_next(struct seq_file *seq, void *v, loff_t *pos)
-	__must_hold(rcu)
+	__must_hold_shared(RCU)
 {
 	struct sock_hash_seq_info *info = seq->private;
 
@@ -1369,7 +1371,7 @@ static void *sock_hash_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static int sock_hash_seq_show(struct seq_file *seq, void *v)
-	__must_hold(rcu)
+	__must_hold_shared(RCU)
 {
 	struct sock_hash_seq_info *info = seq->private;
 	struct bpf_iter__sockmap ctx = {};
@@ -1393,7 +1395,7 @@ static int sock_hash_seq_show(struct seq_file *seq, void *v)
 }
 
 static void sock_hash_seq_stop(struct seq_file *seq, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	if (!v)
 		(void)sock_hash_seq_show(seq, NULL);

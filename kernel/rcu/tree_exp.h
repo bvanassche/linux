@@ -225,6 +225,7 @@ static void __rcu_report_exp_rnp(struct rcu_node *rnp,
  * lock-acquisition wrapper function for __rcu_report_exp_rnp().
  */
 static void __maybe_unused rcu_report_exp_rnp(struct rcu_node *rnp, bool wake)
+	__context_unsafe(/* __rcu_report_exp_rnp() releases lock */)
 {
 	unsigned long flags;
 
@@ -265,6 +266,7 @@ static void rcu_report_exp_cpu_mult(struct rcu_node *rnp, unsigned long flags,
  * Report expedited quiescent state for specified rcu_data (CPU).
  */
 static void rcu_report_exp_rdp(struct rcu_data *rdp)
+	__context_unsafe(/* rcu_report_exp_cpu_mult() releases lock */)
 {
 	unsigned long flags;
 	struct rcu_node *rnp = rdp->mynode;
@@ -299,6 +301,7 @@ static bool sync_exp_work_done(unsigned long s)
  * expedited grace period.
  */
 static bool exp_funnel_lock(unsigned long s)
+	__cond_acquires(false, &rcu_state.exp_mutex)
 {
 	struct rcu_data *rdp = per_cpu_ptr(&rcu_data, raw_smp_processor_id());
 	struct rcu_node *rnp = rdp->mynode;
@@ -356,6 +359,7 @@ fastpath:
  * expedited grace period needs to wait for.
  */
 static void __sync_rcu_exp_select_node_cpus(struct rcu_exp_work *rewp)
+	__context_unsafe(/* conditional locking */)
 {
 	int cpu;
 	unsigned long flags;
@@ -1026,6 +1030,7 @@ static void sync_rcu_do_polled_gp(struct work_struct *wp)
  * already slated to start, initiates that grace period.
  */
 unsigned long start_poll_synchronize_rcu_expedited(void)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long flags;
 	struct rcu_data *rdp;

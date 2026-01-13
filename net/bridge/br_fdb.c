@@ -202,9 +202,9 @@ errout:
 	rtnl_set_sk_err(net, RTNLGRP_NEIGH, err);
 }
 
-static struct net_bridge_fdb_entry *fdb_find_rcu(struct rhashtable *tbl,
-						 const unsigned char *addr,
-						 __u16 vid)
+static struct net_bridge_fdb_entry *
+fdb_find_rcu(struct rhashtable *tbl, const unsigned char *addr, __u16 vid)
+	__must_hold_shared(RCU)
 {
 	struct net_bridge_fdb_key key;
 
@@ -262,7 +262,7 @@ EXPORT_SYMBOL_GPL(br_fdb_find_port);
 
 struct net_bridge_fdb_entry *br_fdb_find_rcu(struct net_bridge *br,
 					     const unsigned char *addr,
-					     __u16 vid)
+					     __u16 vid) __must_hold_shared(RCU)
 {
 	return fdb_find_rcu(&br->fdb_hash_tbl, addr, vid);
 }
@@ -1063,7 +1063,7 @@ static void __fdb_update(struct net_bridge *br,
 
 void br_fdb_update(struct net_bridge *br, struct net_bridge_port *source,
 		   struct net_bridge_vlan *vlan, const unsigned char *addr,
-		   unsigned long flags)
+		   unsigned long flags) __must_hold_shared(RCU)
 {
 	struct net_bridge_dst dst = vlan ? br_vlan_to_dst(vlan) :
 					   br_port_to_dst(source);

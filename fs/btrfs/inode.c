@@ -347,6 +347,7 @@ static void __cold btrfs_print_data_csum_error(struct btrfs_inode *inode,
  * BTRFS_ILOCK_MMAP - acquire a write lock on the i_mmap_lock
  */
 int btrfs_inode_lock(struct btrfs_inode *inode, unsigned int ilock_flags)
+	__context_unsafe(/* conditional locking */)
 {
 	if (ilock_flags & BTRFS_ILOCK_SHARED) {
 		if (ilock_flags & BTRFS_ILOCK_TRY) {
@@ -377,6 +378,7 @@ int btrfs_inode_lock(struct btrfs_inode *inode, unsigned int ilock_flags)
  * to decide whether the lock acquired is shared or exclusive.
  */
 void btrfs_inode_unlock(struct btrfs_inode *inode, unsigned int ilock_flags)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (ilock_flags & BTRFS_ILOCK_MMAP)
 		up_write(&inode->i_mmap_lock);
@@ -3565,6 +3567,7 @@ void btrfs_add_delayed_iput(struct btrfs_inode *inode)
 
 static void run_delayed_iput_locked(struct btrfs_fs_info *fs_info,
 				    struct btrfs_inode *inode)
+	__must_hold(&fs_info->delayed_iput_lock)
 {
 	list_del_init(&inode->delayed_iput);
 	spin_unlock_irq(&fs_info->delayed_iput_lock);
@@ -3576,6 +3579,7 @@ static void run_delayed_iput_locked(struct btrfs_fs_info *fs_info,
 
 static void btrfs_run_delayed_iput(struct btrfs_fs_info *fs_info,
 				   struct btrfs_inode *inode)
+	__must_not_hold(&fs_info->delayed_iput_lock)
 {
 	if (!list_empty(&inode->delayed_iput)) {
 		spin_lock_irq(&fs_info->delayed_iput_lock);
@@ -8223,6 +8227,7 @@ static int btrfs_rename_exchange(struct inode *old_dir,
 			      struct dentry *old_dentry,
 			      struct inode *new_dir,
 			      struct dentry *new_dentry)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = inode_to_fs_info(old_dir);
 	struct btrfs_trans_handle *trans;
@@ -8508,6 +8513,7 @@ static int btrfs_rename(const struct mnt_idmap *idmap,
 			struct inode *old_dir, struct dentry *old_dentry,
 			struct inode *new_dir, struct dentry *new_dentry,
 			unsigned int flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = inode_to_fs_info(old_dir);
 	struct btrfs_new_inode_args whiteout_args = {

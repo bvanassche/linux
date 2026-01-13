@@ -161,6 +161,7 @@ static bool regulator_ops_is_valid(struct regulator_dev *rdev, int ops)
  */
 static inline int regulator_lock_nested(struct regulator_dev *rdev,
 					struct ww_acquire_ctx *ww_ctx)
+	__context_unsafe(/* conditional locking */)
 {
 	bool lock = false;
 	int ret = 0;
@@ -215,6 +216,7 @@ static void regulator_lock(struct regulator_dev *rdev)
  * reference counter reaches 0.
  */
 static void regulator_unlock(struct regulator_dev *rdev)
+	__context_unsafe(/* conditional locking */)
 {
 	mutex_lock(&regulator_nesting_mutex);
 
@@ -239,6 +241,8 @@ static void regulator_unlock(struct regulator_dev *rdev)
 static void regulator_lock_two(struct regulator_dev *rdev1,
 			       struct regulator_dev *rdev2,
 			       struct ww_acquire_ctx *ww_ctx)
+	__acquires(ww_ctx)
+	__context_unsafe(/* too complex for static analysis */)
 {
 	struct regulator_dev *held, *contended;
 	int ret;
@@ -287,6 +291,7 @@ exit:
 static void regulator_unlock_two(struct regulator_dev *rdev1,
 				 struct regulator_dev *rdev2,
 				 struct ww_acquire_ctx *ww_ctx)
+	__releases(ww_ctx)
 {
 	regulator_unlock(rdev2);
 	regulator_unlock(rdev1);
@@ -391,6 +396,7 @@ err_unlock:
  */
 static void regulator_unlock_dependent(struct regulator_dev *rdev,
 				       struct ww_acquire_ctx *ww_ctx)
+	__releases(ww_ctx)
 {
 	regulator_unlock_recursive(rdev, rdev->coupling_desc.n_coupled);
 	ww_acquire_fini(ww_ctx);
@@ -406,6 +412,8 @@ static void regulator_unlock_dependent(struct regulator_dev *rdev,
  */
 static void regulator_lock_dependent(struct regulator_dev *rdev,
 				     struct ww_acquire_ctx *ww_ctx)
+	__acquires(ww_ctx)
+	__context_unsafe(/* conditional locking */)
 {
 	struct regulator_dev *new_contended_rdev = NULL;
 	struct regulator_dev *old_contended_rdev = NULL;
@@ -2189,6 +2197,7 @@ static struct regulator_dev *regulator_dev_lookup(struct device *dev,
 }
 
 static int regulator_resolve_supply(struct regulator_dev *rdev)
+	__context_unsafe(/* too complex for static analysis */)
 {
 	struct regulator_dev *r;
 	struct device *dev = rdev->dev.parent;
@@ -6700,6 +6709,9 @@ static int regulator_summary_lock_all(struct ww_acquire_ctx *ww_ctx,
 }
 
 static void regulator_summary_lock(struct ww_acquire_ctx *ww_ctx)
+	__acquires(&regulator_list_mutex)
+	__acquires(ww_ctx)
+	__context_unsafe(/* conditional locking */)
 {
 	struct regulator_dev *new_contended_rdev = NULL;
 	struct regulator_dev *old_contended_rdev = NULL;
@@ -6730,6 +6742,8 @@ static void regulator_summary_lock(struct ww_acquire_ctx *ww_ctx)
 }
 
 static void regulator_summary_unlock(struct ww_acquire_ctx *ww_ctx)
+	__releases(ww_ctx)
+	__releases(&regulator_list_mutex)
 {
 	class_for_each_device(&regulator_class, NULL, NULL,
 			      regulator_summary_unlock_one);

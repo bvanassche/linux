@@ -32,22 +32,6 @@
 #define HWMON_ID_PREFIX "hwmon"
 #define HWMON_ID_FORMAT HWMON_ID_PREFIX "%d"
 
-struct hwmon_device {
-	const char *name;
-	const char *label;
-	struct device dev;
-	const struct hwmon_chip_info *chip;
-	struct mutex lock;
-	struct list_head tzdata;
-	struct attribute_group group;
-	const struct attribute_group **groups;
-};
-
-static inline struct hwmon_device *to_hwmon_device(struct device *d)
-{
-	return container_of(d, struct hwmon_device, dev);
-}
-
 #define MAX_SYSFS_ATTR_NAME_LENGTH	32
 
 struct hwmon_device_attribute {
@@ -821,6 +805,7 @@ int hwmon_notify_event(struct device *dev, enum hwmon_sensor_types type,
 EXPORT_SYMBOL_GPL(hwmon_notify_event);
 
 void hwmon_lock(struct device *dev)
+	__acquires(&to_hwmon_device(dev)->lock)
 {
 	struct hwmon_device *hwdev = to_hwmon_device(dev);
 
@@ -829,6 +814,7 @@ void hwmon_lock(struct device *dev)
 EXPORT_SYMBOL_GPL(hwmon_lock);
 
 void hwmon_unlock(struct device *dev)
+	__releases(&to_hwmon_device(dev)->lock)
 {
 	struct hwmon_device *hwdev = to_hwmon_device(dev);
 

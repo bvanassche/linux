@@ -1280,6 +1280,7 @@ void smb2_add_credits_from_hdr(char *buffer, struct TCP_Server_Info *server)
 
 static int
 cifs_demultiplex_thread(void *p)
+	__context_unsafe(/* conditional locking */)
 {
 	int i, num_mids, length;
 	struct TCP_Server_Info *server = p;

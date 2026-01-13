@@ -201,7 +201,7 @@ int alloc_lookup_fw_priv(const char *fw_name, struct firmware_cache *fwc,
 }
 
 static void __free_fw_priv(struct kref *ref)
-	__releases(&fwc->lock)
+	__releases(&to_fw_priv(ref)->fwc->lock)
 {
 	struct fw_priv *fw_priv = to_fw_priv(ref);
 	struct firmware_cache *fwc = fw_priv->fwc;
@@ -228,6 +228,8 @@ void free_fw_priv(struct fw_priv *fw_priv)
 	spin_lock(&fwc->lock);
 	if (!kref_put(&fw_priv->ref, __free_fw_priv))
 		spin_unlock(&fwc->lock);
+	else
+		__release(&fwc->lock);
 }
 
 #ifdef CONFIG_FW_LOADER_PAGED_BUF

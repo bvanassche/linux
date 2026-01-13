@@ -86,6 +86,7 @@ static int pipe_lock_cmp_fn(const struct lockdep_map *a,
 #endif
 
 void pipe_lock(struct pipe_inode_info *pipe)
+	__context_unsafe(/* conditional locking */)
 {
 	if (pipe->files)
 		mutex_lock(&pipe->mutex);
@@ -93,6 +94,7 @@ void pipe_lock(struct pipe_inode_info *pipe)
 EXPORT_SYMBOL(pipe_lock);
 
 void pipe_unlock(struct pipe_inode_info *pipe)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (pipe->files)
 		mutex_unlock(&pipe->mutex);
@@ -139,6 +141,7 @@ static bool anon_pipe_prealloc_push(struct anon_pipe_prealloc *prealloc,
  * under the lock.
  */
 static void anon_pipe_prefill_and_lock(struct pipe_inode_info *pipe, size_t total_len)
+	__acquires(&pipe->mutex)
 {
 	struct page *pages[PIPE_PREALLOC_MAX];
 	unsigned int want, have, need, n = 0;
@@ -179,6 +182,7 @@ static void anon_pipe_prefill_and_lock(struct pipe_inode_info *pipe, size_t tota
  * the lock, drop it, then free the excess outside the critical section.
  */
 static void anon_pipe_trim_and_unlock(struct pipe_inode_info *pipe)
+	__releases(&pipe->mutex)
 {
 	struct page *excess[PIPE_PREALLOC_MAX];
 	unsigned int nexcess = 0;

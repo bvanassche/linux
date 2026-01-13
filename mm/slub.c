@@ -683,11 +683,13 @@ static inline void __slab_clear_pfmemalloc(struct slab *slab)
  * Per slab locking using the pagelock
  */
 static __always_inline void slab_lock(struct slab *slab)
+	__context_unsafe(/* acquires slab lock for caller */)
 {
 	bit_spin_lock(SL_locked, &slab->flags.f);
 }
 
 static __always_inline void slab_unlock(struct slab *slab)
+	__context_unsafe(/* releases slab lock held by caller */)
 {
 	bit_spin_unlock(SL_locked, &slab->flags.f);
 }
@@ -2947,6 +2949,7 @@ static void __kmem_cache_free_bulk(struct kmem_cache *s, size_t size, void **p);
  * Returns how many objects are remaining to be flushed
  */
 static unsigned int __sheaf_flush_main_batch(struct kmem_cache *s)
+	__releases(&s->cpu_sheaves->lock)
 {
 	struct slub_percpu_sheaves *pcs;
 	unsigned int batch, remaining;
@@ -3790,6 +3793,7 @@ static inline void init_slab_obj_iter(struct kmem_cache *s, struct slab *slab,
  */
 static void *alloc_single_from_new_slab(struct kmem_cache *s, struct slab *slab,
 					const struct slab_alloc_context *ac)
+	__context_unsafe(/* conditional locking */)
 {
 	bool allow_spin = alloc_flags_allow_spinning(ac->alloc_flags);
 	struct kmem_cache_node *n;
@@ -4514,6 +4518,7 @@ static __always_inline void maybe_wipe_obj_freeptr(struct kmem_cache *s,
 
 static unsigned int alloc_from_new_slab(struct kmem_cache *s, struct slab *slab,
 		void **p, unsigned int count, bool allow_spin)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned int allocated = 0;
 	struct slab_obj_iter iter;
@@ -4750,6 +4755,7 @@ bool slab_post_alloc_hook(struct kmem_cache *s, gfp_t flags, size_t size,
 static struct slub_percpu_sheaves *
 __pcs_replace_empty_main(struct kmem_cache *s, struct slub_percpu_sheaves *pcs,
 			 gfp_t gfp, unsigned int alloc_flags)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct slab_sheaf *empty = NULL;
 	struct slab_sheaf *full;
@@ -4862,6 +4868,7 @@ barn_put:
 
 static __fastpath_inline
 void *alloc_from_pcs(struct kmem_cache *s, gfp_t gfp, unsigned int alloc_flags, int node)
+	__context_unsafe(/* local_trylock() locks conditionally */)
 {
 	struct slub_percpu_sheaves *pcs;
 	bool node_requested;
@@ -5837,7 +5844,7 @@ static bool __slab_try_return_freelist(struct kmem_cache *s,
 static void __slab_free(struct kmem_cache *s, struct slab *slab,
 			void *head, void *tail, int cnt,
 			unsigned long addr)
-
+	__context_unsafe(/* conditional locking */)
 {
 	bool was_full;
 	struct freelist_counters old, new;
@@ -6011,6 +6018,7 @@ static void __pcs_install_empty_sheaf(struct kmem_cache *s,
 static struct slub_percpu_sheaves *
 __pcs_replace_full_main(struct kmem_cache *s, struct slub_percpu_sheaves *pcs,
 			bool allow_spin)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct slab_sheaf *empty;
 	struct node_barn *barn;
@@ -6134,6 +6142,7 @@ got_empty:
  */
 static __fastpath_inline
 bool free_to_pcs(struct kmem_cache *s, void *object, bool allow_spin)
+	__context_unsafe(/* local_trylock() locks conditionally */)
 {
 	struct slub_percpu_sheaves *pcs;
 

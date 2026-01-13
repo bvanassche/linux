@@ -757,6 +757,7 @@ static inline struct uprobe *hprobe_consume(struct hprobe *hprobe, enum hprobe_s
  * hprobe_consume() call (which determines uprobe and hstate value).
  */
 static void hprobe_finalize(struct hprobe *hprobe, enum hprobe_state hstate)
+	__context_unsafe(/* conditional unlocking */)
 {
 	switch (hstate) {
 	case HPROBE_LEASED:
@@ -791,6 +792,7 @@ static void hprobe_finalize(struct hprobe *hprobe, enum hprobe_state hstate)
  * SRCU lock region. See dup_utask().
  */
 static struct uprobe *hprobe_expire(struct hprobe *hprobe, bool get)
+	__context_unsafe(/* conditional unlocking */)
 {
 	enum hprobe_state hstate;
 
@@ -1829,11 +1831,13 @@ void uprobe_clear_state(struct mm_struct *mm)
 }
 
 void uprobe_start_dup_mmap(void)
+	__acquires_shared(&dup_mmap_sem)
 {
 	percpu_down_read(&dup_mmap_sem);
 }
 
 void uprobe_end_dup_mmap(void)
+	__releases_shared(&dup_mmap_sem)
 {
 	percpu_up_read(&dup_mmap_sem);
 }
@@ -2244,6 +2248,7 @@ static void cleanup_return_instances(struct uprobe_task *utask, bool chained,
 
 static void prepare_uretprobe(struct uprobe *uprobe, struct pt_regs *regs,
 			      struct return_instance *ri)
+	__context_unsafe(/* acquires uretprobes_srcu for caller */)
 {
 	struct uprobe_task *utask = current->utask;
 	unsigned long orig_ret_vaddr, trampoline_vaddr;

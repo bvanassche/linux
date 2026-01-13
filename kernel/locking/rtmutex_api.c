@@ -277,6 +277,7 @@ EXPORT_SYMBOL_GPL(__rt_mutex_init);
  */
 void __sched rt_mutex_init_proxy_locked(struct rt_mutex_base *lock,
 					struct task_struct *proxy_owner)
+	__context_unsafe(/* initializes lock->wait_lock */)
 {
 	static struct lock_class_key pi_futex_key;
 

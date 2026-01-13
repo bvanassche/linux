@@ -899,6 +899,7 @@ static int ntfs_test_inode_wb(struct inode *vi, u64 ino, void *data)
 static bool ntfs_may_write_mft_record(struct ntfs_volume *vol, const u64 mft_no,
 		const struct mft_record *m, struct ntfs_inode **locked_ni,
 		struct inode **ref_vi)
+	__context_unsafe(/* conditional locking */)
 {
 	struct super_block *sb = vol->sb;
 	struct inode *mft_vi = vol->mft_ino;
@@ -2331,6 +2332,7 @@ static int ntfs_mft_record_format(const struct ntfs_volume *vol, const s64 mft_n
 int ntfs_mft_record_alloc(struct ntfs_volume *vol, const int mode,
 			  struct ntfs_inode **ni, struct ntfs_inode *base_ni,
 			  struct mft_record **ni_mrec, const s64 mft_data_vcn)
+	__context_unsafe(/* conditional locking */)
 {
 	s64 ll, bit, old_data_initialized, old_data_size;
 	s64 nr_new_mft_records = 0;
@@ -2942,6 +2944,7 @@ max_err_out:
  * On success return 0 and on error return -1 with errno set to the error code.
  */
 int ntfs_mft_record_free(struct ntfs_volume *vol, struct ntfs_inode *ni)
+	__context_unsafe(/* conditional locking */)
 {
 	u64 mft_no;
 	int err;
@@ -3070,6 +3073,7 @@ static void ntfs_release_mft_write_refs(struct ntfs_inode **locked_nis,
 					unsigned int nr_locked_nis,
 					struct inode **ref_inos,
 					unsigned int nr_ref_inos)
+	__context_unsafe(/* release loop */)
 {
 	while (nr_locked_nis-- > 0) {
 		struct ntfs_inode *tni = locked_nis[nr_locked_nis];
@@ -3213,6 +3217,7 @@ static void ntfs_mft_write_error(struct ntfs_volume *vol,
  * Return: 0 on success, or -errno on error.
  */
 static int ntfs_write_mft_block(struct folio *folio, struct writeback_control *wbc)
+	__context_unsafe(/* conditional locking */)
 {
 	struct address_space *mapping = folio->mapping;
 	struct inode *vi = mapping->host;

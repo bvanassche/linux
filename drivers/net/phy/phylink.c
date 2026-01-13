@@ -1456,6 +1456,7 @@ static void phylink_get_fixed_state(struct phylink *pl,
 }
 
 static void phylink_mac_initial_config(struct phylink *pl, bool force_restart)
+	__context_unsafe(/* conditional locking */)
 {
 	struct phylink_link_state link_state;
 	struct phy_device *phy = pl->phydev;
@@ -1617,6 +1618,7 @@ static bool phylink_link_is_up(struct phylink *pl)
 }
 
 static void phylink_resolve(struct work_struct *w)
+	__context_unsafe(/* conditional locking */)
 {
 	struct phylink *pl = container_of(w, struct phylink, resolve);
 	struct phylink_link_state link_state;

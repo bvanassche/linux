@@ -344,6 +344,8 @@ static snd_pcm_format_t map_pcm_format(enum usb_qmi_audio_format fmt_received)
  * lock held by caller.
  */
 static int uaudio_send_disconnect_ind(struct snd_usb_audio *chip)
+	__must_hold(&chip->mutex)
+	__must_hold(&qdev_mutex)
 {
 	struct qmi_uaudio_stream_ind_msg_v01 disconnect_ind = {0};
 	struct uaudio_qmi_svc *svc = uaudio_svc;

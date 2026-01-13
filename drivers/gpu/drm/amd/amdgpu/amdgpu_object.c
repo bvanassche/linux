@@ -638,6 +638,7 @@ bool amdgpu_bo_support_uswc(u64 bo_flags)
 int amdgpu_bo_create(struct amdgpu_device *adev,
 			       struct amdgpu_bo_param *bp,
 			       struct amdgpu_bo **bo_ptr)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ttm_operation_ctx ctx = {
 		.interruptible = (bp->type != ttm_bo_type_kernel),

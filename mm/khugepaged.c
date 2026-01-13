@@ -1111,6 +1111,7 @@ static enum scan_result check_pmd_still_valid(struct mm_struct *mm,
 static enum scan_result __collapse_huge_page_swapin(struct mm_struct *mm,
 		struct vm_area_struct *vma, unsigned long start_addr,
 		pmd_t *pmd, int referenced, unsigned int order)
+	__context_unsafe(/* conditional unlocking */)
 {
 	int swapped_in = 0;
 	vm_fault_t ret = 0;
@@ -1255,6 +1256,7 @@ static pgtable_t alloc_deposit_pte_table(struct mm_struct *mm)
 static enum scan_result collapse_huge_page(struct mm_struct *mm,
 		unsigned long start_addr, struct collapse_control *cc,
 		unsigned int order)
+	__context_unsafe(/* conditional locking */)
 {
 	const unsigned long pmd_addr = start_addr & HPAGE_PMD_MASK;
 	const unsigned long end_addr = start_addr + (PAGE_SIZE << order);
@@ -1834,6 +1836,7 @@ static enum scan_result set_huge_pmd(struct vm_area_struct *vma, unsigned long a
 
 static enum scan_result try_collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
 		bool install_pmd)
+	__context_unsafe(/* conditional locking */)
 {
 	enum scan_result result = SCAN_FAIL;
 	int nr_mapped_ptes = 0;
@@ -2118,6 +2121,7 @@ static bool file_backed_vma_is_retractable(struct vm_area_struct *vma)
 }
 
 static void retract_page_tables(struct address_space *mapping, pgoff_t pgoff)
+	__context_unsafe(/* conditional locking */)
 {
 	struct vm_area_struct *vma;
 
@@ -2866,6 +2870,7 @@ put:
 static enum scan_result collapse_single_pmd(unsigned long addr,
 		struct vm_area_struct *vma, bool *lock_dropped,
 		struct collapse_control *cc)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	enum scan_result result;
@@ -3223,6 +3228,7 @@ static int madvise_collapse_errno(enum scan_result r)
 
 int madvise_collapse(struct vm_area_struct *vma, unsigned long start,
 		     unsigned long end, bool *lock_dropped)
+	__context_unsafe(/* drops and reacquires mmap_lock */)
 {
 	struct collapse_control *cc;
 	struct mm_struct *mm = vma->vm_mm;

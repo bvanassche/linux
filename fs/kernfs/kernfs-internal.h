@@ -229,8 +229,9 @@ static inline struct mutex *kernfs_node_lock_ptr(struct kernfs_node *kn)
 }
 
 #define kernfs_node_lock(...) \
-	__kernfs_node_lock(__VA_ARGS__)
+	__acquire_ret(__kernfs_node_lock(__VA_ARGS__), __ret)
 static inline struct mutex *__kernfs_node_lock(struct kernfs_node *kn)
+	__context_unsafe(/* acquires mutex for caller */)
 {
 	struct mutex *lock = kernfs_node_lock_ptr(kn);
 

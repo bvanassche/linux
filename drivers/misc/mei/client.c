@@ -901,6 +901,7 @@ int mei_cl_irq_disconnect(struct mei_cl *cl, struct mei_cl_cb *cb,
  * Return: 0 on success, <0 on failure.
  */
 static int __mei_cl_disconnect(struct mei_cl *cl)
+	__context_unsafe(/* __must_hold(&cl->dev->device_lock) */)
 {
 	struct mei_device *dev;
 	struct mei_cl_cb *cb;
@@ -1100,6 +1101,7 @@ int mei_cl_irq_connect(struct mei_cl *cl, struct mei_cl_cb *cb,
  */
 int mei_cl_connect(struct mei_cl *cl, struct mei_me_client *me_cl,
 		   const struct file *fp)
+	__context_unsafe(/* __must_hold(&cl->dev->device_lock) */)
 {
 	struct mei_device *dev;
 	struct mei_cl_cb *cb;
@@ -1500,6 +1502,7 @@ int mei_cl_irq_notify(struct mei_cl *cl, struct mei_cl_cb *cb,
  */
 int mei_cl_notify_request(struct mei_cl *cl,
 			  const struct file *fp, u8 request)
+	__context_unsafe(/* __must_hold(&cl->dev->device_lock) */)
 {
 	struct mei_device *dev;
 	struct mei_cl_cb *cb;
@@ -1603,6 +1606,7 @@ void mei_cl_notify(struct mei_cl *cl)
  * Return: 0 on such and error otherwise.
  */
 int mei_cl_notify_get(struct mei_cl *cl, bool block, bool *notify_ev)
+	__context_unsafe(/* __must_hold(&cl->dev->device_lock) */)
 {
 	struct mei_device *dev;
 	int rets;
@@ -1941,6 +1945,7 @@ err:
  * Return: number of bytes sent on success, <0 on failure.
  */
 ssize_t mei_cl_write(struct mei_cl *cl, struct mei_cl_cb *cb, unsigned long timeout)
+	__context_unsafe(/* __must_hold(&cl->dev->device_lock) */)
 {
 	struct mei_device *dev;
 	struct mei_msg_data *buf;
@@ -2288,6 +2293,7 @@ static void mei_cl_dma_free(struct mei_cl *cl)
  */
 int mei_cl_dma_alloc_and_map(struct mei_cl *cl, const struct file *fp,
 			     u8 buffer_id, size_t size)
+	__context_unsafe(/* __must_hold(&cl->dev->device_lock) */)
 {
 	struct mei_device *dev;
 	struct mei_cl_cb *cb;
@@ -2380,6 +2386,7 @@ out:
  * Return: 0 on such and error otherwise.
  */
 int mei_cl_dma_unmap(struct mei_cl *cl, const struct file *fp)
+	__context_unsafe(/* __must_hold(&cl->dev->device_lock) */)
 {
 	struct mei_device *dev;
 	struct mei_cl_cb *cb;

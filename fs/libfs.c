@@ -597,6 +597,7 @@ EXPORT_SYMBOL(find_next_child);
 static void __simple_recursive_removal(struct dentry *dentry,
                               void (*callback)(struct dentry *),
 			      bool locked)
+	__context_unsafe(/* locks in a loop */)
 {
 	struct dentry *this = dget(dentry);
 	while (true) {
@@ -2311,6 +2312,7 @@ EXPORT_SYMBOL(simple_start_creating);
 
 /* parent must have been held exclusive since simple_start_creating() */
 void simple_done_creating(struct dentry *child)
+	__context_unsafe(/* releases lock held by caller */)
 {
 	end_creating(child);
 }

@@ -708,7 +708,8 @@ static unsigned long count_shadow_nodes(struct shrinker *shrinker,
 
 static enum lru_status shadow_lru_isolate(struct list_head *item,
 					  struct list_lru_one *lru,
-					  void *arg) __must_hold(lru->lock)
+					  void *arg)
+	__context_unsafe(/* conditional locking */)
 {
 	struct xa_node *node = container_of(item, struct xa_node, private_list);
 	struct address_space *mapping;

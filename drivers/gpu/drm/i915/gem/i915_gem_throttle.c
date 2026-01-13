@@ -7,6 +7,8 @@
 
 #include <drm/drm_file.h>
 
+#include "gt/intel_reset.h"
+
 #include "i915_drv.h"
 #include "i915_file_private.h"
 #include "i915_gem_context.h"

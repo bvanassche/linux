@@ -12,8 +12,11 @@
 #include <linux/auxiliary_bus.h>
 #include <linux/bitfield.h>
 #include <linux/bits.h>
+#include <linux/completion.h>
 #include <linux/device.h>
 #include <linux/iio/adc/qcom-vadc-common.h>
+#include <linux/iio/iio.h>
+#include <linux/mutex.h>
 #include <linux/regmap.h>
 #include <linux/types.h>
 
@@ -182,6 +185,33 @@ struct tm5_aux_dev_wrapper {
 	unsigned int n_tm_channels;
 };
 
+struct adc5_channel_prop;
+
+/**
+ * struct adc5_chip -In-memory representation of ADC5 Gen3 device
+ * @dev: pointer to the device structure.
+ * @dev_data: top-level ADC device data.
+ * @nchannels: number of ADC channels.
+ * @chan_props: array of ADC channel properties.
+ * @iio_chans: array of IIO channels specification.
+ * @complete: ADC result notification after interrupt is received.
+ * @lock: ADC lock for access to the peripheral, to prevent concurrent
+ *	requests from multiple clients.
+ * @data: software configuration data.
+ * @n_tm_channels: number of ADC channels used for TM measurements.
+ */
+struct adc5_chip {
+	struct device *dev;
+	struct adc5_device_data dev_data;
+	unsigned int nchannels;
+	struct adc5_channel_prop *chan_props;
+	struct iio_chan_spec *iio_chans;
+	struct completion complete;
+	struct mutex lock;
+	const struct adc5_data *data;
+	unsigned int n_tm_channels;
+};
+
 int adc5_gen3_read(struct adc5_device_data *adc, unsigned int sdam_index,
 		   u16 offset, u8 *data, int len);
 
@@ -197,8 +227,10 @@ void adc5_gen3_update_dig_param(struct adc5_channel_common_prop *prop,
 int adc5_gen3_status_clear(struct adc5_device_data *adc,
 			   int sdam_index, u16 offset, u8 *val, int len);
 
-void adc5_gen3_mutex_lock(struct device *dev);
-void adc5_gen3_mutex_unlock(struct device *dev);
+void adc5_gen3_mutex_lock(struct device *dev)
+	__acquires(&((struct adc5_chip *)iio_priv(dev_get_drvdata(dev->parent)))->lock);
+void adc5_gen3_mutex_unlock(struct device *dev)
+	__releases(&((struct adc5_chip *)iio_priv(dev_get_drvdata(dev->parent)))->lock);
 int adc5_gen3_get_scaled_reading(struct device *dev,
 				 struct adc5_channel_common_prop *common_props,
 				 int *val);

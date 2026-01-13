@@ -131,6 +131,7 @@ static void release_task_mempolicy(struct proc_maps_private *priv)
 #endif
 
 static void unlock_ctx_mm(struct proc_maps_locking_ctx *lock_ctx)
+	__releases_shared(&lock_ctx->mm->mmap_lock)
 {
 	mmap_read_unlock(lock_ctx->mm);
 	lock_ctx->mmap_locked = false;
@@ -169,6 +170,7 @@ static struct vm_area_struct *get_next_vma(struct proc_maps_private *priv,
 
 static bool fallback_to_mmap_lock(struct proc_maps_private *priv,
 		loff_t pos)
+	__context_unsafe(/* drops RCU and acquires mmap_lock for caller */)
 {
 	struct proc_maps_locking_ctx *lock_ctx = &priv->lock_ctx;
 
@@ -186,6 +188,7 @@ static bool fallback_to_mmap_lock(struct proc_maps_private *priv,
 
 #if defined(CONFIG_PROC_PAGE_MONITOR) || defined(CONFIG_NUMA)
 static void drop_rcu(struct proc_maps_private *priv)
+	__context_unsafe(/* conditional locking */)
 {
 	if (priv->lock_ctx.mmap_locked)
 		return;
@@ -194,6 +197,7 @@ static void drop_rcu(struct proc_maps_private *priv)
 }
 
 static void reacquire_rcu(struct proc_maps_private *priv)
+	__context_unsafe(/* conditional locking */)
 {
 	if (priv->lock_ctx.mmap_locked)
 		return;
@@ -234,6 +238,7 @@ retry:
 }
 
 static void *m_start(struct seq_file *m, loff_t *ppos)
+	__context_unsafe(/* conditional locking */)
 {
 	struct proc_maps_private *priv = m->private;
 	struct proc_maps_locking_ctx *lock_ctx;
@@ -303,6 +308,7 @@ static void *m_next(struct seq_file *m, void *v, loff_t *ppos)
 }
 
 static void m_stop(struct seq_file *m, void *v)
+	__context_unsafe(/* conditional locking */)
 {
 	struct proc_maps_private *priv = m->private;
 	struct mm_struct *mm = priv->lock_ctx.mm;
@@ -511,6 +517,7 @@ static int pid_maps_open(struct inode *inode, struct file *file)
 
 static struct vm_area_struct *query_vma_find_by_addr(struct proc_maps_locking_ctx *lock_ctx,
 						     unsigned long addr)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mm_struct *mm = lock_ctx->mm;
 	struct vm_area_struct *vma;
@@ -595,6 +602,7 @@ no_vma:
 }
 
 static int do_procmap_query(struct mm_struct *mm, void __user *uarg)
+	__context_unsafe(/* conditional locking */)
 {
 	struct proc_maps_locking_ctx lock_ctx = { .mm = mm };
 	struct procmap_query karg;
@@ -1058,6 +1066,7 @@ static int smaps_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 
 	ptl = pmd_trans_huge_lock(pmd, vma);
 	if (ptl) {
+		__acquire(ptl);
 		smaps_pmd_entry(pmd, addr, walk);
 		spin_unlock(ptl);
 		goto out;
@@ -1392,6 +1401,7 @@ static int show_smap(struct seq_file *m, void *v)
 }
 
 static int show_smaps_rollup(struct seq_file *m, void *v)
+	__context_unsafe(/* conditional locking */)
 {
 	struct proc_maps_private *priv = m->private;
 	struct proc_maps_locking_ctx *lock_ctx = &priv->lock_ctx;
@@ -1665,6 +1675,8 @@ static int clear_refs_pte_range(pmd_t *pmd, unsigned long addr,
 
 	ptl = pmd_trans_huge_lock(pmd, vma);
 	if (ptl) {
+		__acquire(ptl);
+
 		if (cp->type == CLEAR_REFS_SOFT_DIRTY) {
 			clear_soft_dirty_pmd(vma, addr, pmd);
 			goto out;
@@ -2067,6 +2079,7 @@ static int pagemap_pmd_range(pmd_t *pmdp, unsigned long addr, unsigned long end,
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
 	ptl = pmd_trans_huge_lock(pmdp, vma);
 	if (ptl) {
+		__acquire(ptl);
 		err = pagemap_pmd_range_thp(pmdp, addr, end, vma, pm);
 		spin_unlock(ptl);
 		return err;
@@ -2714,6 +2727,8 @@ static int pagemap_scan_thp_entry(pmd_t *pmd, unsigned long start,
 	if (!ptl)
 		return -ENOENT;
 
+	__acquire(ptl);
+
 	categories = p->cur_vma_category |
 		     pagemap_thp_category(p, vma, start, *pmd);
 
@@ -3328,6 +3343,8 @@ static int gather_pte_stats(pmd_t *pmd, unsigned long addr,
 	ptl = pmd_trans_huge_lock(pmd, vma);
 	if (ptl) {
 		struct page *page;
+
+		__acquire(ptl);
 
 		page = can_gather_numa_stats_pmd(*pmd, vma, addr);
 		if (page)

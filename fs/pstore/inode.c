@@ -290,6 +290,7 @@ static const struct super_operations pstore_ops = {
 };
 
 static struct dentry *psinfo_lock_root(void)
+	__context_unsafe(/* acquires root inode lock for caller on success */)
 {
 	struct dentry *root;
 
@@ -308,6 +309,7 @@ static struct dentry *psinfo_lock_root(void)
 }
 
 int pstore_put_backend_records(struct pstore_info *psi)
+	__context_unsafe(/* releases root inode lock acquired by helper */)
 {
 	struct pstore_private *pos, *tmp;
 	struct dentry *root;
@@ -399,6 +401,7 @@ int pstore_mkfile(struct dentry *root, struct pstore_record *record)
  * error records.
  */
 void pstore_get_records(int quiet)
+	__context_unsafe(/* releases lock acquired by psinfo_lock_root() */)
 {
 	struct dentry *root;
 
@@ -464,6 +467,7 @@ static const struct fs_context_operations pstore_context_ops = {
 };
 
 static void pstore_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	guard(mutex)(&pstore_sb_lock);
 	WARN_ON(pstore_sb && pstore_sb != sb);

@@ -464,6 +464,7 @@ static int twl4030_sih_set_type(struct irq_data *data, unsigned trigger)
 }
 
 static void twl4030_sih_bus_lock(struct irq_data *data)
+	__acquires(&((struct sih_agent *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct sih_agent	*agent = irq_data_get_irq_chip_data(data);
 
@@ -471,6 +472,7 @@ static void twl4030_sih_bus_lock(struct irq_data *data)
 }
 
 static void twl4030_sih_bus_sync_unlock(struct irq_data *data)
+	__releases(&((struct sih_agent *)irq_data_get_irq_chip_data(data))->irq_lock)
 {
 	struct sih_agent	*agent = irq_data_get_irq_chip_data(data);
 	const struct sih	*sih = agent->sih;

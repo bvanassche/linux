@@ -787,6 +787,7 @@ static bool should_rename_device(const struct btrfs_device *dev)
 static noinline struct btrfs_device *device_list_add(const char *path,
 			   struct btrfs_super_block *disk_super,
 			   bool *new_device_added)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	struct btrfs_device *device;
 	struct btrfs_fs_devices *fs_devices = NULL;
@@ -2950,6 +2951,7 @@ struct file *btrfs_open_device_deny_freeze(const char *path,
 }
 
 int btrfs_init_new_device(struct btrfs_fs_info *fs_info, const char *device_path)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_root *root = fs_info->dev_root;
 	struct btrfs_trans_handle *trans;
@@ -3517,6 +3519,7 @@ static int remove_chunk_item(struct btrfs_trans_handle *trans,
 }
 
 int btrfs_remove_dev_extents(struct btrfs_trans_handle *trans, struct btrfs_chunk_map *map)
+	__context_unsafe(/* locks in a loop */)
 {
 	struct btrfs_fs_info *fs_info = trans->fs_info;
 	struct btrfs_fs_devices *fs_devices = fs_info->fs_devices;
@@ -3566,6 +3569,7 @@ int btrfs_remove_dev_extents(struct btrfs_trans_handle *trans, struct btrfs_chun
 }
 
 int btrfs_remove_chunk(struct btrfs_trans_handle *trans, u64 chunk_offset)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = trans->fs_info;
 	struct btrfs_chunk_map *map;
@@ -3787,6 +3791,7 @@ int btrfs_relocate_chunk(struct btrfs_fs_info *fs_info, u64 chunk_offset, bool v
 }
 
 static int btrfs_relocate_sys_chunks(struct btrfs_fs_info *fs_info)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_root *chunk_root = fs_info->chunk_root;
 	BTRFS_PATH_AUTO_FREE(path);
@@ -4952,6 +4957,7 @@ out_overflow:
 int btrfs_balance(struct btrfs_fs_info *fs_info,
 		  struct btrfs_balance_control *bctl,
 		  struct btrfs_ioctl_balance_args *bargs)
+	__context_unsafe(/* drops and reacquires balance_mutex */)
 {
 	u64 meta_target, data_target;
 	u64 allowed;
@@ -7265,6 +7271,7 @@ int btrfs_map_block(struct btrfs_fs_info *fs_info, enum btrfs_map_op op,
 		    u64 logical, u64 *length,
 		    struct btrfs_io_context **bioc_ret,
 		    struct btrfs_io_stripe *smap, int *mirror_num_ret)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_chunk_map *map;
 	struct btrfs_io_geometry io_geom = { 0 };

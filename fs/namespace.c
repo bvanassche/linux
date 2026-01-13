@@ -187,11 +187,13 @@ static struct mnt_namespace *lookup_mnt_ns(u64 mnt_ns_id)
 }
 
 static inline void lock_mount_hash(void)
+	__acquires(&mount_lock)
 {
 	write_seqlock(&mount_lock);
 }
 
 static inline void unlock_mount_hash(void)
+	__releases(&mount_lock)
 {
 	write_sequnlock(&mount_lock);
 }
@@ -525,6 +527,7 @@ EXPORT_SYMBOL_GPL(mnt_get_write_access);
  * finished, mnt_drop_write() must be called.  This is effectively a refcount.
  */
 int mnt_want_write(struct vfsmount *m)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 
@@ -569,6 +572,7 @@ int mnt_get_write_access_file(struct file *file)
  * remounts.  This must be paired with mnt_drop_write_file.
  */
 int mnt_want_write_file(struct file *file)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 
@@ -605,6 +609,7 @@ EXPORT_SYMBOL_GPL(mnt_put_write_access);
  * mnt_want_write() call above.
  */
 void mnt_drop_write(struct vfsmount *mnt)
+	__context_unsafe(/* releases lock held by caller */)
 {
 	mnt_put_write_access(mnt);
 	sb_end_write(mnt->mnt_sb);
@@ -618,6 +623,7 @@ void mnt_put_write_access_file(struct file *file)
 }
 
 void mnt_drop_write_file(struct file *file)
+	__context_unsafe(/* releases lock held by caller */)
 {
 	mnt_put_write_access_file(file);
 	sb_end_write(file_inode(file)->i_sb);
@@ -778,6 +784,7 @@ static void delayed_free_vfsmnt(struct rcu_head *head)
 
 /* call under rcu_read_lock */
 int __legitimize_mnt(struct vfsmount *bastard, unsigned seq)
+	__context_unsafe(/* releases mount_lock held by caller */)
 {
 	struct mount *mnt;
 	if (read_seqretry(&mount_lock, seq))
@@ -802,6 +809,7 @@ int __legitimize_mnt(struct vfsmount *bastard, unsigned seq)
 
 /* call under rcu_read_lock */
 static bool legitimize_mnt(struct vfsmount *bastard, unsigned seq)
+	__must_hold_shared(RCU)
 {
 	int res = __legitimize_mnt(bastard, seq);
 	if (likely(!res))
@@ -856,6 +864,7 @@ struct mount *__lookup_mnt(struct vfsmount *mnt, struct dentry *dentry)
  * or %NULL if nothing is mounted there.
  */
 struct vfsmount *lookup_mnt(const struct path *path)
+	__context_unsafe(/* locks in a loop */)
 {
 	struct mount *child_mnt;
 	struct vfsmount *m;
@@ -1278,6 +1287,7 @@ struct vfsmount *vfs_create_mount(struct fs_context *fc)
 EXPORT_SYMBOL(vfs_create_mount);
 
 struct vfsmount *fc_mount(struct fs_context *fc)
+	__context_unsafe(/* may return ERR_PTR() */)
 {
 	int err = vfs_get_tree(fc);
 	if (!err) {
@@ -1415,6 +1425,7 @@ static void delayed_mntput(struct work_struct *unused)
 static DECLARE_DELAYED_WORK(delayed_mntput_work, delayed_mntput);
 
 static void noinline mntput_no_expire_slowpath(struct mount *mnt)
+	__context_unsafe(/* releases RCU read lock held by caller */)
 {
 	struct mnt_cover *cover;
 	struct hlist_node *n;
@@ -1465,6 +1476,7 @@ static void noinline mntput_no_expire_slowpath(struct mount *mnt)
 }
 
 static void mntput_no_expire(struct mount *mnt)
+	__context_unsafe(/* mntput_no_expire_slowpath() releases RCU */)
 {
 	rcu_read_lock();
 	if (likely(READ_ONCE(mnt->mnt_ns))) {
@@ -1608,6 +1620,7 @@ static struct mount *mnt_find_id_at_reverse(struct mnt_namespace *ns, u64 mnt_id
 
 /* iterator; we want it to have access to namespace_sem, thus here... */
 static void *m_start(struct seq_file *m, loff_t *pos)
+	__context_unsafe(/* acquires namespace_sem for caller */)
 {
 	struct proc_mounts *p = m->private;
 	struct mount *mnt;
@@ -1640,6 +1653,7 @@ static void *m_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void m_stop(struct seq_file *m, void *v)
+	__context_unsafe(/* releases namespace_sem held by caller */)
 {
 	up_read(&namespace_sem);
 }
@@ -1761,6 +1775,7 @@ static bool need_notify_mnt_list(void)
 
 static void free_mnt_ns(struct mnt_namespace *);
 static void namespace_unlock(void)
+	__releases(&namespace_sem)
 {
 	struct hlist_head head;
 	struct hlist_node *p;
@@ -1804,6 +1819,7 @@ static void namespace_unlock(void)
 }
 
 static inline void namespace_lock(void)
+	__acquires(&namespace_sem)
 {
 	down_write(&namespace_sem);
 }
@@ -1908,6 +1924,7 @@ static int do_umount_root(struct super_block *sb)
 		if (IS_ERR(fc)) {
 			ret = PTR_ERR(fc);
 		} else {
+			lockdep_assume_ctx_held(&fc->root->d_sb->s_umount);
 			ret = parse_monolithic_mount_data(fc, NULL);
 			if (!ret)
 				ret = reconfigure_super(fc);
@@ -2835,6 +2852,7 @@ static inline struct mount *where_to_mount(const struct path *path,
 static void do_lock_mount(const struct path *path,
 			  struct pinned_mountpoint *res,
 			  bool beneath)
+	__context_unsafe(/* acquires locks for caller on success */)
 {
 	int err;
 
@@ -2899,6 +2917,8 @@ static void do_lock_mount(const struct path *path,
 }
 
 static void __unlock_mount(struct pinned_mountpoint *m)
+	__releases(&m->mp->m_dentry->d_inode->i_rwsem)
+	__releases(&namespace_sem)
 {
 	inode_unlock(m->mp->m_dentry->d_inode);
 	read_seqlock_excl(&mount_lock);
@@ -2908,6 +2928,7 @@ static void __unlock_mount(struct pinned_mountpoint *m)
 }
 
 static inline void unlock_mount(struct pinned_mountpoint *m)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (!IS_ERR(m->parent))
 		__unlock_mount(m);
@@ -3533,6 +3554,7 @@ static int do_remount(const struct path *path, int sb_flags,
 	err = parse_monolithic_mount_data(fc, data);
 	if (!err) {
 		down_write(&sb->s_umount);
+		lockdep_assume_ctx_held(&fc->root->d_sb->s_umount);
 		err = -EPERM;
 		if (ns_capable(sb->s_user_ns, CAP_SYS_ADMIN)) {
 			err = reconfigure_super(fc);
@@ -3992,6 +4014,7 @@ static int do_new_mount(const struct path *path, const char *fstype,
 static void lock_mount_exact(const struct path *path,
 			     struct pinned_mountpoint *mp, bool copy_mount,
 			     unsigned int copy_flags)
+	__context_unsafe(/* lock is released through an alias */)
 {
 	struct dentry *dentry = path->dentry;
 	int err;
@@ -4504,6 +4527,7 @@ struct mnt_namespace *copy_mnt_ns(u64 flags, struct mnt_namespace *ns,
 }
 
 struct dentry *mount_subtree(struct vfsmount *m, const char *name)
+	__context_unsafe(/* may return ERR_PTR() */)
 {
 	struct mount *mnt = real_mount(m);
 	struct mnt_namespace *ns;
@@ -5102,6 +5126,7 @@ static void mount_setattr_commit(struct mount_kattr *kattr, struct mount *mnt)
 }
 
 static int do_mount_setattr(const struct path *path, struct mount_kattr *kattr)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mount *mnt = real_mount(path->mnt);
 	int err = 0;

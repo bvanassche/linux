@@ -543,6 +543,7 @@ static int mtu3_gadget_start(struct usb_gadget *gadget,
 }
 
 static void stop_activity(struct mtu3 *mtu)
+	__context_unsafe(/* drops and reacquires mtu->lock */)
 {
 	struct usb_gadget_driver *driver = mtu->gadget_driver;
 	int i;
@@ -726,6 +727,7 @@ void mtu3_gadget_cleanup(struct mtu3 *mtu)
 }
 
 void mtu3_gadget_resume(struct mtu3 *mtu)
+	__context_unsafe(/* drops and reacquires mtu->lock */)
 {
 	dev_dbg(mtu->dev, "gadget RESUME\n");
 	if (mtu->async_callbacks && mtu->gadget_driver && mtu->gadget_driver->resume) {
@@ -737,6 +739,7 @@ void mtu3_gadget_resume(struct mtu3 *mtu)
 
 /* called when SOF packets stop for 3+ msec or enters U3 */
 void mtu3_gadget_suspend(struct mtu3 *mtu)
+	__context_unsafe(/* drops and reacquires mtu->lock */)
 {
 	dev_dbg(mtu->dev, "gadget SUSPEND\n");
 	if (mtu->async_callbacks && mtu->gadget_driver && mtu->gadget_driver->suspend) {
@@ -748,6 +751,7 @@ void mtu3_gadget_suspend(struct mtu3 *mtu)
 
 /* called when VBUS drops below session threshold, and in other cases */
 void mtu3_gadget_disconnect(struct mtu3 *mtu)
+	__context_unsafe(/* drops and reacquires mtu->lock */)
 {
 	dev_dbg(mtu->dev, "gadget DISCONNECT\n");
 	if (mtu->async_callbacks && mtu->gadget_driver && mtu->gadget_driver->disconnect) {

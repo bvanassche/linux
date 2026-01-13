@@ -1069,6 +1069,7 @@ static int jfs_symlink(const struct mnt_idmap *idmap, struct inode *dip,
 static int jfs_rename(const struct mnt_idmap *idmap, struct inode *old_dir,
 		      struct dentry *old_dentry, struct inode *new_dir,
 		      struct dentry *new_dentry, unsigned int flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btstack btstack;
 	ino_t ino;

@@ -141,6 +141,7 @@ void spu_unmap_mappings(struct spu_context *ctx)
  * @ctx:	spu contex to lock
  */
 int spu_acquire_saved(struct spu_context *ctx)
+	__cond_acquires(0, &ctx->state_mutex)
 {
 	int ret;
 
@@ -163,6 +164,7 @@ int spu_acquire_saved(struct spu_context *ctx)
  * @ctx:	context to unlock
  */
 void spu_release_saved(struct spu_context *ctx)
+	__releases(&ctx->state_mutex)
 {
 	BUG_ON(ctx->state != SPU_STATE_SAVED);
 

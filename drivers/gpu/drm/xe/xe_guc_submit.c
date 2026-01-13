@@ -2053,6 +2053,7 @@ static void __guc_exec_queue_process_msg_cgp_sync(struct xe_sched_msg *msg,
 #define MSG_PM_REF	BIT(10)
 
 static void guc_exec_queue_process_msg(struct xe_sched_msg *msg)
+	__context_unsafe(/* conditional locking */)
 {
 	struct xe_device *xe = guc_to_xe(exec_queue_to_guc(msg->private_data));
 	int idx;
@@ -2216,6 +2217,7 @@ static void guc_exec_queue_kill(struct xe_exec_queue *q)
 
 static void guc_exec_queue_add_msg(struct xe_exec_queue *q, struct xe_sched_msg *msg,
 				   u32 opcode)
+	__context_unsafe(/* conditional locking */)
 {
 	struct xe_device *xe = guc_to_xe(exec_queue_to_guc(q));
 	int idx;

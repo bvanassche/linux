@@ -923,6 +923,7 @@ nfsd_init_request(struct svc_rqst *rqstp,
  */
 static int
 nfsd(void *vrqstp)
+	__context_unsafe(/* conditional locking */)
 {
 	struct svc_rqst *rqstp = (struct svc_rqst *) vrqstp;
 	struct svc_pool *pool = rqstp->rq_pool;

@@ -235,6 +235,7 @@ static bool km_is_alive(const struct km_event *c);
 void km_state_expired(struct xfrm_state *x, int hard, u32 portid);
 
 int xfrm_register_type(const struct xfrm_type *type, unsigned short family)
+	__context_unsafe(/* conditional release */)
 {
 	struct xfrm_state_afinfo *afinfo = xfrm_state_get_afinfo(family);
 	int err = 0;
@@ -281,6 +282,7 @@ int xfrm_register_type(const struct xfrm_type *type, unsigned short family)
 EXPORT_SYMBOL(xfrm_register_type);
 
 void xfrm_unregister_type(const struct xfrm_type *type, unsigned short family)
+	__context_unsafe(/* conditional release */)
 {
 	struct xfrm_state_afinfo *afinfo = xfrm_state_get_afinfo(family);
 
@@ -324,6 +326,7 @@ void xfrm_unregister_type(const struct xfrm_type *type, unsigned short family)
 EXPORT_SYMBOL(xfrm_unregister_type);
 
 static const struct xfrm_type *xfrm_get_type(u8 proto, unsigned short family)
+	__context_unsafe(/* conditional release */)
 {
 	const struct xfrm_type *type = NULL;
 	struct xfrm_state_afinfo *afinfo;
@@ -381,6 +384,7 @@ static void xfrm_put_type(const struct xfrm_type *type)
 
 int xfrm_register_type_offload(const struct xfrm_type_offload *type,
 			       unsigned short family)
+	__context_unsafe(/* conditional release */)
 {
 	struct xfrm_state_afinfo *afinfo = xfrm_state_get_afinfo(family);
 	int err = 0;
@@ -406,6 +410,7 @@ EXPORT_SYMBOL(xfrm_register_type_offload);
 
 void xfrm_unregister_type_offload(const struct xfrm_type_offload *type,
 				  unsigned short family)
+	__context_unsafe(/* conditional release */)
 {
 	struct xfrm_state_afinfo *afinfo = xfrm_state_get_afinfo(family);
 
@@ -426,6 +431,7 @@ void xfrm_unregister_type_offload(const struct xfrm_type_offload *type,
 EXPORT_SYMBOL(xfrm_unregister_type_offload);
 
 void xfrm_set_type_offload(struct xfrm_state *x, bool try_load)
+	__context_unsafe(/* conditional release */)
 {
 	const struct xfrm_type_offload *type = NULL;
 	struct xfrm_state_afinfo *afinfo;
@@ -3134,6 +3140,7 @@ struct xfrm_state_afinfo *xfrm_state_afinfo_get_rcu(unsigned int family)
 EXPORT_SYMBOL_GPL(xfrm_state_afinfo_get_rcu);
 
 struct xfrm_state_afinfo *xfrm_state_get_afinfo(unsigned int family)
+	__cond_acquires_shared(nonnull, RCU)
 {
 	struct xfrm_state_afinfo *afinfo;
 	if (unlikely(family >= NPROTO))

@@ -94,11 +94,13 @@ static unsigned int gfs2_qd_hash(const struct gfs2_sbd *sdp,
 }
 
 static inline void spin_lock_bucket(unsigned int hash)
+	__context_unsafe(/* acquires bucket lock for caller */)
 {
         hlist_bl_lock(&qd_hash_table[hash]);
 }
 
 static inline void spin_unlock_bucket(unsigned int hash)
+	__context_unsafe(/* releases bucket lock held by caller */)
 {
         hlist_bl_unlock(&qd_hash_table[hash]);
 }

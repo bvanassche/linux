@@ -896,6 +896,7 @@ static vm_fault_t blocking_page_setup(struct vm_fault *vmf, unsigned int order,
 }
 
 static vm_fault_t panthor_gem_any_fault(struct vm_fault *vmf, unsigned int order)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct panthor_gem_object *bo = to_panthor_bo(vma->vm_private_data);
@@ -1441,6 +1442,7 @@ panthor_gem_shrinker_count(struct shrinker *shrinker, struct shrink_control *sc)
 }
 
 static bool panthor_gem_try_evict_no_resv_wait(struct drm_gem_object *obj)
+	__context_unsafe(/* locking inside loop */)
 {
 	/*
 	 * Track last locked entry for unwinding locks in error and

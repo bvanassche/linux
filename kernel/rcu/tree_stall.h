@@ -1041,6 +1041,7 @@ EXPORT_SYMBOL_GPL(show_rcu_gp_kthreads);
  * RCU to come out of its idle mode.
  */
 static void rcu_check_gp_start_stall(struct rcu_node *rnp, const unsigned long gpssdelay)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long flags;
 	unsigned long j;

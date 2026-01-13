@@ -855,11 +855,13 @@ static int alloc_trace_event_type(void)
 }
 
 void trace_event_read_lock(void)
+	__acquires_shared(&trace_event_sem)
 {
 	down_read(&trace_event_sem);
 }
 
 void trace_event_read_unlock(void)
+	__releases_shared(&trace_event_sem)
 {
 	up_read(&trace_event_sem);
 }

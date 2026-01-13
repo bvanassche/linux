@@ -43,11 +43,13 @@ void __init start_uml(void)
 static DEFINE_SPINLOCK(initial_jmpbuf_spinlock);
 
 void initial_jmpbuf_lock(void)
+	__acquires(&initial_jmpbuf_spinlock)
 {
 	spin_lock_irq(&initial_jmpbuf_spinlock);
 }
 
 void initial_jmpbuf_unlock(void)
+	__releases(&initial_jmpbuf_spinlock)
 {
 	spin_unlock_irq(&initial_jmpbuf_spinlock);
 }

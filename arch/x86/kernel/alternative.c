@@ -181,6 +181,7 @@ static void its_fini_core(void)
 
 #ifdef CONFIG_MODULES
 void its_init_mod(struct module *mod)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!cpu_feature_enabled(X86_FEATURE_INDIRECT_THUNK_ITS))
 		return;
@@ -191,6 +192,7 @@ void its_init_mod(struct module *mod)
 }
 
 void its_fini_mod(struct module *mod)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!cpu_feature_enabled(X86_FEATURE_INDIRECT_THUNK_ITS))
 		return;
@@ -2415,6 +2417,7 @@ static void poke_vmalloc_pages(struct page **pages, void *addr,
 }
 
 static void *__text_poke(text_poke_f func, void *addr, const void *src, size_t len)
+	__context_unsafe(/* get_locked_pte() acquires conditionally */)
 {
 	bool cross_page_boundary = offset_in_page(addr) + len > PAGE_SIZE;
 	struct page *pages[2] = {NULL};

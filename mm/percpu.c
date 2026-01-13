@@ -1733,6 +1733,7 @@ static void pcpu_alloc_tag_free_hook(struct pcpu_chunk *chunk, int off, size_t s
  */
 void __percpu *pcpu_alloc_noprof(size_t size, size_t align, bool reserved,
 				 gfp_t gfp)
+	__context_unsafe(/* conditional locking */)
 {
 	gfp_t pcpu_gfp;
 	bool is_atomic;
@@ -1956,6 +1957,7 @@ EXPORT_SYMBOL_GPL(pcpu_alloc_noprof);
  * pcpu_lock (can be dropped temporarily)
  */
 static void pcpu_balance_free(bool empty_only)
+	__must_hold(&pcpu_lock)
 {
 	LIST_HEAD(to_free);
 	struct list_head *free_head = &pcpu_chunk_lists[pcpu_free_slot];
@@ -2010,6 +2012,7 @@ static void pcpu_balance_free(bool empty_only)
  * pcpu_lock (can be dropped temporarily)
  */
 static void pcpu_balance_populated(void)
+	__must_hold(&pcpu_lock)
 {
 	/* gfp flags passed to underlying allocators */
 	const gfp_t gfp = GFP_KERNEL | __GFP_NORETRY | __GFP_NOWARN;
@@ -2103,6 +2106,7 @@ retry_pop:
  *
  */
 static void pcpu_reclaim_populated(void)
+	__must_hold(&pcpu_lock)
 {
 	struct pcpu_chunk *chunk;
 	struct pcpu_block_md *block;

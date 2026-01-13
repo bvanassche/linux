@@ -904,6 +904,7 @@ static int zcrx_register_netdev(struct io_zcrx_ifq *ifq,
 	if (!ifq->netdev)
 		return -ENODEV;
 
+	__acquire(&ifq->netdev->lock);
 	netdev_hold(ifq->netdev, &ifq->netdev_tracker, GFP_KERNEL);
 
 	ifq->dev = netdev_queue_get_dma_dev(ifq->netdev, if_rxq, NETDEV_QUEUE_TYPE_RX);

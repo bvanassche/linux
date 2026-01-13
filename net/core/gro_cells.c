@@ -12,6 +12,7 @@ struct gro_cell {
 };
 
 int gro_cells_receive(struct gro_cells *gcells, struct sk_buff *skb)
+	__context_unsafe(/* conditional locking */)
 {
 	struct net_device *dev = skb->dev;
 	enum skb_drop_reason reason;

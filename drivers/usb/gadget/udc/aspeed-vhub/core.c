@@ -29,6 +29,7 @@
 
 void ast_vhub_done(struct ast_vhub_ep *ep, struct ast_vhub_req *req,
 		   int status)
+	__context_unsafe(/* drops and reacquires ep->vhub->lock */)
 {
 	bool internal = req->internal;
 	struct ast_vhub *vhub = ep->vhub;

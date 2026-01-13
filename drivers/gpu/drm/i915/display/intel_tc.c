@@ -24,15 +24,6 @@
 #include "intel_modeset_lock.h"
 #include "intel_tc.h"
 
-enum tc_port_mode {
-	TC_PORT_DISCONNECTED,
-	TC_PORT_TBT_ALT,
-	TC_PORT_DP_ALT,
-	TC_PORT_LEGACY,
-};
-
-struct intel_tc_port;
-
 struct intel_tc_phy_ops {
 	enum intel_display_power_domain (*cold_off_domain)(struct intel_tc_port *tc);
 	u32 (*hpd_live_status)(struct intel_tc_port *tc);
@@ -42,29 +33,6 @@ struct intel_tc_phy_ops {
 	bool (*connect)(struct intel_tc_port *tc, int required_lanes);
 	void (*disconnect)(struct intel_tc_port *tc);
 	void (*init)(struct intel_tc_port *tc);
-};
-
-struct intel_tc_port {
-	struct intel_digital_port *dig_port;
-
-	const struct intel_tc_phy_ops *phy_ops;
-
-	struct mutex lock;	/* protects the TypeC port mode */
-	struct ref_tracker *lock_wakeref;
-#if IS_ENABLED(CONFIG_DRM_I915_DEBUG_RUNTIME_PM)
-	enum intel_display_power_domain lock_power_domain;
-#endif
-	struct delayed_work disconnect_phy_work;
-	struct delayed_work link_reset_work;
-	int link_refcount;
-	bool legacy_port:1;
-	const char *port_name;
-	enum tc_port_mode mode;
-	enum tc_port_mode init_mode;
-	enum phy_fia phy_fia;
-	enum intel_tc_pin_assignment pin_assignment;
-	u8 phy_fia_idx;
-	u8 max_lane_count;
 };
 
 static enum intel_display_power_domain
@@ -87,11 +55,6 @@ static const char *tc_port_mode_name(enum tc_port_mode mode)
 		mode = TC_PORT_DISCONNECTED;
 
 	return names[mode];
-}
-
-static struct intel_tc_port *to_tc_port(struct intel_digital_port *dig_port)
-{
-	return dig_port->tc;
 }
 
 static bool intel_tc_port_in_mode(struct intel_digital_port *dig_port,
@@ -1863,6 +1826,7 @@ void intel_tc_port_link_cancel_reset_work(struct intel_digital_port *dig_port)
 
 static void __intel_tc_port_lock(struct intel_tc_port *tc,
 				 int required_lanes)
+	__acquires(&tc->lock)
 {
 	struct intel_display *display = to_intel_display(tc->dig_port);
 
@@ -1879,6 +1843,7 @@ static void __intel_tc_port_lock(struct intel_tc_port *tc,
 }
 
 void intel_tc_port_lock(struct intel_digital_port *dig_port)
+	__acquires(&to_tc_port(dig_port)->lock)
 {
 	__intel_tc_port_lock(to_tc_port(dig_port), 1);
 }
@@ -1921,6 +1886,7 @@ void intel_tc_port_suspend(struct intel_digital_port *dig_port)
 }
 
 void intel_tc_port_unlock(struct intel_digital_port *dig_port)
+	__releases(&to_tc_port(dig_port)->lock)
 {
 	struct intel_tc_port *tc = to_tc_port(dig_port);
 

@@ -24,6 +24,7 @@ struct atc260x_init_regs {
 };
 
 static void regmap_lock_mutex(void *__mutex)
+	__context_unsafe(/* conditional trylock vs lock */)
 {
 	struct mutex *mutex = __mutex;
 
@@ -45,6 +46,7 @@ static void regmap_lock_mutex(void *__mutex)
 }
 
 static void regmap_unlock_mutex(void *__mutex)
+	__context_unsafe(/* to match the above function */)
 {
 	struct mutex *mutex = __mutex;
 

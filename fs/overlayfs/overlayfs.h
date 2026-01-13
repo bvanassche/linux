@@ -701,16 +701,19 @@ static inline unsigned int ovl_xino_bits(struct ovl_fs *ofs)
 }
 
 static inline void ovl_inode_lock(struct inode *inode)
+	__context_unsafe(/* acquires OVL_I(inode)->lock for caller */)
 {
 	mutex_lock(&OVL_I(inode)->lock);
 }
 
 static inline int ovl_inode_lock_interruptible(struct inode *inode)
+	__context_unsafe(/* acquires OVL_I(inode)->lock for caller */)
 {
 	return mutex_lock_interruptible(&OVL_I(inode)->lock);
 }
 
 static inline void ovl_inode_unlock(struct inode *inode)
+	__context_unsafe(/* releases OVL_I(inode)->lock held by caller */)
 {
 	mutex_unlock(&OVL_I(inode)->lock);
 }

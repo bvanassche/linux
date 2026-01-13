@@ -293,6 +293,7 @@ unlock:
  * Returns 0 on success, and -error number on failure.
  */
 int xe_pcode_ready(struct xe_device *xe, bool locked)
+	__context_unsafe(/* conditional locking */)
 {
 	struct xe_tile *tile = xe_device_get_root_tile(xe);
 	long timeout_us = 3 * 60 * USEC_PER_SEC; /* 3 min */

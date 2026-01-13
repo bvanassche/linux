@@ -306,6 +306,7 @@ EXPORT_SYMBOL_GPL(nfs_put_client);
  * that is supplied.
  */
 static struct nfs_client *nfs_match_client(const struct nfs_client_initdata *data)
+	__must_hold(&((struct nfs_net *)net_generic(data->net, nfs_net_id))->nfs_client_lock)
 {
 	struct nfs_client *clp;
 	const struct sockaddr *sap = (struct sockaddr *)data->addr;
@@ -1357,7 +1358,7 @@ static const struct seq_operations nfs_volume_list_ops = {
  * set up the iterator to start reading from the server list and return the first item
  */
 static void *nfs_server_list_start(struct seq_file *m, loff_t *_pos)
-				__acquires(&nn->nfs_client_lock)
+	__acquires(&((struct nfs_net *)net_generic(seq_file_net(m), nfs_net_id))->nfs_client_lock)
 {
 	struct nfs_net *nn = net_generic(seq_file_net(m), nfs_net_id);
 
@@ -1380,7 +1381,7 @@ static void *nfs_server_list_next(struct seq_file *p, void *v, loff_t *pos)
  * clean up after reading from the transports list
  */
 static void nfs_server_list_stop(struct seq_file *p, void *v)
-				__releases(&nn->nfs_client_lock)
+	__releases(&((struct nfs_net *)net_generic(seq_file_net(p), nfs_net_id))->nfs_client_lock)
 {
 	struct nfs_net *nn = net_generic(seq_file_net(p), nfs_net_id);
 
@@ -1424,7 +1425,7 @@ static int nfs_server_list_show(struct seq_file *m, void *v)
  * set up the iterator to start reading from the volume list and return the first item
  */
 static void *nfs_volume_list_start(struct seq_file *m, loff_t *_pos)
-				__acquires(&nn->nfs_client_lock)
+	__acquires(&((struct nfs_net *)net_generic(seq_file_net(m), nfs_net_id))->nfs_client_lock)
 {
 	struct nfs_net *nn = net_generic(seq_file_net(m), nfs_net_id);
 
@@ -1447,7 +1448,7 @@ static void *nfs_volume_list_next(struct seq_file *p, void *v, loff_t *pos)
  * clean up after reading from the transports list
  */
 static void nfs_volume_list_stop(struct seq_file *p, void *v)
-				__releases(&nn->nfs_client_lock)
+	__releases(&((struct nfs_net *)net_generic(seq_file_net(p), nfs_net_id))->nfs_client_lock)
 {
 	struct nfs_net *nn = net_generic(seq_file_net(p), nfs_net_id);
 

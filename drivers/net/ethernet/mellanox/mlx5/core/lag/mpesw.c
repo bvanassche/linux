@@ -66,6 +66,7 @@ err_metadata:
 }
 
 static void mlx5_mpesw_restore_sd_fdb(struct mlx5_lag *ldev)
+	__must_hold(&ldev->lock)
 {
 	struct lag_func *pf;
 	int err, i;
@@ -81,6 +82,7 @@ static void mlx5_mpesw_restore_sd_fdb(struct mlx5_lag *ldev)
 }
 
 static int mlx5_mpesw_teardown_sd_fdb(struct mlx5_lag *ldev)
+	__must_hold(&ldev->lock)
 {
 	struct lag_func *pf;
 	int i;
@@ -108,6 +110,7 @@ static bool mlx5_lag_has_sd_group(struct mlx5_lag *ldev)
 }
 
 static int mlx5_lag_enable_mpesw(struct mlx5_lag *ldev)
+	__must_hold(&ldev->lock)
 {
 	int idx = mlx5_lag_get_dev_index_by_seq(ldev, MLX5_LAG_P1);
 	struct mlx5_core_dev *dev0;
@@ -153,6 +156,7 @@ static int mlx5_lag_enable_mpesw(struct mlx5_lag *ldev)
 }
 
 void mlx5_lag_disable_mpesw(struct mlx5_lag *ldev)
+	__must_hold(&ldev->lock)
 {
 	if (ldev->mode != MLX5_LAG_MODE_MPESW)
 		return;

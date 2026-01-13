@@ -3,23 +3,6 @@
 #define __NVKM_I2C_PAD_H__
 #include "priv.h"
 
-struct nvkm_i2c_pad {
-	const struct nvkm_i2c_pad_func *func;
-	struct nvkm_i2c *i2c;
-#define NVKM_I2C_PAD_HYBRID(n) /* 'n' is hw pad index */                     (n)
-#define NVKM_I2C_PAD_CCB(n) /* 'n' is ccb index */                 ((n) + 0x100)
-#define NVKM_I2C_PAD_EXT(n) /* 'n' is dcb external encoder type */ ((n) + 0x200)
-	int id;
-
-	enum nvkm_i2c_pad_mode {
-		NVKM_I2C_PAD_OFF,
-		NVKM_I2C_PAD_I2C,
-		NVKM_I2C_PAD_AUX,
-	} mode;
-	struct mutex mutex;
-	struct list_head head;
-};
-
 struct nvkm_i2c_pad_func {
 	int (*bus_new_0)(struct nvkm_i2c_pad *, int id, u8 drive, u8 sense,
 			 struct nvkm_i2c_bus **);
@@ -40,8 +23,10 @@ void nvkm_i2c_pad_del(struct nvkm_i2c_pad **);
 void nvkm_i2c_pad_init(struct nvkm_i2c_pad *);
 void nvkm_i2c_pad_fini(struct nvkm_i2c_pad *);
 void nvkm_i2c_pad_mode(struct nvkm_i2c_pad *, enum nvkm_i2c_pad_mode);
-int nvkm_i2c_pad_acquire(struct nvkm_i2c_pad *, enum nvkm_i2c_pad_mode);
-void nvkm_i2c_pad_release(struct nvkm_i2c_pad *);
+int nvkm_i2c_pad_acquire(struct nvkm_i2c_pad *pad, enum nvkm_i2c_pad_mode)
+	__cond_acquires(0, &pad->mutex);
+void nvkm_i2c_pad_release(struct nvkm_i2c_pad *pad)
+	__releases(&pad->mutex);
 
 void g94_i2c_pad_mode(struct nvkm_i2c_pad *, enum nvkm_i2c_pad_mode);
 

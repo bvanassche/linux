@@ -341,6 +341,7 @@ static void call_rcu_tasks_iw_wakeup(struct irq_work *iwp)
 // Enqueue a callback for the specified flavor of Tasks RCU.
 static void call_rcu_tasks_generic(struct rcu_head *rhp, rcu_callback_t func,
 				   struct rcu_tasks *rtp)
+	__context_unsafe(/* conditional locking */)
 {
 	int chosen_cpu;
 	unsigned long flags;

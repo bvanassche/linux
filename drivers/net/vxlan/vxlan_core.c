@@ -383,6 +383,7 @@ static void vxlan_fdb_miss(struct vxlan_dev *vxlan, const u8 eth_addr[ETH_ALEN])
 static struct vxlan_fdb *vxlan_find_mac_rcu(struct vxlan_dev *vxlan,
 					    const struct vxlan_config *cfg,
 					    const u8 *mac, __be32 vni)
+	__must_hold_shared(RCU)
 {
 	struct vxlan_fdb_key key;
 
@@ -400,6 +401,7 @@ static struct vxlan_fdb *vxlan_find_mac_rcu(struct vxlan_dev *vxlan,
 static struct vxlan_fdb *vxlan_find_mac_tx(struct vxlan_dev *vxlan,
 					   const struct vxlan_config *cfg,
 					   const u8 *mac, __be32 vni)
+	__must_hold_shared(RCU)
 {
 	struct vxlan_fdb *f;
 
@@ -1453,6 +1455,7 @@ static enum skb_drop_reason vxlan_snoop(struct net_device *dev,
 					union vxlan_addr *src_ip,
 					const u8 *src_mac, u32 src_ifindex,
 					__be32 vni)
+	__context_unsafe(/* TODO */)
 {
 	struct vxlan_dev *vxlan = netdev_priv(dev);
 	struct vxlan_fdb *f;

@@ -201,6 +201,7 @@ static void clk_pm_runtime_put(struct clk_core *core)
  * Return: 0 on success, negative errno otherwise.
  */
 static int clk_pm_runtime_get_all(void)
+	__cond_acquires(0, &clk_rpm_list_lock)
 {
 	int ret;
 	struct clk_core *core, *failed;
@@ -247,6 +248,7 @@ err:
  * the 'clk_rpm_list_lock'.
  */
 static void clk_pm_runtime_put_all(void)
+	__releases(&clk_rpm_list_lock)
 {
 	struct clk_core *core;
 
@@ -270,6 +272,7 @@ static void clk_pm_runtime_init(struct clk_core *core)
 
 /***           locking             ***/
 static void clk_prepare_lock(void)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!mutex_trylock(&prepare_lock)) {
 		if (prepare_owner == current) {
@@ -285,6 +288,7 @@ static void clk_prepare_lock(void)
 }
 
 static void clk_prepare_unlock(void)
+	__context_unsafe(/* conditional locking */)
 {
 	WARN_ON_ONCE(prepare_owner != current);
 	WARN_ON_ONCE(prepare_refcnt == 0);
@@ -296,7 +300,7 @@ static void clk_prepare_unlock(void)
 }
 
 static unsigned long clk_enable_lock(void)
-	__acquires(enable_lock)
+	__acquires(&enable_lock)
 {
 	unsigned long flags;
 
@@ -309,7 +313,7 @@ static unsigned long clk_enable_lock(void)
 	    !spin_trylock_irqsave(&enable_lock, flags)) {
 		if (enable_owner == current) {
 			enable_refcnt++;
-			__acquire(enable_lock);
+			__acquire(&enable_lock);
 			if (!IS_ENABLED(CONFIG_SMP))
 				local_save_flags(flags);
 			return flags;
@@ -330,7 +334,7 @@ static void clk_enable_unlock(unsigned long flags)
 	WARN_ON_ONCE(enable_refcnt == 0);
 
 	if (--enable_refcnt) {
-		__release(enable_lock);
+		__release(&enable_lock);
 		return;
 	}
 	enable_owner = NULL;

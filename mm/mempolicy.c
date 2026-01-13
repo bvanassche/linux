@@ -714,6 +714,7 @@ static int queue_folios_pte_range(pmd_t *pmd, unsigned long addr,
 
 	ptl = pmd_trans_huge_lock(pmd, vma);
 	if (ptl) {
+		__acquire(ptl);
 		queue_folios_pmd(pmd, addr, walk);
 		spin_unlock(ptl);
 		goto out;
@@ -1165,6 +1166,7 @@ static int lookup_node(struct mm_struct *mm, unsigned long addr)
 /* Retrieve NUMA policy */
 static long do_get_mempolicy(int *policy, nodemask_t *nmask,
 			     unsigned long addr, unsigned long flags)
+	__context_unsafe(/* conditional locking */)
 {
 	int err;
 	struct mm_struct *mm = current->mm;
@@ -1505,6 +1507,7 @@ static struct folio *alloc_migration_target_by_mpol(struct folio *src,
 static long do_mbind(unsigned long start, unsigned long len,
 		     unsigned short mode, unsigned short mode_flags,
 		     nodemask_t *nmask, unsigned long flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma, *prev;

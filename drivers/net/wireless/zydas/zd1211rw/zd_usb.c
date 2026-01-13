@@ -1495,6 +1495,7 @@ static void zd_usb_stop(struct zd_usb *usb)
 }
 
 static int pre_reset(struct usb_interface *intf)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ieee80211_hw *hw = usb_get_intfdata(intf);
 	struct zd_mac *mac;
@@ -1515,6 +1516,7 @@ static int pre_reset(struct usb_interface *intf)
 }
 
 static int post_reset(struct usb_interface *intf)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ieee80211_hw *hw = usb_get_intfdata(intf);
 	struct zd_mac *mac;

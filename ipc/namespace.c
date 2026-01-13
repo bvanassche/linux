@@ -126,6 +126,7 @@ struct ipc_namespace *copy_ipcs(u64 flags,
  */
 void free_ipcs(struct ipc_namespace *ns, struct ipc_ids *ids,
 	       void (*free)(struct ipc_namespace *, struct kern_ipc_perm *))
+	__context_unsafe(/* locks in a loop */)
 {
 	struct kern_ipc_perm *perm;
 	int next_id;
@@ -200,6 +201,7 @@ static void free_ipc(struct work_struct *unused)
  * in the ipcns exiting).
  */
 void put_ipc_ns(struct ipc_namespace *ns)
+	__context_unsafe(/* ns_ref_put_and_lock() locks conditionally */)
 {
 	if (ns_ref_put_and_lock(ns, &mq_lock)) {
 		mq_clear_sbinfo(ns);

@@ -188,7 +188,7 @@ DEBUGFS_SEQ_FILE_OPEN(ctx_stats)
 DEBUGFS_FILE_OPS(ctx_stats);
 
 static void *_qp_stats_seq_start(struct seq_file *s, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	struct rvt_qp_iter *iter;
 	loff_t n = *pos;
@@ -213,7 +213,7 @@ static void *_qp_stats_seq_start(struct seq_file *s, loff_t *pos)
 
 static void *_qp_stats_seq_next(struct seq_file *s, void *iter_ptr,
 				loff_t *pos)
-	__must_hold(RCU)
+	__must_hold_shared(RCU)
 {
 	struct rvt_qp_iter *iter = iter_ptr;
 
@@ -228,7 +228,7 @@ static void *_qp_stats_seq_next(struct seq_file *s, void *iter_ptr,
 }
 
 static void _qp_stats_seq_stop(struct seq_file *s, void *iter_ptr)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

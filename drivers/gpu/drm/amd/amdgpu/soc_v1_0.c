@@ -583,6 +583,7 @@ static void soc_v1_0_async_reset(struct work_struct *work)
 static int
 soc_v1_0_mode2_perform_reset(struct amdgpu_reset_control *reset_ctl,
 			     struct amdgpu_reset_context *reset_context)
+	__context_unsafe(/* acquire loop */)
 {
 	struct amdgpu_device *adev = (struct amdgpu_device *)reset_ctl->handle;
 	struct list_head *reset_device_list = reset_context->reset_device_list;

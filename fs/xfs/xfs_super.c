@@ -2330,6 +2330,7 @@ xfs_init_fs_context(
 static void
 xfs_kill_sb(
 	struct super_block		*sb)
+	__releases(&sb->s_umount)
 {
 	struct xfs_mount		*mp = XFS_M(sb);
 

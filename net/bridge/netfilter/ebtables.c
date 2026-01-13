@@ -323,6 +323,7 @@ letscontinue:
 static inline void *
 find_inlist_lock_noload(struct net *net, const char *name, int *error,
 			struct mutex *mutex)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ebt_pernet *ebt_net = net_generic(net, ebt_pernet_id);
 	struct ebt_template *tmpl;
@@ -1012,6 +1013,7 @@ static void get_counters(const struct ebt_counter *oldcounters,
 
 static int do_replace_finish(struct net *net, struct ebt_replace *repl,
 			      struct ebt_table_info *newinfo)
+	__context_unsafe(/* find_table_lock() locks conditionally */)
 {
 	int ret;
 	struct ebt_counter *counterstmp = NULL;
@@ -1385,6 +1387,7 @@ void ebt_unregister_table(struct net *net, const char *name)
 static int do_update_counters(struct net *net, const char *name,
 			      struct ebt_counter __user *counters,
 			      unsigned int num_counters, unsigned int len)
+	__context_unsafe(/* find_table_lock() locks conditionally */)
 {
 	int i, ret;
 	struct ebt_counter *tmp;
@@ -2413,6 +2416,7 @@ static int compat_update_counters(struct net *net, sockptr_t arg,
 
 static int compat_do_ebt_get_ctl(struct sock *sk, int cmd,
 		void __user *user, int *len)
+	__context_unsafe(/* find_table_lock() locks conditionally */)
 {
 	int ret;
 	struct compat_ebt_replace tmp;
@@ -2485,6 +2489,7 @@ static int compat_do_ebt_get_ctl(struct sock *sk, int cmd,
 #endif
 
 static int do_ebt_get_ctl(struct sock *sk, int cmd, void __user *user, int *len)
+	__context_unsafe(/* find_table_lock() locks conditionally */)
 {
 	struct net *net = sock_net(sk);
 	struct ebt_replace tmp;

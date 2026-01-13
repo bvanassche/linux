@@ -70,7 +70,7 @@ static void pvrdma_lock_cqs(struct pvrdma_cq *scq, struct pvrdma_cq *rcq,
 {
 	if (scq == rcq) {
 		spin_lock_irqsave(&scq->cq_lock, *scq_flags);
-		__acquire(rcq->cq_lock);
+		__acquire(&rcq->cq_lock);
 	} else if (scq->cq_handle < rcq->cq_handle) {
 		spin_lock_irqsave(&scq->cq_lock, *scq_flags);
 		spin_lock_irqsave_nested(&rcq->cq_lock, *rcq_flags,
@@ -88,7 +88,7 @@ static void pvrdma_unlock_cqs(struct pvrdma_cq *scq, struct pvrdma_cq *rcq,
 	__releases(scq->cq_lock) __releases(rcq->cq_lock)
 {
 	if (scq == rcq) {
-		__release(rcq->cq_lock);
+		__release(&rcq->cq_lock);
 		spin_unlock_irqrestore(&scq->cq_lock, *scq_flags);
 	} else if (scq->cq_handle < rcq->cq_handle) {
 		spin_unlock_irqrestore(&rcq->cq_lock, *rcq_flags);

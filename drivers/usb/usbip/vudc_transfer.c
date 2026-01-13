@@ -182,6 +182,7 @@ static int handle_control_request(struct vudc *udc, struct urb *urb,
 /* Adapted from dummy_hcd.c ; caller must hold lock */
 static int transfer(struct vudc *udc,
 		struct urb *urb, struct vep *ep, int limit)
+	__must_hold(&udc->lock)
 {
 	struct vrequest	*req;
 	int sent = 0;

@@ -1524,6 +1524,7 @@ static inline bool skip_inode_logging(const struct btrfs_log_ctx *ctx)
  * new operations on the dir while we write to disk.
  */
 int btrfs_sync_file(struct file *file, loff_t start, loff_t end, int datasync)
+	__context_unsafe(/* conditional locking */)
 {
 	struct dentry *dentry = file_dentry(file);
 	struct btrfs_inode *inode = BTRFS_I(d_inode(dentry));

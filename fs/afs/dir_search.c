@@ -207,6 +207,7 @@ int afs_dir_search(struct afs_vnode *dvnode, const struct qstr *name,
 			}
 			continue;
 		}
+		__assume_shared_ctx_lock(&dvnode->validate_lock);
 		*_dir_version = inode_peek_iversion_raw(&dvnode->netfs.inode);
 
 		ret = afs_dir_search_bucket(&iter, name, _fid);

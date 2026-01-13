@@ -2003,6 +2003,7 @@ static void unplug_oldest_pwq(struct workqueue_struct *wq)
  */
 static void node_activate_pending_pwq(struct wq_node_nr_active *nna,
 				      struct worker_pool *caller_pool)
+	__context_unsafe(/* drops and reacquires caller_pool->lock */)
 {
 	struct worker_pool *locked_pool = caller_pool;
 	struct pool_workqueue *pwq;
@@ -2404,6 +2405,7 @@ static int wq_select_unbound_cpu(int cpu)
 
 static void __queue_work(int cpu, struct workqueue_struct *wq,
 			 struct work_struct *work)
+	__context_unsafe(/* conditional locking */)
 {
 	struct pool_workqueue *pwq;
 	struct worker_pool *last_pool, *pool;
@@ -3263,8 +3265,7 @@ static void pool_mayday_timeout(struct timer_list *t)
  * manager.
  */
 static void maybe_create_worker(struct worker_pool *pool)
-__releases(&pool->lock)
-__acquires(&pool->lock)
+	__must_hold(&pool->lock)
 {
 restart:
 	raw_spin_unlock_irq(&pool->lock);
@@ -3295,6 +3296,7 @@ restart:
 
 #ifdef CONFIG_PREEMPT_RT
 static void worker_lock_callback(struct worker_pool *pool)
+	__acquires(&pool->cb_lock)
 {
 	/*
 	 * SINGLE_DEPTH_NESTING is for a dead pool's bh_worker() running from
@@ -3309,6 +3311,7 @@ static void worker_lock_callback(struct worker_pool *pool)
 }
 
 static void worker_unlock_callback(struct worker_pool *pool)
+	__releases(&pool->cb_lock)
 {
 	spin_unlock(&pool->cb_lock);
 }
@@ -3350,6 +3353,7 @@ static void workqueue_callback_cancel_wait_running(struct worker_pool *pool) { }
  * no longer be true.
  */
 static bool manage_workers(struct worker *worker)
+	__must_hold(&worker->pool->lock)
 {
 	struct worker_pool *pool = worker->pool;
 
@@ -3382,8 +3386,7 @@ static bool manage_workers(struct worker *worker)
  * raw_spin_lock_irq(pool->lock) which is released and regrabbed.
  */
 static void process_one_work(struct worker *worker, struct work_struct *work)
-__releases(&pool->lock)
-__acquires(&pool->lock)
+	__must_hold(&worker->pool->lock)
 {
 	struct pool_workqueue *pwq = get_work_pwq(work);
 	struct worker_pool *pool = worker->pool;
@@ -3565,6 +3568,7 @@ __acquires(&pool->lock)
  * multiple times.
  */
 static void process_scheduled_works(struct worker *worker)
+	__must_hold(&worker->pool->lock)
 {
 	struct work_struct *work;
 	bool first = true;
@@ -3796,6 +3800,7 @@ repeat:
 		worker_attach_to_pool(rescuer, pool);
 
 		raw_spin_lock_irq(&pool->lock);
+		__acquire(&rescuer->pool->lock);
 
 		WARN_ON_ONCE(!list_empty(&rescuer->scheduled));
 
@@ -3826,6 +3831,7 @@ repeat:
 		 */
 		kick_pool(pool);
 
+		__release(&rescuer->pool->lock);
 		raw_spin_unlock_irq(&pool->lock);
 
 		worker_detach_from_pool(rescuer);
@@ -4177,6 +4183,7 @@ static void insert_wq_barrier(struct pool_workqueue *pwq,
  */
 static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,
 				      int flush_color, int work_color)
+	__context_unsafe(/* locks in a loop */)
 {
 	struct pool_workqueue *pwq, *next;
 	bool wait = false;

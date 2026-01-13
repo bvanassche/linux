@@ -735,6 +735,7 @@ static void qcom_geni_serial_console_write_atomic(struct console *co,
 
 static void qcom_geni_serial_console_device_lock(struct console *co,
 						  unsigned long *flags)
+	__context_unsafe(/* acquires uport.lock for caller */)
 {
 	struct qcom_geni_serial_port *port;
 
@@ -747,6 +748,7 @@ static void qcom_geni_serial_console_device_lock(struct console *co,
 
 static void qcom_geni_serial_console_device_unlock(struct console *co,
 						    unsigned long flags)
+	__context_unsafe(/* releases uport.lock held by caller */)
 {
 	struct qcom_geni_serial_port *port;
 #ifdef CONFIG_MAGIC_SYSRQ_SERIAL

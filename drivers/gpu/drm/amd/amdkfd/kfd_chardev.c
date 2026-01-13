@@ -122,6 +122,7 @@ void kfd_dev_unmap_mapping_range(loff_t const holebegin, loff_t const holelen)
 }
 
 static inline struct kfd_process_device *kfd_lock_pdd_by_id(struct kfd_process *p, __u32 gpu_id)
+	__context_unsafe(/* returns a pointer */)
 {
 	struct kfd_process_device *pdd;
 
@@ -136,6 +137,7 @@ static inline struct kfd_process_device *kfd_lock_pdd_by_id(struct kfd_process *
 }
 
 static inline void kfd_unlock_pdd(struct kfd_process_device *pdd)
+	__context_unsafe(/* to match the locking function */)
 {
 	mutex_unlock(&pdd->process->mutex);
 }
@@ -1123,6 +1125,7 @@ static int kfd_ioctl_get_available_memory(struct file *filep,
 
 static int kfd_ioctl_alloc_memory_of_gpu(struct file *filep,
 					struct kfd_process *p, void *data)
+	__context_unsafe(/* conditionally releases the mm semaphore */)
 {
 	struct kfd_ioctl_alloc_memory_of_gpu_args *args = data;
 	struct kfd_process_device *pdd;
@@ -2942,6 +2945,7 @@ static int kfd_ioctl_criu(struct file *filep, struct kfd_process *p, void *data)
 
 static int runtime_enable(struct kfd_process *p, uint64_t r_debug,
 			bool enable_ttmp_setup)
+	__must_hold(&p->mutex)
 {
 	int i = 0, ret = 0;
 
@@ -3014,6 +3018,7 @@ retry:
 }
 
 static int runtime_disable(struct kfd_process *p)
+	__must_hold(&p->mutex)
 {
 	int i = 0, ret = 0;
 	bool was_enabled = p->runtime_info.runtime_state == DEBUG_RUNTIME_STATE_ENABLED;

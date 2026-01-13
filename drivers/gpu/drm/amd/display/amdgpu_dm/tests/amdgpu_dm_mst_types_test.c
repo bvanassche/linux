@@ -3730,6 +3730,7 @@ struct dm_mst_test_dsc_link_ctx {
 };
 
 static void dm_mst_test_dsc_link_drop_locks(void *data)
+	__context_unsafe(/* KUnit deferred lock cleanup */)
 {
 	struct dm_mst_test_dsc_link_ctx *ctx = data;
 
@@ -3757,6 +3758,7 @@ static void dm_mst_test_destroy_mst_mgr(void *data)
  */
 static struct dm_mst_test_dsc_link_ctx *
 dm_mst_test_alloc_dsc_link_ctx(struct kunit *test, int total_avail_slots)
+	__context_unsafe(/* KUnit deferred lock cleanup */)
 {
 	struct dm_mst_test_dsc_link_ctx *ctx;
 	struct drm_connector_state *conn_state;

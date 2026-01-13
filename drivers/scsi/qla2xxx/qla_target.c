@@ -3777,6 +3777,7 @@ static int __qlt_send_term_exchange(struct qla_qpair *qpair,
  */
 void qlt_send_term_exchange(struct qla_qpair *qpair,
 	struct qla_tgt_cmd *cmd, struct atio_from_isp *atio, int ha_locked)
+	__context_unsafe(/* conditional locking */)
 {
 	struct scsi_qla_host *vha;
 	unsigned long flags = 0;
@@ -6745,6 +6746,7 @@ qlt_chk_qfull_thresh_hold(struct scsi_qla_host *vha, struct qla_qpair *qpair,
 /* called via callback from qla2xxx */
 static void qlt_24xx_atio_pkt(struct scsi_qla_host *vha,
 	struct atio_from_isp *atio, uint8_t ha_locked)
+	__context_unsafe(/* conditional locking */)
 {
 	struct qla_hw_data *ha = vha->hw;
 	struct qla_tgt *tgt = vha->vha_tgt.qla_tgt;

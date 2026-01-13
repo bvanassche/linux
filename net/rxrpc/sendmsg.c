@@ -610,8 +610,7 @@ static int rxrpc_sendmsg_cmsg(struct msghdr *msg, struct rxrpc_send_params *p)
 static struct rxrpc_call *
 rxrpc_new_client_call_for_sendmsg(struct rxrpc_sock *rx, struct msghdr *msg,
 				  struct rxrpc_send_params *p)
-	__releases(&rx->sk.sk_lock)
-	__acquires(&call->user_mutex)
+	__releases(&rx->sk)
 {
 	struct rxrpc_conn_parameters cp;
 	struct rxrpc_peer *peer;
@@ -660,6 +659,8 @@ rxrpc_new_client_call_for_sendmsg(struct rxrpc_sock *rx, struct msghdr *msg,
  * - the socket may be either a client socket or a server socket
  */
 int rxrpc_do_sendmsg(struct rxrpc_sock *rx, struct msghdr *msg, size_t len)
+	__releases(&rx->sk)
+	__context_unsafe(/* user_mutex state depends on dropped_lock */)
 {
 	struct rxrpc_call *call;
 	int ret;

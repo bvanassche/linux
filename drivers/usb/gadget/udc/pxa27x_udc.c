@@ -658,6 +658,7 @@ static void ep_del_request(struct pxa_ep *ep, struct pxa27x_request *req)
  */
 static void req_done(struct pxa_ep *ep, struct pxa27x_request *req, int status,
 	unsigned long *pflags)
+	__context_unsafe(/* drops and reacquires ep->lock */)
 {
 	unsigned long	flags;
 

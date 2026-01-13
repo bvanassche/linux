@@ -1096,6 +1096,7 @@ int nfc_llcp_queue_i_frames(struct nfc_llcp_sock *sock)
 
 static void nfc_llcp_recv_hdlc(struct nfc_llcp_local *local,
 			       struct sk_buff *skb)
+	__context_unsafe(/* conditional locking */)
 {
 	struct nfc_llcp_sock *llcp_sock;
 	struct sock *sk;
@@ -1187,6 +1188,7 @@ static void nfc_llcp_recv_hdlc(struct nfc_llcp_local *local,
 
 static void nfc_llcp_recv_disc(struct nfc_llcp_local *local,
 			       const struct sk_buff *skb)
+	__context_unsafe(/* conditional locking */)
 {
 	struct nfc_llcp_sock *llcp_sock;
 	struct sock *sk;

@@ -76,6 +76,7 @@ struct rtnl_link {
 static DEFINE_MUTEX(rtnl_mutex);
 
 void rtnl_lock(void)
+	__context_unsafe(/* acquires rtnl_mutex for caller */)
 {
 	mutex_lock(&rtnl_mutex);
 }
@@ -87,6 +88,7 @@ int rtnl_lock_interruptible(void)
 }
 
 int rtnl_lock_killable(void)
+	__context_unsafe(/* mutex_lock_killable() locks conditionally */)
 {
 	return mutex_lock_killable(&rtnl_mutex);
 }
@@ -102,6 +104,7 @@ void rtnl_kfree_skbs(struct sk_buff *head, struct sk_buff *tail)
 EXPORT_SYMBOL(rtnl_kfree_skbs);
 
 void __rtnl_unlock(void)
+	__context_unsafe(/* releases rtnl_mutex held by caller */)
 {
 	struct sk_buff *head = defer_kfree_skb_list;
 
@@ -171,6 +174,7 @@ int rtnl_is_locked(void)
 EXPORT_SYMBOL(rtnl_is_locked);
 
 bool refcount_dec_and_rtnl_lock(refcount_t *r)
+	__cond_acquires(true, &rtnl_mutex)
 {
 	return refcount_dec_and_mutex_lock(r, &rtnl_mutex);
 }
@@ -186,6 +190,7 @@ EXPORT_SYMBOL(lockdep_rtnl_is_held);
 
 #ifdef CONFIG_DEBUG_NET_SMALL_RTNL
 void __rtnl_net_lock(struct net *net)
+	__acquires(&net->rtnl_mutex)
 {
 	ASSERT_RTNL();
 
@@ -194,6 +199,7 @@ void __rtnl_net_lock(struct net *net)
 EXPORT_SYMBOL(__rtnl_net_lock);
 
 void __rtnl_net_unlock(struct net *net)
+	__releases(&net->rtnl_mutex)
 {
 	ASSERT_RTNL();
 
@@ -203,6 +209,7 @@ void __rtnl_net_unlock(struct net *net)
 EXPORT_SYMBOL(__rtnl_net_unlock);
 
 void rtnl_net_lock(struct net *net)
+	__acquires(&net->rtnl_mutex)
 {
 	rtnl_lock();
 	__rtnl_net_lock(net);
@@ -210,6 +217,7 @@ void rtnl_net_lock(struct net *net)
 EXPORT_SYMBOL(rtnl_net_lock);
 
 void rtnl_net_unlock(struct net *net)
+	__releases(&net->rtnl_mutex)
 {
 	__rtnl_net_unlock(net);
 	rtnl_unlock();
@@ -217,6 +225,7 @@ void rtnl_net_unlock(struct net *net)
 EXPORT_SYMBOL(rtnl_net_unlock);
 
 int rtnl_net_trylock(struct net *net)
+	__cond_acquires(true, &net->rtnl_mutex)
 {
 	int ret = rtnl_trylock();
 
@@ -228,6 +237,7 @@ int rtnl_net_trylock(struct net *net)
 EXPORT_SYMBOL(rtnl_net_trylock);
 
 int rtnl_net_lock_killable(struct net *net)
+	__cond_acquires(0, &net->rtnl_mutex)
 {
 	int ret = rtnl_lock_killable();
 
@@ -360,6 +370,7 @@ static void rtnl_nets_add(struct rtnl_nets *rtnl_nets, struct net *net)
 }
 
 static void rtnl_nets_lock(struct rtnl_nets *rtnl_nets)
+	__context_unsafe(/* locks in a loop */)
 {
 	int i;
 
@@ -370,6 +381,7 @@ static void rtnl_nets_lock(struct rtnl_nets *rtnl_nets)
 }
 
 static void rtnl_nets_unlock(struct rtnl_nets *rtnl_nets)
+	__context_unsafe(/* unlocks in a loop */)
 {
 	int i;
 
@@ -592,6 +604,7 @@ static DEFINE_MUTEX(link_ops_mutex);
 static LIST_HEAD(link_ops);
 
 static struct rtnl_link_ops *rtnl_link_ops_get(const char *kind, int *srcu_index)
+	__context_unsafe(/* __cond_acquires_shared(nonnull, &ops->srcu) */)
 {
 	struct rtnl_link_ops *ops;
 
@@ -612,6 +625,7 @@ unlock:
 }
 
 static void rtnl_link_ops_put(struct rtnl_link_ops *ops, int srcu_index)
+	__context_unsafe(/* __releases_shared(&ops->srcu) */)
 {
 	srcu_read_unlock(&ops->srcu, srcu_index);
 }
@@ -791,6 +805,7 @@ static LIST_HEAD(rtnl_af_ops);
 static DEFINE_SPINLOCK(rtnl_af_ops_lock);
 
 static struct rtnl_af_ops *rtnl_af_lookup(const int family, int *srcu_index)
+	__context_unsafe(/* __cond_acquires_shared(nonnull, &ops->srcu) */)
 {
 	struct rtnl_af_ops *ops;
 
@@ -811,6 +826,7 @@ unlock:
 }
 
 static void rtnl_af_put(struct rtnl_af_ops *ops, int srcu_index)
+	__context_unsafe(/* __releases_shared(&ops->srcu) */)
 {
 	srcu_read_unlock(&ops->srcu, srcu_index);
 }
@@ -2562,6 +2578,7 @@ static int rtnl_valid_dump_ifinfo_req(const struct nlmsghdr *nlh,
 }
 
 static int rtnl_dump_ifinfo(struct sk_buff *skb, struct netlink_callback *cb)
+	__context_unsafe(/* conditional locking */)
 {
 	struct netlink_ext_ack *extack = cb->extack;
 	struct rtnl_link_ops *kind_ops = NULL;

@@ -942,6 +942,7 @@ static int smc_phy_fixed(struct net_device *dev)
  * Must be called with lp->lock locked.
  */
 static int smc_phy_reset(struct net_device *dev, int phy)
+	__must_hold(&((struct smc_local *)netdev_priv(dev))->lock)
 {
 	struct smc_local *lp = netdev_priv(dev);
 	unsigned int bmcr;
@@ -1034,6 +1035,7 @@ static void smc_phy_configure(struct work_struct *work)
 	DBG(3, dev, "smc_program_phy()\n");
 
 	spin_lock_irq(&lp->lock);
+	__acquire(&((struct smc_local *)netdev_priv(dev))->lock);
 
 	/*
 	 * We should not be called if phy_type is zero.
@@ -1115,6 +1117,7 @@ static void smc_phy_configure(struct work_struct *work)
 
 smc_phy_configure_exit:
 	SMC_SELECT_BANK(lp, 2);
+	__release(&((struct smc_local *)netdev_priv(dev))->lock);
 	spin_unlock_irq(&lp->lock);
 }
 

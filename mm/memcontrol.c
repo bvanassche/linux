@@ -278,6 +278,9 @@ static inline void reparent_state_local(struct mem_cgroup *memcg, struct mem_cgr
 }
 
 static inline void reparent_locks(struct mem_cgroup *memcg, struct mem_cgroup *parent, int nid)
+	__acquires(&objcg_lock)
+	__acquires(&mem_cgroup_lruvec(memcg, NODE_DATA(nid))->lru_lock)
+	__acquires(&mem_cgroup_lruvec(parent, NODE_DATA(nid))->lru_lock)
 {
 	spin_lock_irq(&objcg_lock);
 	spin_lock_nested(&mem_cgroup_lruvec(memcg, NODE_DATA(nid))->lru_lock, 1);
@@ -285,6 +288,9 @@ static inline void reparent_locks(struct mem_cgroup *memcg, struct mem_cgroup *p
 }
 
 static inline void reparent_unlocks(struct mem_cgroup *memcg, struct mem_cgroup *parent, int nid)
+	__releases(&mem_cgroup_lruvec(parent, NODE_DATA(nid))->lru_lock)
+	__releases(&mem_cgroup_lruvec(memcg, NODE_DATA(nid))->lru_lock)
+	__releases(&objcg_lock)
 {
 	spin_unlock(&mem_cgroup_lruvec(parent, NODE_DATA(nid))->lru_lock);
 	spin_unlock(&mem_cgroup_lruvec(memcg, NODE_DATA(nid))->lru_lock);
@@ -894,6 +900,7 @@ static long memcg_state_val_in_pages(int idx, long val)
  */
 static inline struct mem_cgroup *
 get_non_dying_memcg_start(struct mem_cgroup *memcg, bool *rcu_locked)
+	__context_unsafe(/* conditional RCU locking */)
 {
 	/*
 	 * Fast path: the caller holds a reference to @memcg, so reading
@@ -916,6 +923,7 @@ get_non_dying_memcg_start(struct mem_cgroup *memcg, bool *rcu_locked)
 }
 
 static inline void get_non_dying_memcg_end(bool rcu_locked)
+	__context_unsafe(/* conditional RCU unlocking */)
 {
 	if (!rcu_locked)
 		return;
@@ -3295,6 +3303,7 @@ void __memcg_kmem_uncharge_page(struct page *page, int order)
 }
 
 static struct obj_stock_pcp *trylock_stock(void)
+	__context_unsafe(/* callers pass NULL to unlock_stock() */)
 {
 	if (local_trylock(&obj_stock.lock))
 		return this_cpu_ptr(&obj_stock);
@@ -3303,6 +3312,7 @@ static struct obj_stock_pcp *trylock_stock(void)
 }
 
 static void unlock_stock(struct obj_stock_pcp *stock)
+	__context_unsafe(/* only unlocks if @stock != NULL */)
 {
 	if (stock)
 		local_unlock(&obj_stock.lock);

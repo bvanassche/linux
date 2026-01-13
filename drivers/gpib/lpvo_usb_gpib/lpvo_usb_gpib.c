@@ -1982,6 +1982,7 @@ static int lpvo_resume(struct usb_interface *intf)
 }
 
 static int lpvo_pre_reset(struct usb_interface *intf)
+	__acquires(&((struct lpvo *)usb_get_intfdata(intf))->io_mutex)
 {
 	struct lpvo *dev = usb_get_intfdata(intf);
 
@@ -1992,6 +1993,7 @@ static int lpvo_pre_reset(struct usb_interface *intf)
 }
 
 static int lpvo_post_reset(struct usb_interface *intf)
+	__releases(&((struct lpvo *)usb_get_intfdata(intf))->io_mutex)
 {
 	struct lpvo *dev = usb_get_intfdata(intf);
 

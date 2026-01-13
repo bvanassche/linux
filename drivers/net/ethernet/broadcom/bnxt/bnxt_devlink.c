@@ -562,6 +562,13 @@ static int bnxt_dl_reload_up(struct devlink *dl, enum devlink_reload_action acti
 		break;
 	}
 	default:
+		/*
+		 * Other actions have already been rejected by
+		 * bnxt_dl_reload_down().
+		 */
+		WARN_ON_ONCE(true);
+		netdev_unlock(bp->dev);
+		rtnl_unlock();
 		return -EOPNOTSUPP;
 	}
 

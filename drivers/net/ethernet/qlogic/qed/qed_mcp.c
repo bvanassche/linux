@@ -467,7 +467,7 @@ _qed_mcp_cmd_and_union(struct qed_hwfn *p_hwfn,
 	int rc = 0;
 
 	/* Wait until the mailbox is non-occupied */
-	do {
+	for (;;) {
 		/* Exit the loop if there is no pending command, or if the
 		 * pending command is completed during this iteration.
 		 * The spinlock stays locked until the command is sent.
@@ -486,18 +486,14 @@ _qed_mcp_cmd_and_union(struct qed_hwfn *p_hwfn,
 
 		spin_unlock_bh(&p_hwfn->mcp_info->cmd_lock);
 
+		if (++cnt >= QED_DRV_MB_MAX_RETRIES)
+			goto retries_exceeded_1;
+
 		if (QED_MB_FLAGS_IS_SET(p_mb_params, CAN_SLEEP))
 			usleep_range(QED_MCP_RESP_ITER_US,
 				     QED_MCP_RESP_ITER_US * 2);
 		else
 			udelay(QED_MCP_RESP_ITER_US);
-	} while (++cnt < QED_DRV_MB_MAX_RETRIES);
-
-	if (cnt >= QED_DRV_MB_MAX_RETRIES) {
-		DP_NOTICE(p_hwfn,
-			  "The MFW mailbox is occupied by an uncompleted command. Failed to send command 0x%08x [param 0x%08x].\n",
-			  p_mb_params->cmd, p_mb_params->param);
-		return -EAGAIN;
 	}
 
 	/* Send the mailbox command */
@@ -513,7 +509,7 @@ _qed_mcp_cmd_and_union(struct qed_hwfn *p_hwfn,
 	spin_unlock_bh(&p_hwfn->mcp_info->cmd_lock);
 
 	/* Wait for the MFW response */
-	do {
+	for (;;) {
 		/* Exit the loop if the command is already completed, or if the
 		 * command is completed during this iteration.
 		 * The spinlock stays locked until the list element is removed.
@@ -537,24 +533,9 @@ _qed_mcp_cmd_and_union(struct qed_hwfn *p_hwfn,
 			goto err;
 
 		spin_unlock_bh(&p_hwfn->mcp_info->cmd_lock);
-	} while (++cnt < QED_DRV_MB_MAX_RETRIES);
 
-	if (cnt >= QED_DRV_MB_MAX_RETRIES) {
-		DP_NOTICE(p_hwfn,
-			  "The MFW failed to respond to command 0x%08x [param 0x%08x].\n",
-			  p_mb_params->cmd, p_mb_params->param);
-		qed_mcp_print_cpu_info(p_hwfn, p_ptt);
-
-		spin_lock_bh(&p_hwfn->mcp_info->cmd_lock);
-		qed_mcp_cmd_del_elem(p_hwfn, p_cmd_elem);
-		spin_unlock_bh(&p_hwfn->mcp_info->cmd_lock);
-
-		if (!QED_MB_FLAGS_IS_SET(p_mb_params, AVOID_BLOCK))
-			qed_mcp_cmd_set_blocking(p_hwfn, true);
-
-		qed_hw_err_notify(p_hwfn, p_ptt,
-				  QED_HW_ERR_MFW_RESP_FAIL, NULL);
-		return -EAGAIN;
+		if (++cnt >= QED_DRV_MB_MAX_RETRIES)
+			goto retries_exceeded_2;
 	}
 
 	qed_mcp_cmd_del_elem(p_hwfn, p_cmd_elem);
@@ -576,6 +557,29 @@ _qed_mcp_cmd_and_union(struct qed_hwfn *p_hwfn,
 err:
 	spin_unlock_bh(&p_hwfn->mcp_info->cmd_lock);
 	return rc;
+
+retries_exceeded_1:
+	DP_NOTICE(p_hwfn,
+		  "The MFW mailbox is occupied by an uncompleted command. Failed to send command 0x%08x [param 0x%08x].\n",
+		  p_mb_params->cmd, p_mb_params->param);
+	return -EAGAIN;
+
+retries_exceeded_2:
+	DP_NOTICE(p_hwfn,
+		  "The MFW failed to respond to command 0x%08x [param 0x%08x].\n",
+		  p_mb_params->cmd, p_mb_params->param);
+	qed_mcp_print_cpu_info(p_hwfn, p_ptt);
+
+	spin_lock_bh(&p_hwfn->mcp_info->cmd_lock);
+	qed_mcp_cmd_del_elem(p_hwfn, p_cmd_elem);
+	spin_unlock_bh(&p_hwfn->mcp_info->cmd_lock);
+
+	if (!QED_MB_FLAGS_IS_SET(p_mb_params, AVOID_BLOCK))
+		qed_mcp_cmd_set_blocking(p_hwfn, true);
+
+	qed_hw_err_notify(p_hwfn, p_ptt,
+			  QED_HW_ERR_MFW_RESP_FAIL, NULL);
+	return -EAGAIN;
 }
 
 static int qed_mcp_cmd_and_union(struct qed_hwfn *p_hwfn,

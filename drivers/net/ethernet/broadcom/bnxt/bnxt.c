@@ -17585,7 +17585,7 @@ static int bnxt_resume(struct device *device)
 	}
 
 resume_exit:
-	netdev_unlock(bp->dev);
+	netdev_unlock(dev);
 	rtnl_unlock();
 	if (!rc) {
 		bnxt_ulp_start(bp);

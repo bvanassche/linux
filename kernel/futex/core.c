@@ -930,6 +930,7 @@ retry:
 }
 
 void futex_q_lockptr_lock(struct futex_q *q)
+	__context_unsafe(/* retry loop on unstable q->lock_ptr */)
 {
 	spinlock_t *lock_ptr;
 
@@ -1500,6 +1501,7 @@ static void futex_cleanup(struct task_struct *tsk)
  * block forever, but there is nothing which can be done about that.
  */
 void futex_exit_recursive(struct task_struct *tsk)
+	__context_unsafe(/* conditional unlocking */)
 {
 	/* If the state is FUTEX_STATE_EXITING then futex_exit_mutex is held */
 	if (tsk->futex.state == FUTEX_STATE_EXITING) {

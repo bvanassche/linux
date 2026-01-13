@@ -7,6 +7,23 @@
 #include <subdev/bios.h>
 #include <subdev/bios/i2c.h>
 
+struct nvkm_i2c_pad {
+	const struct nvkm_i2c_pad_func *func;
+	struct nvkm_i2c *i2c;
+#define NVKM_I2C_PAD_HYBRID(n) /* 'n' is hw pad index */                     (n)
+#define NVKM_I2C_PAD_CCB(n) /* 'n' is ccb index */                 ((n) + 0x100)
+#define NVKM_I2C_PAD_EXT(n) /* 'n' is dcb external encoder type */ ((n) + 0x200)
+	int id;
+
+	enum nvkm_i2c_pad_mode {
+		NVKM_I2C_PAD_OFF,
+		NVKM_I2C_PAD_I2C,
+		NVKM_I2C_PAD_AUX,
+	} mode;
+	struct mutex mutex;
+	struct list_head head;
+};
+
 struct nvkm_i2c_bus_probe {
 	struct i2c_board_info dev;
 	u8 udelay; /* set to 0 to use the standard delay */
@@ -27,8 +44,12 @@ struct nvkm_i2c_bus {
 	u8 enabled;
 };
 
-int nvkm_i2c_bus_acquire(struct nvkm_i2c_bus *);
-void nvkm_i2c_bus_release(struct nvkm_i2c_bus *);
+int nvkm_i2c_bus_acquire(struct nvkm_i2c_bus *bus)
+	__cond_acquires(0, &bus->mutex)
+	__cond_acquires(0, &bus->pad->mutex);
+void nvkm_i2c_bus_release(struct nvkm_i2c_bus *bus)
+	__releases(&bus->mutex)
+	__releases(&bus->pad->mutex);
 int nvkm_i2c_bus_probe(struct nvkm_i2c_bus *, const char *,
 		       struct nvkm_i2c_bus_probe *,
 		       bool (*)(struct nvkm_i2c_bus *,
@@ -50,8 +71,12 @@ struct nvkm_i2c_aux {
 };
 
 void nvkm_i2c_aux_monitor(struct nvkm_i2c_aux *, bool monitor);
-int nvkm_i2c_aux_acquire(struct nvkm_i2c_aux *);
-void nvkm_i2c_aux_release(struct nvkm_i2c_aux *);
+int nvkm_i2c_aux_acquire(struct nvkm_i2c_aux *aux)
+	__cond_acquires(0, &aux->mutex)
+	__cond_acquires(0, &aux->pad->mutex);
+void nvkm_i2c_aux_release(struct nvkm_i2c_aux *aux)
+	__releases(&aux->mutex)
+	__releases(&aux->pad->mutex);
 int nvkm_i2c_aux_xfer(struct nvkm_i2c_aux *, bool retry, u8 type,
 		      u32 addr, u8 *data, u8 *size);
 int nvkm_i2c_aux_lnk_ctl(struct nvkm_i2c_aux *, int link_nr, int link_bw,

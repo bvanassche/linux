@@ -2960,6 +2960,7 @@ void mlx5_esw_event_notifier_unregister(struct mlx5_core_dev *dev,
  * Return: true on success or false.
  */
 bool mlx5_esw_hold(struct mlx5_core_dev *mdev)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mlx5_eswitch *esw = mdev->priv.eswitch;
 
@@ -2983,6 +2984,7 @@ bool mlx5_esw_hold(struct mlx5_core_dev *mdev)
  * @mdev: mlx5 core device.
  */
 void mlx5_esw_release(struct mlx5_core_dev *mdev)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mlx5_eswitch *esw = mdev->priv.eswitch;
 
@@ -3026,6 +3028,7 @@ void mlx5_esw_put(struct mlx5_core_dev *mdev)
  * * -EINVAL - In the middle of switching mode or lock is already held.
  */
 int mlx5_esw_try_lock(struct mlx5_eswitch *esw)
+	__context_unsafe(/* conditional locking */)
 {
 	if (down_write_trylock(&esw->mode_lock) == 0)
 		return -EINVAL;
@@ -3040,6 +3043,7 @@ int mlx5_esw_try_lock(struct mlx5_eswitch *esw)
 }
 
 int mlx5_esw_lock(struct mlx5_eswitch *esw)
+	__context_unsafe(/* conditional locking */)
 {
 	down_write(&esw->mode_lock);
 
@@ -3056,6 +3060,7 @@ int mlx5_esw_lock(struct mlx5_eswitch *esw)
  * @esw: eswitch device.
  */
 void mlx5_esw_unlock(struct mlx5_eswitch *esw)
+	__context_unsafe(/* matches mlx5_esw_lock() and mlx5_esw_try_lock() */)
 {
 	up_write(&esw->mode_lock);
 }

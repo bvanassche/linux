@@ -346,6 +346,7 @@ static void finish_request(struct isp116x *isp116x, struct isp116x_ep *ep,
   Analyze transfer results, handle partial transfers and errors
 */
 static void postproc_atl_queue(struct isp116x *isp116x)
+	__context_unsafe(/* finish_request() drops and reacquires lock */)
 {
 	struct isp116x_ep *ep;
 	struct urb *urb;

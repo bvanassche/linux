@@ -2002,6 +2002,7 @@ static const struct regmap_range_cfg tas675x_ranges[] = {
 };
 
 static void tas675x_regmap_lock(void *lock_arg)
+	__acquires(&((struct tas675x_priv *)lock_arg)->io_lock)
 {
 	struct tas675x_priv *tas = lock_arg;
 
@@ -2009,6 +2010,7 @@ static void tas675x_regmap_lock(void *lock_arg)
 }
 
 static void tas675x_regmap_unlock(void *lock_arg)
+	__releases(&((struct tas675x_priv *)lock_arg)->io_lock)
 {
 	struct tas675x_priv *tas = lock_arg;
 

@@ -142,6 +142,7 @@ static void msg_rcu_free(struct rcu_head *head)
  * Called with msg_ids.rwsem held (writer)
  */
 static int newque(struct ipc_namespace *ns, struct ipc_params *params)
+	__context_unsafe(/* ipc_addid() locks conditionally */)
 {
 	struct msg_queue *msq;
 	int retval;
@@ -399,6 +400,7 @@ copy_msqid_from_user(struct msqid64_ds *out, void __user *buf, int version)
  */
 static int msgctl_down(struct ipc_namespace *ns, int msqid, int cmd,
 			struct ipc64_perm *perm, int msg_qbytes)
+	__context_unsafe(/* conditional locking */)
 {
 	struct kern_ipc_perm *ipcp;
 	struct msg_queue *msq;

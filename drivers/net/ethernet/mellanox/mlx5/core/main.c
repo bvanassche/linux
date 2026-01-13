@@ -2306,6 +2306,7 @@ static struct pci_driver mlx5_core_driver = {
  * Return: Pointer to the associated mlx5_core_dev or NULL.
  */
 struct mlx5_core_dev *mlx5_vf_get_core_dev(struct pci_dev *pdev)
+	__context_unsafe(/* the lock is a member of the returned object */)
 {
 	struct mlx5_core_dev *mdev;
 
@@ -2331,6 +2332,7 @@ EXPORT_SYMBOL(mlx5_vf_get_core_dev);
  * access the mdev any more.
  */
 void mlx5_vf_put_core_dev(struct mlx5_core_dev *mdev)
+	__context_unsafe(/* to match the above function */)
 {
 	mutex_unlock(&mdev->intf_state_mutex);
 }

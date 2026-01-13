@@ -395,7 +395,7 @@ static struct ib_device *rdma_udata_to_dev(struct ib_udata *udata)
 	struct uverbs_attr_bundle *bundle =
 		rdma_udata_to_uverbs_attr_bundle(udata);
 
-	lockdep_assert_held(&bundle->ufile->device->disassociate_srcu);
+	lockdep_assume_shared_ctx_held(&bundle->ufile->device->disassociate_srcu);
 
 	if (bundle->context)
 		return bundle->context->device;
@@ -414,7 +414,7 @@ static uverbs_api_ioctl_handler_fn uverbs_get_handler_fn(struct ib_udata *udata)
 	struct uverbs_attr_bundle *bundle =
 		rdma_udata_to_uverbs_attr_bundle(udata);
 
-	lockdep_assert_held(&bundle->ufile->device->disassociate_srcu);
+	lockdep_assume_shared_ctx_held(&bundle->ufile->device->disassociate_srcu);
 
 	if (!bundle->method_elm)
 		return NULL;
@@ -502,6 +502,7 @@ EXPORT_SYMBOL(_ib_respond_udata);
  * must be held until use of the ucontext is finished.
  */
 struct ib_ucontext *ib_uverbs_get_ucontext_file(struct ib_uverbs_file *ufile)
+	__must_hold_shared(&ufile->device->disassociate_srcu)
 {
 	/*
 	 * We do not hold the hw_destroy_rwsem lock for this flow, instead

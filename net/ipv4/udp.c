@@ -232,6 +232,7 @@ static int udp_reuseport_add_sock(struct sock *sk, struct udp_hslot *hslot)
  */
 int udp_lib_get_port(struct sock *sk, unsigned short snum,
 		     unsigned int hash2_nulladdr)
+	__context_unsafe(/* conditional locking */)
 {
 	struct udp_hslot *hslot, *hslot2;
 	struct net *net = sock_net(sk);
@@ -1608,6 +1609,7 @@ static bool udp_skb_has_head_state(struct sk_buff *skb)
 /* fully reclaim rmem/fwd memory allocated for skb */
 static void udp_rmem_release(struct sock *sk, unsigned int size,
 			     int partial, bool rx_queue_lock_held)
+	__context_unsafe(/* conditional locking */)
 {
 	struct udp_sock *up = udp_sk(sk);
 	struct sk_buff_head *sk_queue;
@@ -3151,6 +3153,7 @@ __poll_t udp_poll(struct file *file, struct socket *sock, poll_table *wait)
 }
 
 int udp_abort(struct sock *sk, int err)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!has_current_bpf_ctx())
 		lock_sock(sk);
@@ -3226,6 +3229,7 @@ static const struct seq_operations bpf_iter_udp_seq_ops;
 #endif
 
 static struct sock *udp_get_first(struct seq_file *seq, int start)
+	__context_unsafe(/* conditional locking */)
 {
 	struct udp_iter_state *state = seq->private;
 	struct net *net = seq_file_net(seq);
@@ -3254,6 +3258,7 @@ found:
 }
 
 static struct sock *udp_get_next(struct seq_file *seq, struct sock *sk)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct udp_iter_state *state = seq->private;
 	struct net *net = seq_file_net(seq);
@@ -3306,6 +3311,7 @@ void *udp_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 void udp_seq_stop(struct seq_file *seq, void *v)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct udp_iter_state *state = seq->private;
 	struct udp_table *udptable;

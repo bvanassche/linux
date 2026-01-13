@@ -6548,6 +6548,7 @@ static void mlx5e_reset_channels(struct net_device *netdev)
 }
 
 int mlx5e_attach_netdev(struct mlx5e_priv *priv)
+	__context_unsafe(/* conditional locking */)
 {
 	const bool need_lock = priv->netdev->reg_state == NETREG_REGISTERED;
 	const struct mlx5e_profile *profile = priv->profile;

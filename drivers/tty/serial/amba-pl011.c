@@ -2797,12 +2797,14 @@ pl011_console_write_thread(struct console *co, struct nbcon_write_context *wctxt
 
 static void
 pl011_console_device_lock(struct console *co, unsigned long *flags)
+	__acquires(&amba_ports[co->index]->port.lock)
 {
 	__uart_port_lock_irqsave(&amba_ports[co->index]->port, flags);
 }
 
 static void
 pl011_console_device_unlock(struct console *co, unsigned long flags)
+	__releases(&amba_ports[co->index]->port.lock)
 {
 	__uart_port_unlock_irqrestore(&amba_ports[co->index]->port, flags);
 }

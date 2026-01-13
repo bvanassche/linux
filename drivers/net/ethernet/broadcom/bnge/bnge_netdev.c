@@ -2228,6 +2228,7 @@ static bool bnge_promisc_ok(struct bnge_net *bn)
 
 static int bnge_cfg_rx_mode(struct bnge_net *bn, struct netdev_hw_addr_list *uc,
 			    bool uc_update, bool snapshot)
+	__context_unsafe(/* conditional locking */)
 {
 	struct bnge_vnic_info *vnic = &bn->vnic_info[BNGE_VNIC_DEFAULT];
 	struct net_device *dev = bn->netdev;

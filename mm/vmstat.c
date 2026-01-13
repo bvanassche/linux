@@ -1546,6 +1546,7 @@ static void frag_stop(struct seq_file *m, void *arg)
 static void walk_zones_in_node(struct seq_file *m, pg_data_t *pgdat,
 		bool assert_populated, bool nolock,
 		void (*print)(struct seq_file *m, pg_data_t *, struct zone *))
+	__context_unsafe(/* conditional locking */)
 {
 	struct zone *zone;
 	struct zone *node_zones = pgdat->node_zones;
@@ -1592,6 +1593,7 @@ static int frag_show(struct seq_file *m, void *arg)
 
 static void pagetypeinfo_showfree_print(struct seq_file *m,
 					pg_data_t *pgdat, struct zone *zone)
+	__must_hold(&zone->lock)
 {
 	int order, mtype;
 

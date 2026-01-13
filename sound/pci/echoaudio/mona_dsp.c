@@ -181,6 +181,7 @@ static int switch_asic(struct echoaudio *chip, char double_speed)
 
 
 static int set_sample_rate(struct echoaudio *chip, u32 rate)
+	__must_hold(&chip->lock)
 {
 	u32 control_reg, clock;
 	short asic;
@@ -283,6 +284,7 @@ static int set_sample_rate(struct echoaudio *chip, u32 rate)
 
 
 static int set_input_clock(struct echoaudio *chip, u16 clock)
+	__must_hold(&chip->lock)
 {
 	u32 control_reg, clocks_from_dsp;
 	int err;

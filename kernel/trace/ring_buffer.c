@@ -6296,6 +6296,7 @@ rb_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
 EXPORT_SYMBOL_GPL(ring_buffer_iter_peek);
 
 static inline bool rb_reader_lock(struct ring_buffer_per_cpu *cpu_buffer)
+	__context_unsafe(/* conditional locking */)
 {
 	if (likely(!in_nmi())) {
 		raw_spin_lock(&cpu_buffer->reader_lock);
@@ -6321,6 +6322,7 @@ static inline bool rb_reader_lock(struct ring_buffer_per_cpu *cpu_buffer)
 
 static inline void
 rb_reader_unlock(struct ring_buffer_per_cpu *cpu_buffer, bool locked)
+	__context_unsafe(/* conditional locking */)
 {
 	if (likely(locked))
 		raw_spin_unlock(&cpu_buffer->reader_lock);
@@ -6465,6 +6467,7 @@ EXPORT_SYMBOL_GPL(ring_buffer_consume);
  */
 struct ring_buffer_iter *
 ring_buffer_read_start(struct trace_buffer *buffer, int cpu, gfp_t flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ring_buffer_iter *iter __free(kfree) = kzalloc_obj(*iter, flags);
 	struct ring_buffer_per_cpu *cpu_buffer;
@@ -7665,6 +7668,7 @@ static void rb_setup_ids_meta_page(struct ring_buffer_per_cpu *cpu_buffer,
 
 static struct ring_buffer_per_cpu *
 rb_get_mapped_buffer(struct trace_buffer *buffer, int cpu)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ring_buffer_per_cpu *cpu_buffer;
 
@@ -7684,6 +7688,7 @@ rb_get_mapped_buffer(struct trace_buffer *buffer, int cpu)
 }
 
 static void rb_put_mapped_buffer(struct ring_buffer_per_cpu *cpu_buffer)
+	__context_unsafe(/* releases mapping_lock held by caller */)
 {
 	mutex_unlock(&cpu_buffer->mapping_lock);
 }

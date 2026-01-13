@@ -233,6 +233,7 @@ cfg80211_get_dev_from_info(struct net *netns, struct genl_info *info)
 static struct wireless_dev *
 nl80211_lock_and_recheck(struct cfg80211_registered_device *rdev,
 			 struct net *netns, u32 wdev_id)
+	__context_unsafe(/* returns with wiphy.mtx held unless IS_ERR() */)
 {
 	struct wireless_dev *wdev;
 
@@ -308,6 +309,7 @@ __nl80211_lock_held_wdev(struct cfg80211_registered_device *rdev,
 static struct wireless_dev *
 nl80211_lock_held_wdev(struct cfg80211_registered_device *rdev,
 		       struct genl_info *info, struct wireless_dev *wdev)
+	__context_unsafe(/* returns ERR_PTR() */)
 {
 	info->user_ptr[1] = NULL;
 	wdev = __nl80211_lock_held_wdev(rdev, genl_info_net(info), wdev);
@@ -1358,6 +1360,7 @@ static int __nl80211_prepare_wdev_dump(struct netlink_callback *cb,
 				       struct cfg80211_registered_device **rdev,
 				       struct wireless_dev **wdev,
 				       struct nlattr **attrbuf, bool lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct net *netns = sock_net(cb->skb->sk);
 	u32 wdev_id;
@@ -5380,6 +5383,7 @@ static int nl80211_new_interface(struct sk_buff *skb, struct genl_info *info)
 }
 
 static int nl80211_del_interface(struct sk_buff *skb, struct genl_info *info)
+	__context_unsafe(/* drops and reacquires wiphy.mtx */)
 {
 	struct cfg80211_registered_device *rdev = info->user_ptr[0];
 	struct wireless_dev *wdev = info->user_ptr[1];
@@ -8940,6 +8944,7 @@ static int nl80211_fill_station_info(struct cfg80211_registered_device *rdev,
 
 static int nl80211_dump_station(struct sk_buff *skb,
 				struct netlink_callback *cb)
+	__context_unsafe(/* nl80211_prepare_wdev_dump() locks conditionally */)
 {
 	struct cfg80211_registered_device *rdev;
 	struct wireless_dev *wdev;
@@ -9150,6 +9155,7 @@ static int nl80211_dump_station_done(struct netlink_callback *cb)
 }
 
 static int nl80211_get_station(struct sk_buff *skb, struct genl_info *info)
+	__context_unsafe(/* conditional locking */)
 {
 	struct cfg80211_registered_device *rdev = info->user_ptr[0];
 	struct wireless_dev *wdev = info->user_ptr[1];
@@ -10310,6 +10316,7 @@ static int nl80211_send_mpath(struct sk_buff *msg, u32 portid, u32 seq,
 
 static int nl80211_dump_mpath(struct sk_buff *skb,
 			      struct netlink_callback *cb)
+	__context_unsafe(/* nl80211_prepare_wdev_dump() locks conditionally */)
 {
 	struct mpath_info pinfo;
 	struct cfg80211_registered_device *rdev;
@@ -10510,6 +10517,7 @@ static int nl80211_get_mpp(struct sk_buff *skb, struct genl_info *info)
 
 static int nl80211_dump_mpp(struct sk_buff *skb,
 			    struct netlink_callback *cb)
+	__context_unsafe(/* nl80211_prepare_wdev_dump() locks conditionally */)
 {
 	struct mpath_info pinfo;
 	struct cfg80211_registered_device *rdev;
@@ -13060,6 +13068,7 @@ static int nl80211_send_bss(struct sk_buff *msg, struct netlink_callback *cb,
 }
 
 static int nl80211_dump_scan(struct sk_buff *skb, struct netlink_callback *cb)
+	__context_unsafe(/* nl80211_prepare_wdev_dump() locks conditionally */)
 {
 	struct cfg80211_registered_device *rdev;
 	struct cfg80211_internal_bss *scan;
@@ -13200,6 +13209,7 @@ static int nl80211_send_survey(struct sk_buff *msg, u32 portid, u32 seq,
 }
 
 static int nl80211_dump_survey(struct sk_buff *skb, struct netlink_callback *cb)
+	__context_unsafe(/* nl80211_prepare_wdev_dump() locks conditionally */)
 {
 	struct nlattr **attrbuf;
 	struct survey_info survey;
@@ -15296,6 +15306,7 @@ static int nl80211_tx_mgmt_locked(struct cfg80211_registered_device *rdev,
 }
 
 static int nl80211_tx_mgmt(struct sk_buff *skb, struct genl_info *info)
+	__context_unsafe(/* conditional locking */)
 {
 	struct cfg80211_registered_device *rdev = info->user_ptr[0];
 	struct wireless_dev *wdev = info->user_ptr[1];
@@ -20117,6 +20128,7 @@ static bool nl80211_need_wdev_ref(u32 internal_flags)
 static int nl80211_pre_doit(const struct genl_split_ops *ops,
 			    struct sk_buff *skb,
 			    struct genl_info *info)
+	__context_unsafe(/* conditional locking */)
 {
 	struct cfg80211_registered_device *rdev = NULL;
 	struct net *netns = genl_info_net(info);
@@ -20283,6 +20295,7 @@ out_lookup:
 static void nl80211_post_doit(const struct genl_split_ops *ops,
 			      struct sk_buff *skb,
 			      struct genl_info *info)
+	__context_unsafe(/* conditional unlocking */)
 {
 	u32 internal_flags = nl80211_internal_flags[ops->internal_flags];
 	struct wireless_dev *wdev = NULL;

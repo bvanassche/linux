@@ -461,6 +461,7 @@ static int torture_readlock_not_held(void)
 }
 
 static int rcu_torture_read_lock(void)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return 0;
@@ -503,6 +504,7 @@ rcu_read_delay(struct torture_random_state *rrsp, struct rt_read_seg *rtrsp)
 }
 
 static void rcu_torture_read_unlock(int idx)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }
@@ -753,6 +755,7 @@ static void srcu_get_gp_data(int *flags, unsigned long *gp_seq)
 }
 
 static int srcu_torture_read_lock(void)
+	__context_unsafe(/* conditional locking */)
 {
 	int idx;
 	struct srcu_ctr __percpu *scp;
@@ -816,6 +819,7 @@ srcu_read_delay(struct torture_random_state *rrsp, struct rt_read_seg *rtrsp)
 }
 
 static void srcu_torture_read_unlock(int idx)
+	__context_unsafe(/* conditional unlocking */)
 {
 	WARN_ON_ONCE((reader_flavor && (idx & ~reader_flavor)) || (!reader_flavor && (idx & ~0x1)));
 	if (reader_flavor & SRCU_READ_FLAVOR_ATOMIC)
@@ -846,6 +850,7 @@ static bool srcu_torture_have_up_down(void)
 }
 
 static int srcu_torture_down_read(void)
+	__context_unsafe(/* conditional locking */)
 {
 	int idx;
 	struct srcu_ctr __percpu *scp;
@@ -869,6 +874,7 @@ static int srcu_torture_down_read(void)
 }
 
 static void srcu_torture_up_read(int idx)
+	__context_unsafe(/* conditional unlocking */)
 {
 	WARN_ON_ONCE((reader_flavor && (idx & ~reader_flavor)) || (!reader_flavor && (idx & ~0x1)));
 	if (reader_flavor & SRCU_READ_FLAVOR_FAST_UPDOWN)
@@ -886,6 +892,7 @@ static unsigned long srcu_torture_completed(void)
 }
 
 static void srcu_torture_deferred_free(struct rcu_torture *rp)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long flags;
 	bool lockit = jiffies & 0x1;
@@ -1272,6 +1279,7 @@ static struct rcu_torture_ops tasks_rude_ops = {
 
 // Note that an RCU Tasks Trace GP must imply an RCU GP.
 static int tasks_tracing_torture_read_lock(void)
+	__context_unsafe(/* conditional locking */)
 {
 	int use_rcu = !(jiffies & 0xff);
 
@@ -1283,6 +1291,7 @@ static int tasks_tracing_torture_read_lock(void)
 }
 
 static void tasks_tracing_torture_read_unlock(int use_rcu)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (use_rcu)
 		rcu_read_unlock();
@@ -2264,6 +2273,7 @@ static void rcutorture_one_extend_check(char *s, int curstate, int new, int old)
  */
 static void rcutorture_one_extend(int *readstate, int newstate, struct torture_random_state *trsp,
 				  struct rt_read_seg *rtrsp)
+	__context_unsafe(/* conditional locking and unlocking */)
 {
 	bool first;
 	unsigned long flags;
@@ -4718,6 +4728,7 @@ static void srcu_sync_irq(void *unused)
 
 // Test lockdep on SRCU-based deadlock scenarios.
 static void rcu_torture_init_srcu_lockdep(void)
+	__context_unsafe(/* intentional locking violation in selftest */)
 {
 	int cyclelen;
 	int deadlock;

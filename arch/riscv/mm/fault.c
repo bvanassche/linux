@@ -159,6 +159,7 @@ bad_area_nosemaphore(struct pt_regs *regs, int code, unsigned long addr)
 static inline void
 bad_area(struct pt_regs *regs, struct mm_struct *mm, int code,
 	 unsigned long addr)
+	__releases_shared(&mm->mmap_lock)
 {
 	mmap_read_unlock(mm);
 
@@ -276,6 +277,7 @@ static inline bool access_error(unsigned long cause, struct vm_area_struct *vma)
  * problem, and then passes it off to one of the appropriate routines.
  */
 void handle_page_fault(struct pt_regs *regs)
+	__context_unsafe(/* handle_mm_fault() unlocks conditionally */)
 {
 	struct task_struct *tsk;
 	struct vm_area_struct *vma;

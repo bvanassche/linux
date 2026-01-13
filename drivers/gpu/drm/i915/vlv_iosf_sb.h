@@ -10,14 +10,17 @@
 
 #include <drm/intel/vlv_iosf_sb_regs.h>
 
+#include "i915_drv.h"
+
 struct drm_device;
-struct drm_i915_private;
 
 void vlv_iosf_sb_init(struct drm_i915_private *i915);
 void vlv_iosf_sb_fini(struct drm_i915_private *i915);
 
-void vlv_iosf_sb_get(struct drm_device *drm, unsigned long unit_mask);
-void vlv_iosf_sb_put(struct drm_device *drm, unsigned long unit_mask);
+void vlv_iosf_sb_get(struct drm_device *drm, unsigned long unit_mask)
+	__acquires(&to_i915(drm)->vlv_iosf_sb.lock);
+void vlv_iosf_sb_put(struct drm_device *drm, unsigned long unit_mask)
+	__releases(&to_i915(drm)->vlv_iosf_sb.lock);
 
 u32 vlv_iosf_sb_read(struct drm_device *drm, enum vlv_iosf_sb_unit unit, u32 addr);
 int vlv_iosf_sb_write(struct drm_device *drm, enum vlv_iosf_sb_unit unit, u32 addr, u32 val);

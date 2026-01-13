@@ -303,6 +303,7 @@ static int amd_pstate_set_mode(enum amd_pstate_mode mode)
 }
 
 static int amd_pstate_ut_epp(u32 index)
+	__context_unsafe(/* conditional locking */)
 {
 	enum energy_perf_value_index epp_modes[] = {
 		EPP_INDEX_DYNAMIC,

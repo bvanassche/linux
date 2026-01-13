@@ -325,6 +325,7 @@ static int gb_gpio_irq_set_type(struct irq_data *d, unsigned int type)
 }
 
 static void gb_gpio_irq_bus_lock(struct irq_data *d)
+	__acquires(&((struct gb_gpio_controller *)gpiochip_get_data(irq_data_to_gpio_chip(d)))->irq_lock)
 {
 	struct gpio_chip *chip = irq_data_to_gpio_chip(d);
 	struct gb_gpio_controller *ggc = gpiochip_get_data(chip);
@@ -333,6 +334,7 @@ static void gb_gpio_irq_bus_lock(struct irq_data *d)
 }
 
 static void gb_gpio_irq_bus_sync_unlock(struct irq_data *d)
+	__releases(&((struct gb_gpio_controller *)gpiochip_get_data(irq_data_to_gpio_chip(d)))->irq_lock)
 {
 	struct gpio_chip *chip = irq_data_to_gpio_chip(d);
 	struct gb_gpio_controller *ggc = gpiochip_get_data(chip);

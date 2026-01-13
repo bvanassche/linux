@@ -313,6 +313,7 @@ static struct ubi_ltree_entry *ltree_add_entry(struct ubi_device *ubi,
  * of success and a negative error code in case of failure.
  */
 static int leb_read_lock(struct ubi_device *ubi, int vol_id, int lnum)
+	__context_unsafe(/* locks allocated pointer */)
 {
 	struct ubi_ltree_entry *le;
 
@@ -330,6 +331,7 @@ static int leb_read_lock(struct ubi_device *ubi, int vol_id, int lnum)
  * @lnum: logical eraseblock number
  */
 static void leb_read_unlock(struct ubi_device *ubi, int vol_id, int lnum)
+	__context_unsafe(/* unlocks looked up pointer */)
 {
 	struct ubi_ltree_entry *le;
 
@@ -355,6 +357,7 @@ static void leb_read_unlock(struct ubi_device *ubi, int vol_id, int lnum)
  * of success and a negative error code in case of failure.
  */
 static int leb_write_lock(struct ubi_device *ubi, int vol_id, int lnum)
+	__context_unsafe(/* locks allocated pointer */)
 {
 	struct ubi_ltree_entry *le;
 
@@ -377,6 +380,7 @@ static int leb_write_lock(struct ubi_device *ubi, int vol_id, int lnum)
  * failure.
  */
 static int leb_write_trylock(struct ubi_device *ubi, int vol_id, int lnum)
+	__context_unsafe(/* locks allocated pointer */)
 {
 	struct ubi_ltree_entry *le;
 
@@ -406,6 +410,7 @@ static int leb_write_trylock(struct ubi_device *ubi, int vol_id, int lnum)
  * @lnum: logical eraseblock number
  */
 static void leb_write_unlock(struct ubi_device *ubi, int vol_id, int lnum)
+	__context_unsafe(/* unlocks looked up pointer */)
 {
 	struct ubi_ltree_entry *le;
 

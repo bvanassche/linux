@@ -1126,6 +1126,7 @@ LEAVE_UPDATE:
 }
 
 static int abituguru3_suspend(struct device *dev)
+	__acquires(&((struct abituguru3_data *)dev_get_drvdata(dev))->update_lock)
 {
 	struct abituguru3_data *data = dev_get_drvdata(dev);
 	/*
@@ -1137,6 +1138,7 @@ static int abituguru3_suspend(struct device *dev)
 }
 
 static int abituguru3_resume(struct device *dev)
+	__releases(&((struct abituguru3_data *)dev_get_drvdata(dev))->update_lock)
 {
 	struct abituguru3_data *data = dev_get_drvdata(dev);
 	mutex_unlock(&data->update_lock);

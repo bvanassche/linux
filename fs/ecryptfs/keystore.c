@@ -486,6 +486,8 @@ ecryptfs_find_global_auth_tok_for_sig(
 	struct key **auth_tok_key,
 	struct ecryptfs_auth_tok **auth_tok,
 	struct ecryptfs_mount_crypt_stat *mount_crypt_stat, char *sig)
+	__cond_acquires(0, &(*auth_tok_key)->sem)
+	__context_unsafe(/* locks walker->global_auth_tok_key->sem */)
 {
 	struct ecryptfs_global_auth_tok *walker;
 	int rc = 0;
@@ -557,6 +559,7 @@ ecryptfs_find_auth_tok_for_sig(
 	struct ecryptfs_auth_tok **auth_tok,
 	struct ecryptfs_mount_crypt_stat *mount_crypt_stat,
 	char *sig)
+	__cond_acquires(0, &(*auth_tok_key)->sem)
 {
 	int rc = 0;
 
@@ -618,6 +621,7 @@ ecryptfs_write_tag_70_packet(char *dest, size_t *remaining_bytes,
 			     size_t *packet_size,
 			     struct ecryptfs_mount_crypt_stat *mount_crypt_stat,
 			     char *filename, size_t filename_size)
+	__context_unsafe(/* auth_tok_key->sem held iff auth_tok_key != NULL */)
 {
 	struct ecryptfs_write_tag_70_packet_silly_stack *s;
 	struct key *auth_tok_key = NULL;
@@ -852,6 +856,7 @@ ecryptfs_parse_tag_70_packet(char **filename, size_t *filename_size,
 			     size_t *packet_size,
 			     struct ecryptfs_mount_crypt_stat *mount_crypt_stat,
 			     char *data, size_t max_packet_size)
+	__context_unsafe(/* auth_tok_key->sem held iff auth_tok_key != NULL */)
 {
 	struct ecryptfs_parse_tag_70_packet_silly_stack *s;
 	struct key *auth_tok_key = NULL;
@@ -1588,6 +1593,7 @@ out:
 int ecryptfs_keyring_auth_tok_for_sig(struct key **auth_tok_key,
 				      struct ecryptfs_auth_tok **auth_tok,
 				      char *sig)
+	__cond_acquires(0, &(*auth_tok_key)->sem)
 {
 	int rc = 0;
 
@@ -1949,6 +1955,7 @@ pki_encrypt_session_key(struct key *auth_tok_key,
 			struct ecryptfs_auth_tok *auth_tok,
 			struct ecryptfs_crypt_stat *crypt_stat,
 			struct ecryptfs_key_record *key_rec)
+	__releases(&auth_tok_key->sem)
 {
 	struct ecryptfs_msg_ctx *msg_ctx = NULL;
 	char *payload = NULL;
@@ -2007,6 +2014,7 @@ write_tag_1_packet(char *dest, size_t *remaining_bytes,
 		   struct key *auth_tok_key, struct ecryptfs_auth_tok *auth_tok,
 		   struct ecryptfs_crypt_stat *crypt_stat,
 		   struct ecryptfs_key_record *key_rec, size_t *packet_size)
+	__releases(&auth_tok_key->sem)
 {
 	size_t i;
 	size_t encrypted_session_key_valid = 0;

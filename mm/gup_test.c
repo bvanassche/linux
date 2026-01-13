@@ -106,6 +106,7 @@ static void dump_pages_test(struct gup_test *gup, struct page **pages,
 
 static int __gup_test_ioctl(unsigned int cmd,
 		struct gup_test *gup)
+	__context_unsafe(/* conditional locking */)
 {
 	ktime_t start_time, end_time;
 	unsigned long i, nr_pages, addr, next;
@@ -227,6 +228,7 @@ static inline void pin_longterm_test_stop(struct gup_test_data *data)
 
 static inline int pin_longterm_test_start(struct gup_test_data *data,
 		unsigned long arg)
+	__context_unsafe(/* conditional locking */)
 {
 	long nr_pages, cur_pages, addr, remaining_pages;
 	int gup_flags = FOLL_LONGTERM;

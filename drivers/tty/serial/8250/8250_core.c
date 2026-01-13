@@ -407,6 +407,7 @@ static void univ8250_console_write_thread(struct console *co,
 }
 
 static void univ8250_console_device_lock(struct console *co, unsigned long *flags)
+	__acquires(&serial8250_ports[co->index].port.lock)
 {
 	struct uart_port *up = &serial8250_ports[co->index].port;
 
@@ -414,6 +415,7 @@ static void univ8250_console_device_lock(struct console *co, unsigned long *flag
 }
 
 static void univ8250_console_device_unlock(struct console *co, unsigned long flags)
+	__releases(&serial8250_ports[co->index].port.lock)
 {
 	struct uart_port *up = &serial8250_ports[co->index].port;
 

@@ -863,6 +863,7 @@ static void ocfs2_signal_wipe_completion(struct ocfs2_super *osb,
 
 static int ocfs2_wipe_inode(struct inode *inode,
 			    struct buffer_head *di_bh)
+	__context_unsafe(/* conditional locking */)
 {
 	int status, orphaned_slot = -1;
 	struct inode *orphan_dir_inode = NULL;
@@ -2032,7 +2033,7 @@ static struct super_block *ocfs2_inode_cache_get_super(struct ocfs2_caching_info
 }
 
 static void ocfs2_inode_cache_lock(struct ocfs2_caching_info *ci)
-__acquires(&oi->ip_lock)
+	__acquires(&cache_info_to_inode(ci)->ip_lock)
 {
 	struct ocfs2_inode_info *oi = cache_info_to_inode(ci);
 
@@ -2040,7 +2041,7 @@ __acquires(&oi->ip_lock)
 }
 
 static void ocfs2_inode_cache_unlock(struct ocfs2_caching_info *ci)
-__releases(&oi->ip_lock)
+	__releases(&cache_info_to_inode(ci)->ip_lock)
 {
 	struct ocfs2_inode_info *oi = cache_info_to_inode(ci);
 
@@ -2048,6 +2049,7 @@ __releases(&oi->ip_lock)
 }
 
 static void ocfs2_inode_cache_io_lock(struct ocfs2_caching_info *ci)
+	__acquires(&cache_info_to_inode(ci)->ip_io_mutex)
 {
 	struct ocfs2_inode_info *oi = cache_info_to_inode(ci);
 
@@ -2055,6 +2057,7 @@ static void ocfs2_inode_cache_io_lock(struct ocfs2_caching_info *ci)
 }
 
 static void ocfs2_inode_cache_io_unlock(struct ocfs2_caching_info *ci)
+	__releases(&cache_info_to_inode(ci)->ip_io_mutex)
 {
 	struct ocfs2_inode_info *oi = cache_info_to_inode(ci);
 

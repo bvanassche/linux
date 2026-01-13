@@ -577,6 +577,8 @@ void fw_card_initialize(struct fw_card *card,
 {
 	static atomic_t index = ATOMIC_INIT(-1);
 
+	__assume_ctx_lock(&card->transactions.lock);
+
 	card->index = atomic_inc_return(&index);
 	card->driver = driver;
 	card->device = device;
@@ -587,6 +589,8 @@ void fw_card_initialize(struct fw_card *card,
 	spin_lock_init(&card->transactions.lock);
 
 	spin_lock_init(&card->topology_map.lock);
+
+	__assume_ctx_lock(&card->split_timeout.lock);
 
 	card->split_timeout.hi = DEFAULT_SPLIT_TIMEOUT / 8000;
 	card->split_timeout.lo = (DEFAULT_SPLIT_TIMEOUT % 8000) << 19;
@@ -860,6 +864,8 @@ void fw_core_remove_card(struct fw_card *card)
 
 	disable_work_sync(&closer.work);
 	destroy_work_on_stack(&closer.work);
+
+	__assume_ctx_lock(&card->transactions.lock);
 
 	WARN_ON(!list_empty(&closer.packet_list));
 	WARN_ON(!list_empty(&card->transactions.list));

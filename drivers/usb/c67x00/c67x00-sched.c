@@ -472,6 +472,7 @@ int c67x00_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
  */
 static void
 c67x00_giveback_urb(struct c67x00_hcd *c67x00, struct urb *urb, int status)
+	__must_hold(&c67x00->lock)
 {
 	struct c67x00_urb_priv *urbp;
 
@@ -740,6 +741,7 @@ static int c67x00_add_int_urb(struct c67x00_hcd *c67x00, struct urb *urb)
 }
 
 static int c67x00_add_iso_urb(struct c67x00_hcd *c67x00, struct urb *urb)
+	__must_hold(&c67x00->lock)
 {
 	struct c67x00_urb_priv *urbp = urb->hcpriv;
 
@@ -906,6 +908,7 @@ static inline void c67x00_clear_pipe(struct c67x00_hcd *c67x00,
 
 static void c67x00_handle_successful_td(struct c67x00_hcd *c67x00,
 					struct c67x00_td *td)
+	__must_hold(&c67x00->lock)
 {
 	struct urb *urb = td->urb;
 
@@ -951,6 +954,7 @@ static void c67x00_handle_successful_td(struct c67x00_hcd *c67x00,
 }
 
 static void c67x00_handle_isoc(struct c67x00_hcd *c67x00, struct c67x00_td *td)
+	__must_hold(&c67x00->lock)
 {
 	struct urb *urb = td->urb;
 	int cnt;
@@ -976,6 +980,7 @@ static void c67x00_handle_isoc(struct c67x00_hcd *c67x00, struct c67x00_td *td)
  * pre: current_td == 0
  */
 static inline void c67x00_check_td_list(struct c67x00_hcd *c67x00)
+	__must_hold(&c67x00->lock)
 {
 	struct c67x00_td *td, *tmp;
 	struct urb *urb;

@@ -137,6 +137,7 @@ static int insert_retry(struct rhashtable *ht, struct test_obj *obj,
 
 static int __init test_rht_lookup(struct rhashtable *ht, struct test_obj *array,
 				  unsigned int entries)
+	__must_hold_shared(RCU)
 {
 	unsigned int i;
 

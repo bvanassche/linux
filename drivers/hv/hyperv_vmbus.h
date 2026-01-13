@@ -230,13 +230,6 @@ int hv_ringbuffer_read(struct vmbus_channel *channel,
 #define MAX_CHANNEL_RELIDS					\
 	max(MAX_NUM_CHANNELS_SUPPORTED, HV_EVENT_FLAGS_COUNT)
 
-enum vmbus_connect_state {
-	DISCONNECTED,
-	CONNECTING,
-	CONNECTED,
-	DISCONNECTING
-};
-
 #define MAX_SIZE_CHANNEL_MESSAGE	HV_MESSAGE_PAYLOAD_BYTE_COUNT
 
 /*
@@ -244,78 +237,6 @@ enum vmbus_connect_state {
  * CHANNELMSG_OFFERCHANNEL and CHANNELMSG_RESCIND_CHANNELOFFER.
  */
 #define VMBUS_CONNECT_CPU	0
-
-struct vmbus_connection {
-	u32 msg_conn_id;
-
-	atomic_t offer_in_progress;
-
-	enum vmbus_connect_state conn_state;
-
-	atomic_t next_gpadl_handle;
-
-	struct completion  unload_event;
-	/*
-	 * Represents channel interrupts. Each bit position represents a
-	 * channel.  When a channel sends an interrupt via VMBUS, it finds its
-	 * bit in the sendInterruptPage, set it and calls Hv to generate a port
-	 * event. The other end receives the port event and parse the
-	 * recvInterruptPage to see which bit is set
-	 */
-	void *int_page;
-	void *send_int_page;
-	void *recv_int_page;
-
-	/*
-	 * 2 pages - 1st page for parent->child notification and 2nd
-	 * is child->parent notification
-	 */
-	struct hv_monitor_page *monitor_pages[2];
-	struct list_head chn_msg_list;
-	spinlock_t channelmsg_lock;
-
-	/* List of channels */
-	struct list_head chn_list;
-	struct mutex channel_mutex;
-
-	/* Array of channel pointers, indexed by relid */
-	struct vmbus_channel **channels;
-	u32 relid_hiwater;
-
-	/*
-	 * An offer message is handled first on the work_queue, and then
-	 * is further handled on handle_primary_chan_wq or
-	 * handle_sub_chan_wq.
-	 */
-	struct workqueue_struct *work_queue;
-	struct workqueue_struct *handle_primary_chan_wq;
-	struct workqueue_struct *handle_sub_chan_wq;
-	struct workqueue_struct *rescind_work_queue;
-
-	/*
-	 * On suspension of the vmbus, the accumulated offer messages
-	 * must be dropped.
-	 */
-	bool ignore_any_offer_msg;
-
-	/*
-	 * The number of sub-channels and hv_sock channels that should be
-	 * cleaned up upon suspend: sub-channels will be re-created upon
-	 * resume, and hv_sock channels should not survive suspend.
-	 */
-	atomic_t nr_chan_close_on_suspend;
-	/*
-	 * vmbus_bus_suspend() waits for "nr_chan_close_on_suspend" to
-	 * drop to zero.
-	 */
-	struct completion ready_for_suspend_event;
-
-	/*
-	 * Completed once the host has offered all boot-time channels.
-	 * Note that some channels may still be under process on a workqueue.
-	 */
-	struct completion all_offers_delivered_event;
-};
 
 
 struct vmbus_msginfo {
@@ -326,8 +247,6 @@ struct vmbus_msginfo {
 	unsigned char msg[];
 };
 
-
-extern struct vmbus_connection vmbus_connection;
 
 int vmbus_negotiate_version(struct vmbus_channel_msginfo *msginfo, u32 version);
 

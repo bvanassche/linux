@@ -100,6 +100,7 @@ unsigned long iommu_tbl_range_alloc(struct device *dev,
 				unsigned long *handle,
 				unsigned long mask,
 				unsigned int align_order)
+	__context_unsafe(/* pool pointer is reassigned while locked */)
 {
 	unsigned int pool_hash = __this_cpu_read(iommu_hash_common);
 	unsigned long n, end, start, limit, boundary_size;

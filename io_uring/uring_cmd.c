@@ -143,6 +143,7 @@ EXPORT_SYMBOL_GPL(__io_uring_cmd_do_in_task);
  * -EIOCBQUEUED upon receiving the command.
  */
 void __io_uring_cmd_done(struct io_uring_cmd *ioucmd, unsigned issue_flags)
+	__context_unsafe(/* caller holds uring_lock */)
 {
 	struct io_kiocb *req = cmd_to_io_kiocb(ioucmd);
 

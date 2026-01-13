@@ -840,6 +840,7 @@ static void drop_links(struct nameidata *nd)
 }
 
 static void leave_rcu(struct nameidata *nd)
+	__releases_shared(RCU)
 {
 	nd->flags &= ~LOOKUP_RCU;
 	nd->seq = nd->next_seq = 0;
@@ -847,6 +848,7 @@ static void leave_rcu(struct nameidata *nd)
 }
 
 static void terminate_walk(struct nameidata *nd)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (unlikely(nd->depth))
 		drop_links(nd);
@@ -939,6 +941,7 @@ static bool legitimize_root(struct nameidata *nd)
  * terminate_walk().
  */
 static bool try_to_unlazy(struct nameidata *nd)
+	__context_unsafe(/* releases RCU held by caller */)
 {
 	struct dentry *parent = nd->path.dentry;
 
@@ -980,6 +983,7 @@ out:
  * terminate_walk().
  */
 static bool try_to_unlazy_next(struct nameidata *nd, struct dentry *dentry)
+	__context_unsafe(/* releases RCU held by caller */)
 {
 	int res;
 
@@ -1513,6 +1517,7 @@ static bool choose_mountpoint_rcu(struct mount *m, const struct path *root,
 
 static bool choose_mountpoint(struct mount *m, const struct path *root,
 			      struct path *path)
+	__context_unsafe(/* locks in a loop */)
 {
 	bool found;
 
@@ -1691,6 +1696,7 @@ EXPORT_SYMBOL(follow_down);
  * we meet a managed dentry that would need blocking.
  */
 static bool __follow_mount_rcu(struct nameidata *nd, struct path *path)
+	__context_unsafe(/* releases mount_lock held by caller */)
 {
 	struct dentry *dentry = path->dentry;
 	unsigned int flags = dentry->d_flags;
@@ -2159,6 +2165,7 @@ static __always_inline const char *step_into(struct nameidata *nd, int flags,
 }
 
 static struct dentry *follow_dotdot_rcu(struct nameidata *nd)
+	__context_unsafe(/* releases mount_lock held by caller */)
 {
 	struct dentry *parent, *old;
 
@@ -2681,6 +2688,7 @@ OK:
 
 /* must be paired with terminate_walk() */
 static const char *path_init(struct nameidata *nd, unsigned flags)
+	__context_unsafe(/* conditional locking */)
 {
 	int error;
 	const char *s = nd->pathname;
@@ -2911,6 +2919,7 @@ static int filename_parentat(int dfd, struct filename *name,
 static struct dentry *__start_dirop(struct dentry *parent, struct qstr *name,
 				    unsigned int lookup_flags,
 				    unsigned int state)
+	__context_unsafe(/* conditional locking */)
 {
 	struct dentry *dentry;
 	struct inode *dir = d_inode(parent);
@@ -2956,6 +2965,7 @@ struct dentry *start_dirop(struct dentry *parent, struct qstr *name,
  * protect the dentry is dropped and the dentry itself is released (dput()).
  */
 void end_dirop(struct dentry *de)
+	__context_unsafe(/* releases i_rwsem held by caller */)
 {
 	if (!IS_ERR(de)) {
 		inode_unlock(de->d_parent->d_inode);
@@ -3565,6 +3575,7 @@ EXPORT_SYMBOL(start_removing_noperm);
  */
 struct dentry *start_creating_dentry(struct dentry *parent,
 				     struct dentry *child)
+	__context_unsafe(/* conditional locking */)
 {
 	inode_lock_nested(parent->d_inode, I_MUTEX_PARENT);
 	if (unlikely(IS_DEADDIR(parent->d_inode) ||
@@ -3598,6 +3609,7 @@ EXPORT_SYMBOL(start_creating_dentry);
  */
 struct dentry *start_removing_dentry(struct dentry *parent,
 				     struct dentry *child)
+	__context_unsafe(/* conditional locking */)
 {
 	inode_lock_nested(parent->d_inode, I_MUTEX_PARENT);
 	if (unlikely(IS_DEADDIR(parent->d_inode) ||
@@ -3751,6 +3763,7 @@ EXPORT_SYMBOL(may_create_dentry);
 
 // p1 != p2, both are on the same filesystem, ->s_vfs_rename_mutex is held
 static struct dentry *lock_two_directories(struct dentry *p1, struct dentry *p2)
+	__context_unsafe(/* conditional locking */)
 {
 	struct dentry *p = p1, *q = p2, *r;
 
@@ -3786,6 +3799,7 @@ static struct dentry *lock_two_directories(struct dentry *p1, struct dentry *p2)
  * p1 and p2 should be directories on the same fs.
  */
 static struct dentry *lock_rename(struct dentry *p1, struct dentry *p2)
+	__context_unsafe(/* acquires locks for caller */)
 {
 	if (p1 == p2) {
 		inode_lock_nested(p1->d_inode, I_MUTEX_PARENT);
@@ -3800,6 +3814,7 @@ static struct dentry *lock_rename(struct dentry *p1, struct dentry *p2)
  * c1 and p2 should be on the same fs.
  */
 static struct dentry *lock_rename_child(struct dentry *c1, struct dentry *p2)
+	__context_unsafe(/* acquires locks for caller */)
 {
 	if (READ_ONCE(c1->d_parent) == p2) {
 		/*
@@ -3838,6 +3853,7 @@ static struct dentry *lock_rename_child(struct dentry *c1, struct dentry *p2)
 }
 
 static void unlock_rename(struct dentry *p1, struct dentry *p2)
+	__context_unsafe(/* releases locks held by caller */)
 {
 	inode_unlock(p1->d_inode);
 	if (p1 != p2) {
@@ -4436,6 +4452,7 @@ static struct dentry *atomic_open(const struct path *path, struct dentry *dentry
  */
 static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 				  const struct open_flags *op)
+	__context_unsafe(/* conditional locking */)
 {
 	struct delegated_inode delegated_inode = { };
 	const struct mnt_idmap *idmap;
@@ -4740,6 +4757,7 @@ static struct dentry *lookup_fast_for_open(struct nameidata *nd, int open_flag)
 
 static const char *open_last_lookups(struct nameidata *nd,
 		   struct file *file, const struct open_flags *op)
+	__context_unsafe(/* RCU lock is conditional */)
 {
 	int open_flag = op->open_flag;
 	struct dentry *dentry;
@@ -6091,6 +6109,7 @@ SYSCALL_DEFINE2(link, const char __user *, oldname, const char __user *, newname
  *	   locking].
  */
 int vfs_rename(struct renamedata *rd)
+	__context_unsafe(/* conditional locking */)
 {
 	int error;
 	struct inode *old_dir = d_inode(rd->old_parent);

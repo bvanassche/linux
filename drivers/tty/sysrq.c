@@ -147,6 +147,7 @@ static const struct sysrq_key_op sysrq_unraw_op = {
 #endif /* CONFIG_VT */
 
 static void sysrq_handle_crash(u8 key)
+	__releases_shared(RCU)
 {
 	/* release the RCU read lock before crashing */
 	rcu_read_unlock();

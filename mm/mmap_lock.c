@@ -225,6 +225,7 @@ static bool vma_seqcount_is_write_locked(unsigned int vma_seq, unsigned int mm_s
  */
 static struct vm_area_struct *vma_start_read(struct mm_struct *mm,
 					     struct vm_area_struct *vma)
+	__context_unsafe(/* conditional release */)
 {
 	unsigned int vma_seq;
 	unsigned int mm_seq;
@@ -322,6 +323,7 @@ err_unstable:
  */
 struct vm_area_struct *lock_vma_under_rcu(struct mm_struct *mm,
 					  unsigned long address)
+	__context_unsafe(/* because of the vma_start_read() call */)
 {
 	MA_STATE(mas, &mm->mm_mt, address, address);
 	struct vm_area_struct *vma;
@@ -456,6 +458,7 @@ static bool vma_rcu_iter_may_have_skipped(const struct vma_rcu_iter *rvmi,
 
 struct vm_area_struct *lock_next_vma(struct vma_rcu_iter *rvmi,
 				     unsigned long from_addr)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mm_struct *mm = rvmi->mm;
 	struct vma_iterator *vmi = rvmi->vmi;
@@ -564,6 +567,7 @@ EXPORT_SYMBOL(__mm_reset_vma_seqcounts);
 #include <linux/extable.h>
 
 static inline bool get_mmap_lock_carefully(struct mm_struct *mm, struct pt_regs *regs)
+	__cond_acquires_shared(true, &mm->mmap_lock)
 {
 	if (likely(mmap_read_trylock(mm)))
 		return true;
@@ -591,6 +595,8 @@ static inline bool mmap_upgrade_trylock(struct mm_struct *mm)
 }
 
 static inline bool upgrade_mmap_lock_carefully(struct mm_struct *mm, struct pt_regs *regs)
+	__releases_shared(&mm->mmap_lock)
+	__cond_acquires(true, &mm->mmap_lock)
 {
 	mmap_read_unlock(mm);
 	if (regs && !user_mode(regs)) {
@@ -622,6 +628,7 @@ static inline bool upgrade_mmap_lock_carefully(struct mm_struct *mm, struct pt_r
  */
 struct vm_area_struct *lock_mm_and_find_vma(struct mm_struct *mm,
 			unsigned long addr, struct pt_regs *regs)
+	__cond_acquires_shared(nonnull, &mm->mmap_lock)
 {
 	struct vm_area_struct *vma;
 

@@ -201,6 +201,7 @@ unlock:
 
 /* mutex must be held by caller */
 static void destroy_session(struct kref *ref)
+	__context_unsafe(/* container_of() */)
 {
 	struct amdtee_session *sess = container_of(ref, struct amdtee_session,
 						   refcount);

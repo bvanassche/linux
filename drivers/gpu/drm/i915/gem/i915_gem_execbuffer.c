@@ -1780,6 +1780,7 @@ static int eb_reinit_userptr(struct i915_execbuffer *eb)
 }
 
 static noinline int eb_relocate_parse_slow(struct i915_execbuffer *eb)
+	__must_hold(&eb->ww.ctx)
 {
 	const unsigned int count = eb->buffer_count;
 	bool have_copy = false;
@@ -1903,6 +1904,7 @@ out:
 }
 
 static int eb_relocate_parse(struct i915_execbuffer *eb)
+	__must_hold(&eb->ww.ctx)
 {
 	int err;
 	bool throttle = true;
@@ -3082,6 +3084,7 @@ static void retire_requests(struct intel_timeline *tl, struct i915_request *end)
 
 static int eb_request_add(struct i915_execbuffer *eb, struct i915_request *rq,
 			  int err, bool last_parallel)
+	__releases(&i915_request_timeline(rq)->mutex)
 {
 	struct intel_timeline * const tl = i915_request_timeline(rq);
 	struct i915_sched_attr attr = {};
@@ -3127,6 +3130,7 @@ static int eb_request_add(struct i915_execbuffer *eb, struct i915_request *rq,
 }
 
 static int eb_requests_add(struct i915_execbuffer *eb, int err)
+	__context_unsafe(/* release in loop */)
 {
 	int i;
 
@@ -3354,6 +3358,7 @@ i915_gem_do_execbuffer(struct drm_device *dev,
 		       struct drm_file *file,
 		       struct drm_i915_gem_execbuffer2 *args,
 		       struct drm_i915_gem_exec_object2 *exec)
+	__context_unsafe(/* too complex for Clang */)
 {
 	struct drm_i915_private *i915 = to_i915(dev);
 	struct i915_execbuffer eb;

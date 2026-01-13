@@ -157,6 +157,7 @@ static inline struct bsd_acct_struct *to_acct(struct fs_pin *p)
 }
 
 static struct bsd_acct_struct *acct_get(struct pid_namespace *ns)
+	__context_unsafe(/* conditional locking */)
 {
 	struct bsd_acct_struct *res;
 again:
@@ -183,6 +184,7 @@ again:
 }
 
 static void acct_pin_kill(struct fs_pin *pin)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	struct bsd_acct_struct *acct = to_acct(pin);
 	mutex_lock(&acct->lock);
@@ -595,6 +597,7 @@ void acct_collect(long exitcode, int group_dead)
 }
 
 static void slow_acct_process(struct pid_namespace *ns)
+	__context_unsafe(/* acct_get() locks conditionally */)
 {
 	for ( ; ns; ns = ns->parent) {
 		struct bsd_acct_struct *acct = acct_get(ns);

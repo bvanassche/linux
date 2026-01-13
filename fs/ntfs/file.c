@@ -1466,6 +1466,7 @@ out:
 		 FALLOC_FL_COLLAPSE_RANGE)
 
 long ntfs_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
+	__context_unsafe(/* conditional locking */)
 {
 	struct inode *vi = file_inode(file);
 	struct ntfs_inode *ni = NTFS_I(vi);

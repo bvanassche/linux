@@ -311,6 +311,7 @@ static void __remove_shared_vm_struct(struct vm_area_struct *vma,
  * @vp: The initialized vma_prepare struct
  */
 static void vma_prepare(struct vma_prepare *vp)
+	__context_unsafe(/* conditional locking */)
 {
 	if (vp->file) {
 		uprobe_munmap(vp->vma, vp->vma->vm_start, vp->vma->vm_end);
@@ -361,6 +362,7 @@ static void vma_prepare(struct vma_prepare *vp)
  */
 static void vma_complete(struct vma_prepare *vp, struct vma_iterator *vmi,
 			 struct mm_struct *mm)
+	__context_unsafe(/* releases locks held by caller */)
 {
 	if (vp->file) {
 		if (vp->adj_next)
@@ -1426,6 +1428,7 @@ static void vms_clean_up_area(struct vma_munmap_struct *vms,
  */
 static void vms_complete_munmap_vmas(struct vma_munmap_struct *vms,
 		struct ma_state *mas_detach)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct vm_area_struct *vma;
 	struct mm_struct *mm;
@@ -1727,6 +1730,7 @@ gather_failed:
 int do_vmi_munmap(struct vma_iterator *vmi, struct mm_struct *mm,
 		  unsigned long start, size_t len, struct list_head *uf,
 		  bool unlock)
+	__context_unsafe(/* conditional unlocking */)
 {
 	unsigned long end;
 	struct vm_area_struct *vma;
@@ -1938,6 +1942,7 @@ void unlink_file_vma_batch_final(struct unlink_vma_file_batch *vb)
 }
 
 static void vma_link_file(struct vm_area_struct *vma, bool hold_rmap_lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct file *file = vma->vm_file;
 	struct address_space *mapping;
@@ -2292,6 +2297,7 @@ bool vma_wants_writenotify(struct vm_area_struct *vma, pgprot_t vm_page_prot)
 static DEFINE_MUTEX(mm_all_locks_mutex);
 
 static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!test_bit(0, (unsigned long *) &anon_vma->root->rb_root.rb_root.rb_node)) {
 		/*
@@ -2315,6 +2321,7 @@ static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
 }
 
 static void vm_lock_mapping(struct mm_struct *mm, struct address_space *mapping)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!test_bit(AS_MM_ALL_LOCKS, &mapping->flags)) {
 		/*
@@ -2371,6 +2378,7 @@ static void vm_lock_mapping(struct mm_struct *mm, struct address_space *mapping)
  * mm_take_all_locks() can fail if it's interrupted by signals.
  */
 int mm_take_all_locks(struct mm_struct *mm)
+	__cond_acquires(0, &mm_all_locks_mutex)
 {
 	struct vm_area_struct *vma;
 	struct anon_vma_chain *avc;
@@ -2427,6 +2435,7 @@ out_unlock:
 }
 
 static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (test_bit(0, (unsigned long *) &anon_vma->root->rb_root.rb_root.rb_node)) {
 		/*
@@ -2449,6 +2458,7 @@ static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
 }
 
 static void vm_unlock_mapping(struct address_space *mapping)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (test_bit(AS_MM_ALL_LOCKS, &mapping->flags)) {
 		/*
@@ -2467,6 +2477,7 @@ static void vm_unlock_mapping(struct address_space *mapping)
  * mm_drop_all_locks() returns.
  */
 void mm_drop_all_locks(struct mm_struct *mm)
+	__releases(&mm_all_locks_mutex)
 {
 	struct vm_area_struct *vma;
 	struct anon_vma_chain *avc;
@@ -3588,6 +3599,7 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 }
 
 int __vm_munmap(unsigned long start, size_t len, bool unlock)
+	__context_unsafe(/* conditional unlocking */)
 {
 	int ret;
 	struct mm_struct *mm = current->mm;

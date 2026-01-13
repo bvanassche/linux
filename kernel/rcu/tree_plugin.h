@@ -474,6 +474,7 @@ static bool rcu_preempt_has_tasks(struct rcu_node *rnp)
  */
 static notrace void
 rcu_preempt_deferred_qs_irqrestore(struct task_struct *t, unsigned long flags)
+	__context_unsafe(/* conditional locking */)
 {
 	bool empty_exp;
 	bool empty_norm;

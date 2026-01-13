@@ -47,6 +47,7 @@ static void smc_close_cleanup_listen(struct sock *parent)
 
 /* wait for sndbuf data being transmitted */
 static void smc_close_stream_wait(struct smc_sock *smc, long timeout)
+	__must_hold(&smc->sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct sock *sk = &smc->sk;
@@ -112,6 +113,7 @@ int smc_close_abort(struct smc_connection *conn)
 }
 
 static void smc_close_cancel_work(struct smc_sock *smc)
+	__must_hold(&smc->sk)
 {
 	struct sock *sk = &smc->sk;
 
@@ -127,6 +129,7 @@ static void smc_close_cancel_work(struct smc_sock *smc)
  * link group is terminated, i.e. RDMA communication no longer possible
  */
 void smc_close_active_abort(struct smc_sock *smc)
+	__must_hold(&smc->sk)
 {
 	struct sock *sk = &smc->sk;
 	bool release_clcsock = false;
@@ -192,6 +195,7 @@ static inline bool smc_close_sent_any_close(struct smc_connection *conn)
 }
 
 int smc_close_active(struct smc_sock *smc)
+	__must_hold(&smc->sk)
 {
 	struct smc_cdc_conn_state_flags *txflags =
 		&smc->conn.local_tx_ctrl.conn_state_flags;
@@ -449,6 +453,7 @@ wakeup:
 }
 
 int smc_close_shutdown_write(struct smc_sock *smc)
+	__must_hold(&smc->sk)
 {
 	struct smc_connection *conn = &smc->conn;
 	struct sock *sk = &smc->sk;

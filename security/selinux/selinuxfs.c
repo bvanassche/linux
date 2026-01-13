@@ -1960,6 +1960,7 @@ static int sel_init_fs_context(struct fs_context *fc)
 }
 
 static void sel_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct selinux_fs_info *fsi = sb->s_fs_info;
 

@@ -218,6 +218,7 @@ err:
 }
 
 static int vfs_cmd_create(struct fs_context *fc, bool exclusive)
+	__context_unsafe(/* s_umount is acquired by vfs_get_tree() */)
 {
 	struct super_block *sb;
 	int ret;
@@ -356,6 +357,7 @@ SYSCALL_DEFINE5(fsconfig,
 		const char __user *, _key,
 		const void __user *, _value,
 		int, aux)
+	__context_unsafe(/* mutex_lock_interruptible() locks conditionally */)
 {
 	struct fs_context *fc;
 	int ret;

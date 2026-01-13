@@ -993,9 +993,11 @@ void __bch_invalidate_one_bucket(struct cache *ca, struct bucket *b);
 void __bch_bucket_free(struct cache *ca, struct bucket *b);
 void bch_bucket_free(struct cache_set *c, struct bkey *k);
 
-long bch_bucket_alloc(struct cache *ca, unsigned int reserve, bool wait);
+long bch_bucket_alloc(struct cache *ca, unsigned int reserve, bool wait)
+	__must_hold(&ca->set->bucket_lock);
 int __bch_bucket_alloc_set(struct cache_set *c, unsigned int reserve,
-			   struct bkey *k, bool wait);
+			   struct bkey *k, bool wait)
+	__must_hold(&c->bucket_lock);
 int bch_bucket_alloc_set(struct cache_set *c, unsigned int reserve,
 			 struct bkey *k, bool wait);
 bool bch_alloc_sectors(struct cache_set *c, struct bkey *k,

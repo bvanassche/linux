@@ -1502,6 +1502,7 @@ LEAVE_UPDATE:
 }
 
 static int abituguru_suspend(struct device *dev)
+	__acquires(&((struct abituguru_data *)dev_get_drvdata(dev))->update_lock)
 {
 	struct abituguru_data *data = dev_get_drvdata(dev);
 	/*
@@ -1513,6 +1514,7 @@ static int abituguru_suspend(struct device *dev)
 }
 
 static int abituguru_resume(struct device *dev)
+	__releases(&((struct abituguru_data *)dev_get_drvdata(dev))->update_lock)
 {
 	struct abituguru_data *data = dev_get_drvdata(dev);
 	/* See if the uGuru is still ready */

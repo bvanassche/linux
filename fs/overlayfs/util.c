@@ -27,6 +27,7 @@ int ovl_get_write_access(struct dentry *dentry)
 
 /* Get write access to upper sb - may block if upper sb is frozen */
 void ovl_start_write(struct dentry *dentry)
+	__context_unsafe(/* acquires upper sb write lock for caller */)
 {
 	struct ovl_fs *ofs = OVL_FS(dentry->d_sb);
 	sb_start_write(ovl_upper_mnt(ofs)->mnt_sb);
@@ -45,6 +46,7 @@ void ovl_put_write_access(struct dentry *dentry)
 }
 
 void ovl_end_write(struct dentry *dentry)
+	__context_unsafe(/* releases upper sb write lock held by caller */)
 {
 	struct ovl_fs *ofs = OVL_FS(dentry->d_sb);
 	sb_end_write(ovl_upper_mnt(ofs)->mnt_sb);

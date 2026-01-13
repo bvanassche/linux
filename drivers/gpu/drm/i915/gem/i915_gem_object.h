@@ -199,6 +199,7 @@ static inline int i915_gem_object_lock_interruptible(struct drm_i915_gem_object 
 
 static inline bool i915_gem_object_trylock(struct drm_i915_gem_object *obj,
 					   struct i915_gem_ww_ctx *ww)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!ww)
 		return dma_resv_trylock(obj->base.resv);
@@ -207,6 +208,7 @@ static inline bool i915_gem_object_trylock(struct drm_i915_gem_object *obj,
 }
 
 static inline void i915_gem_object_unlock(struct drm_i915_gem_object *obj)
+	__context_unsafe(/* to match the trylock function */)
 {
 	if (obj->ops->adjust_lru)
 		obj->ops->adjust_lru(obj);

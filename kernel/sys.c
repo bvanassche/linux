@@ -1732,6 +1732,7 @@ static int check_prlimit_permission(struct task_struct *task,
 SYSCALL_DEFINE4(prlimit64, pid_t, pid, unsigned int, resource,
 		const struct rlimit64 __user *, new_rlim,
 		struct rlimit64 __user *, old_rlim)
+	__context_unsafe(/* conditional locking */)
 {
 	struct rlimit64 old64, new64;
 	struct rlimit old, new;

@@ -468,7 +468,7 @@ static inline struct cached_fid *ref_to_cached_fid(struct kref *ref)
 
 static void
 smb2_close_cached_fid(struct kref *ref)
-__releases(&cfid->cfids->cfid_list_lock)
+	__releases(&ref_to_cached_fid(ref)->cfids->cfid_list_lock)
 {
 	struct cached_fid *cfid = ref_to_cached_fid(ref);
 	int rc;

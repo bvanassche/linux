@@ -143,6 +143,7 @@ out:
 
 int intel_renderstate_init(struct intel_renderstate *so,
 			   struct intel_context *ce)
+	__cond_acquires(0, &so->ww.ctx)
 {
 	struct intel_engine_cs *engine = ce->engine;
 	struct drm_i915_gem_object *obj = NULL;
@@ -240,6 +241,7 @@ int intel_renderstate_emit(struct intel_renderstate *so,
 
 void intel_renderstate_fini(struct intel_renderstate *so,
 			    struct intel_context *ce)
+	__releases(&so->ww.ctx)
 {
 	if (so->vma) {
 		i915_vma_unpin(so->vma);

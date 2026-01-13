@@ -276,6 +276,7 @@ static int ath_tid_dequeue(struct ath_atx_tid *tid,
 }
 
 static void ath_tx_flush_tid(struct ath_softc *sc, struct ath_atx_tid *tid)
+	__must_hold(&tid->txq->axq_lock)
 {
 	struct ath_txq *txq = tid->txq;
 	struct sk_buff *skb;
@@ -485,6 +486,7 @@ static void ath_tx_complete_aggr(struct ath_softc *sc, struct ath_txq *txq,
 				 struct ieee80211_sta *sta,
 				 struct ath_atx_tid *tid,
 				 struct ath_tx_status *ts, int txok)
+	__must_hold(&txq->axq_lock)
 {
 	struct ath_node *an = NULL;
 	struct sk_buff *skb;
@@ -725,6 +727,7 @@ static void ath_tx_count_airtime(struct ath_softc *sc,
 static void ath_tx_process_buffer(struct ath_softc *sc, struct ath_txq *txq,
 				  struct ath_tx_status *ts, struct ath_buf *bf,
 				  struct list_head *bf_head)
+	__must_hold(&txq->axq_lock)
 {
 	struct ieee80211_hw *hw = sc->hw;
 	struct ieee80211_tx_info *info;
@@ -1871,6 +1874,7 @@ int ath_cabq_update(struct ath_softc *sc)
 
 static void ath_drain_txq_list(struct ath_softc *sc, struct ath_txq *txq,
 			       struct list_head *list)
+	__must_hold(&txq->axq_lock)
 {
 	struct ath_buf *bf, *lastbf;
 	struct list_head bf_head;

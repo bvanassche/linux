@@ -985,7 +985,9 @@ static ssize_t queue_len_show(struct device *dev, struct device_attribute *attr,
 {
 	struct omap_aes_dev *dd = dev_get_drvdata(dev);
 
-	return sysfs_emit(buf, "%d\n", dd->engine->queue.max_qlen);
+	/* Reading max_qlen without holding engine->queue_lock is safe. */
+	return sysfs_emit(buf, "%d\n",
+			  context_unsafe(dd->engine->queue.max_qlen));
 }
 
 static ssize_t queue_len_store(struct device *dev,
@@ -1012,7 +1014,12 @@ static ssize_t queue_len_store(struct device *dev,
 	spin_lock_bh(&list_lock);
 	list_for_each_entry(dd, &dev_list, list) {
 		spin_lock_irqsave(&dd->lock, flags);
-		dd->engine->queue.max_qlen = value;
+		/*
+		 * engine->queue is protected by engine->queue_lock instead
+		 * of dd->lock. See also the comment above about why
+		 * modifying the queue size without holding that lock is safe.
+		 */
+		context_unsafe(dd->engine->queue.max_qlen = value);
 		dd->aead_queue.base.max_qlen = value;
 		spin_unlock_irqrestore(&dd->lock, flags);
 	}

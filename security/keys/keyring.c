@@ -1061,17 +1061,16 @@ int keyring_restrict(key_ref_t keyring_ref, const char *type,
 			return PTR_ERR(restrict_type);
 
 		if (!restrict_type->lookup_restriction) {
-			ret = -ENOENT;
-			goto error;
+			key_type_put(restrict_type);
+			return -ENOENT;
 		}
 
 		restrict_link = restrict_type->lookup_restriction(restriction);
+		key_type_put(restrict_type);
 	}
 
-	if (IS_ERR(restrict_link)) {
-		ret = PTR_ERR(restrict_link);
-		goto error;
-	}
+	if (IS_ERR(restrict_link))
+		return PTR_ERR(restrict_link);
 
 	down_write(&keyring->sem);
 	down_write(&keyring_serialise_restrict_sem);
@@ -1092,10 +1091,6 @@ int keyring_restrict(key_ref_t keyring_ref, const char *type,
 		key_put(restrict_link->key);
 		kfree(restrict_link);
 	}
-
-error:
-	if (restrict_type)
-		key_type_put(restrict_type);
 
 	return ret;
 }
@@ -1256,8 +1251,8 @@ static int keyring_detect_cycle(struct key *A, struct key *B)
  */
 int __key_link_lock(struct key *keyring,
 		    const struct keyring_index_key *index_key)
-	__acquires(&keyring->sem)
-	__acquires(&keyring_serialise_link_lock)
+	__cond_acquires(0, &keyring->sem)
+	__cond_acquires(0, &keyring_serialise_link_lock)
 {
 	if (keyring->type != &key_type_keyring)
 		return -ENOTDIR;
@@ -1269,6 +1264,8 @@ int __key_link_lock(struct key *keyring,
 	 */
 	if (index_key->type == &key_type_keyring)
 		mutex_lock(&keyring_serialise_link_lock);
+	else
+		__acquire(&keyring_serialise_link_lock);
 
 	return 0;
 }
@@ -1278,9 +1275,9 @@ int __key_link_lock(struct key *keyring,
  */
 int __key_move_lock(struct key *l_keyring, struct key *u_keyring,
 		    const struct keyring_index_key *index_key)
-	__acquires(&l_keyring->sem)
-	__acquires(&u_keyring->sem)
-	__acquires(&keyring_serialise_link_lock)
+	__cond_acquires(0, &l_keyring->sem)
+	__cond_acquires(0, &u_keyring->sem)
+	__cond_acquires(0, &keyring_serialise_link_lock)
 {
 	if (l_keyring->type != &key_type_keyring ||
 	    u_keyring->type != &key_type_keyring)
@@ -1303,6 +1300,8 @@ int __key_move_lock(struct key *l_keyring, struct key *u_keyring,
 	 */
 	if (index_key->type == &key_type_keyring)
 		mutex_lock(&keyring_serialise_link_lock);
+	else
+		__acquire(&keyring_serialise_link_lock);
 
 	return 0;
 }
@@ -1420,6 +1419,8 @@ void __key_link_end(struct key *keyring,
 
 	if (index_key->type == &key_type_keyring)
 		mutex_unlock(&keyring_serialise_link_lock);
+	else
+		__release(&keyring_serialise_link_lock);
 }
 
 /*
@@ -1490,7 +1491,7 @@ EXPORT_SYMBOL(key_link);
  * Lock a keyring for unlink.
  */
 static int __key_unlink_lock(struct key *keyring)
-	__acquires(&keyring->sem)
+	__cond_acquires(0, &keyring->sem)
 {
 	if (keyring->type != &key_type_keyring)
 		return -ENOTDIR;

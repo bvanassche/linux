@@ -29,7 +29,7 @@ unsigned int key_quota_maxkeys = 200;		/* general key count quota */
 unsigned int key_quota_maxbytes = 20000;	/* general key space quota */
 
 static LIST_HEAD(key_types_list);
-static DECLARE_RWSEM(key_types_sem);
+DECLARE_RWSEM(key_types_sem);
 
 /* We serialise key instantiation and link */
 DEFINE_MUTEX(key_construction_mutex);
@@ -723,6 +723,7 @@ EXPORT_SYMBOL(key_lookup);
  * available -ENOKEY is returned instead.
  */
 struct key_type *key_type_lookup(const char *type)
+	__cond_acquires_shared_err_ptr(&key_types_sem)
 {
 	struct key_type *ktype;
 
@@ -731,15 +732,15 @@ struct key_type *key_type_lookup(const char *type)
 	/* look up the key type to see if it's one of the registered kernel
 	 * types */
 	list_for_each_entry(ktype, &key_types_list, link) {
-		if (strcmp(ktype->name, type) == 0)
-			goto found_kernel_type;
+		if (strcmp(ktype->name, type) == 0) {
+			if (IS_ERR(ktype))
+				unreachable();
+			return ktype;
+		}
 	}
 
 	up_read(&key_types_sem);
-	ktype = ERR_PTR(-ENOKEY);
-
-found_kernel_type:
-	return ktype;
+	return ERR_PTR(-ENOKEY);
 }
 
 void key_set_timeout(struct key *key, unsigned timeout)
@@ -761,6 +762,7 @@ EXPORT_SYMBOL_GPL(key_set_timeout);
  * Unlock a key type locked by key_type_lookup().
  */
 void key_type_put(struct key_type *ktype)
+	__releases_shared(&key_types_sem)
 {
 	up_read(&key_types_sem);
 }
@@ -828,6 +830,7 @@ static key_ref_t __key_create_or_update(key_ref_t keyring_ref,
 	struct assoc_array_edit *edit = NULL;
 	const struct cred *cred = current_cred();
 	struct key *keyring, *key = NULL;
+	struct key_type *ktype;
 	key_ref_t key_ref;
 	int ret;
 	struct key_restriction *restrict_link = NULL;
@@ -835,11 +838,12 @@ static key_ref_t __key_create_or_update(key_ref_t keyring_ref,
 
 	/* look up the key type to see if it's one of the registered kernel
 	 * types */
-	index_key.type = key_type_lookup(type);
-	if (IS_ERR(index_key.type)) {
+	ktype = key_type_lookup(type);
+	if (IS_ERR(ktype)) {
 		key_ref = ERR_PTR(-ENODEV);
 		goto error;
 	}
+	index_key.type = ktype;
 
 	key_ref = ERR_PTR(-EINVAL);
 	if (!index_key.type->instantiate ||

@@ -15,6 +15,7 @@
 static int sof_ipc4_set_get_kcontrol_data(struct snd_sof_control *scontrol,
 					  struct sof_ipc4_msg *msg,
 					  bool set, bool lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct snd_soc_component *scomp = scontrol->scomp;
 	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);

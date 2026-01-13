@@ -749,6 +749,7 @@ PERF_CACHE_MAP_ALL_UNSUPPORTED,
 };
 
 static int __hw_perf_event_init(struct perf_event *event)
+	__context_unsafe(/* conditional locking */)
 {
 	int err;
 	struct hw_perf_event *hwc = &event->hw;

@@ -855,6 +855,7 @@ static int sdw_ml_sync_bank_switch(struct sdw_bus *bus, bool multi_link)
 }
 
 static int do_bank_switch(struct sdw_stream_runtime *stream)
+	__context_unsafe(/* conditional locking */)
 {
 	struct sdw_master_runtime *m_rt;
 	const struct sdw_master_ops *ops;
@@ -1438,6 +1439,7 @@ struct sdw_dpn_prop *sdw_get_slave_dpn_prop(struct sdw_slave *slave,
  * expected that a global lock is held before acquiring bus_lock.
  */
 static void sdw_acquire_bus_lock(struct sdw_stream_runtime *stream)
+	__context_unsafe(/* conditional locking */)
 {
 	struct sdw_master_runtime *m_rt;
 	struct sdw_bus *bus;
@@ -1460,6 +1462,7 @@ static void sdw_acquire_bus_lock(struct sdw_stream_runtime *stream)
  * expected that a global lock is held before releasing bus_lock.
  */
 static void sdw_release_bus_lock(struct sdw_stream_runtime *stream)
+	__context_unsafe(/* conditional locking */)
 {
 	struct sdw_master_runtime *m_rt;
 	struct sdw_bus *bus;

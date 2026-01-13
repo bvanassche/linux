@@ -49,6 +49,7 @@ static void trace_write_gather(struct host1x_cdma *cdma, struct host1x_bo *bo,
 }
 
 static void submit_wait(struct host1x_job *job, u32 id, u32 threshold)
+	__must_hold(&job->channel->cdma.lock)
 {
 	struct host1x_cdma *cdma = &job->channel->cdma;
 
@@ -78,6 +79,7 @@ static void submit_wait(struct host1x_job *job, u32 id, u32 threshold)
 }
 
 static void submit_setclass(struct host1x_job *job, u32 next_class)
+	__must_hold(&job->channel->cdma.lock)
 {
 	struct host1x_cdma *cdma = &job->channel->cdma;
 
@@ -109,6 +111,7 @@ static void submit_setclass(struct host1x_job *job, u32 next_class)
 
 static void submit_gathers(struct host1x_job *job, struct host1x_job_cmd *cmds, u32 num_cmds,
 			   u32 job_syncpt_base)
+	__must_hold(&job->channel->cdma.lock)
 {
 	struct host1x_cdma *cdma = &job->channel->cdma;
 #if HOST1X_HW < 6
@@ -161,6 +164,7 @@ static void submit_gathers(struct host1x_job *job, struct host1x_job_cmd *cmds, 
 }
 
 static inline void synchronize_syncpt_base(struct host1x_job *job)
+	__must_hold(&job->channel->cdma.lock)
 {
 	struct host1x_syncpt *sp = job->syncpt;
 	unsigned int id;
@@ -210,6 +214,7 @@ static void host1x_enable_gather_filter(struct host1x_channel *ch)
 }
 
 static void channel_program_cdma(struct host1x_job *job)
+	__must_hold(&job->channel->cdma.lock)
 {
 	struct host1x_cdma *cdma = &job->channel->cdma;
 	struct host1x_syncpt *sp = job->syncpt;

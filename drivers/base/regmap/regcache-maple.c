@@ -189,6 +189,7 @@ out_unlocked:
 static int regcache_maple_sync_block(struct regmap *map, unsigned long *entry,
 				     struct ma_state *mas,
 				     unsigned int min, unsigned int max)
+	__must_hold_shared(RCU)
 {
 	void *buf;
 	unsigned long r;

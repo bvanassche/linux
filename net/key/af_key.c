@@ -3816,7 +3816,7 @@ static int pfkey_seq_show(struct seq_file *f, void *v)
 }
 
 static void *pfkey_seq_start(struct seq_file *f, loff_t *ppos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	struct net *net = seq_file_net(f);
 	struct netns_pfkey *net_pfkey = net_generic(net, pfkey_net_id);
@@ -3834,7 +3834,7 @@ static void *pfkey_seq_next(struct seq_file *f, void *v, loff_t *ppos)
 }
 
 static void pfkey_seq_stop(struct seq_file *f, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

@@ -1008,6 +1008,7 @@ static bool typesafe_ref_release(struct refscale_typesafe *rtsp, unsigned int st
 
 // Unconditionally acquire an explicit in-structure spinlock.
 static bool typesafe_lock_acquire(struct refscale_typesafe *rtsp, unsigned int *start)
+	__acquires(&rtsp->rts_lock)
 {
 	spin_lock(&rtsp->rts_lock);
 	return true;
@@ -1015,6 +1016,7 @@ static bool typesafe_lock_acquire(struct refscale_typesafe *rtsp, unsigned int *
 
 // Unconditionally release an explicit in-structure spinlock.
 static bool typesafe_lock_release(struct refscale_typesafe *rtsp, unsigned int start)
+	__releases(&rtsp->rts_lock)
 {
 	spin_unlock(&rtsp->rts_lock);
 	return true;
@@ -1022,6 +1024,7 @@ static bool typesafe_lock_release(struct refscale_typesafe *rtsp, unsigned int s
 
 // Unconditionally acquire an explicit in-structure sequence lock.
 static bool typesafe_seqlock_acquire(struct refscale_typesafe *rtsp, unsigned int *start)
+	__acquires_shared(&rtsp->rts_seqlock)
 {
 	*start = read_seqbegin(&rtsp->rts_seqlock);
 	return true;
@@ -1030,6 +1033,7 @@ static bool typesafe_seqlock_acquire(struct refscale_typesafe *rtsp, unsigned in
 // Conditionally release an explicit in-structure sequence lock.  Return
 // true if this release was successful, that is, if no retry is required.
 static bool typesafe_seqlock_release(struct refscale_typesafe *rtsp, unsigned int start)
+	__releases_shared(&rtsp->rts_seqlock)
 {
 	return !read_seqretry(&rtsp->rts_seqlock, start);
 }

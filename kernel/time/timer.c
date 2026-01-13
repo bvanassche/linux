@@ -1017,6 +1017,7 @@ static struct timer_base *lock_timer_base(struct timer_list *timer,
 
 static inline int
 __mod_timer(struct timer_list *timer, unsigned long expires, unsigned int options)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long clk = 0, flags, bucket_expiry;
 	struct timer_base *base, *new_base;
@@ -1298,6 +1299,7 @@ EXPORT_SYMBOL(add_timer_global);
  * See add_timer() for further details.
  */
 void add_timer_on(struct timer_list *timer, int cpu)
+	__context_unsafe(/* conditional locking */)
 {
 	struct timer_base *new_base, *base;
 	unsigned long flags;
@@ -1359,6 +1361,7 @@ EXPORT_SYMBOL_GPL(add_timer_on);
  * * %1 - The timer was pending and deactivated
  */
 static int __timer_delete(struct timer_list *timer, bool shutdown)
+	__context_unsafe(/* lock acquired by lock_timer_base() */)
 {
 	struct timer_base *base;
 	unsigned long flags;
@@ -1450,6 +1453,7 @@ EXPORT_SYMBOL_GPL(timer_shutdown);
  * * %-1 - The timer callback function is running on a different CPU
  */
 static int __try_to_del_timer_sync(struct timer_list *timer, bool shutdown)
+	__context_unsafe(/* lock acquired by lock_timer_base() */)
 {
 	struct timer_base *base;
 	unsigned long flags;
@@ -1499,11 +1503,13 @@ static __init void timer_base_init_expiry_lock(struct timer_base *base)
 }
 
 static inline void timer_base_lock_expiry(struct timer_base *base)
+	__acquires(&base->expiry_lock)
 {
 	spin_lock(&base->expiry_lock);
 }
 
 static inline void timer_base_unlock_expiry(struct timer_base *base)
+	__releases(&base->expiry_lock)
 {
 	spin_unlock(&base->expiry_lock);
 }
@@ -1765,6 +1771,7 @@ static void call_timer_fn(struct timer_list *timer,
 }
 
 static void expire_timers(struct timer_base *base, struct hlist_head *head)
+	__context_unsafe(/* drops and reacquires base->lock */)
 {
 	/*
 	 * This value is required only for tracing. base->clk was

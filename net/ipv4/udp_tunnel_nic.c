@@ -644,6 +644,7 @@ static void __udp_tunnel_nic_assert_locked(struct net_device *dev)
 }
 
 static void __udp_tunnel_nic_lock(struct net_device *dev)
+	__context_unsafe(/* conditional locking */)
 {
 	struct udp_tunnel_nic *utn;
 
@@ -653,6 +654,7 @@ static void __udp_tunnel_nic_lock(struct net_device *dev)
 }
 
 static void __udp_tunnel_nic_unlock(struct net_device *dev)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct udp_tunnel_nic *utn;
 

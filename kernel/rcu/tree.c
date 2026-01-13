@@ -1013,6 +1013,7 @@ static void trace_rcu_this_gp(struct rcu_node *rnp, unsigned long gp_seq_req,
  */
 static bool rcu_start_this_gp(struct rcu_node *rnp_start, struct rcu_data *rdp,
 			      unsigned long gp_seq_req)
+	__context_unsafe(/* locks in a loop */)
 {
 	bool ret = false;
 	struct rcu_node *rnp;
@@ -1237,6 +1238,7 @@ static bool rcu_advance_cbs(struct rcu_node *rnp, struct rcu_data *rdp)
  */
 static void __maybe_unused rcu_advance_cbs_nowake(struct rcu_node *rnp,
 						  struct rcu_data *rdp)
+	__context_unsafe(/* conditional locking */)
 {
 	rcu_lockdep_assert_cblist_protected(rdp);
 	if (!rcu_seq_state(rcu_seq_current(&rnp->gp_seq)) || !raw_spin_trylock_rcu_node(rnp))
@@ -1316,6 +1318,7 @@ static bool __note_gp_changes(struct rcu_node *rnp, struct rcu_data *rdp)
 }
 
 static void note_gp_changes(struct rcu_data *rdp)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long flags;
 	bool needwake;
@@ -1443,6 +1446,7 @@ static void rcu_poll_gp_seq_end(unsigned long *snap)
 // Make the polled API aware of the beginning of a grace period, but
 // where caller does not hold the root rcu_node structure's lock.
 static void rcu_poll_gp_seq_start_unlocked(unsigned long *snap)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long flags;
 	struct rcu_node *rnp = rcu_get_root();
@@ -1460,6 +1464,7 @@ static void rcu_poll_gp_seq_start_unlocked(unsigned long *snap)
 // Make the polled API aware of the end of a grace period, but where
 // caller does not hold the root rcu_node structure's lock.
 static void rcu_poll_gp_seq_end_unlocked(unsigned long *snap)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long flags;
 	struct rcu_node *rnp = rcu_get_root();
@@ -1829,6 +1834,7 @@ static void rcu_sr_normal_add_req(struct rcu_synchronize *rs)
  * Initialize a new grace period.  Return false if no grace period required.
  */
 static noinline_for_stack bool rcu_gp_init(void)
+	__context_unsafe(/* conditional unlocking */)
 {
 	unsigned long flags;
 	unsigned long oldmask;
@@ -2474,6 +2480,7 @@ rcu_report_unblock_qs_rnp(struct rcu_node *rnp, unsigned long flags)
  */
 static void
 rcu_report_qs_rdp(struct rcu_data *rdp)
+	__context_unsafe(/* conditional unlocking */)
 {
 	unsigned long flags;
 	unsigned long mask;
@@ -2571,6 +2578,7 @@ static bool rcu_do_batch_check_time(long count, long tlimit,
  * period.  Throttle as specified by rdp->blimit.
  */
 static void rcu_do_batch(struct rcu_data *rdp)
+	__context_unsafe(/* conditional locking */)
 {
 	long bl;
 	long count = 0;
@@ -2763,6 +2771,7 @@ void rcu_sched_clock_irq(int user)
  * each CPU that has not yet reported a quiescent state.
  */
 static void force_qs_rnp(int (*f)(struct rcu_data *rdp))
+	__context_unsafe(/* locks in a loop */)
 {
 	int cpu;
 	unsigned long flags;
@@ -2822,6 +2831,7 @@ static void force_qs_rnp(int (*f)(struct rcu_data *rdp))
  * CPUs are in dyntick-idle mode.
  */
 void rcu_force_quiescent_state(void)
+	__context_unsafe(/* locks in a loop */)
 {
 	unsigned long flags;
 	bool ret;
@@ -4520,6 +4530,7 @@ int rcutree_online_cpu(unsigned int cpu)
  * This mirrors the effects of rcutree_report_cpu_dead().
  */
 void rcutree_report_cpu_starting(unsigned int cpu)
+	__context_unsafe(/* conditional unlocking */)
 {
 	unsigned long mask;
 	struct rcu_data *rdp;
@@ -4577,6 +4588,7 @@ void rcutree_report_cpu_starting(unsigned int cpu)
  * This mirrors the effect of rcutree_report_cpu_starting().
  */
 void rcutree_report_cpu_dead(void)
+	__context_unsafe(/* drops and reacquires rcu_node lock */)
 {
 	unsigned long flags;
 	unsigned long mask;

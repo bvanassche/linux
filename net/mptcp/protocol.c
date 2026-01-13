@@ -1663,6 +1663,7 @@ struct sock *mptcp_subflow_get_send(struct mptcp_sock *msk)
 }
 
 static void mptcp_push_release(struct sock *ssk, struct mptcp_sendmsg_info *info)
+	__releases(ssk)
 {
 	if (info->mss_now)
 		tcp_push(ssk, 0, info->mss_now, tcp_sk(ssk)->nonagle,
@@ -1751,6 +1752,7 @@ out:
 }
 
 void __mptcp_push_pending(struct sock *sk, unsigned int flags)
+	__context_unsafe(/* locks in a loop */)
 {
 	struct sock *prev_ssk = NULL, *ssk = NULL;
 	struct mptcp_sock *msk = mptcp_sk(sk);
@@ -3459,6 +3461,7 @@ static void mptcp_check_listen_stop(struct sock *sk)
 }
 
 bool __mptcp_close(struct sock *sk, long timeout)
+	__must_hold(sk)
 {
 	struct mptcp_subflow_context *subflow;
 	struct mptcp_sock *msk = mptcp_sk(sk);
@@ -3706,6 +3709,7 @@ static void mptcp_copy_ip_options(struct sock *newsk, const struct sock *sk)
 }
 
 static void mptcp_sk_clone_destroy(struct sock *nsk)
+	__releases(&nsk->sk_lock.slock)
 {
 	struct mptcp_sock *msk = mptcp_sk(nsk);
 
@@ -3727,6 +3731,7 @@ struct sock *mptcp_sk_clone_init(const struct sock *sk,
 				 const struct mptcp_options_received *mp_opt,
 				 struct sock *ssk,
 				 struct request_sock *req)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	struct mptcp_subflow_request_sock *subflow_req = mptcp_subflow_rsk(req);
 	struct sock *nsk = sk_clone_lock(sk, GFP_ATOMIC);
@@ -4165,6 +4170,7 @@ static int mptcp_ioctl(struct sock *sk, int cmd, int *karg)
 
 static int mptcp_connect(struct sock *sk, struct sockaddr_unsized *uaddr,
 			 int addr_len)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mptcp_subflow_context *subflow;
 	struct mptcp_sock *msk = mptcp_sk(sk);
@@ -4415,6 +4421,7 @@ unlock:
 
 static int mptcp_stream_accept(struct socket *sock, struct socket *newsock,
 			       struct proto_accept_arg *arg)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	struct mptcp_sock *msk = mptcp_sk(sock->sk);
 	struct sock *ssk, *newsk;

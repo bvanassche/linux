@@ -734,6 +734,8 @@ struct iwl_trans_info {
 	u8 num_rxqs;
 };
 
+context_lock_struct(iwl_trans);
+
 struct iwl_trans_ops;
 
 /**
@@ -1041,7 +1043,8 @@ static inline void iwl_trans_write_umac_prph(struct iwl_trans *trans, u32 ofs,
 	iwl_trans_write_prph(trans, ofs + trans->mac_cfg->umac_prph_offset, val);
 }
 
-bool iwl_trans_grab_nic_access(struct iwl_trans *trans);
+bool iwl_trans_grab_nic_access(struct iwl_trans *trans)
+	__cond_acquires(true, trans);
 
 /**
  * iwl_trans_resched_with_nic_access - reschedule while holding NIC access
@@ -1052,9 +1055,11 @@ bool iwl_trans_grab_nic_access(struct iwl_trans *trans);
  * but a lot of processing is happening and the CPU may need to be
  * released. In practice, this is only during FW dump.
  */
-void iwl_trans_resched_with_nic_access(struct iwl_trans *trans);
+void iwl_trans_resched_with_nic_access(struct iwl_trans *trans)
+	__must_hold(trans);
 
-void iwl_trans_release_nic_access(struct iwl_trans *trans);
+void iwl_trans_release_nic_access(struct iwl_trans *trans)
+	__releases(trans);
 
 static inline void iwl_trans_schedule_reset(struct iwl_trans *trans,
 					    enum iwl_fw_error_type type)

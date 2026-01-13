@@ -40,16 +40,21 @@ static LIST_HEAD(codetag_types);
 void codetag_lock_module_list(struct codetag_type *cttype)
 {
 	down_read(&cttype->mod_lock);
+	__release_shared(&cttype->mod_lock);
+	__acquire_shared(cttype);
 }
 
 bool codetag_trylock_module_list(struct codetag_type *cttype)
+	__context_unsafe(/* down_read_trylock() locks conditionally */)
 {
 	return down_read_trylock(&cttype->mod_lock) != 0;
 }
 
 void codetag_unlock_module_list(struct codetag_type *cttype)
 {
+	__acquire_shared(&cttype->mod_lock);
 	up_read(&cttype->mod_lock);
+	__release_shared(cttype);
 }
 
 unsigned long codetag_get_content_id(struct codetag_type *cttype)

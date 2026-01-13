@@ -5104,6 +5104,7 @@ static int cxl_reset_bus_function(struct pci_dev *dev, bool probe)
 }
 
 void pci_dev_lock(struct pci_dev *dev)
+	__acquires(&dev->dev.mutex)
 {
 	/* block PM suspend, driver probe, etc. */
 	device_lock(&dev->dev);
@@ -5113,6 +5114,7 @@ EXPORT_SYMBOL_GPL(pci_dev_lock);
 
 /* Return 1 on successful lock, 0 on contention */
 int pci_dev_trylock(struct pci_dev *dev)
+	__cond_acquires(true, &dev->dev.mutex)
 {
 	if (device_trylock(&dev->dev)) {
 		if (pci_cfg_access_trylock(dev))
@@ -5125,6 +5127,7 @@ int pci_dev_trylock(struct pci_dev *dev)
 EXPORT_SYMBOL_GPL(pci_dev_trylock);
 
 void pci_dev_unlock(struct pci_dev *dev)
+	__releases(&dev->dev.mutex)
 {
 	pci_cfg_access_unlock(dev);
 	device_unlock(&dev->dev);
@@ -5305,6 +5308,7 @@ void pci_init_reset_methods(struct pci_dev *dev)
  * device doesn't support resetting a single function.
  */
 int pci_reset_function(struct pci_dev *dev)
+	__context_unsafe(/* conditional locking */)
 {
 	struct pci_dev *bridge;
 	int rc;
@@ -5422,6 +5426,7 @@ static int pci_bus_trylock(struct pci_bus *bus);
 
 /* Lock devices from the top of the tree down */
 static void __pci_bus_lock(struct pci_bus *bus, struct pci_slot *slot)
+	__context_unsafe(/* conditional locking */)
 {
 	struct pci_dev *dev, *bridge = bus->self;
 
@@ -5440,6 +5445,7 @@ static void __pci_bus_lock(struct pci_bus *bus, struct pci_slot *slot)
 
 /* Unlock devices from the bottom of the tree up */
 static void __pci_bus_unlock(struct pci_bus *bus, struct pci_slot *slot)
+	__context_unsafe(/* conditional unlock */)
 {
 	struct pci_dev *dev, *bridge = bus->self;
 
@@ -5458,6 +5464,7 @@ static void __pci_bus_unlock(struct pci_bus *bus, struct pci_slot *slot)
 
 /* Return 1 on successful lock, 0 on contention */
 static int __pci_bus_trylock(struct pci_bus *bus, struct pci_slot *slot)
+	__context_unsafe(/* conditional locking */)
 {
 	struct pci_dev *dev, *bridge = bus->self;
 
@@ -5529,18 +5536,21 @@ static bool pci_slot_resettable(struct pci_slot *slot)
 
 /* Lock devices from the top of the tree down */
 static void pci_slot_lock(struct pci_slot *slot)
+	__context_unsafe(/* conditional locking */)
 {
 	__pci_bus_lock(slot->bus, slot);
 }
 
 /* Unlock devices from the bottom of the tree up */
 static void pci_slot_unlock(struct pci_slot *slot)
+	__context_unsafe(/* conditional unlock */)
 {
 	__pci_bus_unlock(slot->bus, slot);
 }
 
 /* Return 1 on successful lock, 0 on contention */
 static int pci_slot_trylock(struct pci_slot *slot)
+	__context_unsafe(/* conditional locking */)
 {
 	return __pci_bus_trylock(slot->bus, slot);
 }

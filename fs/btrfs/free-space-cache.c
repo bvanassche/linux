@@ -50,6 +50,7 @@ static void bitmap_clear_bits(struct btrfs_free_space_ctl *ctl,
 			      u64 bytes, bool update_stats);
 
 static void __btrfs_remove_free_space_cache(struct btrfs_free_space_ctl *ctl)
+	__must_hold(&ctl->tree_lock)
 {
 	struct btrfs_free_space *info;
 	struct rb_node *node;
@@ -206,6 +207,7 @@ int btrfs_remove_free_space_inode(struct btrfs_trans_handle *trans,
 
 int btrfs_truncate_free_space_cache(struct btrfs_trans_handle *trans,
 				    struct inode *vfs_inode)
+	__context_unsafe(/* too complex for clang */)
 {
 	struct btrfs_truncate_control control = {
 		.inode = BTRFS_I(vfs_inode),
@@ -1049,6 +1051,7 @@ bool btrfs_use_bitmap(struct btrfs_free_space_ctl *ctl,
 
 static int insert_into_bitmap(struct btrfs_free_space_ctl *ctl,
 			      struct btrfs_free_space *info)
+	__context_unsafe(/* drops and reacquires ctl->tree_lock */)
 {
 	struct btrfs_free_space *bitmap_info;
 	struct btrfs_block_group *block_group = ctl->block_group;

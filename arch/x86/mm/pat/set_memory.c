@@ -1259,6 +1259,7 @@ __split_large_page(struct cpa_data *cpa, pte_t *kpte, unsigned long address,
 
 static int split_large_page(struct cpa_data *cpa, pte_t *kpte,
 			    unsigned long address)
+	__context_unsafe(/* conditional locking */)
 {
 	pte_t *pte;
 
@@ -2028,6 +2029,7 @@ static int cpa_process_alias(struct cpa_data *cpa)
 }
 
 static int __change_page_attr_set_clr(struct cpa_data *cpa, int primary)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long numpages = cpa->numpages;
 	unsigned long rempages = numpages;
@@ -2508,6 +2510,7 @@ static DECLARE_RWSEM(mem_enc_lock);
  * The lock is not released to prevent new conversions from being started.
  */
 bool set_memory_enc_stop_conversion(void)
+	__cond_acquires(true, &mem_enc_lock)
 {
 	/*
 	 * In a crash scenario, sleep is not allowed. Try to take the lock.

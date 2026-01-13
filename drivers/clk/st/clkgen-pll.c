@@ -267,6 +267,7 @@ static int __clkgen_pll_enable(struct clk_hw *hw)
 }
 
 static int clkgen_pll_enable(struct clk_hw *hw)
+	__context_unsafe(/* conditional locking */)
 {
 	struct clkgen_pll *pll = to_clkgen_pll(hw);
 	unsigned long flags = 0;
@@ -299,6 +300,7 @@ static void __clkgen_pll_disable(struct clk_hw *hw)
 }
 
 static void clkgen_pll_disable(struct clk_hw *hw)
+	__context_unsafe(/* conditional locking */)
 {
 	struct clkgen_pll *pll = to_clkgen_pll(hw);
 	unsigned long flags = 0;
@@ -421,6 +423,7 @@ static int stm_pll3200c32_determine_rate(struct clk_hw *hw,
 
 static int set_rate_stm_pll3200c32(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate)
+	__context_unsafe(/* conditional locking */)
 {
 	struct clkgen_pll *pll = to_clkgen_pll(hw);
 	struct stm_pll params;
@@ -578,6 +581,7 @@ static int stm_pll4600c28_determine_rate(struct clk_hw *hw,
 
 static int set_rate_stm_pll4600c28(struct clk_hw *hw, unsigned long rate,
 				   unsigned long parent_rate)
+	__context_unsafe(/* conditional locking */)
 {
 	struct clkgen_pll *pll = to_clkgen_pll(hw);
 	struct stm_pll params;

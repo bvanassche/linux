@@ -88,9 +88,13 @@ extern spinlock_t key_serial_lock;
 extern struct mutex key_construction_mutex;
 extern wait_queue_head_t request_key_conswq;
 
+extern struct rw_semaphore key_types_sem;
+
 extern void key_set_index_key(struct keyring_index_key *index_key);
-extern struct key_type *key_type_lookup(const char *type);
-extern void key_type_put(struct key_type *ktype);
+extern struct key_type *key_type_lookup(const char *type)
+	__cond_acquires_shared_err_ptr(&key_types_sem);
+extern void key_type_put(struct key_type *ktype)
+	__releases_shared(&key_types_sem);
 
 extern int __key_link_lock(struct key *keyring,
 			   const struct keyring_index_key *index_key);

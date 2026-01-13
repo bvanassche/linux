@@ -476,6 +476,7 @@ static void raw_spin_lock_irqsave_check_contention(struct srcu_struct *ssp)
  * parameter permits this.
  */
 static void raw_spin_lock_irqsave_sdp_contention(struct srcu_data *sdp, unsigned long *flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct srcu_struct *ssp = sdp->ssp;
 
@@ -494,6 +495,7 @@ static void raw_spin_lock_irqsave_sdp_contention(struct srcu_data *sdp, unsigned
  * parameter permits this.
  */
 static void raw_spin_lock_irqsave_ssp_contention(struct srcu_struct *ssp, unsigned long *flags)
+	__context_unsafe(/* conditional locking */)
 {
 	if (raw_spin_trylock_irqsave_rcu_node(ssp->srcu_sup, *flags))
 		return;
@@ -859,6 +861,7 @@ int __srcu_read_lock(struct srcu_struct *ssp)
 {
 	struct srcu_ctr __percpu *scp = READ_ONCE(ssp->srcu_ctrp);
 
+	__acquire_shared(ssp);
 	this_cpu_inc(scp->srcu_locks.counter);
 	smp_mb(); /* B */  /* Avoid leaking the critical section. */
 	return __srcu_ptr_to_ctr(ssp, scp);
@@ -874,6 +877,7 @@ void __srcu_read_unlock(struct srcu_struct *ssp, int idx)
 {
 	smp_mb(); /* C */  /* Avoid leaking the critical section. */
 	this_cpu_inc(__srcu_ctr_to_ptr(ssp, idx)->srcu_unlocks.counter);
+	__release_shared(ssp);
 }
 EXPORT_SYMBOL_GPL(__srcu_read_unlock);
 
@@ -889,6 +893,7 @@ int __srcu_read_lock_nmisafe(struct srcu_struct *ssp)
 	struct srcu_ctr __percpu *scpp = READ_ONCE(ssp->srcu_ctrp);
 	struct srcu_ctr *scp = raw_cpu_ptr(scpp);
 
+	__acquire_shared(ssp);
 	atomic_long_inc(&scp->srcu_locks);
 	smp_mb__after_atomic(); /* B */  /* Avoid leaking the critical section. */
 	return __srcu_ptr_to_ctr(ssp, scpp);
@@ -904,6 +909,7 @@ void __srcu_read_unlock_nmisafe(struct srcu_struct *ssp, int idx)
 {
 	smp_mb__before_atomic(); /* C */  /* Avoid leaking the critical section. */
 	atomic_long_inc(&raw_cpu_ptr(__srcu_ctr_to_ptr(ssp, idx))->srcu_unlocks);
+	__release_shared(ssp);
 }
 EXPORT_SYMBOL_GPL(__srcu_read_unlock_nmisafe);
 
@@ -980,6 +986,7 @@ static void srcu_schedule_cbs_snp(struct srcu_struct *ssp, struct srcu_node *snp
  * array to have a finite number of elements.
  */
 static void srcu_gp_end(struct srcu_struct *ssp, bool is_atomic)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long cbdelay = 1;
 	bool cbs;
@@ -1094,6 +1101,7 @@ static void srcu_gp_end(struct srcu_struct *ssp, bool is_atomic)
  */
 static void srcu_funnel_exp_start(struct srcu_struct *ssp, struct srcu_node *snp,
 				  unsigned long s)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long flags;
 	unsigned long sgsne;
@@ -1134,6 +1142,7 @@ static void srcu_funnel_exp_start(struct srcu_struct *ssp, struct srcu_node *snp
  */
 static void srcu_funnel_gp_start(struct srcu_struct *ssp, struct srcu_data *sdp,
 				 unsigned long s, bool do_norm)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	unsigned long flags;
 	int idx = rcu_seq_ctr(s) % ARRAY_SIZE(sdp->mynode->srcu_have_cbs);
@@ -1379,6 +1388,7 @@ static void srcu_leak_callback(struct rcu_head *rhp)
  */
 static unsigned long srcu_gp_start_if_needed(struct srcu_struct *ssp,
 					     struct rcu_head *rhp, bool do_norm)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	unsigned long flags;
 	int idx;
@@ -1941,6 +1951,7 @@ EXPORT_SYMBOL_GPL(srcu_barrier);
 
 /* Callback for srcu_expedite_current() usage. */
 static void srcu_expedite_current_cb(struct rcu_head *rhp)
+	__context_unsafe(/* container_of() */)
 {
 	unsigned long flags;
 	bool needcb = false;
@@ -1976,6 +1987,7 @@ static void srcu_expedite_current_cb(struct rcu_head *rhp)
  * used with srcu_read_lock_atomic() and synchronize_srcu_atomic().
  */
 void srcu_expedite_current(struct srcu_struct *ssp)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	unsigned long flags;
 	bool needcb = false;
@@ -2024,6 +2036,7 @@ EXPORT_SYMBOL_GPL(srcu_batches_completed);
  * is not needed, and to indicate that blocking is forbidden.
  */
 static void srcu_advance_state(struct srcu_struct *ssp, bool is_atomic)
+	__context_unsafe(/* too complex for clang */)
 {
 	unsigned long flags;
 	int idx;

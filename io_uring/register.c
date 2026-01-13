@@ -298,6 +298,7 @@ static int io_register_enable_rings(struct io_ring_ctx *ctx)
 
 static __cold int __io_register_iowq_aff(struct io_ring_ctx *ctx,
 					 cpumask_var_t new_mask)
+	__must_hold(&ctx->uring_lock)
 {
 	int ret;
 
@@ -314,6 +315,7 @@ static __cold int __io_register_iowq_aff(struct io_ring_ctx *ctx,
 
 static __cold int io_register_iowq_aff(struct io_ring_ctx *ctx,
 				       void __user *arg, unsigned len)
+	__must_hold(&ctx->uring_lock)
 {
 	cpumask_var_t new_mask;
 	int ret;
@@ -345,6 +347,7 @@ static __cold int io_register_iowq_aff(struct io_ring_ctx *ctx,
 }
 
 static __cold int io_unregister_iowq_aff(struct io_ring_ctx *ctx)
+	__must_hold(&ctx->uring_lock)
 {
 	return __io_register_iowq_aff(ctx, NULL);
 }
@@ -352,6 +355,7 @@ static __cold int io_unregister_iowq_aff(struct io_ring_ctx *ctx)
 static __cold int io_register_iowq_max_workers(struct io_ring_ctx *ctx,
 					       void __user *arg)
 	__must_hold(&ctx->uring_lock)
+	__context_unsafe(/* conditional locking of sqd->lock */)
 {
 	struct io_tctx_node *node;
 	struct io_uring_task *tctx = NULL;
@@ -508,6 +512,7 @@ static bool io_sqe_is_128(struct io_ring_ctx *ctx,
 }
 
 static int io_register_resize_rings(struct io_ring_ctx *ctx, void __user *arg)
+	__context_unsafe(/* drops and reacquires uring_lock */)
 {
 	struct io_ctx_config config;
 	struct io_uring_region_desc rd;

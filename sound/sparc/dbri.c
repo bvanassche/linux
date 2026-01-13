@@ -662,6 +662,7 @@ static void dbri_cmdwait(struct snd_dbri *dbri)
  * It locks the cmdlock spinlock.
  */
 static s32 *dbri_cmdlock(struct snd_dbri *dbri, int len)
+	__acquires(&dbri->cmdlock)
 {
 	u32 dvma_addr = (u32)dbri->dma_dvma;
 
@@ -687,6 +688,7 @@ static s32 *dbri_cmdlock(struct snd_dbri *dbri, int len)
  * Lock must be held before calling this.
  */
 static void dbri_cmdsend(struct snd_dbri *dbri, s32 *cmd, int len)
+	__releases(&dbri->cmdlock)
 {
 	u32 dvma_addr = (u32)dbri->dma_dvma;
 	s32 tmp, addr;
@@ -1771,6 +1773,7 @@ static void xmit_descs(struct snd_dbri *dbri)
  */
 
 static void transmission_complete_intr(struct snd_dbri *dbri, int pipe)
+	__must_hold(&dbri->lock)
 {
 	struct dbri_streaminfo *info = &dbri->stream_info[DBRI_PLAY];
 	int td = dbri->pipes[pipe].desc;
@@ -1802,6 +1805,7 @@ static void transmission_complete_intr(struct snd_dbri *dbri, int pipe)
 }
 
 static void reception_complete_intr(struct snd_dbri *dbri, int pipe)
+	__must_hold(&dbri->lock)
 {
 	struct dbri_streaminfo *info;
 	int rd = dbri->pipes[pipe].desc;
@@ -1831,6 +1835,7 @@ static void reception_complete_intr(struct snd_dbri *dbri, int pipe)
 }
 
 static void dbri_process_one_interrupt(struct snd_dbri *dbri, int x)
+	__must_hold(&dbri->lock)
 {
 	int val = D_INTR_GETVAL(x);
 	int channel = D_INTR_GETCHAN(x);
@@ -1905,6 +1910,7 @@ static void dbri_process_one_interrupt(struct snd_dbri *dbri, int x)
  * to dbri_process_one_interrupt AFTER advancing the pointer.
  */
 static void dbri_process_interrupt_buffer(struct snd_dbri *dbri)
+	__must_hold(&dbri->lock)
 {
 	s32 x;
 

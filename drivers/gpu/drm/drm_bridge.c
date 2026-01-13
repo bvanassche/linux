@@ -243,7 +243,7 @@ static DEFINE_MUTEX(bridge_lock);
 static LIST_HEAD(bridge_list);
 static LIST_HEAD(bridge_lingering_list);
 
-DEFINE_STATIC_SRCU(drm_bridge_unplug_srcu);
+DEFINE_SRCU(drm_bridge_unplug_srcu);
 
 /**
  * drm_bridge_enter - Enter DRM bridge critical section
@@ -258,6 +258,7 @@ DEFINE_STATIC_SRCU(drm_bridge_unplug_srcu);
  * True if it is OK to enter the section, false otherwise.
  */
 bool drm_bridge_enter(struct drm_bridge *bridge, int *idx)
+	__cond_acquires_shared(true, &drm_bridge_unplug_srcu)
 {
 	*idx = srcu_read_lock(&drm_bridge_unplug_srcu);
 
@@ -278,6 +279,7 @@ EXPORT_SYMBOL(drm_bridge_enter);
  * the bridge has been unplugged.
  */
 void drm_bridge_exit(int idx)
+	__releases_shared(&drm_bridge_unplug_srcu)
 {
 	srcu_read_unlock(&drm_bridge_unplug_srcu, idx);
 }

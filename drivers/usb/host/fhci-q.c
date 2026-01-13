@@ -187,6 +187,7 @@ static void free_urb_priv(struct fhci_hcd *fhci, struct urb *urb)
 
 /* this routine called to complete and free done URB */
 void fhci_urb_complete_free(struct fhci_hcd *fhci, struct urb *urb)
+	__must_hold(&fhci->lock)
 {
 	free_urb_priv(fhci, urb);
 
@@ -263,6 +264,7 @@ void fhci_done_td(struct urb *urb, struct td *td)
 
 /* there are some pedning request to unlink */
 void fhci_del_ed_list(struct fhci_hcd *fhci, struct ed *ed)
+	__must_hold(&fhci->lock)
 {
 	struct td *td = peek_td_from_ed(ed);
 	struct urb *urb = td->urb;

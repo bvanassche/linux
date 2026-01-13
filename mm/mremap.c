@@ -141,6 +141,7 @@ static pmd_t *alloc_new_pmd(struct mm_struct *mm, unsigned long addr)
 }
 
 static void take_rmap_locks(struct vm_area_struct *vma)
+	__context_unsafe(/* acquires locks for caller */)
 {
 	if (vma->vm_file)
 		i_mmap_lock_write(vma->vm_file->f_mapping);
@@ -149,6 +150,7 @@ static void take_rmap_locks(struct vm_area_struct *vma)
 }
 
 static void drop_rmap_locks(struct vm_area_struct *vma)
+	__context_unsafe(/* releases rmap locks held by caller */)
 {
 	if (vma_has_anon_rmap(vma))
 		anon_vma_unlock_write(vma->anon_vma);
@@ -2019,6 +2021,7 @@ static unsigned long remap_move(struct vma_remap_struct *vrm)
 }
 
 static unsigned long do_mremap(struct vma_remap_struct *vrm)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mm_struct *mm = current->mm;
 	unsigned long res;

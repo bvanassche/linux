@@ -1888,6 +1888,7 @@ int fcntl_getdeleg(struct file *filp, struct delegation *deleg)
 
 static int
 generic_add_lease(struct file *filp, int arg, struct file_lease **flp, void **priv)
+	__context_unsafe(/* conditional locking */)
 {
 	struct file_lease *fl, *my_fl = NULL, *lease;
 	struct inode *inode = file_inode(filp);
@@ -3096,6 +3097,7 @@ void show_fd_locks(struct seq_file *f,
 }
 
 static void *locks_start(struct seq_file *f, loff_t *pos)
+	__acquires(&file_rwsem)
 	__acquires(&blocked_lock_lock)
 {
 	struct locks_iterator *iter = f->private;
@@ -3116,6 +3118,7 @@ static void *locks_next(struct seq_file *f, void *v, loff_t *pos)
 
 static void locks_stop(struct seq_file *f, void *v)
 	__releases(&blocked_lock_lock)
+	__releases(&file_rwsem)
 {
 	spin_unlock(&blocked_lock_lock);
 	percpu_up_write(&file_rwsem);

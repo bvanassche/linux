@@ -975,13 +975,8 @@ bool radeon_ring_supports_scratch_reg(struct radeon_device *rdev,
 				      struct radeon_ring *ring);
 void radeon_ring_free_size(struct radeon_device *rdev, struct radeon_ring *cp);
 int radeon_ring_alloc(struct radeon_device *rdev, struct radeon_ring *cp, unsigned ndw);
-int radeon_ring_lock(struct radeon_device *rdev, struct radeon_ring *cp, unsigned ndw);
 void radeon_ring_commit(struct radeon_device *rdev, struct radeon_ring *cp,
 			bool hdp_flush);
-void radeon_ring_unlock_commit(struct radeon_device *rdev, struct radeon_ring *cp,
-			       bool hdp_flush);
-void radeon_ring_undo(struct radeon_ring *ring);
-void radeon_ring_unlock_undo(struct radeon_device *rdev, struct radeon_ring *cp);
 int radeon_ring_test(struct radeon_device *rdev, struct radeon_ring *cp);
 void radeon_ring_lockup_update(struct radeon_device *rdev,
 			       struct radeon_ring *ring);
@@ -2440,6 +2435,14 @@ struct radeon_device {
 };
 
 bool radeon_is_px(struct drm_device *dev);
+int radeon_ring_lock(struct radeon_device *rdev, struct radeon_ring *cp, unsigned ndw)
+	__cond_acquires(0, &rdev->ring_lock);
+void radeon_ring_unlock_commit(struct radeon_device *rdev, struct radeon_ring *cp,
+			       bool hdp_flush)
+	__releases(&rdev->ring_lock);
+void radeon_ring_undo(struct radeon_ring *ring);
+void radeon_ring_unlock_undo(struct radeon_device *rdev, struct radeon_ring *cp)
+	__releases(&rdev->ring_lock);
 int radeon_device_init(struct radeon_device *rdev,
 		       struct drm_device *ddev,
 		       struct pci_dev *pdev,

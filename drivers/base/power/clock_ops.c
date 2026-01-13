@@ -50,6 +50,7 @@ struct pm_clock_entry {
  * taken here.
  */
 static void pm_clk_list_lock(struct pm_subsys_data *psd)
+	__acquires(&psd->clock_mutex)
 	__acquires(&psd->lock)
 {
 	mutex_lock(&psd->clock_mutex);
@@ -63,6 +64,7 @@ static void pm_clk_list_lock(struct pm_subsys_data *psd)
  */
 static void pm_clk_list_unlock(struct pm_subsys_data *psd)
 	__releases(&psd->lock)
+	__releases(&psd->clock_mutex)
 {
 	spin_unlock_irq(&psd->lock);
 	mutex_unlock(&psd->clock_mutex);
@@ -85,15 +87,13 @@ static void pm_clk_list_unlock(struct pm_subsys_data *psd)
  */
 static int pm_clk_op_lock(struct pm_subsys_data *psd, unsigned long *flags,
 			  const char *fn)
-	/* sparse annotations don't work here as exit state isn't static */
 {
 	bool atomic_context = in_atomic() || irqs_disabled();
 
 try_again:
 	spin_lock_irqsave(&psd->lock, *flags);
 	if (!psd->clock_op_might_sleep) {
-		/* the __release is there to work around sparse limitations */
-		__release(&psd->lock);
+		__release(&psd->lock); /* returns with spinlock held */
 		return 0;
 	}
 
@@ -114,8 +114,10 @@ try_again:
 	 * There was a possibility for psd->clock_op_might_sleep
 	 * to become 0 above. Keep the mutex only if not the case.
 	 */
-	if (likely(psd->clock_op_might_sleep))
+	if (likely(psd->clock_op_might_sleep)) {
+		__release(&psd->clock_mutex); /* returns with mutex held */
 		return 0;
+	}
 
 	mutex_unlock(&psd->clock_mutex);
 	goto try_again;
@@ -129,12 +131,11 @@ try_again:
  */
 static void pm_clk_op_unlock(struct pm_subsys_data *psd, unsigned long *flags)
 	/* sparse annotations don't work here as entry state isn't static */
+	__context_unsafe(/* conditional locking */)
 {
 	if (psd->clock_op_might_sleep) {
 		mutex_unlock(&psd->clock_mutex);
 	} else {
-		/* the __acquire is there to work around sparse limitations */
-		__acquire(&psd->lock);
 		spin_unlock_irqrestore(&psd->lock, *flags);
 	}
 }

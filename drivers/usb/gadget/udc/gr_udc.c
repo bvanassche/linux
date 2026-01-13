@@ -1194,6 +1194,7 @@ static void gr_enable_vbus_detect(struct gr_udc *dev)
 
 /* Must be called with dev->lock held and irqs disabled */
 static void gr_vbus_disconnected(struct gr_udc *dev)
+	__context_unsafe(/* drops and reacquires dev->lock */)
 {
 	gr_stop_activity(dev);
 
@@ -1312,6 +1313,7 @@ static int gr_handle_out_ep(struct gr_ep *ep)
  * Must be called with dev->lock held and irqs disabled.
  */
 static int gr_handle_state_changes(struct gr_udc *dev)
+	__context_unsafe(/* drops and reacquires dev->lock */)
 {
 	u32 status = gr_read32(&dev->regs->status);
 	int handled = 0;
@@ -1649,6 +1651,7 @@ static void gr_free_request(struct usb_ep *_ep, struct usb_request *_req)
 /* Queue a request from the gadget */
 static int gr_queue_ext(struct usb_ep *_ep, struct usb_request *_req,
 			gfp_t gfp_flags)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	struct gr_ep *ep;
 	struct gr_request *req;

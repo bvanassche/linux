@@ -546,6 +546,7 @@ static const struct attribute_group btrfs_debug_feature_attr_group = {
 #endif
 
 static ssize_t btrfs_show_u64(u64 *value_ptr, spinlock_t *lock, char *buf)
+	__context_unsafe(/* conditional locking */)
 {
 	u64 val;
 	if (lock)

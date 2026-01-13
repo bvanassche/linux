@@ -271,6 +271,7 @@ extern void zone_pcp_init(struct zone *zone);
 extern seqlock_t zonelist_update_seq;
 
 static inline unsigned int zonelist_iter_begin(void)
+	__context_unsafe(/* acquires zonelist_update_seq for caller */)
 {
 	if (IS_ENABLED(CONFIG_MEMORY_HOTPLUG))
 		return read_seqbegin(&zonelist_update_seq);
@@ -279,6 +280,7 @@ static inline unsigned int zonelist_iter_begin(void)
 }
 
 static inline unsigned int check_retry_zonelist(unsigned int seq)
+	__context_unsafe(/* releases zonelist_update_seq held by caller */)
 {
 	if (IS_ENABLED(CONFIG_MEMORY_HOTPLUG))
 		return read_seqretry(&zonelist_update_seq, seq);

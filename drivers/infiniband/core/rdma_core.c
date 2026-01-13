@@ -256,6 +256,7 @@ EXPORT_SYMBOL_NS_GPL(uobj_destroy, "rdma_core");
  */
 struct ib_uobject *__uobj_get_destroy(const struct uverbs_api_object *obj,
 				      u32 id, struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uobject *uobj;
 	int ret;
@@ -281,6 +282,7 @@ EXPORT_SYMBOL_NS_GPL(__uobj_get_destroy, "rdma_core");
  */
 int __uobj_perform_destroy(const struct uverbs_api_object *obj, u32 id,
 			   struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uobject *uobj;
 
@@ -410,6 +412,7 @@ struct ib_uobject *rdma_lookup_get_uobject(const struct uverbs_api_object *obj,
 					   struct ib_uverbs_file *ufile, s64 id,
 					   enum rdma_lookup_mode mode,
 					   struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&ufile->device->disassociate_srcu)
 {
 	struct ib_uobject *uobj;
 	int ret;
@@ -537,8 +540,8 @@ err_fd:
 
 struct ib_uobject *rdma_alloc_begin_uobject(const struct uverbs_api_object *obj,
 					    struct uverbs_attr_bundle *attrs)
+	__cond_acquires_shared_err_ptr(&attrs->ufile->hw_destroy_rwsem)
 {
-	struct ib_uverbs_file *ufile = attrs->ufile;
 	struct ib_uobject *ret;
 
 	if (IS_ERR(obj))
@@ -549,12 +552,12 @@ struct ib_uobject *rdma_alloc_begin_uobject(const struct uverbs_api_object *obj,
 	 * released during rdma_alloc_commit_uobject or
 	 * rdma_alloc_abort_uobject
 	 */
-	if (!down_read_trylock(&ufile->hw_destroy_rwsem))
+	if (!down_read_trylock(&attrs->ufile->hw_destroy_rwsem))
 		return ERR_PTR(-EIO);
 
 	ret = obj->type_class->alloc_begin(obj, attrs);
 	if (IS_ERR(ret)) {
-		up_read(&ufile->hw_destroy_rwsem);
+		up_read(&attrs->ufile->hw_destroy_rwsem);
 		return ret;
 	}
 	return ret;
@@ -688,6 +691,7 @@ static void alloc_commit_fd_uobject(struct ib_uobject *uobj)
  */
 void rdma_alloc_commit_uobject(struct ib_uobject *uobj,
 			       struct uverbs_attr_bundle *attrs)
+	__releases_shared(&attrs->ufile->hw_destroy_rwsem)
 {
 	struct ib_uverbs_file *ufile = attrs->ufile;
 
@@ -704,7 +708,7 @@ void rdma_alloc_commit_uobject(struct ib_uobject *uobj,
 	uobj->uapi_object->type_class->alloc_commit(uobj);
 
 	/* Matches the down_read in rdma_alloc_begin_uobject */
-	up_read(&ufile->hw_destroy_rwsem);
+	up_read(&attrs->ufile->hw_destroy_rwsem);
 }
 EXPORT_SYMBOL_NS_GPL(rdma_alloc_commit_uobject, "rdma_core");
 
@@ -746,8 +750,8 @@ EXPORT_SYMBOL_NS_GPL(rdma_assign_uobject, "rdma_core");
 void rdma_alloc_abort_uobject(struct ib_uobject *uobj,
 			      struct uverbs_attr_bundle *attrs,
 			      bool hw_obj_valid)
+	__releases_shared(&attrs->ufile->hw_destroy_rwsem)
 {
-	struct ib_uverbs_file *ufile = uobj->ufile;
 	int ret;
 
 	if (hw_obj_valid) {
@@ -760,14 +764,16 @@ void rdma_alloc_abort_uobject(struct ib_uobject *uobj,
 		 * done during FD close after the driver has a few more tries to
 		 * destroy it.
 		 */
-		if (WARN_ON(ret))
-			return rdma_alloc_commit_uobject(uobj, attrs);
+		if (WARN_ON(ret)) {
+			rdma_alloc_commit_uobject(uobj, attrs);
+			return;
+		}
 	}
 
 	uverbs_destroy_uobject(uobj, RDMA_REMOVE_ABORT, attrs);
 
 	/* Matches the down_read in rdma_alloc_begin_uobject */
-	up_read(&ufile->hw_destroy_rwsem);
+	up_read(&attrs->ufile->hw_destroy_rwsem);
 }
 EXPORT_SYMBOL_NS_GPL(rdma_alloc_abort_uobject, "rdma_core");
 
@@ -984,6 +990,7 @@ EXPORT_SYMBOL(uverbs_fd_class);
 struct ib_uobject *
 uverbs_get_uobject_from_file(u16 object_id, enum uverbs_obj_access access,
 			     s64 id, struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	const struct uverbs_api_object *obj =
 		uapi_get_object(attrs->ufile->device->uapi, object_id);
@@ -999,8 +1006,13 @@ uverbs_get_uobject_from_file(u16 object_id, enum uverbs_obj_access access,
 	case UVERBS_ACCESS_WRITE:
 		return rdma_lookup_get_uobject(obj, attrs->ufile, id,
 					       UVERBS_LOOKUP_WRITE, attrs);
-	case UVERBS_ACCESS_NEW:
-		return rdma_alloc_begin_uobject(obj, attrs);
+	case UVERBS_ACCESS_NEW: {
+		struct ib_uobject *uobj = rdma_alloc_begin_uobject(obj, attrs);
+
+		if (!IS_ERR(uobj))
+			__release_shared(&attrs->ufile->hw_destroy_rwsem);
+		return uobj;
+	}
 	default:
 		WARN_ON(true);
 		return ERR_PTR(-EOPNOTSUPP);
@@ -1011,6 +1023,7 @@ EXPORT_SYMBOL_NS_GPL(uverbs_get_uobject_from_file, "rdma_core");
 void uverbs_finalize_object(struct ib_uobject *uobj,
 			    enum uverbs_obj_access access, bool hw_obj_valid,
 			    bool commit, struct uverbs_attr_bundle *attrs)
+	__context_unsafe(/* conditional locking */)
 {
 	/*
 	 * refcounts should be handled at the object level and not at the

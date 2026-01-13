@@ -1966,6 +1966,7 @@ static int qm_set_msi_v3(struct hisi_qm *qm, bool set)
 }
 
 static int qm_set_ifc_begin_v3(struct hisi_qm *qm, enum qm_ifc_cmd cmd, u32 data, u32 fun_num)
+	__acquires(&qm->mailbox_lock)
 {
 	struct qm_mailbox mailbox;
 	u64 msg;
@@ -1978,6 +1979,7 @@ static int qm_set_ifc_begin_v3(struct hisi_qm *qm, enum qm_ifc_cmd cmd, u32 data
 }
 
 static void qm_set_ifc_end_v3(struct hisi_qm *qm)
+	__releases(&qm->mailbox_lock)
 {
 	mutex_unlock(&qm->mailbox_lock);
 }
@@ -2000,6 +2002,7 @@ static int qm_get_ifc_v3(struct hisi_qm *qm, enum qm_ifc_cmd *cmd, u32 *data, u3
 }
 
 static int qm_set_ifc_begin_v4(struct hisi_qm *qm, enum qm_ifc_cmd cmd, u32 data, u32 fun_num)
+	__acquires(&qm->ifc_lock)
 {
 	uintptr_t offset;
 	u64 msg;
@@ -2018,6 +2021,7 @@ static int qm_set_ifc_begin_v4(struct hisi_qm *qm, enum qm_ifc_cmd cmd, u32 data
 }
 
 static void qm_set_ifc_end_v4(struct hisi_qm *qm)
+	__releases(&qm->ifc_lock)
 {
 	mutex_unlock(&qm->ifc_lock);
 }

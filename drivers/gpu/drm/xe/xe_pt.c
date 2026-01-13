@@ -1509,6 +1509,7 @@ static int xe_pt_pre_commit(struct xe_cpu_bind_pt_update *pt_update)
  * lock held for write.
  */
 static void xe_pt_svm_userptr_notifier_lock(struct xe_vm *vm)
+	__context_unsafe(/* lock mode depends on USERPTR_INVAL_INJECT */)
 {
 #if IS_ENABLED(CONFIG_DRM_XE_USERPTR_INVAL_INJECT)
 	down_write(&vm->svm.gpusvm.notifier_lock);
@@ -1518,6 +1519,7 @@ static void xe_pt_svm_userptr_notifier_lock(struct xe_vm *vm)
 }
 
 static void xe_pt_svm_userptr_notifier_unlock(struct xe_vm *vm)
+	__context_unsafe(/* lock mode depends on USERPTR_INVAL_INJECT */)
 {
 #if IS_ENABLED(CONFIG_DRM_XE_USERPTR_INVAL_INJECT)
 	up_write(&vm->svm.gpusvm.notifier_lock);

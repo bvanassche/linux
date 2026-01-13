@@ -2844,6 +2844,7 @@ err1:
 
 static int wait_dvb_frontend(struct dvb_adapter *adapter,
 			     struct dvb_device *mfedev)
+	__must_hold(&adapter->mfe_lock)
 {
 	struct dvb_frontend *mfe = mfedev->priv;
 	struct dvb_frontend_private *mfepriv = mfe->frontend_priv;

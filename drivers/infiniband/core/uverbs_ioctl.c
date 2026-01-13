@@ -74,6 +74,7 @@ static int uverbs_process_idrs_array(struct bundle_priv *pbundle,
 				     struct uverbs_objs_arr_attr *attr,
 				     struct ib_uverbs_attr *uattr,
 				     u32 attr_bkey)
+	__context_unsafe(/* caller holds disassociate_srcu */)
 {
 	struct uverbs_attr_bundle *bundle =
 		container_of(&pbundle->bundle, struct uverbs_attr_bundle, hdr);
@@ -149,6 +150,7 @@ static void uverbs_free_idrs_array(const struct uverbs_api_attr *attr_uapi,
 static int uverbs_process_attr(struct bundle_priv *pbundle,
 			       const struct uverbs_api_attr *attr_uapi,
 			       struct ib_uverbs_attr *uattr, u32 attr_bkey)
+	__context_unsafe(/* caller holds disassociate_srcu */)
 {
 	const struct uverbs_attr_spec *spec = &attr_uapi->spec;
 	struct uverbs_attr_bundle *bundle =
@@ -333,6 +335,7 @@ static int uverbs_set_attr(struct bundle_priv *pbundle,
 
 static int ib_uverbs_run_method(struct bundle_priv *pbundle,
 				unsigned int num_attrs)
+	__context_unsafe(/* caller holds disassociate_srcu */)
 {
 	int (*handler)(struct uverbs_attr_bundle *attrs);
 	struct uverbs_attr_bundle *bundle =

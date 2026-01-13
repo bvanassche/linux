@@ -104,11 +104,13 @@ extern struct lcd_ctrl_extif omap1_ext_if;
 #endif
 
 static void omapfb_rqueue_lock(struct omapfb_device *fbdev)
+	__acquires(&fbdev->rqueue_mutex)
 {
 	mutex_lock(&fbdev->rqueue_mutex);
 }
 
 static void omapfb_rqueue_unlock(struct omapfb_device *fbdev)
+	__releases(&fbdev->rqueue_mutex)
 {
 	mutex_unlock(&fbdev->rqueue_mutex);
 }

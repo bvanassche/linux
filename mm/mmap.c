@@ -115,6 +115,7 @@ static int check_brk_limits(unsigned long addr, unsigned long len)
 }
 
 SYSCALL_DEFINE1(brk, unsigned long, brk)
+	__context_unsafe(/* conditional unlocking */)
 {
 	unsigned long newbrk, oldbrk, origbrk;
 	struct mm_struct *mm = current->mm;
@@ -1039,6 +1040,8 @@ struct vm_area_struct *find_extend_vma_locked(struct mm_struct *mm, unsigned lon
  * dropped the lock.
  */
 struct vm_area_struct *expand_stack(struct mm_struct *mm, unsigned long addr)
+	__releases_shared(&mm->mmap_lock)
+	__cond_acquires_shared(nonnull, &mm->mmap_lock)
 {
 	struct vm_area_struct *vma, *prev;
 
@@ -1686,6 +1689,7 @@ subsys_initcall(init_reserve_notifier);
 bool mmap_read_lock_maybe_expand(struct mm_struct *mm,
 				 struct vm_area_struct *new_vma,
 				 unsigned long addr, bool write)
+	__cond_acquires_shared(true, &mm->mmap_lock)
 {
 	if (!write || addr >= new_vma->vm_start) {
 		mmap_read_lock(mm);

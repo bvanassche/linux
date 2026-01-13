@@ -316,6 +316,7 @@ static void
 mlx5e_ipsec_update_esn_state(struct mlx5e_ipsec_sa_entry *sa_entry,
 			     u32 mode_param,
 			     struct mlx5_accel_esp_xfrm_attrs *attrs)
+	__must_hold(&sa_entry->x->lock)
 {
 	struct mlx5_wqe_aso_ctrl_seg data = {};
 

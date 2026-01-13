@@ -684,6 +684,8 @@ static struct cache_entry *cache_refresh_path(const unsigned int xid,
 					      struct cifs_ses *ses,
 					      const char *path,
 					      bool force_refresh)
+	__cond_acquires_shared_err_ptr(&htable_rw_lock)
+	__context_unsafe(/* too complex for static analysis */)
 {
 	struct dfs_info3_param *refs = NULL;
 	struct cache_entry *ce;
@@ -1218,10 +1220,11 @@ static void refresh_ses_referral(struct cifs_tcon *tcon, struct cifs_ses *ses)
 	}
 
 	ce = cache_refresh_path(xid, ses, path, false);
-	if (!IS_ERR(ce))
+	if (!IS_ERR(ce)) {
 		up_read(&htable_rw_lock);
-	else
+	} else {
 		rc = PTR_ERR(ce);
+	}
 
 out:
 	free_xid(xid);

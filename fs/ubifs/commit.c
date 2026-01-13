@@ -106,6 +106,7 @@ static int nothing_to_commit(struct ubifs_info *c)
  * failure.
  */
 static int do_commit(struct ubifs_info *c)
+	__releases(&c->commit_sem)
 {
 	int err, new_ltail_lnum, old_ltail_lnum, i;
 	struct ubifs_zbranch zroot;

@@ -382,6 +382,7 @@ static void kw_i2c_timeout(struct timer_list *t)
 }
 
 static int kw_i2c_open(struct pmac_i2c_bus *bus)
+	__acquires(&((struct pmac_i2c_host_kw *)bus->hostdata)->mutex)
 {
 	struct pmac_i2c_host_kw *host = bus->hostdata;
 	mutex_lock(&host->mutex);
@@ -389,6 +390,7 @@ static int kw_i2c_open(struct pmac_i2c_bus *bus)
 }
 
 static void kw_i2c_close(struct pmac_i2c_bus *bus)
+	__releases(&((struct pmac_i2c_host_kw *)bus->hostdata)->mutex)
 {
 	struct pmac_i2c_host_kw *host = bus->hostdata;
 	mutex_unlock(&host->mutex);
@@ -1071,17 +1073,22 @@ int pmac_i2c_open(struct pmac_i2c_bus *bus, int polled)
 		mutex_unlock(&bus->mutex);
 		return rc;
 	}
+	/* Transfer lock ownership to the opaque bus context lock */
+	__release(&bus->mutex);
+	__acquire(bus);
 	return 0;
 }
 EXPORT_SYMBOL_GPL(pmac_i2c_open);
 
 void pmac_i2c_close(struct pmac_i2c_bus *bus)
 {
+	__acquire(&bus->mutex);
 	WARN_ON(!bus->opened);
 	if (bus->close)
 		bus->close(bus);
 	bus->opened = 0;
 	mutex_unlock(&bus->mutex);
+	__release(bus);
 }
 EXPORT_SYMBOL_GPL(pmac_i2c_close);
 
@@ -1199,6 +1206,7 @@ struct pmac_i2c_pf_inst
 };
 
 static void* pmac_i2c_do_begin(struct pmf_function *func, struct pmf_args *args)
+	__context_unsafe(/* bus lock held iff non-NULL is returned */)
 {
 	struct pmac_i2c_pf_inst *inst;
 	struct pmac_i2c_bus	*bus;
@@ -1232,6 +1240,7 @@ static void* pmac_i2c_do_begin(struct pmf_function *func, struct pmf_args *args)
 }
 
 static void pmac_i2c_do_end(struct pmf_function *func, void *instdata)
+	__context_unsafe(/* conditional release */)
 {
 	struct pmac_i2c_pf_inst *inst = instdata;
 

@@ -38,6 +38,7 @@ struct key *request_trusted_key(const char *trusted_desc,
 	tpayload = tkey->payload.data[0];
 	*master_key = tpayload->key;
 	*master_keylen = tpayload->key_len;
+	__release_shared(&tkey->sem);
 error:
 	return tkey;
 }

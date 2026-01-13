@@ -1890,6 +1890,7 @@ static int diAllocIno(struct inomap * imap, int agno, struct inode *ip)
  *	-EIO	- i/o error.
  */
 static int diAllocExt(struct inomap * imap, int agno, struct inode *ip)
+	__context_unsafe(/* conditional locking */)
 {
 	int rem, iagno, sword, extno, rc;
 	struct metapage *mp;
@@ -2438,6 +2439,7 @@ static int diNewExt(struct inomap * imap, struct iag * iagp, int extno)
  */
 static int
 diNewIAG(struct inomap * imap, int *iagnop, int agno, struct metapage ** mpp)
+	__context_unsafe(/* conditional locking */)
 {
 	int rc;
 	int iagno, i, xlen;

@@ -1194,6 +1194,7 @@ static void get_status(struct r8a66597 *r8a66597, struct usb_ctrlrequest *ctrl)
 
 static void clear_feature(struct r8a66597 *r8a66597,
 				struct usb_ctrlrequest *ctrl)
+	__context_unsafe(/* drops and reacquires r8a66597->lock */)
 {
 	switch (ctrl->bRequestType & USB_RECIP_MASK) {
 	case USB_RECIP_DEVICE:
@@ -1331,6 +1332,7 @@ static void r8a66597_update_usb_speed(struct r8a66597 *r8a66597)
 }
 
 static void irq_device_state(struct r8a66597 *r8a66597)
+	__context_unsafe(/* drops and reacquires r8a66597->lock */)
 {
 	u16 dvsq;
 

@@ -256,11 +256,13 @@ static inline bool eeh_enabled(void)
 }
 
 static inline void eeh_serialize_lock(unsigned long *flags)
+	__acquires(&confirm_error_lock)
 {
 	raw_spin_lock_irqsave(&confirm_error_lock, *flags);
 }
 
 static inline void eeh_serialize_unlock(unsigned long flags)
+	__releases(&confirm_error_lock)
 {
 	raw_spin_unlock_irqrestore(&confirm_error_lock, flags);
 }

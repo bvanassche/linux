@@ -205,6 +205,7 @@ void do_notify_spus_active(void)
  * @ctx:	context to bind
  */
 static void spu_bind_context(struct spu *spu, struct spu_context *ctx)
+	__must_hold(&ctx->state_mutex)
 {
 	spu_context_trace(spu_bind_context__enter, ctx, spu);
 
@@ -417,6 +418,7 @@ static int has_affinity(struct spu_context *ctx)
  * @ctx:	context to unbind
  */
 static void spu_unbind_context(struct spu *spu, struct spu_context *ctx)
+	__must_hold(&ctx->state_mutex)
 {
 	u32 status;
 
@@ -524,6 +526,7 @@ void spu_del_from_rq(struct spu_context *ctx)
 }
 
 static void spu_prio_wait(struct spu_context *ctx)
+	__must_hold(&ctx->state_mutex)
 {
 	DEFINE_WAIT(wait);
 
@@ -697,6 +700,7 @@ static struct spu *find_victim(struct spu_context *ctx)
 }
 
 static void __spu_schedule(struct spu *spu, struct spu_context *ctx)
+	__must_hold(&ctx->state_mutex)
 {
 	int node = spu->node;
 	int success = 0;
@@ -743,6 +747,7 @@ static void spu_schedule(struct spu *spu, struct spu_context *ctx)
  */
 static void spu_unschedule(struct spu *spu, struct spu_context *ctx,
 		int free_spu)
+	__must_hold(&ctx->state_mutex)
 {
 	int node = spu->node;
 
@@ -842,6 +847,7 @@ static struct spu_context *grab_runnable_context(int prio, int node)
 }
 
 static int __spu_deactivate(struct spu_context *ctx, int force, int max_prio)
+	__must_hold(&ctx->state_mutex)
 {
 	struct spu *spu = ctx->spu;
 	struct spu_context *new = NULL;

@@ -747,6 +747,7 @@ static CLOSURE_CALLBACK(journal_write_unlocked)
 }
 
 static CLOSURE_CALLBACK(journal_write)
+	__context_unsafe(/* unannotated lock acquisition */)
 {
 	closure_type(c, struct cache_set, journal.io);
 
@@ -827,6 +828,7 @@ static struct journal_write *journal_wait_for_write(struct cache_set *c,
 }
 
 static void journal_write_work(struct work_struct *work)
+	__context_unsafe(/* conditional locking */)
 {
 	struct cache_set *c = container_of(to_delayed_work(work),
 					   struct cache_set,
@@ -847,6 +849,7 @@ static void journal_write_work(struct work_struct *work)
 atomic_t *bch_journal(struct cache_set *c,
 		      struct keylist *keys,
 		      struct closure *parent)
+	__context_unsafe(/* releases lock acquired by helper */)
 {
 	struct journal_write *w;
 	atomic_t *ret;

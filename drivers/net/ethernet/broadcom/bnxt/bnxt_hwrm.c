@@ -368,6 +368,7 @@ static int __hwrm_to_stderr(u32 hwrm_err)
 
 static struct bnxt_hwrm_wait_token *
 __hwrm_acquire_token(struct bnxt *bp, enum bnxt_hwrm_chnl dst)
+	__cond_acquires(nonnull, &bp->hwrm_cmd_lock)
 {
 	struct bnxt_hwrm_wait_token *token;
 
@@ -391,6 +392,7 @@ __hwrm_acquire_token(struct bnxt *bp, enum bnxt_hwrm_chnl dst)
 
 static void
 __hwrm_release_token(struct bnxt *bp, struct bnxt_hwrm_wait_token *token)
+	__releases(&bp->hwrm_cmd_lock)
 {
 	if (token->dst == BNXT_HWRM_CHNL_CHIMP) {
 		hlist_del_rcu(&token->node);
@@ -457,6 +459,7 @@ static bool hwrm_wait_must_abort(struct bnxt *bp, u32 req_type, u32 *fw_status)
 }
 
 static int __hwrm_send(struct bnxt *bp, struct bnxt_hwrm_ctx *ctx)
+	__context_unsafe(/* conditional locking */)
 {
 	u32 doorbell_offset = BNXT_GRCPF_REG_CHIMP_COMM_TRIGGER;
 	enum bnxt_hwrm_chnl dst = BNXT_HWRM_CHNL_CHIMP;

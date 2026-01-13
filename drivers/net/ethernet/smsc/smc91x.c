@@ -941,9 +941,9 @@ static int smc_phy_fixed(struct net_device *dev)
  *
  * Must be called with lp->lock locked.
  */
-static int smc_phy_reset(struct net_device *dev, int phy)
+static int smc_phy_reset(struct smc_local *lp, struct net_device *dev, int phy)
+	__must_hold(&lp->lock)
 {
-	struct smc_local *lp = netdev_priv(dev);
 	unsigned int bmcr;
 	int timeout;
 
@@ -1041,7 +1041,7 @@ static void smc_phy_configure(struct work_struct *work)
 	if (lp->phy_type == 0)
 		goto smc_phy_configure_exit;
 
-	if (smc_phy_reset(dev, phyaddr)) {
+	if (smc_phy_reset(lp, dev, phyaddr)) {
 		netdev_info(dev, "PHY reset timed out\n");
 		goto smc_phy_configure_exit;
 	}

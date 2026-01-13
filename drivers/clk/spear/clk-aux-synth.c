@@ -63,6 +63,7 @@ static int clk_aux_determine_rate(struct clk_hw *hw,
 
 static unsigned long clk_aux_recalc_rate(struct clk_hw *hw,
 		unsigned long parent_rate)
+	__context_unsafe(/* conditional locking */)
 {
 	struct clk_aux *aux = to_clk_aux(hw);
 	unsigned int num = 1, den = 1, val, eqn;
@@ -97,6 +98,7 @@ static unsigned long clk_aux_recalc_rate(struct clk_hw *hw,
 /* Configures new clock rate of aux */
 static int clk_aux_set_rate(struct clk_hw *hw, unsigned long drate,
 				unsigned long prate)
+	__context_unsafe(/* conditional locking */)
 {
 	struct clk_aux *aux = to_clk_aux(hw);
 	struct aux_rate_tbl *rtbl = aux->rtbl;

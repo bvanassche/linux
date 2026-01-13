@@ -129,6 +129,7 @@ static u32 i2c_mux_functionality(struct i2c_adapter *adap)
 }
 
 static void i2c_mux_lock_bus(struct i2c_adapter *adapter, unsigned int flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct i2c_mux_priv *priv = adapter->algo_data;
 	struct i2c_adapter *parent = priv->muxc->parent;
@@ -140,6 +141,7 @@ static void i2c_mux_lock_bus(struct i2c_adapter *adapter, unsigned int flags)
 }
 
 static int i2c_mux_trylock_bus(struct i2c_adapter *adapter, unsigned int flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct i2c_mux_priv *priv = adapter->algo_data;
 	struct i2c_adapter *parent = priv->muxc->parent;
@@ -155,6 +157,7 @@ static int i2c_mux_trylock_bus(struct i2c_adapter *adapter, unsigned int flags)
 }
 
 static void i2c_mux_unlock_bus(struct i2c_adapter *adapter, unsigned int flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct i2c_mux_priv *priv = adapter->algo_data;
 	struct i2c_adapter *parent = priv->muxc->parent;
@@ -166,6 +169,7 @@ static void i2c_mux_unlock_bus(struct i2c_adapter *adapter, unsigned int flags)
 
 static void i2c_parent_lock_bus(struct i2c_adapter *adapter,
 				unsigned int flags)
+	__acquires(&((struct i2c_mux_priv *)adapter->algo_data)->muxc->parent->mux_lock)
 {
 	struct i2c_mux_priv *priv = adapter->algo_data;
 	struct i2c_adapter *parent = priv->muxc->parent;
@@ -176,6 +180,7 @@ static void i2c_parent_lock_bus(struct i2c_adapter *adapter,
 
 static int i2c_parent_trylock_bus(struct i2c_adapter *adapter,
 				  unsigned int flags)
+	__cond_acquires(true, &((struct i2c_mux_priv *)adapter->algo_data)->muxc->parent->mux_lock)
 {
 	struct i2c_mux_priv *priv = adapter->algo_data;
 	struct i2c_adapter *parent = priv->muxc->parent;
@@ -190,6 +195,7 @@ static int i2c_parent_trylock_bus(struct i2c_adapter *adapter,
 
 static void i2c_parent_unlock_bus(struct i2c_adapter *adapter,
 				  unsigned int flags)
+	__releases(&((struct i2c_mux_priv *)adapter->algo_data)->muxc->parent->mux_lock)
 {
 	struct i2c_mux_priv *priv = adapter->algo_data;
 	struct i2c_adapter *parent = priv->muxc->parent;

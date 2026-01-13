@@ -33,6 +33,7 @@
 int wrap_directory_iterator(struct file *file,
 			    struct dir_context *ctx,
 			    int (*iter)(struct file *, struct dir_context *))
+	__must_hold_shared(&file_inode(file)->i_rwsem)
 {
 	struct inode *inode = file_inode(file);
 	int ret;
@@ -85,6 +86,7 @@ EXPORT_SYMBOL(wrap_directory_iterator);
 
 
 int iterate_dir(struct file *file, struct dir_context *ctx)
+	__context_unsafe(/* conditional locking */)
 {
 	struct inode *inode = file_inode(file);
 	/* never an entry, never removed: nothing for the lock to keep still */

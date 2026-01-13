@@ -508,8 +508,8 @@ void kernfs_put_active(struct kernfs_node *kn)
  * return after draining is complete.
  */
 static void kernfs_drain(struct kernfs_node *kn, bool drop_supers)
-	__releases(&kernfs_root(kn)->kernfs_rwsem)
-	__acquires(&kernfs_root(kn)->kernfs_rwsem)
+	__must_hold(&kernfs_root(kn)->kernfs_rwsem)
+	__context_unsafe(/* conditional locking */)
 {
 	struct kernfs_root *root = kernfs_root(kn);
 
@@ -899,6 +899,7 @@ out_unlock:
 static struct kernfs_node *kernfs_find_ns(struct kernfs_node *parent,
 					  const unsigned char *name,
 					  const struct ns_common *ns)
+	__must_hold_shared(&kernfs_root(parent)->kernfs_rwsem)
 {
 	struct rb_node *node = parent->dir.children.rb_node;
 	bool has_ns = kernfs_ns_enabled(parent);
@@ -932,6 +933,7 @@ static struct kernfs_node *kernfs_find_ns(struct kernfs_node *parent,
 static struct kernfs_node *kernfs_walk_ns(struct kernfs_node *parent,
 					  const unsigned char *path,
 					  const struct ns_common *ns)
+	__must_hold_shared(&kernfs_root(parent)->kernfs_rwsem)
 {
 	ssize_t len;
 	char *p, *name;
@@ -1403,6 +1405,7 @@ static struct kernfs_node *kernfs_leftmost_descendant(struct kernfs_node *pos)
  */
 static struct kernfs_node *kernfs_next_descendant_post(struct kernfs_node *pos,
 						       struct kernfs_node *root)
+	__must_hold(&kernfs_root(root)->kernfs_rwsem)
 {
 	struct rb_node *rbn;
 
@@ -1426,6 +1429,7 @@ static struct kernfs_node *kernfs_next_descendant_post(struct kernfs_node *pos,
 }
 
 static void kernfs_activate_one(struct kernfs_node *kn)
+	__must_hold(&kernfs_root(kn)->kernfs_rwsem)
 {
 	lockdep_assert_held_write(&kernfs_root(kn)->kernfs_rwsem);
 
@@ -1461,8 +1465,10 @@ void kernfs_activate(struct kernfs_node *kn)
 	down_write(&root->kernfs_rwsem);
 
 	pos = NULL;
-	while ((pos = kernfs_next_descendant_post(pos, kn)))
+	while ((pos = kernfs_next_descendant_post(pos, kn))) {
+		lockdep_assume_ctx_held(&kernfs_root(pos)->kernfs_rwsem);
 		kernfs_activate_one(pos);
+	}
 
 	up_write(&root->kernfs_rwsem);
 }
@@ -1534,6 +1540,7 @@ static void kernfs_clear_inode_nlink(struct kernfs_node *kn)
 }
 
 static void __kernfs_remove(struct kernfs_node *kn)
+	__must_hold(&kernfs_root(kn)->kernfs_rwsem)
 {
 	struct kernfs_node *pos, *parent;
 
@@ -1566,6 +1573,7 @@ static void __kernfs_remove(struct kernfs_node *kn)
 	/* deactivate and unlink the subtree node-by-node */
 	do {
 		pos = kernfs_leftmost_descendant(kn);
+		lockdep_assume_ctx_held(&kernfs_root(pos)->kernfs_rwsem);
 
 		/*
 		 * kernfs_drain() may drop kernfs_rwsem temporarily and @pos's
@@ -1792,6 +1800,7 @@ int kernfs_remove_by_name_ns(struct kernfs_node *parent, const char *name,
 
 	kn = kernfs_find_ns(parent, name, ns);
 	if (kn) {
+		lockdep_assume_ctx_held(&kernfs_root(kn)->kernfs_rwsem);
 		kernfs_get(kn);
 		__kernfs_remove(kn);
 		kernfs_put(kn);
@@ -1840,6 +1849,8 @@ int kernfs_rename_ns(struct kernfs_node *kn, struct kernfs_node *new_parent,
 	if (!kernfs_active(kn) || !kernfs_active(new_parent) ||
 	    (new_parent->flags & KERNFS_EMPTY_DIR))
 		goto out;
+
+	lockdep_assume_ctx_held(&kernfs_root(new_parent)->kernfs_rwsem);
 
 	old_parent = kernfs_parent(kn);
 	if (root->flags & KERNFS_ROOT_INVARIANT_PARENT) {

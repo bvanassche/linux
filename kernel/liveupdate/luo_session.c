@@ -635,6 +635,7 @@ save_err:
 }
 
 int luo_session_serialize(void)
+	__cond_acquires(0, &luo_session_serialize_rwsem)
 {
 	struct luo_session_header *sh = &luo_session_global.outgoing;
 	struct luo_session *session;

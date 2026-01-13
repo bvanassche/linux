@@ -116,6 +116,7 @@ static int jfs_commit_thread_waking;
  * Retry logic exist outside these macros to protect from spurrious wakeups.
  */
 static inline void TXN_SLEEP_DROP_LOCK(wait_queue_head_t * event)
+	__releases(&jfsTxnLock)
 {
 	DECLARE_WAITQUEUE(wait, current);
 
@@ -178,6 +179,7 @@ static void LogSyncRelease(struct metapage * mp);
  * free some anonymous transaction locks.  (TXN_LOCK must be held.)
  */
 static lid_t txLockAlloc(void)
+	__must_hold(&jfsTxnLock)
 {
 	lid_t lid;
 

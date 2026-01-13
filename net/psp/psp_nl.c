@@ -119,6 +119,7 @@ static void psp_nl_multicast_all_ns(struct psp_dev *psd, struct sk_buff *ntf,
 static struct psp_dev *
 psp_device_get_and_lock(struct net *net, struct nlattr *dev_id,
 			bool admin)
+	__context_unsafe(/* conditional locking */)
 {
 	struct psp_dev *psd;
 	int err;
@@ -218,6 +219,7 @@ static struct net *psp_nl_resolve_assoc_dev_ns(struct psp_dev *psd,
 void
 psp_device_unlock(const struct genl_split_ops *ops, struct sk_buff *skb,
 		  struct genl_info *info)
+	__releases(&((struct psp_dev *)info->user_ptr[0])->lock)
 {
 	struct socket *socket = info->user_ptr[1];
 	struct psp_dev *psd = info->user_ptr[0];
@@ -671,6 +673,7 @@ int psp_nl_dev_disassoc_doit(struct sk_buff *skb, struct genl_info *info)
 
 int psp_assoc_device_get_locked(const struct genl_split_ops *ops,
 				struct sk_buff *skb, struct genl_info *info)
+	__context_unsafe(/* conditional locking */)
 {
 	struct socket *socket;
 	struct psp_dev *psd;

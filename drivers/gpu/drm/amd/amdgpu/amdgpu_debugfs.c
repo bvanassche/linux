@@ -79,6 +79,7 @@
  */
 static int  amdgpu_debugfs_process_reg_op(bool read, struct file *f,
 		char __user *buf, size_t size, loff_t *pos)
+	__context_unsafe(/* conditional locking */)
 {
 	struct amdgpu_device *adev = file_inode(f)->i_private;
 	ssize_t result = 0;
@@ -240,6 +241,7 @@ static int amdgpu_debugfs_regs2_release(struct inode *inode, struct file *file)
 }
 
 static ssize_t amdgpu_debugfs_regs2_op(struct file *f, char __user *buf, u32 offset, size_t size, int write_en)
+	__context_unsafe(/* conditional locking */)
 {
 	struct amdgpu_debugfs_regs2_data *rd = f->private_data;
 	struct amdgpu_device *adev = rd->adev;

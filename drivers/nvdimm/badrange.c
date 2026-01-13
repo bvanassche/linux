@@ -46,6 +46,7 @@ static int alloc_and_append_badrange_entry(struct badrange *badrange,
 }
 
 static int add_badrange(struct badrange *badrange, u64 addr, u64 length)
+	__must_hold(&badrange->lock)
 {
 	struct badrange_entry *bre, *bre_new;
 

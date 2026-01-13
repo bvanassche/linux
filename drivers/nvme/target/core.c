@@ -314,6 +314,7 @@ void nvmet_port_del_ctrls(struct nvmet_port *port, struct nvmet_subsys *subsys)
 }
 
 int nvmet_enable_port(struct nvmet_port *port)
+	__must_hold(&nvmet_config_sem)
 {
 	const struct nvmet_fabrics_ops *ops;
 	int ret;

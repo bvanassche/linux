@@ -14,6 +14,10 @@
 
 #include <linux/bitops.h>
 #include <linux/cleanup.h>
+#include <linux/device.h>
+#include <linux/list.h>
+#include <linux/mutex.h>
+#include <linux/sysfs.h>
 
 struct device;
 struct attribute_group;
@@ -470,6 +474,22 @@ struct hwmon_chip_info {
 	const struct hwmon_channel_info * const *info;
 };
 
+struct hwmon_device {
+	const char *name;
+	const char *label;
+	struct device dev;
+	const struct hwmon_chip_info *chip;
+	struct mutex lock;
+	struct list_head tzdata;
+	struct attribute_group group;
+	const struct attribute_group **groups;
+};
+
+static inline struct hwmon_device *to_hwmon_device(struct device *d)
+{
+	return container_of(d, struct hwmon_device, dev);
+}
+
 /* hwmon_device_register() is deprecated */
 struct device *hwmon_device_register(struct device *dev);
 
@@ -507,8 +527,10 @@ int hwmon_notify_event(struct device *dev, enum hwmon_sensor_types type,
 char *hwmon_sanitize_name(const char *name);
 char *devm_hwmon_sanitize_name(struct device *dev, const char *name);
 
-void hwmon_lock(struct device *dev);
-void hwmon_unlock(struct device *dev);
+void hwmon_lock(struct device *dev)
+	__acquires(&to_hwmon_device(dev)->lock);
+void hwmon_unlock(struct device *dev)
+	__releases(&to_hwmon_device(dev)->lock);
 
 DEFINE_GUARD(hwmon_lock, struct device *, hwmon_lock(_T), hwmon_unlock(_T))
 

@@ -2306,6 +2306,7 @@ out_close:
 }
 
 static void kill_ubifs_super(struct super_block *s)
+	__releases(&s->s_umount)
 {
 	struct ubifs_info *c = s->s_fs_info;
 	kill_anon_super(s);

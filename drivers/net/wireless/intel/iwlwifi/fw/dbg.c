@@ -1756,6 +1756,7 @@ static u32
 iwl_dump_ini_dump_entries(struct iwl_fw_runtime *fwrt,
 			  struct list_head *list,
 			  enum iwl_dump_ini_region_selector which)
+	__context_unsafe(/* conditional locking */)
 {
 	struct iwl_fw_ini_dump_entry *entry, *tmp;
 	bool have_nic_access;

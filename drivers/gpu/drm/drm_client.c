@@ -289,6 +289,7 @@ EXPORT_SYMBOL(drm_client_buffer_create);
  */
 int drm_client_buffer_vmap_local(struct drm_client_buffer *buffer,
 				 struct iosys_map *map_copy)
+	__cond_acquires(0, &buffer->fb->obj[0]->resv->lock)
 {
 	struct drm_gem_object *gem = buffer->fb->obj[0];
 	struct iosys_map *map = &buffer->map;
@@ -318,6 +319,7 @@ EXPORT_SYMBOL(drm_client_buffer_vmap_local);
  * required by clients that manage their buffer mappings by themselves.
  */
 void drm_client_buffer_vunmap_local(struct drm_client_buffer *buffer)
+	__releases(&buffer->fb->obj[0]->resv->lock)
 {
 	struct drm_gem_object *gem = buffer->fb->obj[0];
 	struct iosys_map *map = &buffer->map;

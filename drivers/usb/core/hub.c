@@ -1085,6 +1085,7 @@ static void hub_init_func2(struct work_struct *ws);
 static void hub_init_func3(struct work_struct *ws);
 
 static void hub_activate(struct usb_hub *hub, enum hub_activation_type type)
+	__context_unsafe(/* conditional locking */)
 {
 	struct usb_device *hdev = hub->hdev;
 	struct usb_hcd *hcd;
@@ -3067,6 +3068,7 @@ static int hub_port_wait_reset(struct usb_hub *hub, int port1,
 /* Handle port reset and port warm(BH) reset (for USB3 protocol ports) */
 static int hub_port_reset(struct usb_hub *hub, int port1,
 			struct usb_device *udev, unsigned int delay, bool warm)
+	__context_unsafe(/* conditional locking */)
 {
 	int i, status;
 	u16 portchange, portstatus;
@@ -3265,17 +3267,15 @@ int usb_port_is_power_on(struct usb_hub *hub, unsigned int portstatus)
 }
 
 static void usb_lock_port(struct usb_port *port_dev)
-		__acquires(&port_dev->status_lock)
+	__acquires(&port_dev->status_lock)
 {
 	mutex_lock(&port_dev->status_lock);
-	__acquire(&port_dev->status_lock);
 }
 
 static void usb_unlock_port(struct usb_port *port_dev)
-		__releases(&port_dev->status_lock)
+	__releases(&port_dev->status_lock)
 {
 	mutex_unlock(&port_dev->status_lock);
-	__release(&port_dev->status_lock);
 }
 
 #ifdef	CONFIG_PM
@@ -5407,6 +5407,7 @@ static int descriptors_changed(struct usb_device *udev,
 
 static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
 		u16 portchange)
+	__context_unsafe(/* conditional locking */)
 {
 	int status = -ENODEV;
 	int i;

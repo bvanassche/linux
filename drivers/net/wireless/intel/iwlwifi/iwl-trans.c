@@ -696,6 +696,7 @@ void iwl_trans_resched_with_nic_access(struct iwl_trans *trans)
 
 void iwl_trans_release_nic_access(struct iwl_trans *trans)
 {
+	__release(trans);
 	if (WARN_ON_ONCE(!trans->ops->release_nic_access))
 		return;
 	trans->ops->release_nic_access(trans);

@@ -43,10 +43,12 @@ struct intel_renderstate {
 };
 
 int intel_renderstate_init(struct intel_renderstate *so,
-			   struct intel_context *ce);
+			   struct intel_context *ce)
+	__cond_acquires(0, &so->ww.ctx);
 int intel_renderstate_emit(struct intel_renderstate *so,
 			   struct i915_request *rq);
 void intel_renderstate_fini(struct intel_renderstate *so,
-			    struct intel_context *ce);
+			    struct intel_context *ce)
+	__releases(&so->ww.ctx);
 
 #endif /* _INTEL_RENDERSTATE_H_ */

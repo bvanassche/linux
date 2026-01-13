@@ -17273,7 +17273,7 @@ static int bnxt_resume(struct device *device)
 	}
 
 resume_exit:
-	netdev_unlock(bp->dev);
+	netdev_unlock(dev);
 	if (!rc) {
 		bnxt_ulp_start(bp);
 		bnxt_reenable_sriov(bp);

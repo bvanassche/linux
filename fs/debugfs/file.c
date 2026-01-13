@@ -209,6 +209,8 @@ void debugfs_enter_cancellation(struct file *file,
 	struct debugfs_fsdata *fsd;
 	struct dentry *dentry = F_DENTRY(file);
 
+	__acquire(cancellation);
+
 	INIT_LIST_HEAD(&cancellation->list);
 
 	if (WARN_ON(!d_is_reg(dentry)))
@@ -244,6 +246,8 @@ void debugfs_leave_cancellation(struct file *file,
 {
 	struct debugfs_fsdata *fsd;
 	struct dentry *dentry = F_DENTRY(file);
+
+	__release(cancellation);
 
 	if (WARN_ON(!d_is_reg(dentry)))
 		return;

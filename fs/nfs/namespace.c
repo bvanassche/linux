@@ -205,6 +205,7 @@ struct vfsmount *nfs_d_automount(struct path *path)
 		goto out_fc;
 	}
 
+	__acquire(&fc->root->d_sb->s_umount);
 	up_write(&fc->root->d_sb->s_umount);
 	mnt = vfs_create_mount(fc);
 	if (IS_ERR(mnt))

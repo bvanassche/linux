@@ -128,6 +128,7 @@ void line6_capture_copy(struct snd_line6_pcm *line6pcm, char *fbuf, int fsize)
 
 /* update the capture position and check whether we need period_elapsed call */
 bool line6_capture_check_period(struct snd_line6_pcm *line6pcm, int length)
+	__must_hold(&line6pcm->in.lock)
 {
 	line6pcm->in.bytes += length;
 	if (line6pcm->in.bytes >= line6pcm->in.period) {

@@ -492,6 +492,7 @@ static const struct file_operations cramfs_physmem_fops = {
 };
 
 static void cramfs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct cramfs_sb_info *sbi = CRAMFS_SB(sb);
 

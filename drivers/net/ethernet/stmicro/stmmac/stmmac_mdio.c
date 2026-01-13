@@ -712,6 +712,7 @@ int stmmac_mdio_unregister(struct net_device *ndev)
 }
 
 void stmmac_mdio_lock(struct stmmac_priv *priv)
+	__context_unsafe(/* conditional locking */)
 {
 	if (priv->mii)
 		mutex_lock(&priv->mii->mdio_lock);
@@ -719,6 +720,7 @@ void stmmac_mdio_lock(struct stmmac_priv *priv)
 EXPORT_SYMBOL_GPL(stmmac_mdio_lock);
 
 void stmmac_mdio_unlock(struct stmmac_priv *priv)
+	__context_unsafe(/* conditional locking */)
 {
 	if (priv->mii)
 		mutex_unlock(&priv->mii->mdio_lock);

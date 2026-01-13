@@ -344,6 +344,7 @@ static bool is_metric_better(u32 x, u32 y)
 static u32 hwmp_route_info_get(struct ieee80211_sub_if_data *sdata,
 			       struct ieee80211_mgmt *mgmt,
 			       const u8 *hwmp_ie, enum mpath_frame_type action)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ieee80211_local *local = sdata->local;
 	struct mesh_path *mpath;

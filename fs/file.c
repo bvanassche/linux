@@ -1400,6 +1400,7 @@ bool file_seek_cur_needs_f_lock(struct file *file)
 }
 
 struct fd fdget_pos(unsigned int fd)
+	__context_unsafe(/* conditional locking */)
 {
 	struct fd f = fdget(fd);
 	struct file *file = fd_file(f);
@@ -1412,6 +1413,7 @@ struct fd fdget_pos(unsigned int fd)
 }
 
 void __f_unlock_pos(struct file *f)
+	__context_unsafe(/* releases f_pos_lock held by caller */)
 {
 	mutex_unlock(&f->f_pos_lock);
 }

@@ -732,6 +732,7 @@ static int __init bL_switcher_sysfs_init(void)
 #endif  /* CONFIG_SYSFS */
 
 bool bL_switcher_get_enabled(void)
+	__acquires(&bL_switcher_activation_lock)
 {
 	mutex_lock(&bL_switcher_activation_lock);
 
@@ -740,6 +741,7 @@ bool bL_switcher_get_enabled(void)
 EXPORT_SYMBOL_GPL(bL_switcher_get_enabled);
 
 void bL_switcher_put_enabled(void)
+	__releases(&bL_switcher_activation_lock)
 {
 	mutex_unlock(&bL_switcher_activation_lock);
 }

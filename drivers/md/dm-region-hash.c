@@ -325,6 +325,7 @@ static struct dm_region *__rh_alloc(struct dm_region_hash *rh, region_t region)
 }
 
 static struct dm_region *__rh_find(struct dm_region_hash *rh, region_t region)
+	__must_hold_shared(&rh->hash_lock)
 {
 	struct dm_region *reg;
 

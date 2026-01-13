@@ -11,6 +11,7 @@
 #include <linux/srcu.h>
 
 #include "intel_engine_types.h"
+#include "intel_gt_types.h"
 #include "intel_reset_types.h"
 
 struct i915_request;
@@ -40,9 +41,12 @@ int __intel_engine_reset_bh(struct intel_engine_cs *engine,
 
 void __i915_request_reset(struct i915_request *rq, bool guilty);
 
-int __must_check intel_gt_reset_trylock(struct intel_gt *gt, int *srcu);
-int __must_check intel_gt_reset_lock_interruptible(struct intel_gt *gt, int *srcu);
-void intel_gt_reset_unlock(struct intel_gt *gt, int tag);
+int __must_check intel_gt_reset_trylock(struct intel_gt *gt, int *srcu)
+	__cond_acquires_shared(0, &gt->reset.backoff_srcu);
+int __must_check intel_gt_reset_lock_interruptible(struct intel_gt *gt, int *srcu)
+	__cond_acquires_shared(0, &gt->reset.backoff_srcu);
+void intel_gt_reset_unlock(struct intel_gt *gt, int tag)
+	__releases_shared(&gt->reset.backoff_srcu);
 
 void intel_gt_set_wedged(struct intel_gt *gt);
 bool intel_gt_unset_wedged(struct intel_gt *gt);

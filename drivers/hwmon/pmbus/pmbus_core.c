@@ -89,47 +89,6 @@ struct pmbus_label {
 #define pb_index_to_reg(index)			(((index) >> PB_REG_SHIFT) & PB_REG_MASK)
 #define pb_index_to_mask(index)			((index) & PB_STATUS_MASK)
 
-struct pmbus_data {
-	struct device *dev;
-	struct device *hwmon_dev;
-	struct regulator_dev **rdevs;
-
-	u32 flags;		/* from platform data */
-
-	bool have_pmbus_revision;
-	u8 revision;		/* The PMBus revision the device is compliant with */
-
-	int exponent[PMBUS_PAGES];
-				/* linear mode: exponent for output voltages */
-
-	const struct pmbus_driver_info *info;
-
-	int max_attributes;
-	int num_attributes;
-	struct attribute_group group;
-	const struct attribute_group **groups;
-
-	struct pmbus_sensor *sensors;
-
-	struct mutex update_lock;
-
-#if IS_ENABLED(CONFIG_REGULATOR)
-	atomic_t regulator_events[PMBUS_PAGES];
-	struct work_struct regulator_notify_work;
-#endif
-
-	bool has_status_word;		/* device uses STATUS_WORD register */
-	int (*read_status)(struct i2c_client *client, int page);
-
-	s16 currpage;	/* current page, -1 for unknown/unset */
-	s16 currphase;	/* current phase, 0xff for all, -1 for unknown/unset */
-
-	int vout_low[PMBUS_PAGES];	/* voltage low margin */
-	int vout_high[PMBUS_PAGES];	/* voltage high margin */
-
-	ktime_t next_access_backoff;	/* Wait until at least this time */
-};
-
 struct pmbus_debugfs_entry {
 	struct i2c_client *client;
 	u8 page;
@@ -3984,6 +3943,7 @@ struct dentry *pmbus_get_debugfs_dir(struct i2c_client *client)
 EXPORT_SYMBOL_NS_GPL(pmbus_get_debugfs_dir, "PMBUS");
 
 void pmbus_lock(struct i2c_client *client)
+	__acquires(&((struct pmbus_data *)i2c_get_clientdata(client))->update_lock)
 {
 	struct pmbus_data *data = i2c_get_clientdata(client);
 
@@ -3992,6 +3952,7 @@ void pmbus_lock(struct i2c_client *client)
 EXPORT_SYMBOL_NS_GPL(pmbus_lock, "PMBUS");
 
 int pmbus_lock_interruptible(struct i2c_client *client)
+	__cond_acquires(0, &((struct pmbus_data *)i2c_get_clientdata(client))->update_lock)
 {
 	struct pmbus_data *data = i2c_get_clientdata(client);
 
@@ -4000,6 +3961,7 @@ int pmbus_lock_interruptible(struct i2c_client *client)
 EXPORT_SYMBOL_NS_GPL(pmbus_lock_interruptible, "PMBUS");
 
 void pmbus_unlock(struct i2c_client *client)
+	__releases(&((struct pmbus_data *)i2c_get_clientdata(client))->update_lock)
 {
 	struct pmbus_data *data = i2c_get_clientdata(client);
 

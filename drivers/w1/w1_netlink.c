@@ -254,6 +254,7 @@ static void w1_send_slave(struct w1_master *dev, u64 rn)
 }
 
 static void w1_found_send_slave(struct w1_master *dev, u64 rn)
+	__must_hold(&dev->mutex)
 {
 	/* update kernel slave list */
 	w1_slave_found(dev, rn);
@@ -263,6 +264,7 @@ static void w1_found_send_slave(struct w1_master *dev, u64 rn)
 
 /* Get the current slave list, or search (with or without alarm) */
 static int w1_get_slaves(struct w1_master *dev, struct w1_netlink_cmd *req_cmd)
+	__must_hold(&dev->mutex)
 {
 	struct w1_slave *sl;
 
@@ -346,6 +348,7 @@ static int w1_process_command_addremove(struct w1_master *dev,
 
 static int w1_process_command_master(struct w1_master *dev,
 	struct w1_netlink_cmd *req_cmd)
+	__must_hold(&dev->bus_mutex)
 {
 	int err = -EINVAL;
 

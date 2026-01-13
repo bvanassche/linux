@@ -449,6 +449,7 @@ struct xgene_clk {
 #define to_xgene_clk(_hw) container_of(_hw, struct xgene_clk, hw)
 
 static int xgene_clk_enable(struct clk_hw *hw)
+	__context_unsafe(/* conditional locking */)
 {
 	struct xgene_clk *pclk = to_xgene_clk(hw);
 	unsigned long flags = 0;
@@ -489,6 +490,7 @@ static int xgene_clk_enable(struct clk_hw *hw)
 }
 
 static void xgene_clk_disable(struct clk_hw *hw)
+	__context_unsafe(/* conditional locking */)
 {
 	struct xgene_clk *pclk = to_xgene_clk(hw);
 	unsigned long flags = 0;
@@ -562,6 +564,7 @@ static unsigned long xgene_clk_recalc_rate(struct clk_hw *hw,
 
 static int xgene_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate)
+	__context_unsafe(/* conditional locking */)
 {
 	struct xgene_clk *pclk = to_xgene_clk(hw);
 	unsigned long flags = 0;

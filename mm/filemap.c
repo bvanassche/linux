@@ -1030,6 +1030,7 @@ EXPORT_SYMBOL(filemap_alloc_folio_noprof);
  */
 void filemap_invalidate_lock_two(struct address_space *mapping1,
 				 struct address_space *mapping2)
+	__context_unsafe(/* conditional locking */)
 {
 	if (mapping1 > mapping2)
 		swap(mapping1, mapping2);
@@ -1050,6 +1051,7 @@ EXPORT_SYMBOL(filemap_invalidate_lock_two);
  */
 void filemap_invalidate_unlock_two(struct address_space *mapping1,
 				   struct address_space *mapping2)
+	__context_unsafe(/* conditional locking */)
 {
 	if (mapping1)
 		up_write(&mapping1->invalidate_lock);
@@ -3183,6 +3185,7 @@ EXPORT_SYMBOL(filemap_splice_read);
 static inline loff_t folio_seek_hole_data(struct xa_state *xas,
 		struct address_space *mapping, struct folio *folio,
 		loff_t start, loff_t end, bool seek_data)
+	__must_hold_shared(RCU)
 {
 	const struct address_space_operations *ops = mapping->a_ops;
 	size_t offset, bsz = i_blocksize(mapping->host);
@@ -3571,6 +3574,7 @@ static vm_fault_t filemap_fault_recheck_pte_none(struct vm_fault *vmf)
  * Return: bitwise-OR of %VM_FAULT_ codes.
  */
 vm_fault_t filemap_fault(struct vm_fault *vmf)
+	__context_unsafe(/* conditional locking */)
 {
 	int error;
 	struct file *file = vmf->vma->vm_file;
@@ -3962,6 +3966,8 @@ vm_fault_t filemap_map_pages(struct vm_fault *vmf,
 		folio_put(folio);
 		goto out;
 	}
+
+	__acquire(vmf->ptl);
 
 	folio_type = mm_counter_file(folio);
 	do {

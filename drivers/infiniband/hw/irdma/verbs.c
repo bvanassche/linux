@@ -3699,6 +3699,7 @@ static struct ib_mr *irdma_reg_user_mr_dmabuf(struct ib_pd *pd, u64 start,
 					      int fd, int access,
 					      struct ib_dmah *dmah,
 					      struct uverbs_attr_bundle *attrs)
+	__context_unsafe(/* ib_umem_dmabuf_get_pinned_revocable_and_lock() */)
 {
 	struct irdma_device *iwdev = to_iwdev(pd->device);
 	struct ib_umem_dmabuf *umem_dmabuf;

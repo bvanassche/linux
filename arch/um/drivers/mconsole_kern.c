@@ -805,11 +805,13 @@ static int create_proc_mconsole(void)
 static DEFINE_SPINLOCK(notify_spinlock);
 
 void lock_notify(void)
+	__acquires(&notify_spinlock)
 {
 	spin_lock(&notify_spinlock);
 }
 
 void unlock_notify(void)
+	__releases(&notify_spinlock)
 {
 	spin_unlock(&notify_spinlock);
 }

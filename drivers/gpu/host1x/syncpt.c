@@ -353,6 +353,7 @@ struct host1x_syncpt *host1x_syncpt_request(struct host1x_client *client,
 EXPORT_SYMBOL(host1x_syncpt_request);
 
 static void syncpt_release(struct kref *ref)
+	__context_unsafe(/* container_of() */)
 {
 	struct host1x_syncpt *sp = container_of(ref, struct host1x_syncpt, ref);
 

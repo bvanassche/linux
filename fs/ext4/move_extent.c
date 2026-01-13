@@ -31,6 +31,7 @@ struct mext_data {
  */
 void
 ext4_double_down_write_data_sem(struct inode *first, struct inode *second)
+	__context_unsafe(/* acquires i_data_sem of both inodes */)
 {
 	if (first < second) {
 		down_write(&EXT4_I(first)->i_data_sem);
@@ -51,6 +52,7 @@ ext4_double_down_write_data_sem(struct inode *first, struct inode *second)
 void
 ext4_double_up_write_data_sem(struct inode *orig_inode,
 			      struct inode *donor_inode)
+	__context_unsafe(/* releases i_data_sem held by caller */)
 {
 	up_write(&EXT4_I(orig_inode)->i_data_sem);
 	up_write(&EXT4_I(donor_inode)->i_data_sem);

@@ -42,6 +42,7 @@ enum {
 
 /* i2c busses in the system */
 struct pmac_i2c_bus;
+context_lock_struct(pmac_i2c_bus);
 struct i2c_adapter;
 
 /* Init, called early during boot */
@@ -80,8 +81,10 @@ extern int pmac_i2c_match_adapter(struct device_node *dev,
 
 
 /* Access functions for platform code */
-extern int pmac_i2c_open(struct pmac_i2c_bus *bus, int polled);
-extern void pmac_i2c_close(struct pmac_i2c_bus *bus);
+extern int pmac_i2c_open(struct pmac_i2c_bus *bus, int polled)
+	__cond_acquires(0, bus);
+extern void pmac_i2c_close(struct pmac_i2c_bus *bus)
+	__releases(bus);
 extern int pmac_i2c_setmode(struct pmac_i2c_bus *bus, int mode);
 extern int pmac_i2c_xfer(struct pmac_i2c_bus *bus, u8 addrdir, int subsize,
 			 u32 subaddr, u8 *data,  int len);

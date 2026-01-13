@@ -106,6 +106,8 @@ nvkm_i2c_aux_monitor(struct nvkm_i2c_aux *aux, bool monitor)
 
 void
 nvkm_i2c_aux_release(struct nvkm_i2c_aux *aux)
+	__releases(&aux->mutex)
+	__releases(&aux->pad->mutex)
 {
 	struct nvkm_i2c_pad *pad = aux->pad;
 	AUX_TRACE(aux, "release");
@@ -115,6 +117,8 @@ nvkm_i2c_aux_release(struct nvkm_i2c_aux *aux)
 
 int
 nvkm_i2c_aux_acquire(struct nvkm_i2c_aux *aux)
+	__cond_acquires(0, &aux->mutex)
+	__cond_acquires(0, &aux->pad->mutex)
 {
 	struct nvkm_i2c_pad *pad = aux->pad;
 	int ret;

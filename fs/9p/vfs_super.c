@@ -164,6 +164,7 @@ release_sb:
  */
 
 static void v9fs_kill_super(struct super_block *s)
+	__releases(&s->s_umount)
 {
 	struct v9fs_session_info *v9ses = s->s_fs_info;
 

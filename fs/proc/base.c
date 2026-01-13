@@ -438,6 +438,7 @@ print0:
 #endif /* CONFIG_KALLSYMS */
 
 static int lock_trace(struct task_struct *task)
+	__cond_acquires_shared(0, &task->signal->exec_update_lock)
 {
 	int err = down_read_killable(&task->signal->exec_update_lock);
 	if (err)
@@ -450,6 +451,7 @@ static int lock_trace(struct task_struct *task)
 }
 
 static void unlock_trace(struct task_struct *task)
+	__releases_shared(&task->signal->exec_update_lock)
 {
 	up_read(&task->signal->exec_update_lock);
 }
@@ -1145,6 +1147,7 @@ static int __set_oom_adj(struct file *file, int oom_adj, bool legacy)
 		struct task_struct *p = find_lock_task_mm(task);
 
 		if (p) {
+			__acquire(&p->alloc_lock);
 			if (mm_flags_test(MMF_MULTIPROCESS, p->mm)) {
 				mm = p->mm;
 				mmgrab(mm);
@@ -2480,6 +2483,7 @@ struct timers_private {
 };
 
 static void *timers_start(struct seq_file *m, loff_t *pos)
+	__context_unsafe(/* acquires RCU read lock for caller on success */)
 {
 	struct timers_private *tp = m->private;
 
@@ -2499,6 +2503,7 @@ static void *timers_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void timers_stop(struct seq_file *m, void *v)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct timers_private *tp = m->private;
 

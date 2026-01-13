@@ -51,6 +51,7 @@ msm_gem_shrinker_count(struct shrinker *shrinker, struct shrink_control *sc)
 static bool
 with_vm_locks(void (*fn)(struct drm_gem_object *obj),
 	      struct drm_gem_object *obj)
+	__context_unsafe(/* locking inside loop */)
 {
 	/*
 	 * Track last locked entry for for unwinding locks in error and

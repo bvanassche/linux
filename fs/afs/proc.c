@@ -57,7 +57,7 @@ static int afs_proc_cells_show(struct seq_file *m, void *v)
 }
 
 static void *afs_proc_cells_start(struct seq_file *m, loff_t *_pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return seq_hlist_start_head_rcu(&afs_seq2net(m)->proc_cells, *_pos);
@@ -69,7 +69,7 @@ static void *afs_proc_cells_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void afs_proc_cells_stop(struct seq_file *m, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }
@@ -283,7 +283,7 @@ static int afs_proc_cell_volumes_show(struct seq_file *m, void *v)
 }
 
 static void *afs_proc_cell_volumes_start(struct seq_file *m, loff_t *_pos)
-	__acquires(cell->proc_lock)
+	__acquires_shared(RCU)
 {
 	struct afs_cell *cell = pde_data(file_inode(m->file));
 
@@ -300,7 +300,7 @@ static void *afs_proc_cell_volumes_next(struct seq_file *m, void *v,
 }
 
 static void afs_proc_cell_volumes_stop(struct seq_file *m, void *v)
-	__releases(cell->proc_lock)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }
@@ -376,7 +376,7 @@ static int afs_proc_cell_vlservers_show(struct seq_file *m, void *v)
 }
 
 static void *afs_proc_cell_vlservers_start(struct seq_file *m, loff_t *_pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	struct afs_vl_seq_net_private *priv = m->private;
 	struct afs_vlserver_list *vllist;
@@ -416,7 +416,7 @@ static void *afs_proc_cell_vlservers_next(struct seq_file *m, void *v,
 }
 
 static void afs_proc_cell_vlservers_stop(struct seq_file *m, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }
@@ -482,7 +482,7 @@ out:
 }
 
 static void *afs_proc_servers_start(struct seq_file *m, loff_t *_pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return seq_hlist_start_head_rcu(&afs_seq2net(m)->fs_proc, *_pos);
@@ -494,7 +494,7 @@ static void *afs_proc_servers_next(struct seq_file *m, void *v, loff_t *_pos)
 }
 
 static void afs_proc_servers_stop(struct seq_file *m, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }
@@ -522,7 +522,7 @@ static int afs_proc_sysname_show(struct seq_file *m, void *v)
 }
 
 static void *afs_proc_sysname_start(struct seq_file *m, loff_t *pos)
-	__acquires(&net->sysnames_lock)
+	__acquires_shared(&afs_seq2net(m)->sysnames_lock)
 {
 	struct afs_net *net = afs_seq2net(m);
 	struct afs_sysnames *names;
@@ -547,7 +547,7 @@ static void *afs_proc_sysname_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void afs_proc_sysname_stop(struct seq_file *m, void *v)
-	__releases(&net->sysnames_lock)
+	__releases_shared(&afs_seq2net(m)->sysnames_lock)
 {
 	struct afs_net *net = afs_seq2net(m);
 

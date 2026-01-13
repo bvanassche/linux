@@ -204,6 +204,7 @@ static DEFINE_PER_CPU(struct sock *, ipv4_icmp_sk);
 
 /* Called with BH disabled */
 static inline struct sock *icmp_xmit_lock(struct net *net)
+	__context_unsafe(/* spin_trylock() locks conditionally */)
 {
 	struct sock *sk;
 
@@ -220,6 +221,7 @@ static inline struct sock *icmp_xmit_lock(struct net *net)
 }
 
 static inline void icmp_xmit_unlock(struct sock *sk)
+	__context_unsafe(/* releases lock held by caller */)
 {
 	sock_net_set(sk, &init_net);
 	spin_unlock(&sk->sk_lock.slock);

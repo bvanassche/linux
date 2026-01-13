@@ -456,6 +456,7 @@ static int dm9051_mdio_write(struct mii_bus *bus, int addr, int regnum, u16 val)
 }
 
 static void dm9051_reg_lock_mutex(void *dbcontext)
+	__acquires(&((struct board_info *)dbcontext)->reg_mutex)
 {
 	struct board_info *db = dbcontext;
 
@@ -463,6 +464,7 @@ static void dm9051_reg_lock_mutex(void *dbcontext)
 }
 
 static void dm9051_reg_unlock_mutex(void *dbcontext)
+	__releases(&((struct board_info *)dbcontext)->reg_mutex)
 {
 	struct board_info *db = dbcontext;
 

@@ -581,7 +581,7 @@ static struct ifacaddr6 *ac6_get_idx(struct seq_file *seq, loff_t pos)
 }
 
 static void *ac6_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return ac6_get_idx(seq, *pos);
@@ -596,7 +596,7 @@ static void *ac6_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void ac6_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

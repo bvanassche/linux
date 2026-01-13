@@ -231,6 +231,7 @@ static int tegra114_mipi_disable(struct tegra_mipi_device *mipidev)
 }
 
 static int tegra114_mipi_finish_calibration(struct tegra_mipi_device *mipidev)
+	__releases(&((struct tegra_mipi *)platform_get_drvdata(mipidev->pdev))->lock)
 {
 	struct tegra_mipi *mipi = platform_get_drvdata(mipidev->pdev);
 	void __iomem *status_reg = mipi->regs + (MIPI_CAL_STATUS << 2);
@@ -248,6 +249,7 @@ static int tegra114_mipi_finish_calibration(struct tegra_mipi_device *mipidev)
 }
 
 static int tegra114_mipi_start_calibration(struct tegra_mipi_device *mipidev)
+	__cond_acquires(0, &((struct tegra_mipi *)platform_get_drvdata(mipidev->pdev))->lock)
 {
 	struct tegra_mipi *mipi = platform_get_drvdata(mipidev->pdev);
 	const struct tegra_mipi_soc *soc = mipi->soc;

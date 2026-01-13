@@ -111,6 +111,7 @@ static struct dentry *get_next_positive_subdir(struct dentry *prev,
  */
 static struct dentry *get_next_positive_dentry(struct dentry *prev,
 					       struct dentry *root)
+	__context_unsafe(/* locks in a loop */)
 {
 	struct autofs_sb_info *sbi = autofs_sbi(root->d_sb);
 	struct dentry *p = prev, *ret = NULL, *d = NULL;

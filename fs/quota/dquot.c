@@ -425,7 +425,8 @@ int dquot_mark_dquot_dirty(struct dquot *dquot)
 EXPORT_SYMBOL(dquot_mark_dquot_dirty);
 
 /* Dirtify all the dquots - this can block when journalling */
-static inline int mark_all_dquot_dirty(struct dquot __rcu * const *dquots)
+static inline int mark_all_dquot_dirty(struct dquot __rcu *const *dquots)
+	__must_hold_shared(&dquot_srcu)
 {
 	int ret, err, cnt;
 	struct dquot *dquot;

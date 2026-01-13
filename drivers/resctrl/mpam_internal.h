@@ -156,6 +156,7 @@ struct mpam_msc {
 
 /* Returning false here means accesses to mon_sel must fail and report an error. */
 static inline bool __must_check mpam_mon_sel_lock(struct mpam_msc *msc)
+	__context_unsafe(/* conditional locking */)
 {
 	if (msc->iface == MPAM_IFACE_MMIO) {
 		raw_spin_lock_irqsave(&msc->_mon_sel_lock, msc->_mon_sel_flags);
@@ -172,6 +173,7 @@ static inline bool __must_check mpam_mon_sel_lock(struct mpam_msc *msc)
 }
 
 static inline void mpam_mon_sel_unlock(struct mpam_msc *msc)
+	__context_unsafe(/* conditional locking */)
 {
 	if (msc->iface == MPAM_IFACE_MMIO) {
 		raw_spin_unlock_irqrestore(&msc->_mon_sel_lock,

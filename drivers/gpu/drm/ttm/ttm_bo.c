@@ -448,6 +448,7 @@ EXPORT_SYMBOL(ttm_bo_eviction_valuable);
  */
 int ttm_bo_evict_first(struct ttm_device *bdev, struct ttm_resource_manager *man,
 		       struct ttm_operation_ctx *ctx)
+	__context_unsafe(/* ttm_bo_reserve() locks conditionally */)
 {
 	struct ttm_resource_cursor cursor;
 	struct ttm_buffer_object *bo;
@@ -1190,6 +1191,7 @@ int ttm_bo_init_reserved(struct ttm_device *bdev, struct ttm_buffer_object *bo,
 			 uint32_t alignment, struct ttm_operation_ctx *ctx,
 			 struct sg_table *sg, struct dma_resv *resv,
 			 void (*destroy) (struct ttm_buffer_object *))
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 

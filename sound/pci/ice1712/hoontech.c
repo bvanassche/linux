@@ -256,6 +256,7 @@ static int snd_ice1712_staudio_init(struct snd_ice1712 *ice)
 
 /* start callback for STDSP24 with modified hardware */
 static void stdsp24_ak4524_lock(struct snd_akm4xxx *ak, int chip)
+	__acquires(&((struct snd_ice1712 *)ak->private_data[0])->gpio_mutex)
 {
 	struct snd_ice1712 *ice = ak->private_data[0];
 	unsigned char tmp;

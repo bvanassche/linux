@@ -217,6 +217,7 @@ void virtio_gpu_array_add_obj(struct virtio_gpu_object_array *objs,
 }
 
 int virtio_gpu_array_lock_resv(struct virtio_gpu_object_array *objs)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned int i;
 	int ret;
@@ -260,6 +261,7 @@ int virtio_gpu_lock_one_resv_uninterruptible(struct virtio_gpu_object_array *obj
 }
 
 void virtio_gpu_array_unlock_resv(struct virtio_gpu_object_array *objs)
+	__context_unsafe(/* releases locks held by caller */)
 {
 	if (objs->nents == 1) {
 		dma_resv_unlock(objs->objs[0]->resv);

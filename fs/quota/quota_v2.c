@@ -350,6 +350,7 @@ static int v2_read_dquot(struct dquot *dquot)
 }
 
 static int v2_write_dquot(struct dquot *dquot)
+	__context_unsafe(/* conditionally locks shared or exclusive */)
 {
 	struct quota_info *dqopt = sb_dqopt(dquot->dq_sb);
 	int ret;

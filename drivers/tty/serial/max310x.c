@@ -970,7 +970,7 @@ static void max310x_delayed_start_tx(struct uart_port *port)
 }
 
 /* called with port.lock taken and irqs off */
-static void max310x_start_tx(struct uart_port *port)
+static void max310x_start_tx(struct uart_port *port) __must_hold(&port->lock)
 {
 	struct max310x_one *one = to_max310x_port(port);
 
@@ -1505,8 +1505,10 @@ static void max310x_rs_proc(struct work_struct *ws)
 }
 
 /* called with port.lock taken and irqs off */
-static int max310x_rs485_config(struct uart_port *port, struct ktermios *termios,
+static int max310x_rs485_config(struct uart_port *port,
+				struct ktermios *termios,
 				struct serial_rs485 *rs485)
+	__must_hold(&port->lock)
 {
 	struct max310x_one *one = to_max310x_port(port);
 

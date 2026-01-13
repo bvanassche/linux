@@ -2469,6 +2469,7 @@ static void pch_udc_activate_control_ep(struct pch_udc_dev *dev)
  * @dev:	Reference to driver structure
  */
 static void pch_udc_svc_ur_interrupt(struct pch_udc_dev *dev)
+	__context_unsafe(/* drops and reacquires dev->lock */)
 {
 	struct pch_udc_ep	*ep;
 	int i;
@@ -2552,6 +2553,7 @@ static void pch_udc_svc_enum_interrupt(struct pch_udc_dev *dev)
  * @dev:	Reference to driver structure
  */
 static void pch_udc_svc_intf_interrupt(struct pch_udc_dev *dev)
+	__must_hold(&dev->lock)
 {
 	u32 reg, dev_stat = 0;
 	int i;
@@ -2591,6 +2593,7 @@ static void pch_udc_svc_intf_interrupt(struct pch_udc_dev *dev)
  * @dev:	Reference to driver structure
  */
 static void pch_udc_svc_cfg_interrupt(struct pch_udc_dev *dev)
+	__must_hold(&dev->lock)
 {
 	int i;
 	u32 reg, dev_stat = 0;
@@ -2627,6 +2630,7 @@ static void pch_udc_svc_cfg_interrupt(struct pch_udc_dev *dev)
  * @dev_intr:	The Device interrupt status.
  */
 static void pch_udc_dev_isr(struct pch_udc_dev *dev, u32 dev_intr)
+	__context_unsafe(/* drops and reacquires dev->lock */)
 {
 	int vbus;
 

@@ -904,6 +904,7 @@ EXPORT_SYMBOL(host1x_client_resume);
 struct host1x_bo_mapping *host1x_bo_pin(struct device *dev, struct host1x_bo *bo,
 					enum dma_data_direction dir,
 					struct host1x_bo_cache *cache)
+	__context_unsafe(/* conditional locking */)
 {
 	struct host1x_bo_mapping *mapping;
 
@@ -978,6 +979,7 @@ static void __host1x_bo_unpin(struct kref *ref)
  * the underlying buffer object.
  */
 void host1x_bo_unpin(struct host1x_bo_mapping *mapping)
+	__context_unsafe(/* conditional locking */)
 {
 	struct host1x_bo_cache *cache = mapping->cache;
 	struct host1x_bo *bo = mapping->bo;

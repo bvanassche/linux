@@ -240,6 +240,7 @@ static bool ext4_fc_eligible(struct super_block *sb)
  */
 static void ext4_fc_wait_inode_state(struct inode *inode, int bit,
 				     int *alloc_ctx)
+	__must_hold(&EXT4_SB(inode->i_sb)->s_fc_lock)
 {
 	wait_queue_head_t *wq;
 	unsigned long *wait_word = ext4_inode_state_wait_word(inode);
@@ -434,6 +435,7 @@ struct __track_dentry_update_args {
 /* __track_fn for directory entry updates. Called with ei->i_fc_lock. */
 static int __track_dentry_update(handle_t *handle, struct inode *inode,
 				 void *arg, bool update)
+	__must_hold(&EXT4_I(inode)->i_fc_lock)
 {
 	struct ext4_fc_dentry_update *node;
 	struct ext4_inode_info *ei = EXT4_I(inode);

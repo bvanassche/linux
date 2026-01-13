@@ -534,6 +534,7 @@ static void swap_cluster_assert_empty(struct swap_cluster_info *ci,
 static struct swap_cluster_info *
 swap_cluster_populate(struct swap_info_struct *si,
 			 struct swap_cluster_info *ci)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 
@@ -630,6 +631,7 @@ static void __free_cluster(struct swap_info_struct *si, struct swap_cluster_info
  */
 static struct swap_cluster_info *isolate_lock_cluster(
 		struct swap_info_struct *si, struct list_head *list)
+	__context_unsafe(/* locking inside loop */)
 {
 	struct swap_cluster_info *ci, *found = NULL;
 	u8 flags = CLUSTER_FLAG_NONE;
@@ -846,6 +848,7 @@ static bool cluster_reclaim_range(struct swap_info_struct *si,
 				  struct swap_cluster_info *ci,
 				  unsigned long start, unsigned int order,
 				  bool *usable)
+	__must_hold(&ci->lock)
 {
 	unsigned int nr_pages = 1 << order;
 	unsigned long offset = start, end = start + nr_pages;
@@ -972,6 +975,7 @@ static bool __swap_cluster_alloc_entries(struct swap_info_struct *si,
 static unsigned int alloc_swap_scan_cluster(struct swap_info_struct *si,
 					    struct swap_cluster_info *ci,
 					    struct folio *folio, unsigned long offset)
+	__releases(&ci->lock)
 {
 	unsigned int next = SWAP_ENTRY_INVALID, found = SWAP_ENTRY_INVALID;
 	unsigned long start = ALIGN_DOWN(offset, SWAPFILE_CLUSTER);
@@ -1024,6 +1028,7 @@ static unsigned int alloc_swap_scan_list(struct swap_info_struct *si,
 					 struct list_head *list,
 					 struct folio *folio,
 					 bool scan_all)
+	__context_unsafe(/* unlock inside loop */)
 {
 	unsigned int found = SWAP_ENTRY_INVALID;
 
@@ -1043,6 +1048,7 @@ static unsigned int alloc_swap_scan_list(struct swap_info_struct *si,
 }
 
 static void swap_reclaim_full_clusters(struct swap_info_struct *si, bool force)
+	__context_unsafe(/* locking inside loop */)
 {
 	long to_scan = 1;
 	unsigned long offset, end;
@@ -1105,6 +1111,7 @@ static void swap_reclaim_work(struct work_struct *work)
  */
 static unsigned long cluster_alloc_swap_entry(struct swap_info_struct *si,
 					      struct folio *folio)
+	__context_unsafe(/* conditional locking */)
 {
 	struct swap_cluster_info *ci;
 	unsigned int order = likely(folio) ? folio_order(folio) : 0;
@@ -2498,6 +2505,7 @@ static inline int pte_same_as_swp(pte_t pte, pte_t swp_pte)
  */
 static int unuse_pte(struct vm_area_struct *vma, pmd_t *pmd,
 		unsigned long addr, swp_entry_t entry, struct folio *folio)
+	__context_unsafe(/* pte_offset_map_lock() locks conditionally */)
 {
 	struct page *page;
 	struct folio *swapcache;
@@ -3331,6 +3339,7 @@ static __poll_t swaps_poll(struct file *file, poll_table *wait)
 
 /* iterator */
 static void *swap_start(struct seq_file *swap, loff_t *pos)
+	__acquires(&swapon_mutex)
 {
 	struct swap_info_struct *si;
 	int type;
@@ -3372,6 +3381,7 @@ static void *swap_next(struct seq_file *swap, void *v, loff_t *pos)
 }
 
 static void swap_stop(struct seq_file *swap, void *v)
+	__releases(&swapon_mutex)
 {
 	mutex_unlock(&swapon_mutex);
 }
@@ -3710,6 +3720,7 @@ err:
 }
 
 SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct swap_info_struct *si;
 	struct file *swap_file = NULL;

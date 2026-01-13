@@ -409,6 +409,7 @@ remap_rl:
  */
 s64 ntfs_attr_vcn_to_lcn_nolock(struct ntfs_inode *ni, const s64 vcn,
 		const bool write_locked)
+	__context_unsafe(/* conditional locking */)
 {
 	s64 lcn;
 	unsigned long flags;
@@ -4289,6 +4290,7 @@ static int ntfs_non_resident_attr_shrink(struct ntfs_inode *ni,
 					 const s64 newsize,
 					struct ntfs_inode *locked_ni,
 					bool pagecache_truncated)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ntfs_volume *vol;
 	struct ntfs_attr_search_ctx *ctx;
@@ -4489,6 +4491,7 @@ unlock_runlist:
 static int ntfs_non_resident_attr_expand(struct ntfs_inode *ni, const s64 newsize,
 		const s64 prealloc_size, unsigned int holes,
 		struct ntfs_inode *locked_ni)
+	__context_unsafe(/* conditional locking */)
 {
 	s64 lcn_seek_from;
 	s64 first_free_vcn;

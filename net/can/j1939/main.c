@@ -228,6 +228,7 @@ static inline struct j1939_priv *j1939_ndev_to_priv(struct net_device *ndev)
 }
 
 static struct j1939_priv *j1939_priv_get_by_ndev_locked(struct net_device *ndev)
+	__must_hold(&j1939_netdev_lock)
 {
 	struct j1939_priv *priv;
 

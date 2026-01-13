@@ -1025,6 +1025,7 @@ static void calc_discard_block_range(struct cache *cache, struct bio *bio,
 /*----------------------------------------------------------------*/
 
 static void prevent_background_work(struct cache *cache)
+	__context_unsafe(/* not suited for lock context analysis */)
 {
 	spin_lock_irq(&cache->background_work_lock);
 	cache->background_work_allowed = false;
@@ -1035,6 +1036,7 @@ static void prevent_background_work(struct cache *cache)
 }
 
 static void allow_background_work(struct cache *cache)
+	__context_unsafe(/* not suited for lock context analysis */)
 {
 	spin_lock_irq(&cache->background_work_lock);
 	cache->background_work_allowed = true;
@@ -1042,6 +1044,7 @@ static void allow_background_work(struct cache *cache)
 }
 
 static bool background_work_begin(struct cache *cache)
+	__context_unsafe(/* not suited for lock context analysis */)
 {
 	bool r;
 
@@ -1054,6 +1057,7 @@ static bool background_work_begin(struct cache *cache)
 }
 
 static void background_work_end(struct cache *cache)
+	__context_unsafe(/* not suited for lock context analysis */)
 {
 	spin_lock_irq(&cache->background_work_lock);
 	if (--cache->background_work_nr == 0)

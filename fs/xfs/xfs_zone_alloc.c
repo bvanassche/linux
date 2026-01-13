@@ -631,6 +631,7 @@ xfs_select_open_zone_lru(
 	struct xfs_zone_info	*zi,
 	enum rw_hint		file_hint,
 	unsigned int		goodness)
+	__must_hold(&zi->zi_open_zones_lock)
 {
 	struct xfs_open_zone	*oz;
 
@@ -648,6 +649,7 @@ static struct xfs_open_zone *
 xfs_select_open_zone_mru(
 	struct xfs_zone_info	*zi,
 	enum rw_hint		file_hint)
+	__must_hold(&zi->zi_open_zones_lock)
 {
 	struct xfs_open_zone	*oz;
 

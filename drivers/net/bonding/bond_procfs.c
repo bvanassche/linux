@@ -10,7 +10,7 @@
 #define bond_version "Ethernet Channel Bonding Driver: v" UTS_RELEASE "\n"
 
 static void *bond_info_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	struct bonding *bond = pde_data(file_inode(seq->file));
 	struct list_head *iter;
@@ -51,7 +51,7 @@ static void *bond_info_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void bond_info_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

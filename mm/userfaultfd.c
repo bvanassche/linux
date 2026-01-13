@@ -183,6 +183,7 @@ static void uffd_mfill_unlock(struct vm_area_struct *vma)
 }
 
 static void mfill_put_vma(struct mfill_state *state)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!state->vma)
 		return;
@@ -193,6 +194,7 @@ static void mfill_put_vma(struct mfill_state *state)
 }
 
 static int mfill_get_vma(struct mfill_state *state)
+	__context_unsafe(/* conditional locking */)
 {
 	struct userfaultfd_ctx *ctx = state->ctx;
 	uffd_flags_t flags = state->flags;
@@ -753,6 +755,7 @@ static __always_inline ssize_t mfill_atomic_hugetlb(
 					      unsigned long src_start,
 					      unsigned long len,
 					      uffd_flags_t flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mm_struct *dst_mm = dst_vma->vm_mm;
 	ssize_t err;
@@ -936,6 +939,7 @@ static __always_inline ssize_t mfill_atomic(struct userfaultfd_ctx *ctx,
 					    unsigned long src_start,
 					    unsigned long len,
 					    uffd_flags_t flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mfill_state state = (struct mfill_state){
 		.ctx = ctx,
@@ -2064,6 +2068,7 @@ static ssize_t move_pages(struct userfaultfd_ctx *ctx, unsigned long dst_start,
 
 		ptl = pmd_trans_huge_lock(src_pmd, src_vma);
 		if (ptl) {
+			__acquire(ptl);
 			/* Check if we can move the pmd without splitting it. */
 			if (move_splits_huge_pmd(dst_addr, src_addr, src_start + len) ||
 			    !pmd_none(dst_pmdval)) {
@@ -2089,6 +2094,8 @@ static ssize_t move_pages(struct userfaultfd_ctx *ctx, unsigned long dst_start,
 						  dst_pmdval, dst_vma, src_vma,
 						  dst_addr, src_addr);
 			step_size = HPAGE_PMD_SIZE;
+			/* move_pages_huge_pmd() has released ptl. */
+			__release(ptl);
 		} else {
 			long ret;
 
@@ -3210,6 +3217,7 @@ void mremap_userfaultfd_fail(struct vm_userfaultfd_ctx *vm_ctx)
 
 bool userfaultfd_remove(struct vm_area_struct *vma,
 			unsigned long start, unsigned long end)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	struct userfaultfd_ctx *ctx;

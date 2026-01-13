@@ -5087,6 +5087,7 @@ EXPORT_SYMBOL_GPL(spi_sync_locked);
  * Return: always zero.
  */
 int spi_bus_lock(struct spi_controller *ctlr)
+	__acquires(&ctlr->bus_lock_mutex)
 {
 	unsigned long flags;
 
@@ -5116,6 +5117,7 @@ EXPORT_SYMBOL_GPL(spi_bus_lock);
  * Return: always zero.
  */
 int spi_bus_unlock(struct spi_controller *ctlr)
+	__releases(&ctlr->bus_lock_mutex)
 {
 	ctlr->bus_lock_flag = 0;
 
@@ -5153,6 +5155,7 @@ static u8	*buf;
 int spi_write_then_read(struct spi_device *spi,
 		const void *txbuf, unsigned n_tx,
 		void *rxbuf, unsigned n_rx)
+	__context_unsafe(/* conditional locking */)
 {
 	static DEFINE_MUTEX(lock);
 

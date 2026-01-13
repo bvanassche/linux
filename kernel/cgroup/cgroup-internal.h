@@ -248,13 +248,12 @@ void cgroup_attach_lock(enum cgroup_attach_lock_mode lock_mode,
 void cgroup_attach_unlock(enum cgroup_attach_lock_mode lock_mode,
 			  struct task_struct *tsk);
 struct task_struct *cgroup_procs_write_start(char *buf, bool threadgroup,
-					     enum cgroup_attach_lock_mode *lock_mode)
-	__acquires(&cgroup_threadgroup_rwsem);
+					     enum cgroup_attach_lock_mode *lock_mode);
 void cgroup_procs_write_finish(struct task_struct *task,
-			       enum cgroup_attach_lock_mode lock_mode)
-	__releases(&cgroup_threadgroup_rwsem);
+			       enum cgroup_attach_lock_mode lock_mode);
 
-int cgroup_lock_and_drain_offline(struct cgroup *cgrp);
+int cgroup_lock_and_drain_offline(struct cgroup *cgrp)
+	__cond_acquires(0, &cgroup_mutex);
 
 int cgroup_mkdir(struct kernfs_node *parent_kn, const char *name, umode_t mode);
 int cgroup_rmdir(struct kernfs_node *kn);

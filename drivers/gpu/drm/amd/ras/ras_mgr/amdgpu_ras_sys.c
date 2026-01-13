@@ -232,6 +232,7 @@ static int amdgpu_ras_sys_get_device_system_info(struct ras_core_context *ras_co
 
 static int amdgpu_ras_sys_gpu_reset_lock(struct ras_core_context *ras_core,
 			bool down, bool try)
+	__context_unsafe(/* conditional locking */)
 {
 	struct amdgpu_device *adev = (struct amdgpu_device *)ras_core->dev;
 	int ret = 0;

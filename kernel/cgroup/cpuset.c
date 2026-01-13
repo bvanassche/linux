@@ -296,11 +296,13 @@ struct cpuset top_cpuset = {
  * hierarchy and configurations. This helper is not enough to make modification.
  */
 void cpuset_lock(void)
+	__acquires(&cpuset_mutex)
 {
 	mutex_lock(&cpuset_mutex);
 }
 
 void cpuset_unlock(void)
+	__releases(&cpuset_mutex)
 {
 	mutex_unlock(&cpuset_mutex);
 }
@@ -317,6 +319,8 @@ void lockdep_assert_cpuset_lock_held(void)
  * to safely modify cpuset data.
  */
 void cpuset_full_lock(void)
+	__acquires(&cpuset_top_mutex)
+	__acquires(&cpuset_mutex)
 {
 	mutex_lock(&cpuset_top_mutex);
 	cpus_read_lock();
@@ -324,6 +328,8 @@ void cpuset_full_lock(void)
 }
 
 void cpuset_full_unlock(void)
+	__releases(&cpuset_mutex)
+	__releases(&cpuset_top_mutex)
 {
 	mutex_unlock(&cpuset_mutex);
 	cpus_read_unlock();
@@ -341,11 +347,13 @@ bool lockdep_is_cpuset_held(void)
 static DEFINE_SPINLOCK(callback_lock);
 
 void cpuset_callback_lock_irq(void)
+	__acquires(&callback_lock)
 {
 	spin_lock_irq(&callback_lock);
 }
 
 void cpuset_callback_unlock_irq(void)
+	__releases(&callback_lock)
 {
 	spin_unlock_irq(&callback_lock);
 }

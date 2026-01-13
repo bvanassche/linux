@@ -193,6 +193,7 @@ static int sprd_pmic_eic_irq_set_type(struct irq_data *data,
 }
 
 static void sprd_pmic_eic_bus_lock(struct irq_data *data)
+	__acquires(&((struct sprd_pmic_eic *)gpiochip_get_data(irq_data_get_irq_chip_data(data)))->buslock)
 {
 	struct gpio_chip *chip = irq_data_get_irq_chip_data(data);
 	struct sprd_pmic_eic *pmic_eic = gpiochip_get_data(chip);
@@ -201,6 +202,7 @@ static void sprd_pmic_eic_bus_lock(struct irq_data *data)
 }
 
 static void sprd_pmic_eic_bus_sync_unlock(struct irq_data *data)
+	__releases(&((struct sprd_pmic_eic *)gpiochip_get_data(irq_data_get_irq_chip_data(data)))->buslock)
 {
 	struct gpio_chip *chip = irq_data_get_irq_chip_data(data);
 	struct sprd_pmic_eic *pmic_eic = gpiochip_get_data(chip);

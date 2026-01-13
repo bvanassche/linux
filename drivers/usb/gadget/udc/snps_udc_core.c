@@ -1631,6 +1631,7 @@ static void usb_connect(struct udc *dev)
  * initial bringup to be ready for ep0 events
  */
 static void usb_disconnect(struct udc *dev)
+	__context_unsafe(/* drops and reacquires dev->lock */)
 {
 	u32 tmp;
 

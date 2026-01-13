@@ -103,6 +103,7 @@ static int devtmpfs_parse_monolithic(struct fs_context *fc, void *data)
 }
 
 static int devtmpfs_get_tree(struct fs_context *fc)
+	__cond_acquires(0, &mnt->mnt_sb->s_umount)
 {
 	struct devtmpfs_context *ctx = fc->fs_private;
 	struct super_block *sb = mnt->mnt_sb;

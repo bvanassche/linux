@@ -4288,6 +4288,7 @@ static void reset_iter_read(struct ftrace_iterator *iter)
 }
 
 static void *t_start(struct seq_file *m, loff_t *pos)
+	__acquires(&ftrace_lock)
 {
 	struct ftrace_iterator *iter = m->private;
 	void *p = NULL;
@@ -4343,6 +4344,7 @@ static void *t_start(struct seq_file *m, loff_t *pos)
 }
 
 static void t_stop(struct seq_file *m, void *p)
+	__releases(&ftrace_lock)
 {
 	mutex_unlock(&ftrace_lock);
 }
@@ -6643,6 +6645,7 @@ int update_ftrace_direct_del(struct ftrace_ops *ops, struct ftrace_hash *hash)
  *  -EINVAL - The @ops is not registered
  */
 int update_ftrace_direct_mod(struct ftrace_ops *ops, struct ftrace_hash *hash, bool do_direct_lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ftrace_func_entry *entry, *tmp;
 	static struct ftrace_ops tmp_ops = {
@@ -7182,6 +7185,7 @@ g_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void *g_start(struct seq_file *m, loff_t *pos)
+	__acquires(&graph_lock)
 {
 	struct ftrace_graph_data *fgd = m->private;
 
@@ -7204,6 +7208,7 @@ static void *g_start(struct seq_file *m, loff_t *pos)
 }
 
 static void g_stop(struct seq_file *m, void *p)
+	__releases(&graph_lock)
 {
 	mutex_unlock(&graph_lock);
 }
@@ -8815,7 +8820,9 @@ static void ftrace_pid_reset(struct trace_array *tr, int type)
 #define FTRACE_NO_PIDS		(void *)(PID_MAX_LIMIT + 1)
 
 static void *fpid_start(struct seq_file *m, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
+	__acquires_shared(RCU_SCHED)
+	__acquires(&ftrace_lock)
 {
 	struct trace_pid_list *pid_list;
 	struct trace_array *tr = m->private;
@@ -8844,7 +8851,9 @@ static void *fpid_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void fpid_stop(struct seq_file *m, void *p)
-	__releases(RCU)
+	__releases_shared(RCU)
+	__releases_shared(RCU_SCHED)
+	__releases(&ftrace_lock)
 {
 	rcu_read_unlock_sched();
 	mutex_unlock(&ftrace_lock);
@@ -8868,7 +8877,9 @@ static const struct seq_operations ftrace_pid_sops = {
 };
 
 static void *fnpid_start(struct seq_file *m, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
+	__acquires_shared(RCU_SCHED)
+	__acquires(&ftrace_lock)
 {
 	struct trace_pid_list *pid_list;
 	struct trace_array *tr = m->private;

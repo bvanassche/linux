@@ -47,13 +47,15 @@ static inline void *_uobj_get_obj_read(struct ib_uobject *uobj)
 				_attrs)
 
 int __uobj_perform_destroy(const struct uverbs_api_object *obj, u32 id,
-			   struct uverbs_attr_bundle *attrs);
+			   struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu);
 #define uobj_perform_destroy(_type, _id, _attrs)                               \
 	__uobj_perform_destroy(uobj_get_type(_attrs, _type),                   \
 			       _uobj_check_id(_id), _attrs)
 
 struct ib_uobject *__uobj_get_destroy(const struct uverbs_api_object *obj,
-				      u32 id, struct uverbs_attr_bundle *attrs);
+				      u32 id, struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu);
 
 #define uobj_get_destroy(_type, _id, _attrs)                                   \
 	__uobj_get_destroy(uobj_get_type(_attrs, _type), _uobj_check_id(_id),  \

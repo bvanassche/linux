@@ -796,6 +796,7 @@ void iscsit_start_time2retain_handler(struct iscsit_session *sess)
 }
 
 int iscsit_stop_time2retain_timer(struct iscsit_session *sess)
+	__must_hold(&sess->tpg->tpg_se_tpg.session_lock)
 {
 	struct iscsi_portal_group *tpg = sess->tpg;
 	struct se_portal_group *se_tpg = &tpg->tpg_se_tpg;

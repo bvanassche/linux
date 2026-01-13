@@ -989,6 +989,7 @@ int fixup_pi_owner(u32 __user *uaddr, struct futex_q *q, int locked)
  * Also serves as futex trylock_pi()'ing, and due semantics.
  */
 int futex_lock_pi(u32 __user *uaddr, unsigned int flags, ktime_t *time, int trylock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct hrtimer_sleeper timeout, *to;
 	struct task_struct *exiting;
@@ -1197,6 +1198,7 @@ out:
  * and do the rt-mutex unlock.
  */
 static int __futex_unlock_pi(u32 __user *uaddr, unsigned int flags)
+	__context_unsafe(/* conditional locking */)
 {
 	u32 curval, uval, vpid = task_pid_vnr(current);
 	union futex_key key = FUTEX_KEY_INIT;

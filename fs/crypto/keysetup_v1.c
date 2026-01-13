@@ -41,6 +41,7 @@ find_and_lock_process_key(const char *prefix,
 			  const u8 descriptor[FSCRYPT_KEY_DESCRIPTOR_SIZE],
 			  unsigned int min_keysize,
 			  const struct fscrypt_key **payload_ret)
+	__context_unsafe(/* conditional locking */)
 {
 	char *description;
 	struct key *key;
@@ -266,6 +267,7 @@ int fscrypt_setup_v1_file_key(struct fscrypt_inode_info *ci,
 
 int
 fscrypt_setup_v1_file_key_via_subscribed_keyrings(struct fscrypt_inode_info *ci)
+	__context_unsafe(/* find_and_lock_process_key() locks conditionally */)
 {
 	const struct super_block *sb = ci->ci_inode->i_sb;
 	struct key *key;

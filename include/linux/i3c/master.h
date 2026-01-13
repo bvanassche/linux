@@ -793,6 +793,8 @@ i3c_bus_get_addr_slot_status(struct i3c_bus *bus, u16 addr);
 void i3c_bus_set_addr_slot_status(struct i3c_bus *bus, u16 addr,
 				  enum i3c_addr_slot_status status);
 
-void i3c_bus_maintenance_lock(struct i3c_bus *bus);
-void i3c_bus_maintenance_unlock(struct i3c_bus *bus);
+void i3c_bus_maintenance_lock(struct i3c_bus *bus)
+	__acquires(&bus->lock);
+void i3c_bus_maintenance_unlock(struct i3c_bus *bus)
+	__releases(&bus->lock);
 #endif /* I3C_MASTER_H */

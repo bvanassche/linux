@@ -395,6 +395,7 @@ int mshv_region_get(struct mshv_mem_region *region)
  */
 static int mshv_region_range_fault(struct mshv_mem_region *region,
 				   u64 page_offset, u64 page_count)
+	__context_unsafe(/* conditional release */)
 {
 	struct hmm_range range = {
 		.notifier = &region->mreg_mni,

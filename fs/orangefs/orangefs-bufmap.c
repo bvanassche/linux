@@ -79,6 +79,7 @@ static void put(struct slot_map *m, int slot)
 }
 
 static int wait_for_free(struct slot_map *m)
+	__must_hold(&m->q.lock)
 {
 	long left = slot_timeout_secs * HZ;
 	DEFINE_WAIT(wait);

@@ -297,6 +297,8 @@ static const struct file_operations spufs_mem_fops = {
 static vm_fault_t spufs_ps_fault(struct vm_fault *vmf,
 				    unsigned long ps_offs,
 				    unsigned long ps_size)
+	__must_hold_shared(&vmf->vma->vm_mm->mmap_lock)
+	__context_unsafe(/* conditional acquire */)
 {
 	struct spu_context *ctx = vmf->vma->vm_file->private_data;
 	unsigned long area, offset = vmf->pgoff << PAGE_SHIFT;
@@ -352,6 +354,7 @@ refault:
 
 #if SPUFS_MMAP_4K
 static vm_fault_t spufs_cntl_mmap_fault(struct vm_fault *vmf)
+	__must_hold_shared(&vmf->vma->vm_mm->mmap_lock)
 {
 	return spufs_ps_fault(vmf, 0x4000, SPUFS_CNTL_MAP_SIZE);
 }
@@ -666,6 +669,7 @@ void spufs_ibox_callback(struct spu *spu)
  */
 static ssize_t spufs_ibox_read(struct file *file, char __user *buf,
 			size_t len, loff_t *pos)
+	__context_unsafe(/* too complex for Clang */)
 {
 	struct spu_context *ctx = file->private_data;
 	u32 ibox_data, __user *udata = (void __user *)buf;
@@ -797,6 +801,7 @@ void spufs_wbox_callback(struct spu *spu)
  */
 static ssize_t spufs_wbox_write(struct file *file, const char __user *buf,
 			size_t len, loff_t *pos)
+	__context_unsafe(/* too complex for Clang */)
 {
 	struct spu_context *ctx = file->private_data;
 	u32 wbox_data, __user *udata = (void __user *)buf;
@@ -978,6 +983,7 @@ static ssize_t spufs_signal1_write(struct file *file, const char __user *buf,
 
 static vm_fault_t
 spufs_signal1_mmap_fault(struct vm_fault *vmf)
+	__must_hold_shared(&vmf->vma->vm_mm->mmap_lock)
 {
 #if SPUFS_SIGNAL_MAP_SIZE == 0x1000
 	return spufs_ps_fault(vmf, 0x14000, SPUFS_SIGNAL_MAP_SIZE);
@@ -1103,6 +1109,7 @@ static ssize_t spufs_signal2_write(struct file *file, const char __user *buf,
 #if SPUFS_MMAP_4K
 static vm_fault_t
 spufs_signal2_mmap_fault(struct vm_fault *vmf)
+	__must_hold_shared(&vmf->vma->vm_mm->mmap_lock)
 {
 #if SPUFS_SIGNAL_MAP_SIZE == 0x1000
 	return spufs_ps_fault(vmf, 0x1c000, SPUFS_SIGNAL_MAP_SIZE);
@@ -1230,6 +1237,7 @@ DEFINE_SPUFS_ATTRIBUTE(spufs_signal2_type, spufs_signal2_type_get,
 #if SPUFS_MMAP_4K
 static vm_fault_t
 spufs_mss_mmap_fault(struct vm_fault *vmf)
+	__must_hold_shared(&vmf->vma->vm_mm->mmap_lock)
 {
 	return spufs_ps_fault(vmf, 0x0000, SPUFS_MSS_MAP_SIZE);
 }
@@ -1291,6 +1299,7 @@ static const struct file_operations spufs_mss_fops = {
 
 static vm_fault_t
 spufs_psmap_mmap_fault(struct vm_fault *vmf)
+	__must_hold_shared(&vmf->vma->vm_mm->mmap_lock)
 {
 	return spufs_ps_fault(vmf, 0x0000, SPUFS_PS_MAP_SIZE);
 }
@@ -1350,6 +1359,7 @@ static const struct file_operations spufs_psmap_fops = {
 #if SPUFS_MMAP_4K
 static vm_fault_t
 spufs_mfc_mmap_fault(struct vm_fault *vmf)
+	__must_hold_shared(&vmf->vma->vm_mm->mmap_lock)
 {
 	return spufs_ps_fault(vmf, 0x3000, SPUFS_MFC_MAP_SIZE);
 }
@@ -1435,6 +1445,7 @@ static int spufs_read_mfc_tagstatus(struct spu_context *ctx, u32 *status)
 
 static ssize_t spufs_mfc_read(struct file *file, char __user *buffer,
 			size_t size, loff_t *pos)
+	__context_unsafe(/* too complex for Clang */)
 {
 	struct spu_context *ctx = file->private_data;
 	int ret = -EINVAL;
@@ -1561,6 +1572,7 @@ static int spu_send_mfc_command(struct spu_context *ctx,
 
 static ssize_t spufs_mfc_write(struct file *file, const char __user *buffer,
 			size_t size, loff_t *pos)
+	__context_unsafe(/* too complex for Clang */)
 {
 	struct spu_context *ctx = file->private_data;
 	struct mfc_dma_command cmd;
@@ -2243,6 +2255,7 @@ static int switch_log_sprint(struct spu_context *ctx, char *tbuf, int n)
 
 static ssize_t spufs_switch_log_read(struct file *file, char __user *buf,
 			     size_t len, loff_t *ppos)
+	__context_unsafe(/* too complex for Clang */)
 {
 	struct inode *inode = file_inode(file);
 	struct spu_context *ctx = SPUFS_I(inode)->i_ctx;

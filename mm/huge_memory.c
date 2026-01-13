@@ -1953,6 +1953,7 @@ static void copy_huge_non_present_pmd(
 int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		  pmd_t *dst_pmd, pmd_t *src_pmd, unsigned long addr,
 		  struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma)
+	__context_unsafe(/* conditional locking */)
 {
 	spinlock_t *dst_ptl, *src_ptl;
 	struct page *src_page;
@@ -2298,14 +2299,16 @@ static inline bool can_change_pmd_writable(struct vm_area_struct *vma,
 vm_fault_t do_huge_pmd_uffd_rwp(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
+	spinlock_t *ptl;
 	pmd_t pmd;
 
 	if (!userfaultfd_rwp_async(vma))
 		return handle_userfault(vmf, VM_UFFD_RWP);
 
-	vmf->ptl = pmd_lock(vma->vm_mm, vmf->pmd);
+	ptl = pmd_lock(vma->vm_mm, vmf->pmd);
+	vmf->ptl = ptl;
 	if (unlikely(!pmd_same(pmdp_get(vmf->pmd), vmf->orig_pmd))) {
-		spin_unlock(vmf->ptl);
+		spin_unlock(ptl);
 		return 0;
 	}
 	pmd = pmd_modify(vmf->orig_pmd, vma->vm_page_prot);
@@ -2319,12 +2322,13 @@ vm_fault_t do_huge_pmd_uffd_rwp(struct vm_fault *vmf)
 	set_pmd_at(vma->vm_mm, vmf->address & HPAGE_PMD_MASK,
 		   vmf->pmd, pmd);
 	update_mmu_cache_pmd(vma, vmf->address, vmf->pmd);
-	spin_unlock(vmf->ptl);
+	spin_unlock(ptl);
 	return 0;
 }
 
 /* NUMA hinting page fault entry point for trans huge pmds */
 vm_fault_t do_huge_pmd_numa_page(struct vm_fault *vmf)
+	__context_unsafe(/* two pmd_lock() paths join at out_map */)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct folio *folio;
@@ -2422,6 +2426,7 @@ bool madvise_free_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	if (!ptl)
 		goto out_unlocked;
 
+	__acquire(ptl);
 	orig_pmd = *pmd;
 	if (is_huge_zero_pmd(orig_pmd))
 		goto out;
@@ -2561,6 +2566,7 @@ bool zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	ptl = __pmd_trans_huge_lock(pmd, vma);
 	if (!ptl)
 		return false;
+	__acquire(ptl);
 	/*
 	 * For architectures like ppc64 we look at deposited pgtable
 	 * when calling pmdp_huge_get_and_clear. So do the
@@ -2649,9 +2655,12 @@ bool move_huge_pmd(struct vm_area_struct *vma, unsigned long old_addr,
 	 */
 	old_ptl = __pmd_trans_huge_lock(old_pmd, vma);
 	if (old_ptl) {
+		__acquire(old_ptl);
 		new_ptl = pmd_lockptr(mm, new_pmd);
 		if (new_ptl != old_ptl)
 			spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
+		else
+			__acquire(new_ptl);
 		pmd = pmdp_huge_get_and_clear(mm, old_addr, old_pmd);
 		if (pmd_present(pmd))
 			force_flush = true;
@@ -2682,6 +2691,8 @@ bool move_huge_pmd(struct vm_area_struct *vma, unsigned long old_addr,
 			flush_pmd_tlb_range(vma, old_addr, old_addr + PMD_SIZE);
 		if (new_ptl != old_ptl)
 			spin_unlock(new_ptl);
+		else
+			__release(new_ptl);
 		spin_unlock(old_ptl);
 		return true;
 	}
@@ -2755,6 +2766,8 @@ int change_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	ptl = __pmd_trans_huge_lock(pmd, vma);
 	if (!ptl)
 		return 0;
+
+	__acquire(ptl);
 
 	if (thp_migration_supported() && pmd_is_valid_softleaf(*pmd)) {
 		change_non_present_huge_pmd(mm, addr, pmd, uffd_prot,
@@ -2868,6 +2881,7 @@ int change_huge_pud(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	if (!ptl)
 		return 0;
 
+	__acquire(ptl);
 	/*
 	 * Can't clear PUD or it can race with concurrent zapping.  See
 	 * change_huge_pmd().
@@ -2893,6 +2907,7 @@ int change_huge_pud(struct mmu_gather *tlb, struct vm_area_struct *vma,
 int move_pages_huge_pmd(struct mm_struct *mm, pmd_t *dst_pmd, pmd_t *src_pmd, pmd_t dst_pmdval,
 			struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
 			unsigned long dst_addr, unsigned long src_addr)
+	__releases(pmd_lockptr(mm, src_pmd))
 {
 	pmd_t _dst_pmd, src_pmdval;
 	struct page *src_page;
@@ -3017,6 +3032,7 @@ unlock_ptls:
  * unlocking page table lock. So callers must unlock it.
  */
 spinlock_t *__pmd_trans_huge_lock(pmd_t *pmd, struct vm_area_struct *vma)
+	__context_unsafe(/* returns with the lock held if not NULL */)
 {
 	spinlock_t *ptl;
 
@@ -3034,6 +3050,7 @@ spinlock_t *__pmd_trans_huge_lock(pmd_t *pmd, struct vm_area_struct *vma)
  * unlocking page table lock. So callers must unlock it.
  */
 spinlock_t *__pud_trans_huge_lock(pud_t *pud, struct vm_area_struct *vma)
+	__context_unsafe(/* returns with the lock held if not NULL */)
 {
 	spinlock_t *ptl;
 
@@ -3054,6 +3071,8 @@ int zap_huge_pud(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	ptl = __pud_trans_huge_lock(pud, vma);
 	if (!ptl)
 		return 0;
+
+	__acquire(ptl);
 
 	orig_pud = pudp_huge_get_and_clear_full(vma, addr, pud, tlb->fullmm);
 	arch_check_zapped_pud(vma, orig_pud);
@@ -4022,6 +4041,7 @@ static void folio_reset_partially_mapped(struct folio *folio)
 static int __folio_freeze_split_anon(struct folio *folio,
 		unsigned int new_order, struct page *split_at, bool do_lru,
 		struct list_head *list, enum split_type split_type)
+	__context_unsafe(/* conditional locking */)
 {
 	struct folio *end_folio = folio_next(folio);
 	struct swap_cluster_info *ci = NULL;
@@ -4131,6 +4151,7 @@ out_unlock:
 static int __folio_freeze_split_file(struct folio *folio,
 		unsigned int new_order, struct page *split_at,
 		struct list_head *list, enum split_type split_type)
+	__context_unsafe(/* conditional locking */)
 {
 	const long old_nr_pages = folio_nr_pages(folio);
 	struct address_space *mapping = folio->mapping;
@@ -4311,6 +4332,7 @@ fail_free:
 static int __folio_split(struct folio *folio, unsigned int new_order,
 		struct page *split_at, struct page *lock_at,
 		struct list_head *list, enum split_type split_type)
+	__context_unsafe(/* conditional locking */)
 {
 	struct folio *end_folio = folio_next(folio);
 	const bool is_anon = folio_test_anon(folio);
@@ -4540,6 +4562,7 @@ int split_folio_to_list(struct folio *folio, struct list_head *list)
  * important to unqueue deferred split before changing folio memcg.
  */
 bool __folio_unqueue_deferred_split(struct folio *folio)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	struct mem_cgroup *memcg;
 	struct list_lru_one *lru;
@@ -4565,6 +4588,7 @@ bool __folio_unqueue_deferred_split(struct folio *folio)
 
 /* partially_mapped=false won't clear PG_partially_mapped folio flag */
 void deferred_split_folio(struct folio *folio, bool partially_mapped)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	struct list_lru_one *lru;
 	int nid;
@@ -4666,6 +4690,7 @@ static enum lru_status deferred_split_isolate(struct list_head *item,
 
 static unsigned long deferred_split_scan(struct shrinker *shrink,
 		struct shrink_control *sc)
+	__context_unsafe(/* locks in a loop */)
 {
 	LIST_HEAD(dispose);
 	struct folio *folio, *next;

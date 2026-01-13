@@ -770,6 +770,7 @@ int register_xenbus_watch(struct xenbus_watch *watch)
 EXPORT_SYMBOL_GPL(register_xenbus_watch);
 
 void unregister_xenbus_watch(struct xenbus_watch *watch)
+	__context_unsafe(/* conditional locking */)
 {
 	struct xs_watch_event *event, *tmp;
 	char token[sizeof(watch) * 2 + 1];
@@ -814,6 +815,8 @@ void unregister_xenbus_watch(struct xenbus_watch *watch)
 EXPORT_SYMBOL_GPL(unregister_xenbus_watch);
 
 void xs_suspend(void)
+	__acquires(&xs_response_mutex)
+	__acquires(&xs_watch_rwsem)
 {
 	xs_suspend_enter();
 
@@ -822,6 +825,8 @@ void xs_suspend(void)
 }
 
 void xs_resume(void)
+	__releases(&xs_watch_rwsem)
+	__releases(&xs_response_mutex)
 {
 	struct xenbus_watch *watch;
 	char token[sizeof(watch) * 2 + 1];
@@ -842,6 +847,8 @@ void xs_resume(void)
 }
 
 void xs_suspend_cancel(void)
+	__releases(&xs_watch_rwsem)
+	__releases(&xs_response_mutex)
 {
 	up_write(&xs_watch_rwsem);
 	mutex_unlock(&xs_response_mutex);

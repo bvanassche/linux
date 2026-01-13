@@ -63,7 +63,8 @@ static void ffs_data_closed(struct ffs_data *ffs);
 
 /* Called with ffs->mutex held; take over ownership of data. */
 static int __must_check
-__ffs_data_got_descs(struct ffs_data *ffs, char *data, size_t len);
+__ffs_data_got_descs(struct ffs_data *ffs, char *data, size_t len)
+	__must_hold(&ffs->mutex);
 static int __must_check
 __ffs_data_got_strings(struct ffs_data *ffs, char *data, size_t len);
 
@@ -296,7 +297,8 @@ static void ffs_reset_work(struct work_struct *work);
 /* Misc helper functions ****************************************************/
 
 static int ffs_mutex_lock(struct mutex *mutex, unsigned nonblock)
-	__attribute__((warn_unused_result, nonnull));
+	__attribute__((warn_unused_result, nonnull))
+	__cond_acquires(0, mutex);
 static char *ffs_prepare_buffer(const char __user *buf, size_t len)
 	__attribute__((warn_unused_result, nonnull));
 
@@ -508,6 +510,7 @@ done_spin:
 static ssize_t __ffs_ep0_read_events(struct ffs_data *ffs, char __user *buf,
 				     size_t n)
 	__releases(&ffs->ev.waitq.lock)
+	__releases(&ffs->mutex)
 {
 	/*
 	 * n cannot be bigger than ffs->ev.count, which cannot be bigger than
@@ -1494,6 +1497,7 @@ static const struct dma_fence_ops ffs_dmabuf_fence_ops = {
 };
 
 static int ffs_dma_resv_lock(struct dma_buf *dmabuf, bool nonblock)
+	__cond_acquires(0, &dmabuf->resv->lock)
 {
 	if (!nonblock)
 		return dma_resv_lock_interruptible(dmabuf->resv, NULL);
@@ -2172,6 +2176,7 @@ static int ffs_fs_init_fs_context(struct fs_context *fc)
 
 static void
 ffs_fs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	kill_anon_super(sb);
 	if (sb->s_fs_info) {
@@ -3627,6 +3632,7 @@ static int __ffs_func_bind_do_os_desc(enum ffs_os_desc_type type,
 
 static inline struct f_fs_opts *ffs_do_functionfs_bind(struct usb_function *f,
 						struct usb_configuration *c)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ffs_function *func = ffs_func_from_usb(f);
 	struct f_fs_opts *ffs_opts =

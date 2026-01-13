@@ -371,6 +371,7 @@ struct brcm_pcie {
 };
 
 static int brcm_pcie_bridge_sw_init_set(struct brcm_pcie *pcie, u32 val)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long flags;
 	int ret;

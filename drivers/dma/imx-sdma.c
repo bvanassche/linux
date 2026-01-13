@@ -857,6 +857,7 @@ static void sdma_start_desc(struct sdma_channel *sdmac)
 }
 
 static void sdma_update_channel_loop(struct sdma_channel *sdmac)
+	__must_hold(&sdmac->vc.lock)
 {
 	struct sdma_buffer_descriptor *bd;
 	int error = 0;

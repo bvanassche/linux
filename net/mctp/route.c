@@ -432,6 +432,7 @@ err_free:
 }
 
 static int mctp_dst_input(struct mctp_dst *dst, struct sk_buff *skb)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mctp_sk_key *key, *any_key = NULL;
 	struct net *net = dev_net(skb->dev);

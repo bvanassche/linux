@@ -3290,6 +3290,7 @@ static void macb_configure_dma(struct macb *bp)
 }
 
 static void macb_context_swap_start(struct macb *bp)
+	__acquires(&bp->mac_cfg_lock)
 {
 	struct macb_queue *queue;
 	unsigned long flags;
@@ -3334,8 +3335,8 @@ static void macb_context_swap_start(struct macb *bp)
 	spin_unlock_irqrestore(&bp->lock, flags);
 }
 
-static void macb_context_swap_end(struct macb *bp,
-				  struct macb_context *new_ctx)
+static void macb_context_swap_end(struct macb *bp, struct macb_context *new_ctx)
+	__releases(&bp->mac_cfg_lock)
 {
 	struct macb_context *old_ctx;
 	struct macb_queue *queue;
@@ -3657,6 +3658,7 @@ static int macb_close(struct net_device *netdev)
 }
 
 static int macb_change_mtu(struct net_device *netdev, int new_mtu)
+	__context_unsafe(/* conditional locking */)
 {
 	struct macb *bp = netdev_priv(netdev);
 	bool running = netif_running(netdev);
@@ -4132,6 +4134,7 @@ static int macb_set_ringparam(struct net_device *netdev,
 			      struct ethtool_ringparam *ring,
 			      struct kernel_ethtool_ringparam *kernel_ring,
 			      struct netlink_ext_ack *extack)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned int new_rx_size, new_tx_size;
 	struct macb *bp = netdev_priv(netdev);

@@ -186,6 +186,7 @@ enum event_type_t {
 };
 
 static inline void __perf_ctx_lock(struct perf_event_context *ctx)
+	__acquires(&ctx->lock)
 {
 	raw_spin_lock(&ctx->lock);
 	WARN_ON_ONCE(ctx->is_active & EVENT_FROZEN);
@@ -193,6 +194,7 @@ static inline void __perf_ctx_lock(struct perf_event_context *ctx)
 
 static void perf_ctx_lock(struct perf_cpu_context *cpuctx,
 			  struct perf_event_context *ctx)
+	__context_unsafe(/* acquires locks for caller */)
 {
 	__perf_ctx_lock(&cpuctx->ctx);
 	if (ctx)
@@ -200,6 +202,7 @@ static void perf_ctx_lock(struct perf_cpu_context *cpuctx,
 }
 
 static inline void __perf_ctx_unlock(struct perf_event_context *ctx)
+	__releases(&ctx->lock)
 {
 	/*
 	 * If ctx_sched_in() didn't again set any ALL flags, clean up
@@ -216,6 +219,7 @@ static inline void __perf_ctx_unlock(struct perf_event_context *ctx)
 
 static void perf_ctx_unlock(struct perf_cpu_context *cpuctx,
 			    struct perf_event_context *ctx)
+	__context_unsafe(/* releases locks held by caller */)
 {
 	if (ctx)
 		__perf_ctx_unlock(ctx);
@@ -1465,6 +1469,7 @@ static void put_ctx(struct perf_event_context *ctx)
  */
 static struct perf_event_context *
 perf_event_ctx_lock_nested(struct perf_event *event, int nesting)
+	__context_unsafe(/* acquires ctx->mutex for caller */)
 {
 	struct perf_event_context *ctx;
 
@@ -1495,6 +1500,7 @@ perf_event_ctx_lock(struct perf_event *event)
 
 static void perf_event_ctx_unlock(struct perf_event *event,
 				  struct perf_event_context *ctx)
+	__context_unsafe(/* releases ctx->mutex held by caller */)
 {
 	mutex_unlock(&ctx->mutex);
 	put_ctx(ctx);
@@ -1568,6 +1574,7 @@ static u64 primary_event_id(struct perf_event *event)
  */
 static struct perf_event_context *
 perf_lock_task_context(struct task_struct *task, unsigned long *flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct perf_event_context *ctx;
 
@@ -1624,6 +1631,7 @@ retry:
  */
 static struct perf_event_context *
 perf_pin_task_context(struct task_struct *task)
+	__context_unsafe(/* perf_lock_task_context() locks for caller */)
 {
 	struct perf_event_context *ctx;
 	unsigned long flags;
@@ -3066,6 +3074,7 @@ void perf_pmu_resched(struct pmu *pmu)
  * things like ctx->is_active and cpuctx->task_ctx are set.
  */
 static int  __perf_install_in_context(void *info)
+	__context_unsafe(/* conditional locking */)
 {
 	struct perf_event *event = info;
 	struct perf_event_context *ctx = event->ctx;
@@ -5115,6 +5124,7 @@ find_lively_task_by_vpid(pid_t vpid)
  */
 static struct perf_event_context *
 find_get_context(struct task_struct *task, struct perf_event *event)
+	__context_unsafe(/* perf_lock_task_context() locks for caller */)
 {
 	struct perf_event_context *ctx, *clone_ctx = NULL;
 	struct perf_cpu_context *cpuctx;
@@ -7452,6 +7462,7 @@ static int perf_mmap_aux(struct vm_area_struct *vma, struct perf_event *event,
 }
 
 static int perf_mmap(struct file *file, struct vm_area_struct *vma)
+	__context_unsafe(/* scoped_guard locks event->mmap_mutex */)
 {
 	struct perf_event *event = file->private_data;
 	unsigned long vma_size, nr_pages;
@@ -8624,6 +8635,7 @@ static u64 perf_virt_to_phys(u64 virt)
  * Return the pagetable size of a given virtual address.
  */
 static u64 perf_get_pgtable_size(struct mm_struct *mm, unsigned long addr)
+	__context_unsafe(/* pte_offset_map() locks conditionally */)
 {
 	u64 size = 0;
 
@@ -12033,6 +12045,7 @@ static void perf_addr_filter_apply(struct perf_addr_filter *filter,
  * task's existing mappings, if any.
  */
 static void perf_event_addr_filters_apply(struct perf_event *event)
+	__context_unsafe(/* conditional locking */)
 {
 	struct perf_addr_filters_head *ifh = perf_event_addr_filters(event);
 	struct task_struct *task = READ_ONCE(event->ctx->task);
@@ -12336,6 +12349,7 @@ fail_clear_files:
 }
 
 static int perf_event_set_filter(struct perf_event *event, void __user *arg)
+	__context_unsafe(/* drops and reacquires ctx->mutex */)
 {
 	int ret = -EINVAL;
 	char *filter_str;
@@ -13855,6 +13869,8 @@ err_size:
 }
 
 static void mutex_lock_double(struct mutex *a, struct mutex *b)
+	__acquires(a)
+	__acquires(b)
 {
 	if (b < a)
 		swap(a, b);
@@ -13865,6 +13881,7 @@ static void mutex_lock_double(struct mutex *a, struct mutex *b)
 
 static int
 perf_event_set_output(struct perf_event *event, struct perf_event *output_event)
+	__context_unsafe(/* conditional locking */)
 {
 	struct perf_buffer *rb = NULL;
 	int ret = -EINVAL;
@@ -14031,6 +14048,7 @@ perf_check_permission(struct perf_event_attr *attr, struct task_struct *task)
 SYSCALL_DEFINE5(perf_event_open,
 		struct perf_event_attr __user *, attr_uptr,
 		pid_t, pid, int, cpu, int, group_fd, unsigned long, flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct perf_event *group_leader = NULL, *output_event = NULL;
 	struct perf_event_pmu_context *pmu_ctx;
@@ -14617,6 +14635,7 @@ static void __perf_pmu_install(struct perf_event_context *ctx,
 }
 
 void perf_pmu_migrate_context(struct pmu *pmu, int src_cpu, int dst_cpu)
+	__context_unsafe(/* locks two per-CPU mutexes */)
 {
 	struct perf_event_context *src_ctx, *dst_ctx;
 	LIST_HEAD(events);
@@ -14678,6 +14697,7 @@ perf_event_exit_event(struct perf_event *event,
 		      struct perf_event_context *ctx,
 		      struct task_struct *task,
 		      unsigned long detach_flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct perf_event *parent_event = event->parent;
 	unsigned int attach_state;

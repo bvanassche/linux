@@ -100,6 +100,7 @@ ioat3_alloc_sed(struct ioatdma_device *ioat_dma, unsigned int hw_pool)
 struct dma_async_tx_descriptor *
 ioat_dma_prep_memcpy_lock(struct dma_chan *c, dma_addr_t dma_dest,
 			   dma_addr_t dma_src, size_t len, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(c)->prep_lock)
 {
 	struct ioatdma_chan *ioat_chan = to_ioat_chan(c);
 	struct ioat_dma_descriptor *hw;
@@ -152,6 +153,7 @@ static struct dma_async_tx_descriptor *
 __ioat_prep_xor_lock(struct dma_chan *c, enum sum_check_flags *result,
 		      dma_addr_t dest, dma_addr_t *src, unsigned int src_cnt,
 		      size_t len, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(c)->prep_lock)
 {
 	struct ioatdma_chan *ioat_chan = to_ioat_chan(c);
 	struct ioat_ring_ent *compl_desc;
@@ -244,6 +246,7 @@ __ioat_prep_xor_lock(struct dma_chan *c, enum sum_check_flags *result,
 struct dma_async_tx_descriptor *
 ioat_prep_xor(struct dma_chan *chan, dma_addr_t dest, dma_addr_t *src,
 	       unsigned int src_cnt, size_t len, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(chan)->prep_lock)
 {
 	struct ioatdma_chan *ioat_chan = to_ioat_chan(chan);
 
@@ -257,6 +260,7 @@ struct dma_async_tx_descriptor *
 ioat_prep_xor_val(struct dma_chan *chan, dma_addr_t *src,
 		    unsigned int src_cnt, size_t len,
 		    enum sum_check_flags *result, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(chan)->prep_lock)
 {
 	struct ioatdma_chan *ioat_chan = to_ioat_chan(chan);
 
@@ -340,6 +344,7 @@ __ioat_prep_pq_lock(struct dma_chan *c, enum sum_check_flags *result,
 		     const dma_addr_t *dst, const dma_addr_t *src,
 		     unsigned int src_cnt, const unsigned char *scf,
 		     size_t len, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(c)->prep_lock)
 {
 	struct ioatdma_chan *ioat_chan = to_ioat_chan(c);
 	struct ioatdma_device *ioat_dma = ioat_chan->ioat_dma;
@@ -464,6 +469,7 @@ __ioat_prep_pq16_lock(struct dma_chan *c, enum sum_check_flags *result,
 		       const dma_addr_t *dst, const dma_addr_t *src,
 		       unsigned int src_cnt, const unsigned char *scf,
 		       size_t len, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(c)->prep_lock)
 {
 	struct ioatdma_chan *ioat_chan = to_ioat_chan(c);
 	struct ioatdma_device *ioat_dma = ioat_chan->ioat_dma;
@@ -575,6 +581,7 @@ struct dma_async_tx_descriptor *
 ioat_prep_pq(struct dma_chan *chan, dma_addr_t *dst, dma_addr_t *src,
 	      unsigned int src_cnt, const unsigned char *scf, size_t len,
 	      unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(chan)->prep_lock)
 {
 	struct ioatdma_chan *ioat_chan = to_ioat_chan(chan);
 
@@ -620,6 +627,7 @@ struct dma_async_tx_descriptor *
 ioat_prep_pq_val(struct dma_chan *chan, dma_addr_t *pq, dma_addr_t *src,
 		  unsigned int src_cnt, const unsigned char *scf, size_t len,
 		  enum sum_check_flags *pqres, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(chan)->prep_lock)
 {
 	struct ioatdma_chan *ioat_chan = to_ioat_chan(chan);
 
@@ -647,6 +655,7 @@ ioat_prep_pq_val(struct dma_chan *chan, dma_addr_t *pq, dma_addr_t *src,
 struct dma_async_tx_descriptor *
 ioat_prep_pqxor(struct dma_chan *chan, dma_addr_t dst, dma_addr_t *src,
 		 unsigned int src_cnt, size_t len, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(chan)->prep_lock)
 {
 	unsigned char scf[MAX_SCF];
 	dma_addr_t pq[2];
@@ -674,6 +683,7 @@ struct dma_async_tx_descriptor *
 ioat_prep_pqxor_val(struct dma_chan *chan, dma_addr_t *src,
 		     unsigned int src_cnt, size_t len,
 		     enum sum_check_flags *result, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(chan)->prep_lock)
 {
 	unsigned char scf[MAX_SCF];
 	dma_addr_t pq[2];
@@ -704,6 +714,7 @@ ioat_prep_pqxor_val(struct dma_chan *chan, dma_addr_t *src,
 
 struct dma_async_tx_descriptor *
 ioat_prep_interrupt_lock(struct dma_chan *c, unsigned long flags)
+	__cond_acquires(nonnull, &to_ioat_chan(c)->prep_lock)
 {
 	struct ioatdma_chan *ioat_chan = to_ioat_chan(c);
 	struct ioat_ring_ent *desc;

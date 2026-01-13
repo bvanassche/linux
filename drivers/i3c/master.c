@@ -51,6 +51,7 @@ static BLOCKING_NOTIFIER_HEAD(i3c_bus_notifier);
  * back.
  */
 void i3c_bus_maintenance_lock(struct i3c_bus *bus)
+	__acquires(&bus->lock)
 {
 	down_write(&bus->lock);
 }
@@ -66,6 +67,7 @@ EXPORT_SYMBOL_GPL(i3c_bus_maintenance_lock);
  * operations are.
  */
 void i3c_bus_maintenance_unlock(struct i3c_bus *bus)
+	__releases(&bus->lock)
 {
 	up_write(&bus->lock);
 }
@@ -88,6 +90,7 @@ EXPORT_SYMBOL_GPL(i3c_bus_maintenance_unlock);
  * output/input queue is not done while the engine is busy.
  */
 void i3c_bus_normaluse_lock(struct i3c_bus *bus)
+	__acquires_shared(&bus->lock)
 {
 	down_read(&bus->lock);
 }
@@ -102,6 +105,7 @@ EXPORT_SYMBOL_GPL(i3c_bus_normaluse_lock);
  * are.
  */
 void i3c_bus_normaluse_unlock(struct i3c_bus *bus)
+	__releases_shared(&bus->lock)
 {
 	up_read(&bus->lock);
 }

@@ -129,6 +129,8 @@ exit:
  * mode. If the lock_active bit is already set, return an error.
  */
 static int mlxbf2_gpio_lock_acquire(struct mlxbf2_gpio_context *gs)
+	__cond_acquires(0, yu_arm_gpio_lock_param.lock)
+	__cond_acquires(0, &gs->chip.lock)
 {
 	u32 arm_gpio_lock_val;
 

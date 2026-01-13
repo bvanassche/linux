@@ -280,6 +280,7 @@ static const char * const ast_ep_name[] = {
 
 static void ast_udc_done(struct ast_udc_ep *ep, struct ast_udc_request *req,
 			 int status)
+	__context_unsafe(/* drops and reacquires udc->lock */)
 {
 	struct ast_udc_dev *udc = ep->udc;
 
@@ -1027,6 +1028,7 @@ stall:
 }
 
 static void ast_udc_ep0_handle_setup(struct ast_udc_dev *udc)
+	__context_unsafe(/* drops and reacquires udc->lock */)
 {
 	struct ast_udc_ep *ep = &udc->ep[0];
 	struct ast_udc_request *req;

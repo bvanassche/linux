@@ -1136,6 +1136,7 @@ out:
  */
 int comedi_auto_config(struct device *hardware_device,
 		       struct comedi_driver *driver, unsigned long context)
+	__context_unsafe(/* conditional locking */)
 {
 	struct comedi_device *dev;
 	int ret;

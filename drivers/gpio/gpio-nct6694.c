@@ -336,6 +336,7 @@ static int nct6694_irq_set_type(struct irq_data *d, unsigned int type)
 }
 
 static void nct6694_irq_bus_lock(struct irq_data *d)
+	__acquires(&((struct nct6694_gpio_data *)gpiochip_get_data(irq_data_get_irq_chip_data(d)))->irq_lock)
 {
 	struct gpio_chip *gpio = irq_data_get_irq_chip_data(d);
 	struct nct6694_gpio_data *data = gpiochip_get_data(gpio);
@@ -344,6 +345,7 @@ static void nct6694_irq_bus_lock(struct irq_data *d)
 }
 
 static void nct6694_irq_bus_sync_unlock(struct irq_data *d)
+	__releases(&((struct nct6694_gpio_data *)gpiochip_get_data(irq_data_get_irq_chip_data(d)))->irq_lock)
 {
 	struct gpio_chip *gpio = irq_data_get_irq_chip_data(d);
 	struct nct6694_gpio_data *data = gpiochip_get_data(gpio);

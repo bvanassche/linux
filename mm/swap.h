@@ -135,6 +135,7 @@ static inline struct swap_cluster_info *__swap_entry_to_cluster(swp_entry_t entr
 
 static __always_inline struct swap_cluster_info *__swap_cluster_lock(
 		struct swap_info_struct *si, unsigned long offset, bool irq)
+	__context_unsafe(/* returns locked cluster */)
 {
 	struct swap_cluster_info *ci = __swap_offset_to_cluster(si, offset);
 
@@ -158,6 +159,7 @@ static __always_inline struct swap_cluster_info *__swap_cluster_lock(
 
 static inline struct swap_cluster_info *_swap_cluster_lock(
 		struct swap_info_struct *si, unsigned long offset)
+	__context_unsafe(/* see swap_cluster_lock() below */)
 {
 	return __swap_cluster_lock(si, offset, false);
 }
@@ -171,10 +173,11 @@ static inline struct swap_cluster_info *_swap_cluster_lock(
  * protect the swap device with reference count or locks.
  */
 #define swap_cluster_lock(si, offset)					\
-	_swap_cluster_lock(si, offset)
+	__acquire_ret(_swap_cluster_lock(si, offset), &__ret->lock)
 
 static inline struct swap_cluster_info *__swap_cluster_get_and_lock(
 		const struct folio *folio, bool irq)
+	__context_unsafe(/* returns locked cluster */)
 {
 	VM_WARN_ON_ONCE_FOLIO(!folio_test_locked(folio), folio);
 	VM_WARN_ON_ONCE_FOLIO(!folio_test_swapcache(folio), folio);
@@ -201,7 +204,7 @@ static inline struct swap_cluster_info *_swap_cluster_get_and_lock(
  * Return: Pointer to the swap cluster.
  */
 #define swap_cluster_get_and_lock(folio)					\
-	_swap_cluster_get_and_lock(folio)
+	__acquire_ret(_swap_cluster_get_and_lock(folio), &__ret->lock)
 
 static inline struct swap_cluster_info *_swap_cluster_get_and_lock_irq(
 		const struct folio *folio)
@@ -219,14 +222,16 @@ static inline struct swap_cluster_info *_swap_cluster_get_and_lock_irq(
  * Return: Pointer to the swap cluster.
  */
 #define swap_cluster_get_and_lock_irq(folio)				\
-	_swap_cluster_get_and_lock_irq(folio)
+	__acquire_ret(_swap_cluster_get_and_lock_irq(folio), &__ret->lock)
 
 static inline void swap_cluster_unlock(struct swap_cluster_info *ci)
+	__releases(&ci->lock)
 {
 	spin_unlock(&ci->lock);
 }
 
 static inline void swap_cluster_unlock_irq(struct swap_cluster_info *ci)
+	__releases(&ci->lock)
 {
 	spin_unlock_irq(&ci->lock);
 }

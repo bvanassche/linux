@@ -1257,6 +1257,7 @@ static void mlx5_lag_assert_locked_transition(struct mlx5_lag *ldev, u32 filter)
 }
 
 static void mlx5_lag_drop_lock_for_reps(struct mlx5_lag *ldev, u32 filter)
+	__releases(&ldev->lock)
 {
 	mlx5_lag_assert_locked_transition(ldev, filter);
 
@@ -1268,6 +1269,7 @@ static void mlx5_lag_drop_lock_for_reps(struct mlx5_lag *ldev, u32 filter)
 }
 
 static void mlx5_lag_retake_lock_after_reps(struct mlx5_lag *ldev)
+	__acquires(&ldev->lock)
 {
 	mutex_lock(&ldev->lock);
 	ldev->mode_changes_in_progress--;
@@ -1276,6 +1278,7 @@ static void mlx5_lag_retake_lock_after_reps(struct mlx5_lag *ldev)
 void mlx5_lag_rescan_dev_locked(struct mlx5_lag *ldev,
 				struct mlx5_core_dev *dev,
 				bool enable)
+	__must_hold(&ldev->lock)
 {
 	if (dev->priv.flags & MLX5_PRIV_FLAGS_DISABLE_ALL_ADEV)
 		return;
@@ -1296,6 +1299,7 @@ void mlx5_lag_rescan_dev_locked(struct mlx5_lag *ldev,
 
 static void mlx5_lag_rescan_devices_locked_filter(struct mlx5_lag *ldev,
 						  bool enable, u32 filter)
+	__must_hold(&ldev->lock)
 {
 	struct mlx5_core_dev *devs[MLX5_MAX_PORTS];
 	struct lag_func *pf;
@@ -1323,21 +1327,25 @@ static void mlx5_lag_rescan_devices_locked_filter(struct mlx5_lag *ldev,
 }
 
 void mlx5_lag_add_devices_filter(struct mlx5_lag *ldev, u32 filter)
+	__must_hold(&ldev->lock)
 {
 	mlx5_lag_rescan_devices_locked_filter(ldev, true, filter);
 }
 
 void mlx5_lag_add_devices(struct mlx5_lag *ldev)
+	__must_hold(&ldev->lock)
 {
 	mlx5_lag_add_devices_filter(ldev, MLX5_LAG_FILTER_PORTS);
 }
 
 void mlx5_lag_remove_devices_filter(struct mlx5_lag *ldev, u32 filter)
+	__must_hold(&ldev->lock)
 {
 	mlx5_lag_rescan_devices_locked_filter(ldev, false, filter);
 }
 
 void mlx5_lag_remove_devices(struct mlx5_lag *ldev)
+	__must_hold(&ldev->lock)
 {
 	mlx5_lag_remove_devices_filter(ldev, MLX5_LAG_FILTER_PORTS);
 }
@@ -1388,6 +1396,7 @@ static int mlx5_lag_reload_ib_reps_unlocked(struct mlx5_lag *ldev, u32 flags,
 
 static int mlx5_lag_reload_ib_reps(struct mlx5_lag *ldev, u32 flags,
 				   u32 filter, bool cont_on_fail)
+	__must_hold(&ldev->lock)
 {
 	int ret;
 
@@ -1407,6 +1416,7 @@ static int mlx5_lag_reload_ib_reps(struct mlx5_lag *ldev, u32 flags,
 
 int mlx5_lag_reload_ib_reps_from_locked(struct mlx5_lag *ldev, u32 flags,
 					u32 filter, bool cont_on_fail)
+	__must_hold(&ldev->lock)
 {
 	return mlx5_lag_reload_ib_reps(ldev, flags, filter, cont_on_fail);
 }
@@ -1428,6 +1438,7 @@ static void mlx5_lag_unload_reps_unlocked(struct mlx5_lag *ldev, u32 filter)
 }
 
 void mlx5_lag_unload_reps_from_locked(struct mlx5_lag *ldev, u32 filter)
+	__must_hold(&ldev->lock)
 {
 	/* Same lock dance as mlx5_lag_reload_ib_reps: drop ldev->lock around
 	 * the per-eswitch reps_lock to keep the reps_lock -> ldev->lock order.
@@ -1438,6 +1449,7 @@ void mlx5_lag_unload_reps_from_locked(struct mlx5_lag *ldev, u32 filter)
 }
 
 void mlx5_disable_lag(struct mlx5_lag *ldev)
+	__must_hold(&ldev->lock)
 {
 	bool shared_fdb = test_bit(MLX5_LAG_MODE_FLAG_SHARED_FDB, &ldev->mode_flags);
 	int idx = mlx5_lag_get_dev_index_by_seq(ldev, MLX5_LAG_P1);
@@ -1693,6 +1705,7 @@ void mlx5_lag_reset_vports_speed(struct mlx5_lag *ldev)
 #endif
 
 static void mlx5_do_bond(struct mlx5_lag *ldev)
+	__must_hold(&ldev->lock)
 {
 	int idx = mlx5_lag_get_dev_index_by_seq(ldev, MLX5_LAG_P1);
 	struct lag_tracker tracker = { };

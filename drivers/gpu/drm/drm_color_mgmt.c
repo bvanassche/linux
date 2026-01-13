@@ -360,6 +360,7 @@ fail:
  */
 int drm_mode_gamma_set_ioctl(struct drm_device *dev,
 			     void *data, struct drm_file *file_priv)
+	__context_unsafe(/* DRM_MODESET_LOCK */)
 {
 	struct drm_mode_crtc_lut *crtc_lut = data;
 	struct drm_crtc *crtc;

@@ -209,6 +209,7 @@ int mlx5_lag_shared_fdb_create(struct mlx5_lag *ldev,
 			       struct lag_tracker *tracker,
 			       enum mlx5_lag_mode mode,
 			       u32 group_id)
+	__must_hold(&ldev->lock)
 {
 	u32 filter = group_id ? group_id : MLX5_LAG_FILTER_ALL;
 	int idx = mlx5_lag_get_dev_index_by_seq_filter(ldev, MLX5_LAG_P1,
@@ -278,6 +279,7 @@ err_add_devices:
 }
 
 void mlx5_lag_shared_fdb_destroy(struct mlx5_lag *ldev, u32 group_id)
+	__must_hold(&ldev->lock)
 {
 	u32 filter = group_id ? group_id : MLX5_LAG_FILTER_ALL;
 	struct lag_func *pf;

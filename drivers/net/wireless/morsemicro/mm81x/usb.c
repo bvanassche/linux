@@ -543,6 +543,7 @@ static void mm81x_usb_bus_enable(struct mm81x *mors, bool enable)
 }
 
 static void mm81x_usb_claim_bus(struct mm81x *mors)
+	__acquires(&((struct mm81x_usb *)mors->drv_priv)->bus_lock)
 {
 	struct mm81x_usb *musb = (struct mm81x_usb *)mors->drv_priv;
 
@@ -550,6 +551,7 @@ static void mm81x_usb_claim_bus(struct mm81x *mors)
 }
 
 static void mm81x_usb_release_bus(struct mm81x *mors)
+	__releases(&((struct mm81x_usb *)mors->drv_priv)->bus_lock)
 {
 	struct mm81x_usb *musb = (struct mm81x_usb *)mors->drv_priv;
 
@@ -809,6 +811,7 @@ err_core_free:
 }
 
 static void mm81x_usb_disconnect(struct usb_interface *interface)
+	__context_unsafe(/* locks held between suspend and resume */)
 {
 	struct mm81x *mors = usb_get_intfdata(interface);
 	struct mm81x_usb *musb = (struct mm81x_usb *)mors->drv_priv;
@@ -845,6 +848,7 @@ static void mm81x_usb_disconnect(struct usb_interface *interface)
 }
 
 static int mm81x_usb_suspend(struct usb_interface *intf, pm_message_t message)
+	__context_unsafe(/* locks held between suspend and resume */)
 {
 	struct mm81x *mors = usb_get_intfdata(intf);
 	struct mm81x_usb *musb = (struct mm81x_usb *)mors->drv_priv;
@@ -870,6 +874,7 @@ static int mm81x_usb_suspend(struct usb_interface *intf, pm_message_t message)
 }
 
 static int mm81x_usb_resume(struct usb_interface *intf)
+	__context_unsafe(/* locks held between suspend and resume */)
 {
 	struct mm81x *mors = usb_get_intfdata(intf);
 	struct mm81x_usb *musb = (struct mm81x_usb *)mors->drv_priv;
@@ -891,6 +896,7 @@ static int mm81x_usb_resume(struct usb_interface *intf)
 }
 
 static int mm81x_usb_reset_resume(struct usb_interface *intf)
+	__context_unsafe(/* locks held between suspend and resume */)
 {
 	struct mm81x *mors = usb_get_intfdata(intf);
 	struct mm81x_usb *musb = (struct mm81x_usb *)mors->drv_priv;

@@ -635,6 +635,7 @@ static int dwc3_ep0_set_address(struct dwc3 *dwc, struct usb_ctrlrequest *ctrl)
 }
 
 static int dwc3_ep0_delegate_req(struct dwc3 *dwc, struct usb_ctrlrequest *ctrl)
+	__context_unsafe(/* drops and reacquires dwc->lock */)
 {
 	int ret = -EINVAL;
 

@@ -174,6 +174,7 @@ static void __kprobes do_sigsegv(struct pt_regs *regs,
  */
 static void __kprobes __do_page_fault(struct pt_regs *regs,
 			unsigned long write, unsigned long address)
+	__context_unsafe(/* handle_mm_fault() unlocks conditionally */)
 {
 	int si_code = SEGV_MAPERR;
 	unsigned int flags = FAULT_FLAG_DEFAULT;

@@ -51,6 +51,7 @@
  * See also tty_buffer_unlock_exclusive().
  */
 void tty_buffer_lock_exclusive(struct tty_port *port)
+	__acquires(&port->buf.lock)
 {
 	struct tty_bufhead *buf = &port->buf;
 
@@ -75,6 +76,7 @@ static bool tty_buffer_queue_work(struct tty_bufhead *buf)
  * See also tty_buffer_lock_exclusive().
  */
 void tty_buffer_unlock_exclusive(struct tty_port *port)
+	__releases(&port->buf.lock)
 {
 	struct tty_bufhead *buf = &port->buf;
 	bool restart = buf->head->commit != buf->head->read;

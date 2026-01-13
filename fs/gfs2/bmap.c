@@ -1493,6 +1493,7 @@ int gfs2_iomap_alloc(struct inode *inode, loff_t pos, loff_t length,
 static int sweep_bh_for_rgrps(struct gfs2_inode *ip, struct gfs2_holder *rd_gh,
 			      struct buffer_head *bh, __be64 *start, __be64 *end,
 			      bool meta, u32 *btotal)
+	__context_unsafe(/* conditional locking */)
 {
 	struct inode *inode = &ip->i_inode;
 	struct gfs2_glock *gl = gfs2_inode_glock(inode);
@@ -1753,6 +1754,7 @@ static inline bool walk_done(struct gfs2_sbd *sdp,
  * guarantee integrity.
  */
 static int punch_hole(struct gfs2_inode *ip, u64 offset, u64 length)
+	__context_unsafe(/* conditional locking */)
 {
 	struct inode *inode = &ip->i_inode;
 	struct gfs2_glock *gl = gfs2_inode_glock(inode);

@@ -1281,6 +1281,7 @@ static bool scmi_put_handler_unlocked(struct scmi_notify_instance *ni,
 
 static void scmi_put_handler(struct scmi_notify_instance *ni,
 			     struct scmi_event_handler *hndl)
+	__context_unsafe(/* conditional locking */)
 {
 	bool freed;
 	u8 protocol_id;

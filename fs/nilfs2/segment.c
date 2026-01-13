@@ -199,6 +199,7 @@ static int nilfs_prepare_segment_lock(struct super_block *sb,
 int nilfs_transaction_begin(struct super_block *sb,
 			    struct nilfs_transaction_info *ti,
 			    int vacancy_check)
+	__context_unsafe(/* nested transactions do not acquire ns_segctor_sem */)
 {
 	struct the_nilfs *nilfs;
 	int ret = nilfs_prepare_segment_lock(sb, ti);
@@ -254,6 +255,7 @@ int nilfs_transaction_begin(struct super_block *sb,
  * Return: 0 on success, or a negative error code on failure.
  */
 int nilfs_transaction_commit(struct super_block *sb)
+	__context_unsafe(/* conditional release */)
 {
 	struct nilfs_transaction_info *ti = current->journal_info;
 	struct the_nilfs *nilfs = sb->s_fs_info;
@@ -290,6 +292,7 @@ int nilfs_transaction_commit(struct super_block *sb)
 }
 
 void nilfs_transaction_abort(struct super_block *sb)
+	__context_unsafe(/* conditional release */)
 {
 	struct nilfs_transaction_info *ti = current->journal_info;
 	struct the_nilfs *nilfs = sb->s_fs_info;
@@ -313,6 +316,7 @@ void nilfs_transaction_abort(struct super_block *sb)
 }
 
 void nilfs_relax_pressure_in_lock(struct super_block *sb)
+	__must_hold_shared(&((struct the_nilfs *)sb->s_fs_info)->ns_segctor_sem)
 {
 	struct the_nilfs *nilfs = sb->s_fs_info;
 	struct nilfs_sc_info *sci = nilfs->ns_writer;
@@ -338,6 +342,7 @@ void nilfs_relax_pressure_in_lock(struct super_block *sb)
 static void nilfs_transaction_lock(struct super_block *sb,
 				   struct nilfs_transaction_info *ti,
 				   int gcflag)
+	__acquires(&((struct the_nilfs *)sb->s_fs_info)->ns_segctor_sem)
 {
 	struct nilfs_transaction_info *cur_ti = current->journal_info;
 	struct the_nilfs *nilfs = sb->s_fs_info;
@@ -371,6 +376,7 @@ static void nilfs_transaction_lock(struct super_block *sb,
 }
 
 static void nilfs_transaction_unlock(struct super_block *sb)
+	__releases(&((struct the_nilfs *)sb->s_fs_info)->ns_segctor_sem)
 {
 	struct nilfs_transaction_info *ti = current->journal_info;
 	struct the_nilfs *nilfs = sb->s_fs_info;
@@ -2792,6 +2798,7 @@ static void nilfs_segctor_write_out(struct nilfs_sc_info *sci)
  * Caller must hold the segment semaphore.
  */
 static void nilfs_segctor_destroy(struct nilfs_sc_info *sci)
+	__must_hold(&((struct the_nilfs *)sci->sc_super->s_fs_info)->ns_segctor_sem)
 {
 	struct the_nilfs *nilfs = sci->sc_super->s_fs_info;
 	int flag;
@@ -2911,6 +2918,9 @@ void nilfs_detach_log_writer(struct super_block *sb)
 
 	down_write(&nilfs->ns_segctor_sem);
 	if (nilfs->ns_writer) {
+		lockdep_assume_ctx_held(&((struct the_nilfs *)nilfs->ns_writer
+						  ->sc_super->s_fs_info)
+						 ->ns_segctor_sem);
 		nilfs_segctor_destroy(nilfs->ns_writer);
 		nilfs->ns_writer = NULL;
 	}

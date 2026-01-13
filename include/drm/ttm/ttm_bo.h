@@ -447,7 +447,8 @@ s64 ttm_bo_evict_cgroup(struct ttm_device *bdev,
 int ttm_bo_access(struct ttm_buffer_object *bo, unsigned long offset,
 		  void *buf, int len, int write);
 vm_fault_t ttm_bo_vm_reserve(struct ttm_buffer_object *bo,
-			     struct vm_fault *vmf);
+			     struct vm_fault *vmf)
+	__cond_acquires(0, &bo->base.resv->lock);
 vm_fault_t ttm_bo_vm_fault_reserved(struct vm_fault *vmf,
 				    pgprot_t prot,
 				    pgoff_t num_prefault);

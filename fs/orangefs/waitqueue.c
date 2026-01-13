@@ -65,6 +65,7 @@ void purge_waiting_ops(void)
 int service_operation(struct orangefs_kernel_op_s *op,
 		      const char *op_name,
 		      int flags)
+	__context_unsafe(/* conditional locking */)
 {
 	long timeout = MAX_SCHEDULE_TIMEOUT;
 	int ret = 0;

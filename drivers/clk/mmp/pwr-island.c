@@ -24,6 +24,7 @@ struct mmp_pm_domain {
 };
 
 static int mmp_pm_domain_power_on(struct generic_pm_domain *genpd)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mmp_pm_domain *pm_domain = to_mmp_pm_domain(genpd);
 	unsigned long flags = 0;
@@ -65,6 +66,7 @@ static int mmp_pm_domain_power_on(struct generic_pm_domain *genpd)
 }
 
 static int mmp_pm_domain_power_off(struct generic_pm_domain *genpd)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mmp_pm_domain *pm_domain = to_mmp_pm_domain(genpd);
 	unsigned long flags = 0;

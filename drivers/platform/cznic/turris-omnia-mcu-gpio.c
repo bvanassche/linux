@@ -620,6 +620,7 @@ static int omnia_irq_set_type(struct irq_data *d, unsigned int type)
 }
 
 static void omnia_irq_bus_lock(struct irq_data *d)
+	__context_unsafe(/* conditional locking */)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct omnia_mcu *mcu = gpiochip_get_data(gc);
@@ -680,6 +681,7 @@ static void omnia_mask_deinterleave(const u8 *src, unsigned long *rising,
 }
 
 static void omnia_irq_bus_sync_unlock(struct irq_data *d)
+	__context_unsafe(/* conditional locking */)
 {
 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
 	struct omnia_mcu *mcu = gpiochip_get_data(gc);

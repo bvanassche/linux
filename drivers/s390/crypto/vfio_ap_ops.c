@@ -55,6 +55,7 @@ static void vfio_ap_mdev_reset_queue(struct vfio_ap_queue *q);
  * Note: If @kvm is NULL, the KVM lock and pqap_hook_rwsem will not be taken.
  */
 static inline void get_update_locks_for_kvm(struct kvm *kvm)
+	__context_unsafe(/* conditional locking */)
 {
 	mutex_lock(&matrix_dev->guests_lock);
 	if (kvm) {
@@ -79,6 +80,7 @@ static inline void get_update_locks_for_kvm(struct kvm *kvm)
  * Note: If @kvm is NULL, the KVM lock and pqap_hook_rwsem will not be released.
  */
 static inline void release_update_locks_for_kvm(struct kvm *kvm)
+	__context_unsafe(/* conditional locking */)
 {
 	mutex_unlock(&matrix_dev->mdevs_lock);
 	if (kvm) {
@@ -105,6 +107,7 @@ static inline void release_update_locks_for_kvm(struct kvm *kvm)
  *	 lock will not be taken.
  */
 static inline void get_update_locks_for_mdev(struct ap_matrix_mdev *matrix_mdev)
+	__context_unsafe(/* conditional locking */)
 {
 	mutex_lock(&matrix_dev->guests_lock);
 	if (matrix_mdev && matrix_mdev->kvm)
@@ -128,6 +131,7 @@ static inline void get_update_locks_for_mdev(struct ap_matrix_mdev *matrix_mdev)
  *	 lock will not be released.
  */
 static inline void release_update_locks_for_mdev(struct ap_matrix_mdev *matrix_mdev)
+	__context_unsafe(/* conditional locking */)
 {
 	mutex_unlock(&matrix_dev->mdevs_lock);
 	if (matrix_mdev && matrix_mdev->kvm)
@@ -155,6 +159,7 @@ static inline void release_update_locks_for_mdev(struct ap_matrix_mdev *matrix_m
  *	   is not assigned to an ap_matrix_mdev.
  */
 static struct ap_matrix_mdev *get_update_locks_by_apqn(int apqn)
+	__context_unsafe(/* mutex_lock() inside loop */)
 {
 	struct ap_matrix_mdev *matrix_mdev;
 
@@ -194,6 +199,7 @@ static struct ap_matrix_mdev *get_update_locks_by_apqn(int apqn)
  *	  will not be taken.
  */
 static inline void get_update_locks_for_queue(struct vfio_ap_queue *q)
+	__context_unsafe(/* conditional locking */)
 {
 	mutex_lock(&matrix_dev->guests_lock);
 	if (q->matrix_mdev && q->matrix_mdev->kvm)
@@ -2649,6 +2655,7 @@ static void vfio_ap_mdev_hot_unplug_cfg(struct ap_matrix_mdev *matrix_mdev,
 static void vfio_ap_mdev_cfg_remove(unsigned long *ap_remove,
 				    unsigned long *aq_remove,
 				    unsigned long *cd_remove)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ap_matrix_mdev *matrix_mdev;
 	DECLARE_BITMAP(aprem, AP_DEVICES);
@@ -2933,6 +2940,7 @@ static void vfio_ap_mdev_hot_plug_cfg(struct ap_matrix_mdev *matrix_mdev)
 
 void vfio_ap_on_scan_complete(struct ap_config_info *new_config_info,
 			      struct ap_config_info *old_config_info)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ap_matrix_mdev *matrix_mdev;
 

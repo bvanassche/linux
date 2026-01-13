@@ -522,6 +522,7 @@ static bool compact_lock_irqsave(spinlock_t *lock, unsigned long *flags,
 static struct lruvec *
 compact_folio_lruvec_lock_irqsave(struct folio *folio, unsigned long *flags,
 				  struct compact_control *cc)
+	__context_unsafe(/* returns with RCU and lruvec->lru_lock held */)
 {
 	struct lruvec *lruvec;
 
@@ -551,6 +552,7 @@ retry:
  */
 static bool compact_unlock_should_abort(spinlock_t *lock,
 		unsigned long flags, bool *locked, struct compact_control *cc)
+	__context_unsafe(/* conditionally releases @lock */)
 {
 	if (*locked) {
 		spin_unlock_irqrestore(lock, flags);
@@ -578,6 +580,7 @@ static unsigned long isolate_freepages_block(struct compact_control *cc,
 				struct list_head *freelist,
 				unsigned int stride,
 				bool strict)
+	__context_unsafe(/* conditional locking */)
 {
 	int nr_scanned = 0, total_isolated = 0;
 	struct page *page;
@@ -854,6 +857,7 @@ static bool skip_isolation_on_order(int order, int target_order)
 static int
 isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
 			unsigned long end_pfn, isolate_mode_t mode)
+	__context_unsafe(/* conditional locking */)
 {
 	pg_data_t *pgdat = cc->zone->zone_pgdat;
 	unsigned long nr_scanned = 0, nr_isolated = 0;

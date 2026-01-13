@@ -2315,6 +2315,7 @@ struct bpf_iter_seq_hash_map_info {
 static struct htab_elem *
 bpf_hash_map_seq_find_next(struct bpf_iter_seq_hash_map_info *info,
 			   struct htab_elem *prev_elem)
+	__context_unsafe(/* conditional locking */)
 {
 	const struct bpf_htab *htab = info->htab;
 	u32 skip_elems = info->skip_elems;
@@ -2435,6 +2436,7 @@ static int bpf_hash_map_seq_show(struct seq_file *seq, void *v)
 }
 
 static void bpf_hash_map_seq_stop(struct seq_file *seq, void *v)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (!v)
 		(void)__bpf_hash_map_seq_show(seq, NULL);
@@ -3119,7 +3121,8 @@ static void *rhtab_lookup_elem(struct bpf_map *map, void *key)
 	return rhashtable_lookup_likely(&rhtab->ht, key, rhtab_params);
 }
 
-static void *rhtab_map_lookup_elem(struct bpf_map *map, void *key) __must_hold(RCU)
+static void *rhtab_map_lookup_elem(struct bpf_map *map, void *key)
+	__must_hold_shared(RCU)
 {
 	struct rhtab_elem *l;
 
@@ -3602,7 +3605,7 @@ struct bpf_iter_seq_rhash_map_info {
 };
 
 static void *bpf_rhash_map_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	struct bpf_iter_seq_rhash_map_info *info = seq->private;
 	struct rhtab_elem *elem;
@@ -3672,7 +3675,7 @@ static int bpf_rhash_map_seq_show(struct seq_file *seq, void *v)
 }
 
 static void bpf_rhash_map_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	struct bpf_iter_seq_rhash_map_info *info = seq->private;
 

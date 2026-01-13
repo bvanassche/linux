@@ -67,6 +67,7 @@ struct rvt_ack_entry *find_prev_entry(struct rvt_qp *qp, u32 psn, u8 *prev,
 static int make_rc_ack(struct hfi1_ibdev *dev, struct rvt_qp *qp,
 		       struct ib_other_headers *ohdr,
 		       struct hfi1_pkt_state *ps)
+	__must_hold(&qp->s_lock)
 {
 	struct rvt_ack_entry *e;
 	u32 hwords, hdrlen;
@@ -386,6 +387,7 @@ bail:
  * Return 1 if constructed; otherwise, return 0.
  */
 int hfi1_make_rc_req(struct rvt_qp *qp, struct hfi1_pkt_state *ps)
+	__must_hold(&qp->s_lock)
 {
 	struct hfi1_qp_priv *priv = qp->priv;
 	struct hfi1_ibdev *dev = to_idev(qp->ibqp.device);

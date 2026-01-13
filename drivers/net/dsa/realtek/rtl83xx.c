@@ -23,6 +23,7 @@
  * Return: nothing
  */
 void rtl83xx_lock(void *ctx)
+	__acquires(&((struct realtek_priv *)ctx)->map_lock)
 {
 	struct realtek_priv *priv = ctx;
 
@@ -40,6 +41,7 @@ EXPORT_SYMBOL_NS_GPL(rtl83xx_lock, "REALTEK_DSA");
  * Return: nothing
  */
 void rtl83xx_unlock(void *ctx)
+	__releases(&((struct realtek_priv *)ctx)->map_lock)
 {
 	struct realtek_priv *priv = ctx;
 

@@ -1052,6 +1052,7 @@ corrupted:
 static int __guc_ct_send_locked(struct xe_guc_ct *ct, const u32 *action,
 				u32 len, u32 g2h_len, u32 num_g2h,
 				struct g2h_fence *g2h_fence, bool defer_flush)
+	__context_unsafe(/* conditional locking */)
 {
 	struct xe_gt *gt = ct_to_gt(ct);
 	u16 seqno;

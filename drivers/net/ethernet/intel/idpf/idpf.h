@@ -964,6 +964,7 @@ static inline u16 idpf_get_max_tx_hdr_size(struct idpf_adapter *adapter)
  * destruction.
  */
 static inline void idpf_vport_ctrl_lock(struct net_device *netdev)
+	__acquires(&((struct idpf_netdev_priv *)netdev_priv(netdev))->adapter->vport_ctrl_lock)
 {
 	struct idpf_netdev_priv *np = netdev_priv(netdev);
 
@@ -975,6 +976,7 @@ static inline void idpf_vport_ctrl_lock(struct net_device *netdev)
  * @netdev: Network interface device structure
  */
 static inline void idpf_vport_ctrl_unlock(struct net_device *netdev)
+	__releases(&((struct idpf_netdev_priv *)netdev_priv(netdev))->adapter->vport_ctrl_lock)
 {
 	struct idpf_netdev_priv *np = netdev_priv(netdev);
 

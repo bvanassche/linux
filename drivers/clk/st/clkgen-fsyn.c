@@ -250,6 +250,7 @@ struct st_clk_quadfs_pll {
 #define to_quadfs_pll(_hw) container_of(_hw, struct st_clk_quadfs_pll, hw)
 
 static int quadfs_pll_enable(struct clk_hw *hw)
+	__context_unsafe(/* conditional locking */)
 {
 	struct st_clk_quadfs_pll *pll = to_quadfs_pll(hw);
 	unsigned long flags = 0, timeout = jiffies + msecs_to_jiffies(10);
@@ -291,6 +292,7 @@ static int quadfs_pll_enable(struct clk_hw *hw)
 }
 
 static void quadfs_pll_disable(struct clk_hw *hw)
+	__context_unsafe(/* conditional locking */)
 {
 	struct st_clk_quadfs_pll *pll = to_quadfs_pll(hw);
 	unsigned long flags = 0;
@@ -394,6 +396,7 @@ static int quadfs_pll_fs660c32_determine_rate(struct clk_hw *hw,
 
 static int quadfs_pll_fs660c32_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate)
+	__context_unsafe(/* conditional locking */)
 {
 	struct st_clk_quadfs_pll *pll = to_quadfs_pll(hw);
 	struct stm_fs params;
@@ -540,6 +543,7 @@ static void quadfs_fsynth_program_enable(struct st_clk_quadfs_fsynth *fs)
 }
 
 static void quadfs_fsynth_program_rate(struct st_clk_quadfs_fsynth *fs)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long flags = 0;
 
@@ -565,6 +569,7 @@ static void quadfs_fsynth_program_rate(struct st_clk_quadfs_fsynth *fs)
 }
 
 static int quadfs_fsynth_enable(struct clk_hw *hw)
+	__context_unsafe(/* conditional locking */)
 {
 	struct st_clk_quadfs_fsynth *fs = to_quadfs_fsynth(hw);
 	unsigned long flags = 0;
@@ -590,6 +595,7 @@ static int quadfs_fsynth_enable(struct clk_hw *hw)
 }
 
 static void quadfs_fsynth_disable(struct clk_hw *hw)
+	__context_unsafe(/* conditional locking */)
 {
 	struct st_clk_quadfs_fsynth *fs = to_quadfs_fsynth(hw);
 	unsigned long flags = 0;

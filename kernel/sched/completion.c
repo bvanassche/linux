@@ -85,6 +85,7 @@ EXPORT_SYMBOL(complete_all);
 static inline long __sched
 do_wait_for_common(struct completion *x,
 		   long (*action)(long), long timeout, int state)
+	__must_hold(&x->wait.lock)
 {
 	if (!x->done) {
 		DECLARE_SWAITQUEUE(wait);

@@ -676,8 +676,8 @@ static int match_gdev(struct device *dev, const void *desc)
 	return data && data->gdev == gdev;
 }
 
-static struct gpiodev_data *
-gdev_get_data(struct gpio_device *gdev) __must_hold(&sysfs_lock)
+static struct gpiodev_data *gdev_get_data(struct gpio_device *gdev)
+	__must_hold(&sysfs_lock)
 {
 	/*
 	 * Find the first device in GPIO class that matches. Whether that's
@@ -920,6 +920,7 @@ int gpiod_export_link(struct device *dev, const char *name,
 EXPORT_SYMBOL_GPL(gpiod_export_link);
 
 static void gpiod_unexport_unlocked(struct gpio_desc *desc)
+	__must_hold(&sysfs_lock)
 {
 	struct gpiod_data *tmp, *desc_data = NULL;
 	struct gpiodev_data *gdev_data;

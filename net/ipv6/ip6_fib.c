@@ -2734,7 +2734,7 @@ iter_table:
 }
 
 static void *ipv6_route_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	struct net *net = seq_file_net(seq);
 	struct ipv6_route_iter *iter = seq->private;
@@ -2760,7 +2760,7 @@ static bool ipv6_route_iter_active(struct ipv6_route_iter *iter)
 }
 
 static void ipv6_route_native_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	struct net *net = seq_file_net(seq);
 	struct ipv6_route_iter *iter = seq->private;
@@ -2802,6 +2802,7 @@ static int ipv6_route_seq_show(struct seq_file *seq, void *v)
 }
 
 static void ipv6_route_seq_stop(struct seq_file *seq, void *v)
+	__releases_shared(RCU)
 {
 	struct bpf_iter_meta meta;
 	struct bpf_prog *prog;
@@ -2822,6 +2823,7 @@ static int ipv6_route_seq_show(struct seq_file *seq, void *v)
 }
 
 static void ipv6_route_seq_stop(struct seq_file *seq, void *v)
+	__releases_shared(RCU)
 {
 	ipv6_route_native_seq_stop(seq, v);
 }

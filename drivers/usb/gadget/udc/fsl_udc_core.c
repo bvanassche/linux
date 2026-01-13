@@ -1769,6 +1769,7 @@ static void bus_resume(struct fsl_udc *udc)
 
 /* Clear up all ep queues */
 static int reset_queues(struct fsl_udc *udc, bool bus_reset)
+	__must_hold(&udc->lock)
 {
 	u8 pipe;
 
@@ -1788,6 +1789,7 @@ static int reset_queues(struct fsl_udc *udc, bool bus_reset)
 
 /* Process reset interrupt */
 static void reset_irq(struct fsl_udc *udc)
+	__must_hold(&udc->lock)
 {
 	u32 temp;
 	unsigned long timeout;

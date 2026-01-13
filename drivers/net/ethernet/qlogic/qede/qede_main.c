@@ -1034,11 +1034,13 @@ err:
  * are not reentrant.
  */
 void __qede_lock(struct qede_dev *edev)
+	__acquires(&edev->qede_lock)
 {
 	mutex_lock(&edev->qede_lock);
 }
 
 void __qede_unlock(struct qede_dev *edev)
+	__releases(&edev->qede_lock)
 {
 	mutex_unlock(&edev->qede_lock);
 }
@@ -2343,6 +2345,7 @@ enum qede_unload_mode {
 
 static void qede_unload(struct qede_dev *edev, enum qede_unload_mode mode,
 			bool is_locked)
+	__context_unsafe(/* conditional locking */)
 {
 	struct qed_link_params link_params;
 	int rc;
@@ -2427,6 +2430,7 @@ enum qede_load_mode {
 
 static int qede_load(struct qede_dev *edev, enum qede_load_mode mode,
 		     bool is_locked)
+	__context_unsafe(/* conditional locking */)
 {
 	struct qed_link_params link_params;
 	struct ethtool_coalesce coal = {};
@@ -2531,6 +2535,7 @@ out:
  */
 void qede_reload(struct qede_dev *edev,
 		 struct qede_reload_args *args, bool is_locked)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!is_locked)
 		__qede_lock(edev);

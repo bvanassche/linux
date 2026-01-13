@@ -600,8 +600,10 @@ struct page **drm_gem_get_pages(struct drm_gem_object *obj);
 void drm_gem_put_pages(struct drm_gem_object *obj, struct page **pages,
 		bool dirty, bool accessed);
 
-void drm_gem_lock(struct drm_gem_object *obj);
-void drm_gem_unlock(struct drm_gem_object *obj);
+void drm_gem_lock(struct drm_gem_object *obj)
+	__acquires(&obj->resv->lock);
+void drm_gem_unlock(struct drm_gem_object *obj)
+	__releases(&obj->resv->lock);
 
 int drm_gem_vmap(struct drm_gem_object *obj, struct iosys_map *map);
 void drm_gem_vunmap(struct drm_gem_object *obj, struct iosys_map *map);
@@ -612,9 +614,11 @@ struct drm_gem_object *drm_gem_object_lookup(struct drm_file *filp, u32 handle);
 long drm_gem_dma_resv_wait(struct drm_file *filep, u32 handle,
 				    bool wait_all, unsigned long timeout);
 int drm_gem_lock_reservations(struct drm_gem_object **objs, int count,
-			      struct ww_acquire_ctx *acquire_ctx);
+			      struct ww_acquire_ctx *acquire_ctx)
+	__cond_acquires(0, acquire_ctx);
 void drm_gem_unlock_reservations(struct drm_gem_object **objs, int count,
-				 struct ww_acquire_ctx *acquire_ctx);
+				 struct ww_acquire_ctx *acquire_ctx)
+	__releases(acquire_ctx);
 int drm_gem_dumb_map_offset(struct drm_file *file, struct drm_device *dev,
 			    u32 handle, u64 *offset);
 

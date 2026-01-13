@@ -995,6 +995,7 @@ static s32 select_cpu_restricted(struct task_struct *p, s32 prev_cpu,
 static s32 select_cpu_from_kfunc(struct scx_sched *sch, struct task_struct *p,
 				 s32 prev_cpu, u64 wake_flags,
 				 const struct cpumask *allowed, u64 flags)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long irq_flags;
 	bool we_locked = false;

@@ -50,6 +50,7 @@
 
 /* Unlock and put the prelocked obj */
 static void drm_exec_drop_prelocked(struct drm_exec *exec)
+	__context_unsafe(/* objects decided at run-time */)
 {
 	if (exec->prelocked) {
 		dma_resv_unlock(exec->prelocked->resv);
@@ -60,6 +61,7 @@ static void drm_exec_drop_prelocked(struct drm_exec *exec)
 
 /* Unlock all objects and drop references */
 static void drm_exec_unlock_all(struct drm_exec *exec)
+	__context_unsafe(/* objects decided at run-time */)
 {
 	struct drm_gem_object *obj;
 
@@ -106,6 +108,7 @@ EXPORT_SYMBOL(drm_exec_init);
  * used for tracking the state.
  */
 void drm_exec_fini(struct drm_exec *exec)
+	__context_unsafe(/* conditional locking */)
 {
 	drm_exec_unlock_all(exec);
 	kvfree(exec->objects);
@@ -125,6 +128,7 @@ EXPORT_SYMBOL(drm_exec_fini);
  * objects locked.
  */
 bool drm_exec_cleanup(struct drm_exec *exec)
+	__context_unsafe(/* conditional locking */)
 {
 	if (likely(!exec->contended)) {
 
@@ -174,6 +178,7 @@ static int drm_exec_obj_locked(struct drm_exec *exec,
 
 /* Make sure the contended object is locked first */
 static int drm_exec_lock_contended(struct drm_exec *exec)
+	__context_unsafe(/* objects decided at run-time */)
 {
 	struct drm_gem_object *obj = exec->contended;
 	int ret;
@@ -219,6 +224,7 @@ error_dropref:
  * flag), -ENOMEM when memory allocation failed and zero for success.
  */
 int drm_exec_lock_obj(struct drm_exec *exec, struct drm_gem_object *obj)
+	__context_unsafe(/* objects decided at run-time */)
 {
 	int ret;
 
@@ -268,6 +274,7 @@ EXPORT_SYMBOL(drm_exec_lock_obj);
  * efficient to unlock objects locked long ago.
  */
 void drm_exec_unlock_obj(struct drm_exec *exec, struct drm_gem_object *obj)
+	__context_unsafe(/* unlock inside a loop */)
 {
 	unsigned int i;
 
@@ -298,6 +305,7 @@ EXPORT_SYMBOL(drm_exec_unlock_obj);
  */
 int drm_exec_prepare_obj(struct drm_exec *exec, struct drm_gem_object *obj,
 			 unsigned int num_fences)
+	__context_unsafe(/* objects decided at run-time */)
 {
 	int ret;
 
@@ -332,6 +340,7 @@ int drm_exec_prepare_array(struct drm_exec *exec,
 			   struct drm_gem_object **objects,
 			   unsigned int num_objects,
 			   unsigned int num_fences)
+	__context_unsafe(/* lock inside loop */)
 {
 	int ret;
 

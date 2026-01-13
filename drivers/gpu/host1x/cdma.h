@@ -79,16 +79,21 @@ struct host1x_cdma {
 
 int host1x_cdma_init(struct host1x_cdma *cdma);
 int host1x_cdma_deinit(struct host1x_cdma *cdma);
-int host1x_cdma_begin(struct host1x_cdma *cdma, struct host1x_job *job);
-void host1x_cdma_push(struct host1x_cdma *cdma, u32 op1, u32 op2);
+int host1x_cdma_begin(struct host1x_cdma *cdma, struct host1x_job *job)
+	__cond_acquires(0, &cdma->lock);
+void host1x_cdma_push(struct host1x_cdma *cdma, u32 op1, u32 op2)
+	__must_hold(&cdma->lock);
 void host1x_cdma_push_wide(struct host1x_cdma *cdma, u32 op1, u32 op2,
-			   u32 op3, u32 op4);
-void host1x_cdma_end(struct host1x_cdma *cdma, struct host1x_job *job);
+			   u32 op3, u32 op4)
+	__must_hold(&cdma->lock);
+void host1x_cdma_end(struct host1x_cdma *cdma, struct host1x_job *job)
+	__releases(&cdma->lock);
 void host1x_cdma_update(struct host1x_cdma *cdma);
 void host1x_cdma_peek(struct host1x_cdma *cdma, u32 dmaget, int slot,
 		      u32 *out);
 unsigned int host1x_cdma_wait_locked(struct host1x_cdma *cdma,
-				     enum cdma_event event);
+				     enum cdma_event event)
+	__must_hold(&cdma->lock);
 void host1x_cdma_update_sync_queue(struct host1x_cdma *cdma,
 				   struct device *dev);
 #endif

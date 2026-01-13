@@ -86,6 +86,7 @@ void snd_pcm_group_init(struct snd_pcm_group *group)
 /* define group lock helpers */
 #define DEFINE_PCM_GROUP_LOCK(action, bh_lock, bh_unlock, mutex_action) \
 static void snd_pcm_group_ ## action(struct snd_pcm_group *group, bool nonatomic) \
+	__context_unsafe(/* conditional locking */)		\
 { \
 	if (nonatomic) { \
 		mutex_ ## mutex_action(&group->mutex); \
@@ -145,6 +146,7 @@ void snd_pcm_stream_lock_irq(struct snd_pcm_substream *substream)
 EXPORT_SYMBOL_GPL(snd_pcm_stream_lock_irq);
 
 static void snd_pcm_stream_lock_nested(struct snd_pcm_substream *substream)
+	__context_unsafe(/* conditional locking */)
 {
 	struct snd_pcm_group *group = &substream->self_group;
 
@@ -168,6 +170,7 @@ void snd_pcm_stream_unlock_irq(struct snd_pcm_substream *substream)
 EXPORT_SYMBOL_GPL(snd_pcm_stream_unlock_irq);
 
 unsigned long _snd_pcm_stream_lock_irqsave(struct snd_pcm_substream *substream)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long flags = 0;
 	if (substream->pcm->nonatomic)
@@ -179,6 +182,7 @@ unsigned long _snd_pcm_stream_lock_irqsave(struct snd_pcm_substream *substream)
 EXPORT_SYMBOL_GPL(_snd_pcm_stream_lock_irqsave);
 
 unsigned long _snd_pcm_stream_lock_irqsave_nested(struct snd_pcm_substream *substream)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long flags = 0;
 	if (substream->pcm->nonatomic)
@@ -200,6 +204,7 @@ EXPORT_SYMBOL_GPL(_snd_pcm_stream_lock_irqsave_nested);
  */
 void snd_pcm_stream_unlock_irqrestore(struct snd_pcm_substream *substream,
 				      unsigned long flags)
+	__context_unsafe(/* conditional locking */)
 {
 	if (substream->pcm->nonatomic)
 		mutex_unlock(&substream->self_group.mutex);
@@ -719,6 +724,7 @@ static int snd_pcm_hw_params_choose(struct snd_pcm_substream *pcm,
  * block the further r/w operations
  */
 static int snd_pcm_buffer_access_lock(struct snd_pcm_runtime *runtime)
+	__cond_acquires(0, &runtime->buffer_mutex)
 {
 	if (!atomic_dec_unless_positive(&runtime->buffer_accessing))
 		return -EBUSY;
@@ -728,6 +734,7 @@ static int snd_pcm_buffer_access_lock(struct snd_pcm_runtime *runtime)
 
 /* release buffer_mutex and clear r/w access flag */
 static void snd_pcm_buffer_access_unlock(struct snd_pcm_runtime *runtime)
+	__releases(&runtime->buffer_mutex)
 {
 	mutex_unlock(&runtime->buffer_mutex);
 	atomic_inc(&runtime->buffer_accessing);
@@ -1320,6 +1327,7 @@ static int snd_pcm_action_group(const struct action_ops *ops,
 				struct snd_pcm_substream *substream,
 				snd_pcm_state_t state,
 				bool stream_lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct snd_pcm_substream *s = NULL;
 	struct snd_pcm_substream *s1;

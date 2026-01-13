@@ -864,6 +864,7 @@ xlog_write_unmount_record(
 static void
 xlog_unmount_write(
 	struct xlog		*log)
+	__must_not_hold(&log->l_icloglock)
 {
 	struct xfs_mount	*mp = log->l_mp;
 	struct xlog_in_core	*iclog;

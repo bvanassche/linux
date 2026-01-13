@@ -2725,9 +2725,9 @@ mlxsw_sp_sample_trigger_key_init(struct mlxsw_sp_sample_trigger *key,
 }
 
 /* RCU read lock must be held */
-struct mlxsw_sp_sample_params *
-mlxsw_sp_sample_trigger_params_lookup(struct mlxsw_sp *mlxsw_sp,
-				      const struct mlxsw_sp_sample_trigger *trigger)
+struct mlxsw_sp_sample_params *mlxsw_sp_sample_trigger_params_lookup(
+	struct mlxsw_sp *mlxsw_sp,
+	const struct mlxsw_sp_sample_trigger *trigger) __must_hold_shared(RCU)
 {
 	struct mlxsw_sp_sample_trigger_node *trigger_node;
 	struct mlxsw_sp_sample_trigger key;

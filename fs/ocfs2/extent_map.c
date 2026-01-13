@@ -712,6 +712,7 @@ out:
 static int ocfs2_fiemap_inline(struct inode *inode, struct buffer_head *di_bh,
 			       struct fiemap_extent_info *fieinfo,
 			       u64 map_start)
+	__must_hold_shared(&OCFS2_I(inode)->ip_alloc_sem)
 {
 	int ret;
 	unsigned int id_count;

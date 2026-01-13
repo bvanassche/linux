@@ -123,6 +123,7 @@ static int hws_table_connect_to_default_miss_tbl(struct mlx5hws_table *tbl, u32 
 int mlx5hws_table_create_default_ft(struct mlx5_core_dev *mdev,
 				    struct mlx5hws_table *tbl,
 				    u16 uid, u32 *ft_id)
+	__must_hold(&tbl->ctx->ctrl_lock)
 {
 	struct mlx5hws_cmd_ft_create_attr ft_attr = {0};
 	int ret;
@@ -161,6 +162,7 @@ free_ft_obj:
 
 void mlx5hws_table_destroy_default_ft(struct mlx5hws_table *tbl,
 				      u32 ft_id)
+	__must_hold(&tbl->ctx->ctrl_lock)
 {
 	mlx5hws_cmd_flow_table_destroy(tbl->ctx->mdev, tbl->fw_ft_type, ft_id);
 	hws_table_down_default_fdb_miss_tbl(tbl);

@@ -987,6 +987,7 @@ static void sprd_console_putchar(struct uart_port *port, unsigned char ch)
 
 static void sprd_console_write(struct console *co, const char *s,
 			       unsigned int count)
+	__context_unsafe(/* conditional locking */)
 {
 	struct uart_port *port = &sprd_port[co->index]->port;
 	int locked = 1;

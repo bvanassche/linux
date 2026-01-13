@@ -56,6 +56,7 @@ static LIST_HEAD(usb_serial_driver_list);
  * and its refcount incremented.  Otherwise return NULL.
  */
 struct usb_serial_port *usb_serial_port_get_by_minor(unsigned minor)
+	__cond_acquires(nonnull, &((struct usb_serial_port *)idr_find(&serial_minors, minor))->serial->disc_mutex)
 {
 	struct usb_serial *serial;
 	struct usb_serial_port *port;
@@ -209,6 +210,7 @@ void usb_serial_put(struct usb_serial *serial)
  * in serial_cleanup().
  */
 static int serial_install(struct tty_driver *driver, struct tty_struct *tty)
+	__context_unsafe(/* see also usb_serial_port_get_by_minor() */)
 {
 	int idx = tty->index;
 	struct usb_serial *serial;
@@ -501,6 +503,7 @@ out_unlock:
 
 static int serial_ioctl(struct tty_struct *tty,
 					unsigned int cmd, unsigned long arg)
+	__context_unsafe(/* conditional locking */)
 {
 	struct usb_serial_port *port = tty->driver_data;
 	struct tty_port *tport = &port->port;
@@ -575,6 +578,7 @@ static int serial_break(struct tty_struct *tty, int break_state)
 }
 
 static int serial_proc_show(struct seq_file *m, void *v)
+	__context_unsafe(/* see also usb_serial_port_get_by_minor() */)
 {
 	struct usb_serial *serial;
 	struct usb_serial_port *port;

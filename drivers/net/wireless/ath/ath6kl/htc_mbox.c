@@ -1365,6 +1365,7 @@ static void ath6kl_htc_rx_chk_water_mark(struct htc_endpoint *endpoint)
 static int ath6kl_htc_rx_setup(struct htc_target *target,
 			       struct htc_endpoint *ep,
 			       u32 *lk_ahds, struct list_head *queue, int n_msg)
+	__must_hold(&target->rx_lock)
 {
 	struct htc_packet *packet;
 	/* FIXME: type of lk_ahds can't be right */

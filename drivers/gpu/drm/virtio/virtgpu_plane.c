@@ -206,6 +206,7 @@ static void virtio_gpu_panic_resource_flush(struct drm_plane *plane,
 static void virtio_gpu_resource_flush(struct drm_plane *plane,
 				      uint32_t x, uint32_t y,
 				      uint32_t width, uint32_t height)
+	__context_unsafe(/* resv lock released by virtio_gpu_cmd_*() */)
 {
 	struct drm_device *dev = plane->dev;
 	struct virtio_gpu_device *vgdev = dev->dev_private;
@@ -438,6 +439,7 @@ static void virtio_gpu_plane_cleanup_fb(struct drm_plane *plane,
 
 static void virtio_gpu_cursor_plane_update(struct drm_plane *plane,
 					   struct drm_atomic_commit *state)
+	__context_unsafe(/* resv lock released by virtio_gpu_cmd_*() */)
 {
 	struct drm_plane_state *old_state = drm_atomic_get_old_plane_state(state,
 									   plane);

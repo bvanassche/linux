@@ -480,6 +480,7 @@ static void send_status(struct usba_udc *udc, struct usba_ep *ep)
 }
 
 static void receive_data(struct usba_ep *ep)
+	__must_hold(&ep->udc->lock)
 {
 	struct usba_udc *udc = ep->udc;
 	struct usba_request *req;
@@ -537,6 +538,7 @@ static void receive_data(struct usba_ep *ep)
 
 static void
 request_complete(struct usba_ep *ep, struct usba_request *req, int status)
+	__must_hold(&ep->udc->lock)
 {
 	struct usba_udc *udc = ep->udc;
 
@@ -559,6 +561,7 @@ request_complete(struct usba_ep *ep, struct usba_request *req, int status)
 
 static void
 request_complete_list(struct usba_ep *ep, struct list_head *list, int status)
+	__must_hold(&ep->udc->lock)
 {
 	struct usba_request *req, *tmp_req;
 
@@ -1131,6 +1134,7 @@ static const struct usb_gadget usba_gadget_template = {
  * Called with interrupts disabled and udc->lock held.
  */
 static void reset_all_endpoints(struct usba_udc *udc)
+	__must_hold(&udc->lock)
 {
 	struct usba_ep *ep;
 	struct usba_request *req, *tmp_req;
@@ -1138,6 +1142,7 @@ static void reset_all_endpoints(struct usba_udc *udc)
 	usba_writel(udc, EPT_RST, ~0UL);
 
 	ep = to_usba_ep(udc->gadget.ep0);
+	lockdep_assume_ctx_held(&ep->udc->lock);
 	list_for_each_entry_safe(req, tmp_req, &ep->queue, queue) {
 		list_del_init(&req->queue);
 		request_complete(ep, req, -ECONNRESET);
@@ -1192,6 +1197,7 @@ static inline void set_address(struct usba_udc *udc, unsigned int addr)
 }
 
 static int do_test_mode(struct usba_udc *udc)
+	__must_hold(&udc->lock)
 {
 	static const char test_packet_buffer[] = {
 		/* JKJKJKJK * 9 */
@@ -1301,6 +1307,7 @@ static inline bool feature_is_ep_halt(struct usb_ctrlrequest *crq)
 
 static int handle_ep0_setup(struct usba_udc *udc, struct usba_ep *ep,
 		struct usb_ctrlrequest *crq)
+	__must_hold(&udc->lock)
 {
 	int retval = 0;
 
@@ -1426,6 +1433,8 @@ stall:
 }
 
 static void usba_control_irq(struct usba_udc *udc, struct usba_ep *ep)
+	__must_hold(&udc->lock)
+	__must_hold(&ep->udc->lock)
 {
 	struct usba_request *req;
 	u32 epstatus;
@@ -1614,6 +1623,8 @@ restart:
 }
 
 static void usba_ep_irq(struct usba_udc *udc, struct usba_ep *ep)
+	__must_hold(&udc->lock)
+	__must_hold(&ep->udc->lock)
 {
 	struct usba_request *req;
 	u32 epstatus;
@@ -1667,6 +1678,8 @@ static void usba_ep_irq(struct usba_udc *udc, struct usba_ep *ep)
 }
 
 static void usba_dma_irq(struct usba_udc *udc, struct usba_ep *ep)
+	__must_hold(&udc->lock)
+	__must_hold(&ep->udc->lock)
 {
 	struct usba_request *req;
 	u32 status, control, pending;
@@ -1768,8 +1781,11 @@ static irqreturn_t usba_udc_irq(int irq, void *devid)
 		usba_int_enb_set(udc, USBA_DET_SUSPEND);
 
 		for (i = 1; i <= USBA_NR_DMAS; i++)
-			if (dma_status & (1 << i))
+			if (dma_status & (1 << i)) {
+				lockdep_assume_ctx_held(
+					&udc->usba_ep[i].udc->lock);
 				usba_dma_irq(udc, &udc->usba_ep[i]);
+			}
 	}
 
 	ep_status = USBA_BFEXT(EPT_INT, status);
@@ -1780,6 +1796,8 @@ static irqreturn_t usba_udc_irq(int irq, void *devid)
 
 		for (i = 0; i < udc->num_ep; i++)
 			if (ep_status & (1 << i)) {
+				lockdep_assume_ctx_held(
+					&udc->usba_ep[i].udc->lock);
 				if (ep_is_control(&udc->usba_ep[i]))
 					usba_control_irq(udc, &udc->usba_ep[i]);
 				else

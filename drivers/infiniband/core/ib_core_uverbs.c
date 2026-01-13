@@ -391,6 +391,7 @@ EXPORT_SYMBOL(rdma_user_mmap_entry_insert);
  * udata is NULL. The result can be NULL.
  */
 static struct ib_device *rdma_udata_to_dev(struct ib_udata *udata)
+	__context_unsafe(/* TODO */)
 {
 	struct uverbs_attr_bundle *bundle =
 		rdma_udata_to_uverbs_attr_bundle(udata);
@@ -410,6 +411,7 @@ static struct ib_device *rdma_udata_to_dev(struct ib_udata *udata)
 
 typedef int (*uverbs_api_ioctl_handler_fn)(struct uverbs_attr_bundle *attrs);
 static uverbs_api_ioctl_handler_fn uverbs_get_handler_fn(struct ib_udata *udata)
+	__context_unsafe(/* TODO */)
 {
 	struct uverbs_attr_bundle *bundle =
 		rdma_udata_to_uverbs_attr_bundle(udata);
@@ -502,6 +504,7 @@ EXPORT_SYMBOL(_ib_respond_udata);
  * must be held until use of the ucontext is finished.
  */
 struct ib_ucontext *ib_uverbs_get_ucontext_file(struct ib_uverbs_file *ufile)
+	__must_hold_shared(&ufile->device->disassociate_srcu)
 {
 	/*
 	 * We do not hold the hw_destroy_rwsem lock for this flow, instead

@@ -27,6 +27,7 @@
 #include "vhub.h"
 
 int ast_vhub_reply(struct ast_vhub_ep *ep, char *ptr, int len)
+	__context_unsafe(/* drops and reacquires ep->vhub->lock */)
 {
 	struct usb_request *req = &ep->ep0.req.req;
 	int rc;
@@ -77,6 +78,7 @@ int __ast_vhub_simple_reply(struct ast_vhub_ep *ep, int len, ...)
 }
 
 void ast_vhub_ep0_handle_setup(struct ast_vhub_ep *ep)
+	__context_unsafe(/* drops and reacquires ep->vhub->lock */)
 {
 	struct usb_ctrlrequest crq;
 	enum std_req_rc std_req_rc;

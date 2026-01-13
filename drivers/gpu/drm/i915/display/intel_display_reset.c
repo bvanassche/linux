@@ -30,6 +30,7 @@ bool intel_display_reset_test(struct intel_display *display)
 }
 
 void intel_display_reset_prepare(struct intel_display *display)
+	__context_unsafe(/* conditional locking */)
 {
 	struct drm_modeset_acquire_ctx *ctx = &display->restore.reset_ctx;
 	struct drm_atomic_commit *state;
@@ -74,6 +75,7 @@ void intel_display_reset_prepare(struct intel_display *display)
 }
 
 void intel_display_reset_finish(struct intel_display *display, bool test_only)
+	__context_unsafe(/* conditional locking */)
 {
 	struct drm_modeset_acquire_ctx *ctx = &display->restore.reset_ctx;
 	struct drm_atomic_commit *state;

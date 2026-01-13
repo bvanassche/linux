@@ -532,6 +532,7 @@ static unsigned int ab8500_regulator_get_optimum_mode(
 
 static int ab8500_regulator_set_mode(struct regulator_dev *rdev,
 				     unsigned int mode)
+	__context_unsafe(/* conditional locking */)
 {
 	int enabled, ret = 0;
 	u8 bank, reg, mask, val;

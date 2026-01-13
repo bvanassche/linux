@@ -1003,6 +1003,7 @@ error:
 
 static int iwl_pcie_set_cmd_in_flight(struct iwl_trans *trans,
 				      const struct iwl_host_cmd *cmd)
+	__context_unsafe(/* releases reg_lock (the trans context lock) */)
 {
 	struct iwl_trans_pcie *trans_pcie = IWL_TRANS_GET_PCIE_TRANS(trans);
 

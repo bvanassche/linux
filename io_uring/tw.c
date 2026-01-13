@@ -17,6 +17,7 @@
 #include "mpscq.h"
 
 static void ctx_flush_and_put(struct io_ring_ctx *ctx, io_tw_token_t tw)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!ctx)
 		return;
@@ -62,6 +63,7 @@ static void io_fallback_tw(struct io_uring_task *tctx)
  */
 void tctx_task_work_run(struct io_uring_task *tctx, unsigned int max_entries,
 			unsigned int *count)
+	__context_unsafe(/* conditional locking */)
 {
 	struct io_ring_ctx *ctx = NULL;
 	struct io_tw_state ts = { };

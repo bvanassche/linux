@@ -325,8 +325,8 @@ struct rxrpc_call *rxrpc_new_client_call(struct rxrpc_sock *rx,
 					 struct rxrpc_call_params *p,
 					 gfp_t gfp,
 					 unsigned int debug_id)
-	__releases(&rx->sk.sk_lock)
-	__acquires(&call->user_mutex)
+	__releases(&rx->sk)
+	__context_unsafe(/* may return with call->user_mutex held */)
 {
 	struct rxrpc_call *call, *xcall;
 	struct rxrpc_net *rxnet;

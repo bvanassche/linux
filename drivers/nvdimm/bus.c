@@ -931,6 +931,7 @@ u32 nd_cmd_out_size(struct nvdimm *nvdimm, int cmd,
 EXPORT_SYMBOL_GPL(nd_cmd_out_size);
 
 void wait_nvdimm_bus_probe_idle(struct device *dev)
+	__must_hold(&dev->mutex)
 {
 	struct nvdimm_bus *nvdimm_bus = walk_to_nvdimm_bus(dev);
 
@@ -995,6 +996,7 @@ static int nd_ns_forget_poison_check(struct device *dev, void *data)
 /* set_config requires an idle interleave set */
 static int nd_cmd_clear_to_send(struct nvdimm_bus *nvdimm_bus,
 		struct nvdimm *nvdimm, unsigned int cmd, void *data)
+	__must_hold(&nvdimm_bus->dev.mutex)
 {
 	struct nvdimm_bus_descriptor *nd_desc = nvdimm_bus->nd_desc;
 
@@ -1162,6 +1164,8 @@ static int __nd_ioctl(struct nvdimm_bus *nvdimm_bus, struct nvdimm *nvdimm,
 		return -EFAULT;
 
 	guard(device)(dev);
+	/* guard(device) is not annotated and dev == &nvdimm_bus->dev. */
+	lockdep_assume_ctx_held(&nvdimm_bus->dev.mutex);
 	guard(nvdimm_bus)(dev);
 	rc = nd_cmd_clear_to_send(nvdimm_bus, nvdimm, func, buf);
 	if (rc)

@@ -909,6 +909,7 @@ static u8 brcmf_fws_hdrpush(struct brcmf_fws_info *fws, struct sk_buff *skb)
 static bool brcmf_fws_tim_update(struct brcmf_fws_info *fws,
 				 struct brcmf_fws_mac_descriptor *entry,
 				 int fifo, bool send_immediately)
+	__must_hold(&fws->spinlock)
 {
 	struct sk_buff *skb;
 	struct brcmf_skbuff_cb *skcb;
@@ -1232,6 +1233,7 @@ static void brcmf_fws_schedule_deq(struct brcmf_fws_info *fws)
 static int brcmf_fws_enq(struct brcmf_fws_info *fws,
 			 enum brcmf_fws_skb_state state, int fifo,
 			 struct sk_buff *p)
+	__must_hold(&fws->spinlock)
 {
 	struct brcmf_pub *drvr = fws->drvr;
 	int prec = 2 * fifo;
@@ -1325,6 +1327,7 @@ static int brcmf_fws_enq(struct brcmf_fws_info *fws,
 }
 
 static struct sk_buff *brcmf_fws_deq(struct brcmf_fws_info *fws, int fifo)
+	__must_hold(&fws->spinlock)
 {
 	struct brcmf_fws_mac_descriptor *table;
 	struct brcmf_fws_mac_descriptor *entry;
@@ -1394,6 +1397,7 @@ done:
 static int brcmf_fws_txstatus_suppressed(struct brcmf_fws_info *fws, int fifo,
 					 struct sk_buff *skb,
 					 u32 genbit, u16 seq)
+	__must_hold(&fws->spinlock)
 {
 	struct brcmf_fws_mac_descriptor *entry = brcmf_skbcb(skb)->mac;
 	u32 hslot;
@@ -1435,6 +1439,7 @@ static int brcmf_fws_txstatus_suppressed(struct brcmf_fws_info *fws, int fifo,
 static int
 brcmf_fws_txs_process(struct brcmf_fws_info *fws, u8 flags, u32 hslot,
 		      u32 genbit, u16 seq, u8 compcnt)
+	__must_hold(&fws->spinlock)
 {
 	struct brcmf_pub *drvr = fws->drvr;
 	u32 fifo;
@@ -1979,6 +1984,7 @@ static u8 brcmf_fws_precommit_skb(struct brcmf_fws_info *fws, int fifo,
 
 static void brcmf_fws_rollback_toq(struct brcmf_fws_info *fws,
 				   struct sk_buff *skb, int fifo)
+	__must_hold(&fws->spinlock)
 {
 	struct brcmf_pub *drvr = fws->drvr;
 	struct brcmf_fws_mac_descriptor *entry;
@@ -2044,6 +2050,7 @@ static int brcmf_fws_borrow_credit(struct brcmf_fws_info *fws,
 
 static int brcmf_fws_commit_skb(struct brcmf_fws_info *fws, int fifo,
 				struct sk_buff *skb)
+	__must_hold(&fws->spinlock)
 {
 	struct brcmf_skbuff_cb *skcb = brcmf_skbcb(skb);
 	struct brcmf_fws_mac_descriptor *entry;

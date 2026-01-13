@@ -137,6 +137,7 @@ static int migrate_vma_split_folio(struct folio *folio,
 static int migrate_vma_collect_huge_pmd(pmd_t *pmdp, unsigned long start,
 					unsigned long end, struct mm_walk *walk,
 					struct folio *fault_folio)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mm_struct *mm = walk->mm;
 	struct folio *folio;

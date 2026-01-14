@@ -451,6 +451,7 @@ out_unlock:
  */
 int blkdev_zone_mgmt_ioctl(struct block_device *bdev, blk_mode_t mode,
 			   unsigned int cmd, unsigned long arg)
+	__cond_acquires(0, bdev->bd_mapping->host->i_rwsem)
 {
 	void __user *argp = (void __user *)arg;
 	struct blk_zone_range zrange;
@@ -666,6 +667,7 @@ static void blk_zone_wplug_bio_work(struct work_struct *work)
  */
 static struct blk_zone_wplug *disk_get_or_alloc_zone_wplug(struct gendisk *disk,
 					sector_t sector, gfp_t gfp_mask)
+	__no_context_analysis /* all callers have been annotated */
 {
 	unsigned int zno = disk_zone_no(disk, sector);
 	struct blk_zone_wplug *zwplug;

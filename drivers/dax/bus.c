@@ -1129,11 +1129,10 @@ static ssize_t size_store(struct device *dev, struct device_attribute *attr,
 	}
 	rc = down_write_killable(&dax_dev_rwsem);
 	if (rc)
-		goto err_dev;
+		goto err_region;
 
 	rc = dev_dax_resize(dax_region, dev_dax, val);
 
-err_dev:
 	up_write(&dax_dev_rwsem);
 err_region:
 	up_write(&dax_region_rwsem);

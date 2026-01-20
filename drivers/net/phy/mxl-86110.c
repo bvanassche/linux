@@ -891,7 +891,7 @@ static int mxl86111_config_inband(struct phy_device *phydev, unsigned int modes)
 			       MII_BMCR, BMCR_ANENABLE,
 			       (modes == LINK_INBAND_DISABLE) ? 0 : BMCR_ANENABLE);
 	if (ret < 0)
-		goto out;
+		return ret;
 
 	phy_lock_mdio_bus(phydev);
 

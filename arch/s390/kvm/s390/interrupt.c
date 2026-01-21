@@ -1263,6 +1263,7 @@ static u64 __calculate_sltime(struct kvm_vcpu *vcpu)
 }
 
 int kvm_s390_handle_wait(struct kvm_vcpu *vcpu)
+	__context_unsafe(/* drops and reacquires srcu */)
 {
 	struct kvm_s390_gisa_interrupt *gi = &vcpu->kvm->arch.gisa_int;
 	u64 sltime;
@@ -2572,6 +2573,7 @@ int kvm_s390_mask_adapter(struct kvm *kvm, unsigned int id, bool masked)
 
 static struct page *pin_map_page(struct kvm *kvm, u64 uaddr,
 				 unsigned int gup_flags)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct mm_struct *mm = kvm->mm;
 	struct page *page = NULL;

@@ -129,8 +129,10 @@ static void _kvm_s390_pv_make_secure(struct guest_fault *f)
 		folio_unlock(folio);
 	}
 
-	if (ptep)
+	if (ptep) {
+		__acquire(ptl);
 		pte_unmap_unlock(ptep, ptl);
+	}
 out:
 	mmap_read_unlock(priv->kvm->mm);
 }

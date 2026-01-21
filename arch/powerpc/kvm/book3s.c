@@ -1056,6 +1056,7 @@ int kvm_irq_map_gsi(struct kvm *kvm,
 }
 
 int kvm_irq_map_chip_pin(struct kvm *kvm, unsigned irqchip, unsigned pin)
+	__must_hold_shared(&kvm->irq_srcu)
 {
 	return pin;
 }

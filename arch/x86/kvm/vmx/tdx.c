@@ -2784,7 +2784,9 @@ err_out:
 typedef void *tdx_vm_state_guard_t;
 
 static tdx_vm_state_guard_t tdx_acquire_vm_state_locks(struct kvm *kvm)
+	__cond_acquires_err_ptr(&kvm->lock, &kvm->slots_lock)
 {
+	tdx_vm_state_guard_t err;
 	int r;
 
 	mutex_lock(&kvm->lock);
@@ -2798,14 +2800,21 @@ static tdx_vm_state_guard_t tdx_acquire_vm_state_locks(struct kvm *kvm)
 	 * kvm->slots_lock!
 	 */
 	mutex_lock(&kvm->slots_lock);
+	if (IS_ERR(kvm))
+		unreachable();
 	return kvm;
 
 out_err:
 	mutex_unlock(&kvm->lock);
-	return ERR_PTR(r);
+	err = ERR_PTR(r);
+	if (!IS_ERR(err))
+		unreachable();
+	return err;
 }
 
 static void tdx_release_vm_state_locks(struct kvm *kvm)
+	__releases(&kvm->slots_lock)
+	__releases(&kvm->lock)
 {
 	mutex_unlock(&kvm->slots_lock);
 	kvm_unlock_all_vcpus(kvm);

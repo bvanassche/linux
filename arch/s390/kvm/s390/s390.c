@@ -2552,6 +2552,7 @@ static int kvm_s390_pv_dmp(struct kvm *kvm, struct kvm_pv_cmd *cmd,
 }
 
 static int kvm_s390_handle_pv(struct kvm *kvm, struct kvm_pv_cmd *cmd)
+	__context_unsafe(/* conditional locking */)
 {
 	const bool need_lock = (cmd->cmd != KVM_PV_ASYNC_CLEANUP_PERFORM);
 	void __user *argp = (void __user *)cmd->data;
@@ -4703,6 +4704,7 @@ static int vcpu_post_run_handle_fault(struct kvm_vcpu *vcpu)
 }
 
 static int vcpu_post_run(struct kvm_vcpu *vcpu, int sie_return)
+	__must_hold_shared(&vcpu->kvm->srcu)
 {
 	struct mcck_volatile_info *mcck_info;
 	struct sie_page *sie_page;

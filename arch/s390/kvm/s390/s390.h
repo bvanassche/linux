@@ -369,7 +369,8 @@ static inline int __kvm_s390_pv_destroy_page(struct page *page)
 }
 
 /* implemented in interrupt.c */
-int kvm_s390_handle_wait(struct kvm_vcpu *vcpu);
+int kvm_s390_handle_wait(struct kvm_vcpu *vcpu)
+	__must_hold_shared(&vcpu->kvm->srcu);
 void kvm_s390_vcpu_wakeup(struct kvm_vcpu *vcpu);
 enum hrtimer_restart kvm_s390_idle_wakeup(struct hrtimer *timer);
 int __must_check kvm_s390_deliver_pending_interrupts(struct kvm_vcpu *vcpu);
@@ -408,7 +409,8 @@ int kvm_s390_mask_adapter(struct kvm *kvm, unsigned int id, bool masked);
 
 /* implemented in intercept.c */
 u8 kvm_s390_get_ilen(struct kvm_vcpu *vcpu);
-int kvm_handle_sie_intercept(struct kvm_vcpu *vcpu);
+int kvm_handle_sie_intercept(struct kvm_vcpu *vcpu)
+	__must_hold_shared(&vcpu->kvm->srcu);
 static inline void kvm_s390_rewind_psw(struct kvm_vcpu *vcpu, int ilen)
 {
 	struct kvm_s390_sie_block *sie_block = vcpu->arch.sie_block;

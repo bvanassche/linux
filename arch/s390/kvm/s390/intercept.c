@@ -617,6 +617,7 @@ static bool should_handle_per_ifetch(const struct kvm_vcpu *vcpu, int rc)
 }
 
 int kvm_handle_sie_intercept(struct kvm_vcpu *vcpu)
+	__must_hold_shared(&vcpu->kvm->srcu)
 {
 	int rc, per_rc = 0;
 

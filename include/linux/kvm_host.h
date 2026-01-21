@@ -950,6 +950,7 @@ static inline void kvm_vm_bugged(struct kvm *kvm)
 })
 
 static inline void kvm_vcpu_srcu_read_lock(struct kvm_vcpu *vcpu)
+	__acquires_shared(&vcpu->kvm->srcu)
 {
 #ifdef CONFIG_PROVE_RCU
 	WARN_ONCE(vcpu->srcu_depth++,
@@ -959,6 +960,7 @@ static inline void kvm_vcpu_srcu_read_lock(struct kvm_vcpu *vcpu)
 }
 
 static inline void kvm_vcpu_srcu_read_unlock(struct kvm_vcpu *vcpu)
+	__releases_shared(&vcpu->kvm->srcu)
 {
 	srcu_read_unlock(&vcpu->kvm->srcu, vcpu->____srcu_idx);
 
@@ -1252,7 +1254,8 @@ enum kvm_mr_change {
 };
 
 int kvm_set_internal_memslot(struct kvm *kvm,
-			     const struct kvm_userspace_memory_region2 *mem);
+			     const struct kvm_userspace_memory_region2 *mem)
+	__must_hold(&kvm->slots_lock);
 void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *slot);
 void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen);
 int kvm_arch_prepare_memory_region(struct kvm *kvm,
@@ -1612,7 +1615,8 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext);
 void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
 					struct kvm_memory_slot *slot,
 					gfn_t gfn_offset,
-					unsigned long mask);
+					unsigned long mask)
+	__must_hold(&kvm->mmu_lock);
 void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot);
 
 #ifndef CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT
@@ -1829,7 +1833,8 @@ struct kvm_irq_ack_notifier {
 
 int kvm_irq_map_gsi(struct kvm *kvm,
 		    struct kvm_kernel_irq_routing_entry *entries, int gsi);
-int kvm_irq_map_chip_pin(struct kvm *kvm, unsigned irqchip, unsigned pin);
+int kvm_irq_map_chip_pin(struct kvm *kvm, unsigned irqchip, unsigned pin)
+	__must_hold_shared(&kvm->irq_srcu);
 
 int kvm_set_irq(struct kvm *kvm, int irq_source_id, u32 irq, int level,
 		bool line_status);

@@ -114,6 +114,7 @@ static bool need_topup_split_caches_or_resched(struct kvm *kvm, int count)
 
 static bool mmu_split_huge_pages(struct kvm_gstage *gstage,
 				 phys_addr_t start, phys_addr_t end)
+	__context_unsafe(/* conditional locking */)
 {
 	struct kvm *kvm = gstage->kvm;
 	struct kvm_mmu_memory_cache *pcache = &kvm->arch.pgd_split_page_cache;
@@ -161,6 +162,7 @@ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
 					     struct kvm_memory_slot *slot,
 					     gfn_t gfn_offset,
 					     unsigned long mask)
+	__must_hold(&kvm->mmu_lock)
 {
 	phys_addr_t base_gfn = slot->base_gfn + gfn_offset;
 	phys_addr_t start = (base_gfn +  __ffs(mask)) << PAGE_SHIFT;

@@ -4097,6 +4097,7 @@ union tlbi_info {
 
 static void s2_mmu_unmap_range(struct kvm_s2_mmu *mmu,
 			       const union tlbi_info *info)
+	__must_hold(&kvm_s2_mmu_to_kvm(mmu)->mmu_lock)
 {
 	/*
 	 * The unmap operation is allowed to drop the MMU lock and block, which
@@ -4191,6 +4192,7 @@ static bool handle_ripas2e1is(struct kvm_vcpu *vcpu, struct sys_reg_params *p,
 
 static void s2_mmu_unmap_ipa(struct kvm_s2_mmu *mmu,
 			     const union tlbi_info *info)
+	__must_hold(&kvm_s2_mmu_to_kvm(mmu)->mmu_lock)
 {
 	unsigned long max_size;
 	u64 base_addr;

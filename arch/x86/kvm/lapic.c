@@ -2929,6 +2929,7 @@ int kvm_alloc_apic_access_page(struct kvm *kvm)
 EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_alloc_apic_access_page);
 
 void kvm_inhibit_apic_access_page(struct kvm_vcpu *vcpu)
+	__must_hold_shared(&vcpu->kvm->srcu)
 {
 	struct kvm *kvm = vcpu->kvm;
 

@@ -1359,7 +1359,7 @@ static void kvm_invalidate_vncr_ipa_all(struct kvm *kvm)
 		kvm_invalidate_vncr_ipa(kvm, 0, BIT(pgt->ia_bits));
 }
 
-void kvm_nested_s2_wp(struct kvm *kvm)
+void kvm_nested_s2_wp(struct kvm *kvm) __must_hold(&kvm->mmu_lock)
 {
 	int i;
 
@@ -1380,6 +1380,7 @@ void kvm_nested_s2_wp(struct kvm *kvm)
 
 void kvm_nested_unmap_cipa_range(struct kvm *kvm, gpa_t cipa, size_t unmap_size,
 				 bool may_block)
+	__must_hold(&kvm->mmu_lock)
 {
 	gpa_t cipa_end = cipa + unmap_size - 1;
 	struct kvm_guest_s2_mapping *mapping;
@@ -1429,6 +1430,7 @@ void kvm_nested_unmap_cipa_range(struct kvm *kvm, gpa_t cipa, size_t unmap_size,
 }
 
 void kvm_nested_s2_unmap(struct kvm *kvm, bool may_block)
+	__must_hold(&kvm->mmu_lock)
 {
 	int i;
 
@@ -1448,7 +1450,7 @@ void kvm_nested_s2_unmap(struct kvm *kvm, bool may_block)
 	kvm_invalidate_vncr_ipa_all(kvm);
 }
 
-void kvm_nested_s2_flush(struct kvm *kvm)
+void kvm_nested_s2_flush(struct kvm *kvm) __must_hold(&kvm->mmu_lock)
 {
 	int i;
 

@@ -361,6 +361,7 @@ static int kvm_mkclean_gpa_pt(struct kvm *kvm, gfn_t start_gfn, gfn_t end_gfn)
  */
 void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
 		struct kvm_memory_slot *slot, gfn_t gfn_offset, unsigned long mask)
+	__must_hold(&kvm->mmu_lock)
 {
 	kvm_ptw_ctx ctx;
 	gfn_t base_gfn = slot->base_gfn + gfn_offset;

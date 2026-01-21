@@ -66,6 +66,7 @@ static int truly_virtual_insn(struct kvm_vcpu *vcpu, struct kvm_run *run,
  * @vcpu: The VCPU pointer
  */
 void kvm_riscv_vcpu_wfi(struct kvm_vcpu *vcpu)
+	__must_hold_shared(&vcpu->kvm->srcu)
 {
 	if (!kvm_arch_vcpu_runnable(vcpu)) {
 		kvm_vcpu_srcu_read_unlock(vcpu);
@@ -75,6 +76,7 @@ void kvm_riscv_vcpu_wfi(struct kvm_vcpu *vcpu)
 }
 
 static int wfi_insn(struct kvm_vcpu *vcpu, struct kvm_run *run, ulong insn)
+	__must_hold_shared(&vcpu->kvm->srcu)
 {
 	vcpu->stat.wfi_exit_stat++;
 	kvm_riscv_vcpu_wfi(vcpu);

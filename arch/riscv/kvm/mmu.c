@@ -114,6 +114,7 @@ static bool need_topup_split_caches_or_resched(struct kvm *kvm, int count)
 
 static bool mmu_split_huge_pages(struct kvm_gstage *gstage,
 				 phys_addr_t start, phys_addr_t end)
+	__context_unsafe(/* conditional locking */)
 {
 	struct kvm *kvm = gstage->kvm;
 	struct kvm_mmu_memory_cache *pcache = &kvm->arch.pgd_split_page_cache;

@@ -425,6 +425,7 @@ static inline kvm_pte_t *kvm_dereference_pteref_raw(kvm_pteref_t pteref)
 }
 
 static inline int kvm_pgtable_walk_begin(struct kvm_pgtable_walker *walker)
+	__context_unsafe(/* conditional locking */)
 {
 	if (walker->flags & KVM_PGTABLE_WALK_SHARED)
 		rcu_read_lock();
@@ -433,6 +434,7 @@ static inline int kvm_pgtable_walk_begin(struct kvm_pgtable_walker *walker)
 }
 
 static inline void kvm_pgtable_walk_end(struct kvm_pgtable_walker *walker)
+	__context_unsafe(/* conditional locking */)
 {
 	if (walker->flags & KVM_PGTABLE_WALK_SHARED)
 		rcu_read_unlock();

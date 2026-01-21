@@ -75,9 +75,12 @@ struct codetag_iterator {
 	.flags		= 0,				\
 }
 
-void codetag_lock_module_list(struct codetag_type *cttype);
-bool codetag_trylock_module_list(struct codetag_type *cttype);
-void codetag_unlock_module_list(struct codetag_type *cttype);
+void codetag_lock_module_list(struct codetag_type *cttype)
+	__acquires_shared(cttype);
+bool codetag_trylock_module_list(struct codetag_type *cttype)
+	__cond_acquires_shared(true, cttype);
+void codetag_unlock_module_list(struct codetag_type *cttype)
+	__releases_shared(cttype);
 unsigned long codetag_get_content_id(struct codetag_type *cttype);
 unsigned int codetag_get_count(struct codetag_type *cttype);
 struct codetag_iterator codetag_get_ct_iter(struct codetag_type *cttype);

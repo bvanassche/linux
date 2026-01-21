@@ -504,31 +504,37 @@ static inline bool mapping_tagged(const struct address_space *mapping, xa_mark_t
 }
 
 static inline void i_mmap_lock_write(struct address_space *mapping)
+	__acquires(&mapping->i_mmap_rwsem)
 {
 	down_write(&mapping->i_mmap_rwsem);
 }
 
 static inline int i_mmap_trylock_write(struct address_space *mapping)
+	__cond_acquires(true, &mapping->i_mmap_rwsem)
 {
 	return down_write_trylock(&mapping->i_mmap_rwsem);
 }
 
 static inline void i_mmap_unlock_write(struct address_space *mapping)
+	__releases(&mapping->i_mmap_rwsem)
 {
 	up_write(&mapping->i_mmap_rwsem);
 }
 
 static inline int i_mmap_trylock_read(struct address_space *mapping)
+	__cond_acquires_shared(true, &mapping->i_mmap_rwsem)
 {
 	return down_read_trylock(&mapping->i_mmap_rwsem);
 }
 
 static inline void i_mmap_lock_read(struct address_space *mapping)
+	__acquires_shared(&mapping->i_mmap_rwsem)
 {
 	down_read(&mapping->i_mmap_rwsem);
 }
 
 static inline void i_mmap_unlock_read(struct address_space *mapping)
+	__releases_shared(&mapping->i_mmap_rwsem)
 {
 	up_read(&mapping->i_mmap_rwsem);
 }
@@ -1023,41 +1029,49 @@ enum inode_i_mutex_lock_class
 };
 
 static inline void inode_lock(struct inode *inode)
+	__acquires(&inode->i_rwsem)
 {
 	down_write(&inode->i_rwsem);
 }
 
 static inline __must_check int inode_lock_killable(struct inode *inode)
+	__cond_acquires(0, &inode->i_rwsem)
 {
 	return down_write_killable(&inode->i_rwsem);
 }
 
 static inline void inode_unlock(struct inode *inode)
+	__releases(&inode->i_rwsem)
 {
 	up_write(&inode->i_rwsem);
 }
 
 static inline void inode_lock_shared(struct inode *inode)
+	__acquires_shared(&inode->i_rwsem)
 {
 	down_read(&inode->i_rwsem);
 }
 
 static inline __must_check int inode_lock_shared_killable(struct inode *inode)
+	__cond_acquires_shared(0, &inode->i_rwsem)
 {
 	return down_read_killable(&inode->i_rwsem);
 }
 
 static inline void inode_unlock_shared(struct inode *inode)
+	__releases_shared(&inode->i_rwsem)
 {
 	up_read(&inode->i_rwsem);
 }
 
 static inline int inode_trylock(struct inode *inode)
+	__cond_acquires(true, &inode->i_rwsem)
 {
 	return down_write_trylock(&inode->i_rwsem);
 }
 
 static inline int inode_trylock_shared(struct inode *inode)
+	__cond_acquires_shared(true, &inode->i_rwsem)
 {
 	return down_read_trylock(&inode->i_rwsem);
 }
@@ -1068,38 +1082,45 @@ static inline int inode_is_locked(struct inode *inode)
 }
 
 static inline void inode_lock_nested(struct inode *inode, unsigned subclass)
+	__acquires(&inode->i_rwsem)
 {
 	down_write_nested(&inode->i_rwsem, subclass);
 }
 
 static inline void inode_lock_shared_nested(struct inode *inode, unsigned subclass)
+	__acquires_shared(&inode->i_rwsem)
 {
 	down_read_nested(&inode->i_rwsem, subclass);
 }
 
 static inline void filemap_invalidate_lock(struct address_space *mapping)
+	__acquires(&mapping->invalidate_lock)
 {
 	down_write(&mapping->invalidate_lock);
 }
 
 static inline void filemap_invalidate_unlock(struct address_space *mapping)
+	__releases(&mapping->invalidate_lock)
 {
 	up_write(&mapping->invalidate_lock);
 }
 
 static inline void filemap_invalidate_lock_shared(struct address_space *mapping)
+	__acquires_shared(&mapping->invalidate_lock)
 {
 	down_read(&mapping->invalidate_lock);
 }
 
 static inline int filemap_invalidate_trylock_shared(
 					struct address_space *mapping)
+	__cond_acquires_shared(true, &mapping->invalidate_lock)
 {
 	return down_read_trylock(&mapping->invalidate_lock);
 }
 
 static inline void filemap_invalidate_unlock_shared(
 					struct address_space *mapping)
+	__releases_shared(&mapping->invalidate_lock)
 {
 	up_read(&mapping->invalidate_lock);
 }
@@ -2311,7 +2332,7 @@ struct file_system_type {
 #define FS_RENAME_DOES_D_MOVE	32768	/* FS will handle d_move() during rename() internally. */
 	int (*init_fs_context)(struct fs_context *);
 	const struct fs_parameter_spec *parameters;
-	void (*kill_sb) (struct super_block *);
+	void (*kill_sb) (struct super_block *sb) __releases(&sb->s_umount);
 	struct module *owner;
 	struct hlist_node list;
 	struct hlist_head fs_supers;
@@ -2344,9 +2365,12 @@ static inline bool is_mgtime(const struct inode *inode)
 
 extern struct dentry *mount_subtree(struct vfsmount *mnt, const char *path);
 void retire_super(struct super_block *sb);
-void generic_shutdown_super(struct super_block *sb);
-void kill_block_super(struct super_block *sb);
-void kill_anon_super(struct super_block *sb);
+void generic_shutdown_super(struct super_block *sb)
+	__releases(&sb->s_umount);
+void kill_block_super(struct super_block *sb)
+	__releases(&sb->s_umount);
+void kill_anon_super(struct super_block *sb)
+	__releases(&sb->s_umount);
 void deactivate_super(struct super_block *sb);
 void deactivate_locked_super(struct super_block *sb);
 int set_anon_super(struct super_block *s, void *data);
@@ -2761,6 +2785,8 @@ static inline bool inode_wrong_type(const struct inode *inode, umode_t mode)
  * Should be matched with a call to file_end_write().
  */
 static inline void file_start_write(struct file *file)
+	__acquires(file)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!S_ISREG(file_inode(file)->i_mode))
 		return;
@@ -2768,6 +2794,8 @@ static inline void file_start_write(struct file *file)
 }
 
 static inline bool file_start_write_trylock(struct file *file)
+	__cond_acquires(true, file)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!S_ISREG(file_inode(file)->i_mode))
 		return true;
@@ -2781,6 +2809,8 @@ static inline bool file_start_write_trylock(struct file *file)
  * Should be matched with a call to file_start_write().
  */
 static inline void file_end_write(struct file *file)
+	__releases(file)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!S_ISREG(file_inode(file)->i_mode))
 		return;
@@ -2795,6 +2825,7 @@ static inline void file_end_write(struct file *file)
  * Should be matched with a call to kiocb_end_write().
  */
 static inline void kiocb_start_write(struct kiocb *iocb)
+	__context_unsafe(/* released by kiocb_end_write() */)
 {
 	struct inode *inode = file_inode(iocb->ki_filp);
 
@@ -2813,6 +2844,7 @@ static inline void kiocb_start_write(struct kiocb *iocb)
  * Should be matched with a call to kiocb_start_write().
  */
 static inline void kiocb_end_write(struct kiocb *iocb)
+	__context_unsafe(/* acquired by kiocb_start_write() */)
 {
 	struct inode *inode = file_inode(iocb->ki_filp);
 
@@ -3262,7 +3294,8 @@ extern struct file_system_type *get_filesystem(struct file_system_type *fs);
 extern void put_filesystem(struct file_system_type *fs);
 extern struct file_system_type *get_fs_type(const char *name);
 extern void drop_super(struct super_block *sb);
-extern void drop_super_exclusive(struct super_block *sb);
+extern void drop_super_exclusive(struct super_block *sb)
+	__releases(&sb->s_umount);
 extern void iterate_supers(void (*f)(struct super_block *, void *), void *arg);
 extern void iterate_supers_type(struct file_system_type *,
 			        void (*)(struct super_block *, void *), void *);
@@ -3645,6 +3678,7 @@ static inline bool dir_emit_dots(struct file *file, struct dir_context *ctx)
 	return true;
 }
 static inline bool dir_relax(struct inode *inode)
+	__must_hold(&inode->i_rwsem)
 {
 	inode_unlock(inode);
 	inode_lock(inode);
@@ -3652,6 +3686,7 @@ static inline bool dir_relax(struct inode *inode)
 }
 
 static inline bool dir_relax_shared(struct inode *inode)
+	__must_hold_shared(&inode->i_rwsem)
 {
 	inode_unlock_shared(inode);
 	inode_lock_shared(inode);

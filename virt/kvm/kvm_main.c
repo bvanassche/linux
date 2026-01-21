@@ -568,6 +568,7 @@ static void kvm_null_fn(void)
 
 static __always_inline kvm_mn_ret_t kvm_handle_hva_range(struct kvm *kvm,
 							 const struct kvm_mmu_notifier_range *range)
+	__context_unsafe(/* conditional locking */)
 {
 	struct kvm_mmu_notifier_return r = {
 		.ret = false,
@@ -1377,6 +1378,7 @@ static int kvm_vm_release(struct inode *inode, struct file *filp)
 }
 
 int kvm_trylock_all_vcpus(struct kvm *kvm)
+	__context_unsafe(/* locking loop */)
 {
 	struct kvm_vcpu *vcpu;
 	unsigned long i, j;
@@ -1402,6 +1404,7 @@ out_unlock:
 EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_trylock_all_vcpus);
 
 int kvm_lock_all_vcpus(struct kvm *kvm)
+	__context_unsafe(/* locking loop */)
 {
 	struct kvm_vcpu *vcpu;
 	unsigned long i, j;
@@ -1430,6 +1433,7 @@ out_unlock:
 EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_lock_all_vcpus);
 
 void kvm_unlock_all_vcpus(struct kvm *kvm)
+	__context_unsafe(/* unlock loop */)
 {
 	struct kvm_vcpu *vcpu;
 	unsigned long i;
@@ -1625,6 +1629,7 @@ static int check_memory_region_flags(struct kvm *kvm,
 }
 
 static void kvm_swap_active_memslots(struct kvm *kvm, int as_id)
+	__releases(&kvm->slots_arch_lock)
 {
 	struct kvm_memslots *slots = kvm_get_inactive_memslots(kvm, as_id);
 
@@ -1800,6 +1805,7 @@ static void kvm_commit_memory_region(struct kvm *kvm,
 static void kvm_activate_memslot(struct kvm *kvm,
 				 struct kvm_memory_slot *old,
 				 struct kvm_memory_slot *new)
+	__releases(&kvm->slots_arch_lock)
 {
 	int as_id = kvm_memslots_get_as_id(old, new);
 
@@ -1825,6 +1831,7 @@ static void kvm_copy_memslot(struct kvm_memory_slot *dest,
 static void kvm_invalidate_memslot(struct kvm *kvm,
 				   struct kvm_memory_slot *old,
 				   struct kvm_memory_slot *invalid_slot)
+	__must_hold(&kvm->slots_arch_lock)
 {
 	/*
 	 * Mark the current slot INVALID.  As with all memslot modifications,
@@ -1866,6 +1873,7 @@ static void kvm_invalidate_memslot(struct kvm *kvm,
 
 static void kvm_create_memslot(struct kvm *kvm,
 			       struct kvm_memory_slot *new)
+	__releases(&kvm->slots_arch_lock)
 {
 	/* Add the new memslot to the inactive set and activate. */
 	kvm_replace_memslot(kvm, NULL, new);
@@ -1875,6 +1883,7 @@ static void kvm_create_memslot(struct kvm *kvm,
 static void kvm_delete_memslot(struct kvm *kvm,
 			       struct kvm_memory_slot *old,
 			       struct kvm_memory_slot *invalid_slot)
+	__releases(&kvm->slots_arch_lock)
 {
 	/*
 	 * Remove the old memslot (in the inactive memslots) by passing NULL as
@@ -1888,6 +1897,7 @@ static void kvm_move_memslot(struct kvm *kvm,
 			     struct kvm_memory_slot *old,
 			     struct kvm_memory_slot *new,
 			     struct kvm_memory_slot *invalid_slot)
+	__releases(&kvm->slots_arch_lock)
 {
 	/*
 	 * Replace the old memslot in the inactive slots, and then swap slots
@@ -1900,6 +1910,7 @@ static void kvm_move_memslot(struct kvm *kvm,
 static void kvm_update_flags_memslot(struct kvm *kvm,
 				     struct kvm_memory_slot *old,
 				     struct kvm_memory_slot *new)
+	__releases(&kvm->slots_arch_lock)
 {
 	/*
 	 * Similar to the MOVE case, but the slot doesn't need to be zapped as
@@ -2030,6 +2041,7 @@ static bool kvm_check_memslot_overlap(struct kvm_memslots *slots, int id,
 
 static int kvm_set_memory_region(struct kvm *kvm,
 				 const struct kvm_userspace_memory_region2 *mem)
+	__must_hold(&kvm->slots_lock)
 {
 	struct kvm_memory_slot *old, *new;
 	struct kvm_memslots *slots;
@@ -2172,6 +2184,7 @@ out:
 
 int kvm_set_internal_memslot(struct kvm *kvm,
 			     const struct kvm_userspace_memory_region2 *mem)
+	__must_hold(&kvm->slots_lock)
 {
 	if (WARN_ON_ONCE((u16)mem->slot < KVM_USER_MEM_SLOTS))
 		return -EINVAL;
@@ -2541,6 +2554,7 @@ bool kvm_range_has_vm_memory_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
 
 static __always_inline void kvm_handle_gfn_range(struct kvm *kvm,
 						 struct kvm_mmu_notifier_range *range)
+	__context_unsafe(/* conditional locking */)
 {
 	struct kvm_gfn_range gfn_range;
 	struct kvm_memory_slot *slot;
@@ -5984,6 +5998,7 @@ static int __kvm_io_bus_write(struct kvm_vcpu *vcpu, struct kvm_io_bus *bus,
 }
 
 static struct kvm_io_bus *kvm_get_bus_srcu(struct kvm *kvm, enum kvm_bus idx)
+	__must_hold_shared(&kvm->srcu)
 {
 	/*
 	 * Ensure that any updates to kvm_buses[] observed by the previous vCPU
@@ -5997,6 +6012,7 @@ static struct kvm_io_bus *kvm_get_bus_srcu(struct kvm *kvm, enum kvm_bus idx)
 
 int kvm_io_bus_write(struct kvm_vcpu *vcpu, enum kvm_bus bus_idx, gpa_t addr,
 		     int len, const void *val)
+	__must_hold_shared(&vcpu->kvm->srcu)
 {
 	struct kvm_io_bus *bus;
 	struct kvm_io_range range;
@@ -6017,6 +6033,7 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_io_bus_write);
 
 int kvm_io_bus_write_cookie(struct kvm_vcpu *vcpu, enum kvm_bus bus_idx,
 			    gpa_t addr, int len, const void *val, long cookie)
+	__must_hold_shared(&vcpu->kvm->srcu)
 {
 	struct kvm_io_bus *bus;
 	struct kvm_io_range range;
@@ -6065,7 +6082,7 @@ static int __kvm_io_bus_read(struct kvm_vcpu *vcpu, struct kvm_io_bus *bus,
 }
 
 int kvm_io_bus_read(struct kvm_vcpu *vcpu, enum kvm_bus bus_idx, gpa_t addr,
-		    int len, void *val)
+		    int len, void *val) __must_hold_shared(&vcpu->kvm->srcu)
 {
 	struct kvm_io_bus *bus;
 	struct kvm_io_range range;
@@ -6184,6 +6201,7 @@ int kvm_io_bus_unregister_dev(struct kvm *kvm, enum kvm_bus bus_idx,
 
 struct kvm_io_device *kvm_io_bus_get_dev(struct kvm *kvm, enum kvm_bus bus_idx,
 					 gpa_t addr)
+	__must_hold_shared(&kvm->srcu)
 {
 	struct kvm_io_bus *bus;
 	int dev_idx;

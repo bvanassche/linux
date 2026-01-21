@@ -67,6 +67,7 @@ static int stage2_apply_range(struct kvm_s2_mmu *mmu, phys_addr_t start,
 			      phys_addr_t end,
 			      int (*fn)(struct kvm_pgtable *, u64, u64),
 			      bool resched)
+	__must_hold(&kvm_s2_mmu_to_kvm(mmu)->mmu_lock)
 {
 	struct kvm *kvm = kvm_s2_mmu_to_kvm(mmu);
 	bool lock_dropped = false;
@@ -132,6 +133,7 @@ static bool need_split_memcache_topup_or_resched(struct kvm *kvm)
 
 static int kvm_mmu_split_huge_pages(struct kvm *kvm, phys_addr_t addr,
 				    phys_addr_t end)
+	__must_hold(&kvm->mmu_lock)
 {
 	struct kvm_mmu_memory_cache *cache;
 	struct kvm_pgtable *pgt;
@@ -325,6 +327,7 @@ static int kvm_pgtable_stage2_unmap_tracked(struct kvm_pgtable *pgt,
 static void kvm_vm_stage2_unmap_range(struct kvm_s2_mmu *mmu,
 				      phys_addr_t start,
 				      u64 size, bool may_block)
+	__must_hold(&kvm_s2_mmu_to_kvm(mmu)->mmu_lock)
 {
 	struct kvm *kvm = kvm_s2_mmu_to_kvm(mmu);
 	int (*fn)(struct kvm_pgtable *, u64, u64);
@@ -340,6 +343,7 @@ static void kvm_vm_stage2_unmap_range(struct kvm_s2_mmu *mmu,
 static void pkvm_stage2_unmap_range(struct kvm_s2_mmu *mmu,
 				    phys_addr_t start,
 				    u64 size, bool may_block)
+	__must_hold(&kvm_s2_mmu_to_kvm(mmu)->mmu_lock)
 {
 	WARN_ON(stage2_apply_range(mmu, start, start + size,
 				   pkvm_pgtable_stage2_unmap, may_block));
@@ -401,6 +405,7 @@ static int kvm_pgtable_stage2_unmap_tracked(struct kvm_pgtable *pgt, u64 addr, u
  */
 void kvm_stage2_unmap_range(struct kvm *kvm, struct kvm_s2_mmu *mmu,
 			    phys_addr_t start, u64 size, bool may_block)
+	__must_hold(&kvm->mmu_lock)
 {
 	lockdep_assert_held_write(&kvm->mmu_lock);
 	WARN_ON(size & ~PAGE_MASK);
@@ -410,12 +415,15 @@ void kvm_stage2_unmap_range(struct kvm *kvm, struct kvm_s2_mmu *mmu,
 
 void kvm_stage2_flush_range(struct kvm *kvm, struct kvm_s2_mmu *mmu,
 			    phys_addr_t addr, phys_addr_t end)
+	__must_hold(&kvm->mmu_lock)
 {
+	lockdep_assume_ctx_held(&kvm_s2_mmu_to_kvm(mmu)->mmu_lock);
 	stage2_apply_range_resched(mmu, addr, end, KVM_PGT_FN(kvm_pgtable_stage2_flush));
 }
 
 static void stage2_flush_memslot(struct kvm *kvm,
 				 struct kvm_memory_slot *memslot)
+	__must_hold(&kvm->mmu_lock)
 {
 	phys_addr_t addr = memslot->base_gfn << PAGE_SHIFT;
 	phys_addr_t end = addr + PAGE_SIZE * memslot->npages;
@@ -1125,6 +1133,7 @@ void kvm_uninit_stage2_mmu(struct kvm *kvm)
 
 static void stage2_unmap_memslot(struct kvm *kvm,
 				 struct kvm_memory_slot *memslot)
+	__must_hold(&kvm->mmu_lock)
 {
 	hva_t hva = memslot->userspace_addr;
 	phys_addr_t addr = memslot->base_gfn << PAGE_SHIFT;
@@ -1344,7 +1353,9 @@ int kvm_phys_addr_ioremap(struct kvm *kvm, phys_addr_t guest_ipa,
  */
 void kvm_stage2_wp_range(struct kvm *kvm, struct kvm_s2_mmu *mmu,
 			 phys_addr_t addr, phys_addr_t end)
+	__must_hold(&kvm->mmu_lock)
 {
+	lockdep_assume_ctx_held(&kvm_s2_mmu_to_kvm(mmu)->mmu_lock);
 	stage2_apply_range_resched(mmu, addr, end, KVM_PGT_FN(kvm_pgtable_stage2_wrprotect));
 }
 
@@ -1422,6 +1433,7 @@ static void kvm_mmu_split_memory_region(struct kvm *kvm, int slot)
 void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
 		struct kvm_memory_slot *slot,
 		gfn_t gfn_offset, unsigned long mask)
+	__must_hold(&kvm->mmu_lock)
 {
 	phys_addr_t base_gfn = slot->base_gfn + gfn_offset;
 	phys_addr_t start = (base_gfn +  __ffs(mask)) << PAGE_SHIFT;
@@ -2599,6 +2611,8 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
 	if (!kvm->arch.mmu.pgt)
 		return false;
 
+	/* The caller holds kvm->mmu_lock for writing. */
+	lockdep_assume_ctx_held(&kvm->mmu_lock);
 	kvm_stage2_unmap_range(kvm, &kvm->arch.mmu, gpa, size, may_block);
 	kvm_nested_unmap_cipa_range(kvm, gpa, size, may_block);
 

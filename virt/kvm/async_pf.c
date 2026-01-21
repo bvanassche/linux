@@ -46,6 +46,7 @@ void kvm_async_pf_vcpu_init(struct kvm_vcpu *vcpu)
 }
 
 static void async_pf_execute(struct work_struct *work)
+	__context_unsafe(/* conditional locking */)
 {
 	struct kvm_async_pf *apf =
 		container_of(work, struct kvm_async_pf, work);

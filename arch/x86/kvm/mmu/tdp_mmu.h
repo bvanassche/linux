@@ -99,11 +99,13 @@ void kvm_tdp_mmu_try_split_huge_pages(struct kvm *kvm,
 				      int target_level, bool shared);
 
 static inline void kvm_tdp_mmu_walk_lockless_begin(void)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 }
 
 static inline void kvm_tdp_mmu_walk_lockless_end(void)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

@@ -416,6 +416,7 @@ bool kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
 
 bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
 				  gpa_t start, gpa_t size, bool may_block)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 	pte_t *ptep;

@@ -66,6 +66,7 @@ static int truly_virtual_insn(struct kvm_vcpu *vcpu, struct kvm_run *run,
  * @vcpu: The VCPU pointer
  */
 void kvm_riscv_vcpu_wfi(struct kvm_vcpu *vcpu)
+	__context_unsafe(/* drops and reacquires srcu */)
 {
 	if (!kvm_arch_vcpu_runnable(vcpu)) {
 		kvm_vcpu_srcu_read_unlock(vcpu);

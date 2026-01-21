@@ -1185,8 +1185,7 @@ static int vsie_handle_mvpg(struct kvm_vcpu *vcpu, struct vsie_page *vsie_page, 
  *          - < 0 if an error occurred
  */
 static int do_vsie_run(struct kvm_vcpu *vcpu, struct vsie_page *vsie_page, struct gmap *sg)
-	__releases(vcpu->kvm->srcu)
-	__acquires(vcpu->kvm->srcu)
+	__context_unsafe(/* drops and reacquires srcu */)
 {
 	struct kvm_s390_sie_block *scb_s = &vsie_page->scb_s;
 	struct kvm_s390_sie_block *scb_o = vsie_page->scb_o;
@@ -1394,6 +1393,7 @@ static void unregister_shadow_scb(struct kvm_vcpu *vcpu)
  *          - -ENOMEM if out of memory
  */
 static int vsie_run(struct kvm_vcpu *vcpu, struct vsie_page *vsie_page)
+	__context_unsafe(/* conditional locking */)
 {
 	struct kvm_s390_sie_block *scb_s = &vsie_page->scb_s;
 	struct gmap *sg = NULL;

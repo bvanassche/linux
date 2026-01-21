@@ -709,6 +709,7 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
  *	    0 if we should exit to userspace
  */
 static int kvm_riscv_check_vcpu_requests(struct kvm_vcpu *vcpu)
+	__must_hold_shared(&vcpu->kvm->srcu)
 {
 	struct rcuwait *wait = kvm_arch_vcpu_get_wait(vcpu);
 

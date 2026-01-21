@@ -362,6 +362,7 @@ static void vgic_its_iter_next(struct vgic_its *its, struct vgic_its_iter *iter)
  *         allocation failure.
  */
 static void *vgic_its_debug_start(struct seq_file *s, loff_t *pos)
+	__acquires(&((struct vgic_its *)s->private)->its_lock)
 {
 	struct vgic_its *its = s->private;
 	struct vgic_its_iter *iter;
@@ -429,6 +430,7 @@ static void *vgic_its_debug_next(struct seq_file *s, void *v, loff_t *pos)
  * This function frees the iterator and releases the its_lock mutex.
  */
 static void vgic_its_debug_stop(struct seq_file *s, void *v)
+	__releases(&((struct vgic_its *)s->private)->its_lock)
 {
 	struct vgic_its *its = s->private;
 	struct vgic_its_iter *iter = v;

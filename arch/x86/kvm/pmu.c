@@ -536,6 +536,8 @@ static bool pmc_is_event_allowed(struct kvm_pmc *pmc)
 	struct kvm_x86_pmu_event_filter *filter;
 	struct kvm *kvm = pmc->vcpu->kvm;
 
+	lockdep_assume_shared_ctx_held(&kvm->srcu);
+
 	filter = srcu_dereference(kvm->arch.pmu_event_filter, &kvm->srcu);
 	if (!filter)
 		return true;

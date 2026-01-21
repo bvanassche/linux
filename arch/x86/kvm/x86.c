@@ -1619,12 +1619,14 @@ static void kvm_make_mclock_inprogress_request(struct kvm *kvm)
 }
 
 static void __kvm_start_pvclock_update(struct kvm *kvm)
+	__acquires(&kvm->arch.tsc_write_lock)
 {
 	raw_spin_lock_irq(&kvm->arch.tsc_write_lock);
 	write_seqcount_begin(&kvm->arch.pvclock_sc);
 }
 
 static void kvm_start_pvclock_update(struct kvm *kvm)
+	__acquires(&kvm->arch.tsc_write_lock)
 {
 	kvm_make_mclock_inprogress_request(kvm);
 
@@ -1633,6 +1635,7 @@ static void kvm_start_pvclock_update(struct kvm *kvm)
 }
 
 static void kvm_end_pvclock_update(struct kvm *kvm)
+	__releases(&kvm->arch.tsc_write_lock)
 {
 	struct kvm_arch *ka = &kvm->arch;
 	struct kvm_vcpu *vcpu;
@@ -7929,6 +7932,7 @@ out:
 EXPORT_SYMBOL_FOR_KVM_INTERNAL(__kvm_vcpu_update_apicv);
 
 static void kvm_vcpu_update_apicv(struct kvm_vcpu *vcpu)
+	__must_hold_shared(&vcpu->kvm->srcu)
 {
 	if (!lapic_in_kernel(vcpu))
 		return;
@@ -8123,6 +8127,7 @@ static void kvm_update_cpu_dirty_logging(struct kvm_vcpu *vcpu)
  * userspace.
  */
 static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
+	__must_hold_shared(&vcpu->kvm->srcu)
 {
 	int r;
 	bool req_int_win =
@@ -8639,6 +8644,7 @@ int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu)
 
 /* Called within kvm->srcu read side.  */
 static inline int vcpu_block(struct kvm_vcpu *vcpu)
+	__must_hold_shared(&vcpu->kvm->srcu)
 {
 	bool hv_timer;
 
@@ -8707,6 +8713,7 @@ static inline int vcpu_block(struct kvm_vcpu *vcpu)
 
 /* Called within kvm->srcu read side.  */
 static int vcpu_run(struct kvm_vcpu *vcpu)
+	__must_hold_shared(&vcpu->kvm->srcu)
 {
 	int r;
 

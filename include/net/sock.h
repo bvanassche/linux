@@ -1243,9 +1243,9 @@ static inline void sock_rps_reset_rxhash(struct sock *sk)
 		__rc;							\
 	})
 
-int sk_stream_wait_connect(struct sock *sk, long *timeo_p);
-int sk_stream_wait_memory(struct sock *sk, long *timeo_p);
-void sk_stream_wait_close(struct sock *sk, long timeo_p);
+int sk_stream_wait_connect(struct sock *sk, long *timeo_p) __must_hold(sk);
+int sk_stream_wait_memory(struct sock *sk, long *timeo_p) __must_hold(sk);
+void sk_stream_wait_close(struct sock *sk, long timeo_p) __must_hold(sk);
 int sk_stream_error(struct sock *sk, int flags, int err);
 void sk_stream_kill_queues(struct sock *sk);
 void sk_set_memalloc(struct sock *sk);
@@ -1262,7 +1262,8 @@ static inline bool sk_flush_backlog(struct sock *sk)
 	return false;
 }
 
-int sk_wait_data(struct sock *sk, long *timeo, const struct sk_buff *skb);
+int sk_wait_data(struct sock *sk, long *timeo, const struct sk_buff *skb)
+	__must_hold(sk);
 
 struct request_sock_ops;
 struct timewait_sock_ops;
@@ -1712,15 +1713,19 @@ static inline bool lockdep_sock_is_held(const struct sock *sk)
 	       lockdep_is_held(&sk->sk_lock.slock);
 }
 
-void lock_sock_nested(struct sock *sk, int subclass);
+void lock_sock_nested(struct sock *sk, int subclass)
+	__must_not_hold(&sk->sk_lock.slock)
+	__acquires(sk);
 
 static inline void lock_sock(struct sock *sk)
+	__must_not_hold(&sk->sk_lock.slock)
+	__acquires(sk)
 {
 	lock_sock_nested(sk, 0);
 }
 
-void __release_sock(struct sock *sk);
-void release_sock(struct sock *sk);
+void __release_sock(struct sock *sk) __must_hold(&sk->sk_lock.slock);
+void release_sock(struct sock *sk) __must_not_hold(&sk->sk_lock.slock) __releases(sk);
 
 /* BH context may only use the following locking interface. */
 #define bh_lock_sock(__sk)	spin_lock(&((__sk)->sk_lock.slock))

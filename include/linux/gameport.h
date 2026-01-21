@@ -130,11 +130,13 @@ static inline void gameport_set_drvdata(struct gameport *gameport, void *data)
  * Use the following functions to pin gameport's driver in process context
  */
 static inline int gameport_pin_driver(struct gameport *gameport)
+	__cond_acquires(0, &gameport->drv_mutex)
 {
 	return mutex_lock_interruptible(&gameport->drv_mutex);
 }
 
 static inline void gameport_unpin_driver(struct gameport *gameport)
+	__releases(&gameport->drv_mutex)
 {
 	mutex_unlock(&gameport->drv_mutex);
 }

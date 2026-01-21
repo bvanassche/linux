@@ -609,6 +609,7 @@ struct uart_port {
  * port lock wrapper synchronization.
  */
 static inline void __uart_port_lock_irqsave(struct uart_port *up, unsigned long *flags)
+	__acquires(&up->lock)
 {
 	spin_lock_irqsave(&up->lock, *flags);
 }
@@ -618,6 +619,7 @@ static inline void __uart_port_lock_irqsave(struct uart_port *up, unsigned long 
  * port lock wrapper synchronization.
  */
 static inline void __uart_port_unlock_irqrestore(struct uart_port *up, unsigned long flags)
+	__releases(&up->lock)
 {
 	spin_unlock_irqrestore(&up->lock, flags);
 }
@@ -698,6 +700,7 @@ static inline void __uart_port_nbcon_release(struct uart_port *up)
  * @up:		Pointer to UART port structure
  */
 static inline void uart_port_lock(struct uart_port *up)
+	__acquires(&up->lock)
 {
 	spin_lock(&up->lock);
 	__uart_port_nbcon_acquire(up);
@@ -708,6 +711,7 @@ static inline void uart_port_lock(struct uart_port *up)
  * @up:		Pointer to UART port structure
  */
 static inline void uart_port_lock_irq(struct uart_port *up)
+	__acquires(&up->lock)
 {
 	spin_lock_irq(&up->lock);
 	__uart_port_nbcon_acquire(up);
@@ -719,6 +723,7 @@ static inline void uart_port_lock_irq(struct uart_port *up)
  * @flags:	Pointer to interrupt flags storage
  */
 static inline void uart_port_lock_irqsave(struct uart_port *up, unsigned long *flags)
+	__acquires(&up->lock)
 {
 	spin_lock_irqsave(&up->lock, *flags);
 	__uart_port_nbcon_acquire(up);
@@ -731,6 +736,7 @@ static inline void uart_port_lock_irqsave(struct uart_port *up, unsigned long *f
  * Returns: True if lock was acquired, false otherwise
  */
 static inline bool uart_port_trylock(struct uart_port *up)
+	__cond_acquires(true, &up->lock)
 {
 	if (!spin_trylock(&up->lock))
 		return false;
@@ -751,6 +757,7 @@ static inline bool uart_port_trylock(struct uart_port *up)
  * Returns: True if lock was acquired, false otherwise
  */
 static inline bool uart_port_trylock_irqsave(struct uart_port *up, unsigned long *flags)
+	__cond_acquires(true, &up->lock)
 {
 	if (!spin_trylock_irqsave(&up->lock, *flags))
 		return false;
@@ -768,6 +775,7 @@ static inline bool uart_port_trylock_irqsave(struct uart_port *up, unsigned long
  * @up:		Pointer to UART port structure
  */
 static inline void uart_port_unlock(struct uart_port *up)
+	__releases(&up->lock)
 {
 	__uart_port_nbcon_release(up);
 	spin_unlock(&up->lock);
@@ -778,6 +786,7 @@ static inline void uart_port_unlock(struct uart_port *up)
  * @up:		Pointer to UART port structure
  */
 static inline void uart_port_unlock_irq(struct uart_port *up)
+	__releases(&up->lock)
 {
 	__uart_port_nbcon_release(up);
 	spin_unlock_irq(&up->lock);
@@ -789,6 +798,7 @@ static inline void uart_port_unlock_irq(struct uart_port *up)
  * @flags:	The saved interrupt flags for restore
  */
 static inline void uart_port_unlock_irqrestore(struct uart_port *up, unsigned long flags)
+	__releases(&up->lock)
 {
 	__uart_port_nbcon_release(up);
 	spin_unlock_irqrestore(&up->lock, flags);
@@ -1241,6 +1251,7 @@ static inline int uart_prepare_sysrq_char(struct uart_port *port, u8 ch)
 }
 
 static inline void uart_unlock_and_check_sysrq(struct uart_port *port)
+	__releases(&port->lock)
 {
 	u8 sysrq_ch;
 
@@ -1260,6 +1271,7 @@ static inline void uart_unlock_and_check_sysrq(struct uart_port *port)
 
 static inline void uart_unlock_and_check_sysrq_irqrestore(struct uart_port *port,
 		unsigned long flags)
+	__releases(&port->lock)
 {
 	u8 sysrq_ch;
 
@@ -1286,11 +1298,13 @@ static inline int uart_prepare_sysrq_char(struct uart_port *port, u8 ch)
 	return 0;
 }
 static inline void uart_unlock_and_check_sysrq(struct uart_port *port)
+	__releases(&port->lock)
 {
 	uart_port_unlock(port);
 }
 static inline void uart_unlock_and_check_sysrq_irqrestore(struct uart_port *port,
 		unsigned long flags)
+	__releases(&port->lock)
 {
 	uart_port_unlock_irqrestore(port, flags);
 }

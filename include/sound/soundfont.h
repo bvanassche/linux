@@ -116,6 +116,7 @@ int snd_sf_linear_to_log(unsigned int amount, int offset, int ratio);
 
 /* lock access to sflist */
 static inline void snd_soundfont_lock_preset(struct snd_sf_list *sflist)
+	__acquires(&sflist->presets_mutex)
 {
 	mutex_lock(&sflist->presets_mutex);
 	scoped_guard(spinlock_irqsave, &sflist->lock)
@@ -124,6 +125,7 @@ static inline void snd_soundfont_lock_preset(struct snd_sf_list *sflist)
 
 /* remove lock */
 static inline void snd_soundfont_unlock_preset(struct snd_sf_list *sflist)
+	__releases(&sflist->presets_mutex)
 {
 	scoped_guard(spinlock_irqsave, &sflist->lock)
 		sflist->presets_locked = 0;

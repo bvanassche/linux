@@ -128,7 +128,8 @@ void fqdir_exit(struct fqdir *fqdir);
 
 void inet_frag_kill(struct inet_frag_queue *q, int *refs);
 void inet_frag_destroy(struct inet_frag_queue *q);
-struct inet_frag_queue *inet_frag_find(struct fqdir *fqdir, void *key);
+struct inet_frag_queue *inet_frag_find(struct fqdir *fqdir, void *key)
+	__must_hold_shared(RCU);
 
 void inet_frag_queue_flush(struct inet_frag_queue *q,
 			   enum skb_drop_reason reason);

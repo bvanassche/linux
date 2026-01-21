@@ -17,7 +17,8 @@
 extern int get_tree_mtd(struct fs_context *fc,
 		     int (*fill_super)(struct super_block *sb,
 				       struct fs_context *fc));
-extern void kill_mtd_super(struct super_block *sb);
+extern void kill_mtd_super(struct super_block *sb)
+	__releases(&sb->s_umount);
 
 
 #endif /* __KERNEL__ */

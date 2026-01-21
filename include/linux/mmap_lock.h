@@ -527,6 +527,7 @@ static inline void vma_assert_can_modify(struct vm_area_struct *vma)
 }
 
 static inline void mmap_write_lock(struct mm_struct *mm)
+	__acquires(&mm->mmap_lock)
 {
 	__mmap_lock_trace_start_locking(mm, true);
 	down_write(&mm->mmap_lock);
@@ -535,6 +536,7 @@ static inline void mmap_write_lock(struct mm_struct *mm)
 }
 
 static inline void mmap_write_lock_nested(struct mm_struct *mm, int subclass)
+	__acquires(&mm->mmap_lock)
 {
 	__mmap_lock_trace_start_locking(mm, true);
 	down_write_nested(&mm->mmap_lock, subclass);
@@ -543,6 +545,7 @@ static inline void mmap_write_lock_nested(struct mm_struct *mm, int subclass)
 }
 
 static inline int __must_check mmap_write_lock_killable(struct mm_struct *mm)
+	__cond_acquires(0, &mm->mmap_lock)
 {
 	int ret;
 
@@ -581,6 +584,7 @@ static inline void vma_end_write_all(struct mm_struct *mm)
 }
 
 static inline void mmap_write_unlock(struct mm_struct *mm)
+	__releases(&mm->mmap_lock)
 {
 	__mmap_lock_trace_released(mm, true);
 	vma_end_write_all(mm);
@@ -588,6 +592,8 @@ static inline void mmap_write_unlock(struct mm_struct *mm)
 }
 
 static inline void mmap_write_downgrade(struct mm_struct *mm)
+	__releases(&mm->mmap_lock)
+	__acquires_shared(&mm->mmap_lock)
 {
 	__mmap_lock_trace_acquire_returned(mm, false, true);
 	vma_end_write_all(mm);
@@ -595,6 +601,7 @@ static inline void mmap_write_downgrade(struct mm_struct *mm)
 }
 
 static inline void mmap_read_lock(struct mm_struct *mm)
+	__acquires_shared(&mm->mmap_lock)
 {
 	__mmap_lock_trace_start_locking(mm, false);
 	down_read(&mm->mmap_lock);
@@ -602,6 +609,7 @@ static inline void mmap_read_lock(struct mm_struct *mm)
 }
 
 static inline int __must_check mmap_read_lock_killable(struct mm_struct *mm)
+	__cond_acquires_shared(0, &mm->mmap_lock)
 {
 	int ret;
 
@@ -612,6 +620,7 @@ static inline int __must_check mmap_read_lock_killable(struct mm_struct *mm)
 }
 
 static inline bool __must_check mmap_read_trylock(struct mm_struct *mm)
+	__cond_acquires_shared(true, &mm->mmap_lock)
 {
 	bool ret;
 
@@ -622,6 +631,7 @@ static inline bool __must_check mmap_read_trylock(struct mm_struct *mm)
 }
 
 static inline void mmap_read_unlock(struct mm_struct *mm)
+	__releases_shared(&mm->mmap_lock)
 {
 	__mmap_lock_trace_released(mm, false);
 	up_read(&mm->mmap_lock);
@@ -634,6 +644,7 @@ DEFINE_GUARD(mmap_write_lock, struct mm_struct *,
 	     mmap_write_lock(_T), mmap_write_unlock(_T))
 
 static inline void mmap_read_unlock_non_owner(struct mm_struct *mm)
+	__releases_shared(&mm->mmap_lock)
 {
 	__mmap_lock_trace_released(mm, false);
 	up_read_non_owner(&mm->mmap_lock);

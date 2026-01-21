@@ -1551,6 +1551,7 @@ __libeth_xdp_finalize_rx(struct libeth_xdp_tx_bulk *bq, u32 flags,
 			 bool (*flush_bulk)(struct libeth_xdp_tx_bulk *bq,
 					    u32 flags),
 			 void (*finalize)(void *xdpsq, bool sent, bool flush))
+	__releases_shared(RCU)
 {
 	if (bq->act_mask & LIBETH_XDP_TX) {
 		if (bq->count)

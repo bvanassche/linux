@@ -780,10 +780,10 @@ struct mem_cgroup *get_mem_cgroup_from_current(void);
 
 struct mem_cgroup *get_mem_cgroup_from_folio(const struct folio *folio);
 
-struct lruvec *folio_lruvec_lock(const struct folio *folio);
-struct lruvec *folio_lruvec_lock_irq(const struct folio *folio);
-struct lruvec *folio_lruvec_lock_irqsave(const struct folio *folio,
-						unsigned long *flags);
+struct lruvec *__folio_lruvec_lock(const struct folio *folio);
+struct lruvec *__folio_lruvec_lock_irq(const struct folio *folio);
+struct lruvec *__folio_lruvec_lock_irqsave(const struct folio *folio,
+					   unsigned long *flags);
 
 static inline
 struct mem_cgroup *mem_cgroup_from_css(struct cgroup_subsys_state *css){
@@ -1286,7 +1286,8 @@ static inline void mem_cgroup_put(struct mem_cgroup *memcg)
 {
 }
 
-static inline struct lruvec *folio_lruvec_lock(const struct folio *folio)
+static inline struct lruvec *__folio_lruvec_lock(const struct folio *folio)
+	__context_unsafe(/* see folio_lruvec_lock() below */)
 {
 	struct pglist_data *pgdat = folio_pgdat(folio);
 
@@ -1295,7 +1296,8 @@ static inline struct lruvec *folio_lruvec_lock(const struct folio *folio)
 	return &pgdat->__lruvec;
 }
 
-static inline struct lruvec *folio_lruvec_lock_irq(const struct folio *folio)
+static inline struct lruvec *__folio_lruvec_lock_irq(const struct folio *folio)
+	__context_unsafe(/* see folio_lruvec_lock() below */)
 {
 	struct pglist_data *pgdat = folio_pgdat(folio);
 
@@ -1304,8 +1306,9 @@ static inline struct lruvec *folio_lruvec_lock_irq(const struct folio *folio)
 	return &pgdat->__lruvec;
 }
 
-static inline struct lruvec *folio_lruvec_lock_irqsave(const struct folio *folio,
+static inline struct lruvec *__folio_lruvec_lock_irqsave(const struct folio *folio,
 		unsigned long *flagsp)
+	__context_unsafe(/* see folio_lruvec_lock() below */)
 {
 	struct pglist_data *pgdat = folio_pgdat(folio);
 
@@ -1530,12 +1533,15 @@ static inline struct lruvec *parent_lruvec(const struct lruvec *lruvec)
 }
 
 static inline void lruvec_lock_irq(struct lruvec *lruvec)
+	__acquires_shared(RCU)
+	__acquires(&lruvec->lru_lock)
 {
 	rcu_read_lock();
 	spin_lock_irq(&lruvec->lru_lock);
 }
 
-static inline struct lruvec *lruvec_live_lock_irq(struct lruvec *lruvec)
+static inline struct lruvec *__lruvec_live_lock_irq(struct lruvec *lruvec)
+	__context_unsafe(/* see lruvec_live_lock_irq() below */)
 {
 #ifdef CONFIG_MEMCG
 	struct pglist_data *pgdat = lruvec_pgdat(lruvec);
@@ -1560,19 +1566,48 @@ static inline struct lruvec *lruvec_live_lock_irq(struct lruvec *lruvec)
 	return lruvec;
 }
 
+/*
+ * Inform the context analysis that @call returns an lruvec pointer with the
+ * RCU read lock and the lru_lock of that lruvec held.
+ */
+#define __lruvec_acquire_ret(call)					\
+	({								\
+		struct lruvec *__ret = (call);				\
+									\
+		__acquire_shared(RCU);					\
+		__acquire(&__ret->lru_lock);				\
+		__ret;							\
+	})
+
+#define lruvec_live_lock_irq(lruvec)					\
+	__lruvec_acquire_ret(__lruvec_live_lock_irq(lruvec))
+
+#define folio_lruvec_lock(folio)					\
+	__lruvec_acquire_ret(__folio_lruvec_lock(folio))
+#define folio_lruvec_lock_irq(folio)					\
+	__lruvec_acquire_ret(__folio_lruvec_lock_irq(folio))
+#define folio_lruvec_lock_irqsave(folio, flags)				\
+	__lruvec_acquire_ret(__folio_lruvec_lock_irqsave(folio, flags))
+
 static inline void lruvec_unlock(struct lruvec *lruvec)
+	__releases(&lruvec->lru_lock)
+	__releases_shared(RCU)
 {
 	spin_unlock(&lruvec->lru_lock);
 	rcu_read_unlock();
 }
 
 static inline void lruvec_unlock_irq(struct lruvec *lruvec)
+	__releases(&lruvec->lru_lock)
+	__releases_shared(RCU)
 {
 	spin_unlock_irq(&lruvec->lru_lock);
 	rcu_read_unlock();
 }
 
 static inline void lruvec_unlock_irqrestore(struct lruvec *lruvec, unsigned long flags)
+	__releases(&lruvec->lru_lock)
+	__releases_shared(RCU)
 {
 	spin_unlock_irqrestore(&lruvec->lru_lock, flags);
 	rcu_read_unlock();
@@ -1589,6 +1624,7 @@ static inline bool folio_matches_lruvec(const struct folio *folio,
 /* Don't lock again iff page's lruvec locked */
 static inline struct lruvec *folio_lruvec_relock_irq(const struct folio *folio,
 		struct lruvec *locked_lruvec)
+	__context_unsafe(/* conditional locking */)
 {
 	if (locked_lruvec) {
 		if (folio_matches_lruvec(folio, locked_lruvec))
@@ -1603,6 +1639,7 @@ static inline struct lruvec *folio_lruvec_relock_irq(const struct folio *folio,
 /* Don't lock again iff folio's lruvec locked */
 static inline void folio_lruvec_relock_irqsave(const struct folio *folio,
 		struct lruvec **lruvecp, unsigned long *flags)
+	__context_unsafe(/* conditional locking */)
 {
 	if (*lruvecp) {
 		if (folio_matches_lruvec(folio, *lruvecp))

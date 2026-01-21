@@ -167,7 +167,8 @@ bool hugetlbfs_pagecache_present(struct hstate *h,
 				 struct vm_area_struct *vma,
 				 unsigned long address);
 
-struct address_space *hugetlb_folio_mapping_lock_write(struct folio *folio);
+struct address_space *hugetlb_folio_mapping_lock_write(struct folio *folio)
+	__cond_acquires(nonnull, &folio_mapping(folio)->i_mmap_rwsem);
 
 extern int movable_gigantic_pages __read_mostly;
 extern int sysctl_hugetlb_shm_group __read_mostly;
@@ -296,6 +297,7 @@ static inline unsigned long hugetlb_total_pages(void)
 
 static inline struct address_space *hugetlb_folio_mapping_lock_write(
 							struct folio *folio)
+	__cond_acquires(nonnull, &folio_mapping(folio)->i_mmap_rwsem)
 {
 	return NULL;
 }
@@ -1342,8 +1344,9 @@ static inline void hugetlb_bootmem_struct_page_init(void)
 }
 #endif	/* CONFIG_HUGETLB_PAGE */
 
-static inline spinlock_t *huge_pte_lock(struct hstate *h,
+static inline spinlock_t *__huge_pte_lock(struct hstate *h,
 					struct mm_struct *mm, pte_t *pte)
+	__context_unsafe(/* see huge_pte_lock() below */)
 {
 	spinlock_t *ptl;
 
@@ -1351,6 +1354,8 @@ static inline spinlock_t *huge_pte_lock(struct hstate *h,
 	spin_lock(ptl);
 	return ptl;
 }
+
+#define huge_pte_lock(...) __acquire_ret(__huge_pte_lock(__VA_ARGS__), __ret)
 
 #if defined(CONFIG_HUGETLB_PAGE) && defined(CONFIG_CMA)
 extern void __init hugetlb_cma_reserve(void);

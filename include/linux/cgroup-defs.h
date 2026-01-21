@@ -882,6 +882,7 @@ struct cgroup_of_peak {
  * favordynmods is on. See the comment above CGRP_ROOT_FAVOR_DYNMODS definition.
  */
 static inline void cgroup_threadgroup_change_begin(struct task_struct *tsk)
+	__no_context_analysis /* conditional locking */
 {
 	percpu_down_read(&cgroup_threadgroup_rwsem);
 	if (cgroup_enable_per_threadgroup_rwsem)
@@ -895,6 +896,7 @@ static inline void cgroup_threadgroup_change_begin(struct task_struct *tsk)
  * Counterpart of cgroup_threadcgroup_change_begin().
  */
 static inline void cgroup_threadgroup_change_end(struct task_struct *tsk)
+	__no_context_analysis /* conditional locking */
 {
 	if (cgroup_enable_per_threadgroup_rwsem)
 		up_read(&tsk->signal->cgroup_threadgroup_rwsem);

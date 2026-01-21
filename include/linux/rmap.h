@@ -110,11 +110,13 @@ void anon_vma_init(void);	/* create anon_vma_cachep */
 
 #ifdef CONFIG_MM_ID
 static __always_inline void folio_lock_large_mapcount(struct folio *folio)
+	__acquires(__bitlock(FOLIO_MM_IDS_LOCK_BITNUM, &folio->_mm_ids))
 {
 	bit_spin_lock(FOLIO_MM_IDS_LOCK_BITNUM, &folio->_mm_ids);
 }
 
 static __always_inline void folio_unlock_large_mapcount(struct folio *folio)
+	__releases(__bitlock(FOLIO_MM_IDS_LOCK_BITNUM, &folio->_mm_ids))
 {
 	__bit_spin_unlock(FOLIO_MM_IDS_LOCK_BITNUM, &folio->_mm_ids);
 }
@@ -884,6 +886,7 @@ struct page_vma_mapped_walk {
 	}
 
 static inline void page_vma_mapped_walk_done(struct page_vma_mapped_walk *pvmw)
+	__no_context_analysis /* conditional locking */
 {
 	/* HugeTLB pte is set to the relevant page table entry without pte_mapped. */
 	if (pvmw->pte && !is_vm_hugetlb_page(pvmw->vma))
@@ -903,6 +906,7 @@ static inline void page_vma_mapped_walk_done(struct page_vma_mapped_walk *pvmw)
  */
 static inline void
 page_vma_mapped_walk_restart(struct page_vma_mapped_walk *pvmw)
+	__no_context_analysis /* conditional locking */
 {
 	WARN_ON_ONCE(!pvmw->pmd && !pvmw->pte);
 

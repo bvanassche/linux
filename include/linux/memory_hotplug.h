@@ -83,18 +83,22 @@ bool mhp_supports_memmap_on_memory(void);
  * can't be changed while pgdat_resize_lock() held.
  */
 static inline unsigned zone_span_seqbegin(struct zone *zone)
+	__acquires_shared(&zone->span_seqlock)
 {
 	return read_seqbegin(&zone->span_seqlock);
 }
 static inline int zone_span_seqretry(struct zone *zone, unsigned iv)
+	__releases_shared(&zone->span_seqlock)
 {
 	return read_seqretry(&zone->span_seqlock, iv);
 }
 static inline void zone_span_writelock(struct zone *zone)
+	__acquires(&zone->span_seqlock)
 {
 	write_seqlock(&zone->span_seqlock);
 }
 static inline void zone_span_writeunlock(struct zone *zone)
+	__releases(&zone->span_seqlock)
 {
 	write_sequnlock(&zone->span_seqlock);
 }
@@ -162,11 +166,13 @@ void mem_hotplug_done(void);
 
 /* See kswapd_is_running() */
 static inline void pgdat_kswapd_lock(pg_data_t *pgdat)
+	__acquires(&pgdat->kswapd_lock)
 {
 	mutex_lock(&pgdat->kswapd_lock);
 }
 
 static inline void pgdat_kswapd_unlock(pg_data_t *pgdat)
+	__releases(&pgdat->kswapd_lock)
 {
 	mutex_unlock(&pgdat->kswapd_lock);
 }
@@ -236,11 +242,13 @@ struct range arch_get_mappable_range(void);
  */
 static inline
 void pgdat_resize_lock(struct pglist_data *pgdat, unsigned long *flags)
+	__acquires(&pgdat->node_size_lock)
 {
 	spin_lock_irqsave(&pgdat->node_size_lock, *flags);
 }
 static inline
 void pgdat_resize_unlock(struct pglist_data *pgdat, unsigned long *flags)
+	__releases(&pgdat->node_size_lock)
 {
 	spin_unlock_irqrestore(&pgdat->node_size_lock, *flags);
 }

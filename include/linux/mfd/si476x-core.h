@@ -172,6 +172,7 @@ static inline struct si476x_core *i2c_mfd_cell_to_core(struct device *dev)
  * @core: Core device structure
  */
 static inline void si476x_core_lock(struct si476x_core *core)
+	__acquires(core->cmd_lock)
 {
 	mutex_lock(&core->cmd_lock);
 }
@@ -182,6 +183,7 @@ static inline void si476x_core_lock(struct si476x_core *core)
  * @core: Core device structure
  */
 static inline void si476x_core_unlock(struct si476x_core *core)
+	__releases(core->cmd_lock)
 {
 	mutex_unlock(&core->cmd_lock);
 }

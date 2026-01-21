@@ -612,11 +612,13 @@ extern int fb_get_options(const char *name, char **option);
 extern int fb_new_modelist(struct fb_info *info);
 
 static inline void lock_fb_info(struct fb_info *info)
+	__acquires(info->lock)
 {
 	mutex_lock(&info->lock);
 }
 
 static inline void unlock_fb_info(struct fb_info *info)
+	__releases(info->lock)
 {
 	mutex_unlock(&info->lock);
 }

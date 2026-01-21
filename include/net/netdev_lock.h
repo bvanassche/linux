@@ -8,6 +8,7 @@
 #include <linux/rtnetlink.h>
 
 static inline bool netdev_trylock(struct net_device *dev)
+	__cond_acquires(true, &dev->lock)
 {
 	return mutex_trylock(&dev->lock);
 }
@@ -37,18 +38,21 @@ static inline bool netdev_need_ops_lock(const struct net_device *dev)
 }
 
 static inline void netdev_lock_ops(struct net_device *dev)
+	__no_context_analysis /* conditional locking */
 {
 	if (netdev_need_ops_lock(dev))
 		netdev_lock(dev);
 }
 
 static inline void netdev_unlock_ops(struct net_device *dev)
+	__no_context_analysis /* conditional locking */
 {
 	if (netdev_need_ops_lock(dev))
 		netdev_unlock(dev);
 }
 
 static inline void netdev_lock_ops_to_full(struct net_device *dev)
+	__no_context_analysis /* conditional locking */
 {
 	if (netdev_need_ops_lock(dev))
 		netdev_assert_locked(dev);
@@ -57,6 +61,7 @@ static inline void netdev_lock_ops_to_full(struct net_device *dev)
 }
 
 static inline void netdev_unlock_full_to_ops(struct net_device *dev)
+	__no_context_analysis /* conditional locking */
 {
 	if (netdev_need_ops_lock(dev))
 		netdev_assert_locked(dev);
@@ -81,6 +86,7 @@ netdev_ops_assert_locked_or_invisible(const struct net_device *dev)
 }
 
 static inline void netdev_lock_ops_compat(struct net_device *dev)
+	__no_context_analysis /* conditional locking */
 {
 	if (netdev_need_ops_lock(dev))
 		netdev_lock(dev);
@@ -89,6 +95,7 @@ static inline void netdev_lock_ops_compat(struct net_device *dev)
 }
 
 static inline void netdev_unlock_ops_compat(struct net_device *dev)
+	__no_context_analysis /* conditional locking */
 {
 	if (netdev_need_ops_lock(dev))
 		netdev_unlock(dev);

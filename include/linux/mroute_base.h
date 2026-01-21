@@ -431,6 +431,7 @@ static inline void *mr_mfc_seq_start(struct seq_file *seq, loff_t *pos,
 }
 
 static inline void mr_mfc_seq_stop(struct seq_file *seq, void *v)
+	__no_context_analysis /* conditional locking */
 {
 	struct mr_mfc_iter *it = seq->private;
 	struct mr_table *mrt = it->mrt;

@@ -525,6 +525,7 @@ struct scsi_host_template {
  * drivers have been updated to take advantage of unlocked
  * queuecommand.
  *
+ * The __acquire() and __release() inform the compiler that shost == cmd->device->host.
  */
 #define DEF_SCSI_QCMD(func_name) \
 	enum scsi_qc_status func_name(struct Scsi_Host *shost,		\
@@ -534,7 +535,9 @@ struct scsi_host_template {
 		enum scsi_qc_status rc;					\
 									\
 		spin_lock_irqsave(shost->host_lock, irq_flags);		\
+		__acquire(cmd->device->host->host_lock);		\
 		rc = func_name##_lck(cmd);				\
+		__release(cmd->device->host->host_lock);		\
 		spin_unlock_irqrestore(shost->host_lock, irq_flags);	\
 		return rc;						\
 	}
@@ -662,7 +665,7 @@ struct Scsi_Host {
 	unsigned nr_maps;
 
 	/* Asynchronous scan in progress */
-	bool async_scan __guarded_by(&scan_mutex);
+	bool async_scan;
 
 	unsigned active_mode:2;
 

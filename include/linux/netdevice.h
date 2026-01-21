@@ -2814,11 +2814,13 @@ void netif_queue_set_napi(struct net_device *dev, unsigned int queue_index,
 			  struct napi_struct *napi);
 
 static inline void netdev_lock(struct net_device *dev)
+	__acquires(&dev->lock)
 {
 	mutex_lock(&dev->lock);
 }
 
 static inline void netdev_unlock(struct net_device *dev)
+	__releases(&dev->lock)
 {
 	mutex_unlock(&dev->lock);
 }
@@ -4777,6 +4779,7 @@ static inline u32 netif_msg_init(int debug_value, int default_msg_enable_bits)
 }
 
 static inline void __netif_tx_lock(struct netdev_queue *txq, int cpu)
+	__acquires(&txq->_xmit_lock)
 {
 	spin_lock(&txq->_xmit_lock);
 	/* Pairs with READ_ONCE() in netif_tx_owned() */
@@ -4784,17 +4787,20 @@ static inline void __netif_tx_lock(struct netdev_queue *txq, int cpu)
 }
 
 static inline bool __netif_tx_acquire(struct netdev_queue *txq)
+	__acquires(&txq->_xmit_lock)
 {
 	__acquire(&txq->_xmit_lock);
 	return true;
 }
 
 static inline void __netif_tx_release(struct netdev_queue *txq)
+	__releases(&txq->_xmit_lock)
 {
 	__release(&txq->_xmit_lock);
 }
 
 static inline void __netif_tx_lock_bh(struct netdev_queue *txq)
+	__acquires(&txq->_xmit_lock)
 {
 	spin_lock_bh(&txq->_xmit_lock);
 	/* Pairs with READ_ONCE() in netif_tx_owned() */
@@ -4802,6 +4808,7 @@ static inline void __netif_tx_lock_bh(struct netdev_queue *txq)
 }
 
 static inline bool __netif_tx_trylock(struct netdev_queue *txq)
+	__cond_acquires(true, &txq->_xmit_lock)
 {
 	bool ok = spin_trylock(&txq->_xmit_lock);
 
@@ -4813,6 +4820,7 @@ static inline bool __netif_tx_trylock(struct netdev_queue *txq)
 }
 
 static inline void __netif_tx_unlock(struct netdev_queue *txq)
+	__releases(&txq->_xmit_lock)
 {
 	/* Pairs with READ_ONCE() in netif_tx_owned() */
 	WRITE_ONCE(txq->xmit_lock_owner, -1);
@@ -4820,6 +4828,7 @@ static inline void __netif_tx_unlock(struct netdev_queue *txq)
 }
 
 static inline void __netif_tx_unlock_bh(struct netdev_queue *txq)
+	__releases(&txq->_xmit_lock)
 {
 	/* Pairs with READ_ONCE() in netif_tx_owned() */
 	WRITE_ONCE(txq->xmit_lock_owner, -1);
@@ -4858,17 +4867,21 @@ static inline void netif_trans_update(struct net_device *dev)
  *
  * Get network device transmit lock
  */
-void netif_tx_lock(struct net_device *dev);
+void netif_tx_lock(struct net_device *dev)
+	__acquires(&dev->tx_global_lock);
 
 static inline void netif_tx_lock_bh(struct net_device *dev)
+	__acquires(&dev->tx_global_lock)
 {
 	local_bh_disable();
 	netif_tx_lock(dev);
 }
 
-void netif_tx_unlock(struct net_device *dev);
+void netif_tx_unlock(struct net_device *dev)
+	__releases(&dev->tx_global_lock);
 
 static inline void netif_tx_unlock_bh(struct net_device *dev)
+	__releases(&dev->tx_global_lock)
 {
 	netif_tx_unlock(dev);
 	local_bh_enable();
@@ -4932,6 +4945,7 @@ static inline bool netif_tx_owned(struct netdev_queue *txq, unsigned int cpu)
 #endif
 
 static inline void netif_addr_lock(struct net_device *dev)
+	__acquires(&dev->addr_list_lock)
 {
 	unsigned char nest_level = 0;
 
@@ -4942,6 +4956,7 @@ static inline void netif_addr_lock(struct net_device *dev)
 }
 
 static inline void netif_addr_lock_bh(struct net_device *dev)
+	__acquires(&dev->addr_list_lock)
 {
 	unsigned char nest_level = 0;
 
@@ -4953,11 +4968,13 @@ static inline void netif_addr_lock_bh(struct net_device *dev)
 }
 
 static inline void netif_addr_unlock(struct net_device *dev)
+	__releases(&dev->addr_list_lock)
 {
 	spin_unlock(&dev->addr_list_lock);
 }
 
 static inline void netif_addr_unlock_bh(struct net_device *dev)
+	__releases(&dev->addr_list_lock)
 {
 	spin_unlock_bh(&dev->addr_list_lock);
 }

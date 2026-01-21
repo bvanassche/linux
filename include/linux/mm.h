@@ -892,6 +892,7 @@ static inline void vma_numab_state_free(struct vm_area_struct *vma) {}
  */
 #ifdef CONFIG_PER_VMA_LOCK
 static inline void release_fault_lock(struct vm_fault *vmf)
+	__no_context_analysis /* conditional locking */
 {
 	if (vmf->flags & FAULT_FLAG_VMA_LOCK)
 		vma_end_read(vmf->vma);
@@ -900,6 +901,7 @@ static inline void release_fault_lock(struct vm_fault *vmf)
 }
 
 static inline void assert_fault_locked(const struct vm_fault *vmf)
+	__no_context_analysis /* conditional locking */
 {
 	if (vmf->flags & FAULT_FLAG_VMA_LOCK)
 		vma_assert_locked(vmf->vma);
@@ -908,11 +910,13 @@ static inline void assert_fault_locked(const struct vm_fault *vmf)
 }
 #else
 static inline void release_fault_lock(struct vm_fault *vmf)
+	__no_context_analysis /* for consistency with the above */
 {
 	mmap_read_unlock(vmf->vma->vm_mm);
 }
 
 static inline void assert_fault_locked(const struct vm_fault *vmf)
+	__no_context_analysis /* for consistency with the above */
 {
 	mmap_assert_locked(vmf->vma->vm_mm);
 }
@@ -3443,8 +3447,9 @@ static inline pud_t pud_mkspecial(pud_t pud)
 }
 #endif	/* CONFIG_ARCH_SUPPORTS_PUD_PFNMAP */
 
-extern pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
-			     spinlock_t **ptl);
+pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
+		      spinlock_t **ptl)
+	__cond_acquires(nonnull, *ptl);
 
 #ifdef __PAGETABLE_P4D_FOLDED
 static inline int __p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
@@ -3801,7 +3806,8 @@ static inline pte_t *pte_offset_map(pmd_t *pmd, unsigned long addr)
 }
 
 pte_t *pte_offset_map_lock(struct mm_struct *mm, pmd_t *pmd,
-			   unsigned long addr, spinlock_t **ptlp);
+			   unsigned long addr, spinlock_t **ptlp)
+	__cond_acquires(nonnull, *ptlp);
 
 pte_t *pte_offset_map_ro_nolock(struct mm_struct *mm, pmd_t *pmd,
 				unsigned long addr, spinlock_t **ptlp);
@@ -3864,12 +3870,15 @@ static inline bool pmd_ptlock_init(struct ptdesc *ptdesc) { return true; }
 
 #endif
 
-static inline spinlock_t *pmd_lock(struct mm_struct *mm, pmd_t *pmd)
+static inline spinlock_t *__pmd_lock(struct mm_struct *mm, pmd_t *pmd)
+	__no_context_analysis /* __acquires(pmd_lockptr(mm, pmd)) */
 {
 	spinlock_t *ptl = pmd_lockptr(mm, pmd);
 	spin_lock(ptl);
 	return ptl;
 }
+
+#define pmd_lock(...) __acquire_ret(__pmd_lock(__VA_ARGS__), __ret)
 
 static inline bool pagetable_pmd_ctor(struct mm_struct *mm,
 				      struct ptdesc *ptdesc)
@@ -3892,13 +3901,16 @@ static inline spinlock_t *pud_lockptr(struct mm_struct *mm, pud_t *pud)
 	return &mm->page_table_lock;
 }
 
-static inline spinlock_t *pud_lock(struct mm_struct *mm, pud_t *pud)
+static inline spinlock_t *__pud_lock(struct mm_struct *mm, pud_t *pud)
+	__no_context_analysis /* see __acquire_ret() below */
 {
 	spinlock_t *ptl = pud_lockptr(mm, pud);
 
 	spin_lock(ptl);
 	return ptl;
 }
+
+#define pud_lock(...) __acquire_ret(__pud_lock(__VA_ARGS__), __ret)
 
 static inline void pagetable_pud_ctor(struct ptdesc *ptdesc)
 {

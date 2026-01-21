@@ -339,11 +339,13 @@ static inline struct journal_head *bh2jh(struct buffer_head *bh)
 }
 
 static inline void jbd_lock_bh_journal_head(struct buffer_head *bh)
+	__acquires(__bitlock(BH_JournalHead, bh->b_state))
 {
 	bit_spin_lock(BH_JournalHead, &bh->b_state);
 }
 
 static inline void jbd_unlock_bh_journal_head(struct buffer_head *bh)
+	__releases(__bitlock(BH_JournalHead, bh->b_state))
 {
 	bit_spin_unlock(BH_JournalHead, &bh->b_state);
 }

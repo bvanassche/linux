@@ -116,17 +116,19 @@ int snd_sf_linear_to_log(unsigned int amount, int offset, int ratio);
 
 /* lock access to sflist */
 static inline void snd_soundfont_lock_preset(struct snd_sf_list *sflist)
+	__acquires(&sflist->presets_mutex)
 {
 	mutex_lock(&sflist->presets_mutex);
-	guard(spinlock_irqsave)(&sflist->lock);
-	sflist->presets_locked = 1;
+	scoped_guard(spinlock_irqsave, &sflist->lock)
+		sflist->presets_locked = 1;
 }
 
 /* remove lock */
 static inline void snd_soundfont_unlock_preset(struct snd_sf_list *sflist)
+	__releases(&sflist->presets_mutex)
 {
-	guard(spinlock_irqsave)(&sflist->lock);
-	sflist->presets_locked = 0;
+	scoped_guard(spinlock_irqsave, &sflist->lock)
+		sflist->presets_locked = 0;
 	mutex_unlock(&sflist->presets_mutex);
 }
 

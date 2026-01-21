@@ -6628,7 +6628,6 @@ static inline void wiphy_lock(struct wiphy *wiphy)
 	__acquires(&wiphy->mtx)
 {
 	mutex_lock(&wiphy->mtx);
-	__acquire(&wiphy->mtx);
 }
 
 /**
@@ -6638,7 +6637,6 @@ static inline void wiphy_lock(struct wiphy *wiphy)
 static inline void wiphy_unlock(struct wiphy *wiphy)
 	__releases(&wiphy->mtx)
 {
-	__release(&wiphy->mtx);
 	mutex_unlock(&wiphy->mtx);
 }
 

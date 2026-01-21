@@ -129,6 +129,8 @@ struct super_operations {
 	void (*report_error)(const struct fserror_event *event);
 };
 
+context_lock_struct(super_block);
+
 struct super_block {
 	struct list_head			s_list;		/* Keep this first */
 	dev_t					s_dev;		/* search index; _not_ kdev_t */

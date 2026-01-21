@@ -53,6 +53,7 @@ static inline int rcu_read_lock_trace_held(void)
  * the needed ordering.
  */
 static inline struct srcu_ctr __percpu *rcu_read_lock_tasks_trace(void)
+	__acquires_shared(&rcu_tasks_trace_srcu_struct)
 {
 	struct srcu_ctr __percpu *ret = __srcu_read_lock_fast(&rcu_tasks_trace_srcu_struct);
 
@@ -74,6 +75,7 @@ static inline struct srcu_ctr __percpu *rcu_read_lock_tasks_trace(void)
  * rcu_read_lock_tasks_trace() function.
  */
 static inline void rcu_read_unlock_tasks_trace(struct srcu_ctr __percpu *scp)
+	__releases_shared(&rcu_tasks_trace_srcu_struct)
 {
 	if (!IS_ENABLED(CONFIG_TASKS_TRACE_RCU_NO_MB))
 		smp_mb(); // Provide ordering on noinstr-incomplete architectures.
@@ -94,6 +96,7 @@ static inline void rcu_read_unlock_tasks_trace(struct srcu_ctr __percpu *scp)
  * For more details, please see the documentation for rcu_read_lock().
  */
 static inline void rcu_read_lock_trace(void)
+	__no_context_analysis
 {
 	struct task_struct *t = current;
 
@@ -118,6 +121,7 @@ static inline void rcu_read_lock_trace(void)
  * For more details, please see the documentation for rcu_read_unlock().
  */
 static inline void rcu_read_unlock_trace(void)
+	__no_context_analysis
 {
 	struct srcu_ctr __percpu *scp;
 	struct task_struct *t = current;

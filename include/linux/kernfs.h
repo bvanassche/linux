@@ -191,6 +191,7 @@ struct kernfs_elem_attr {
  * accessible.  Dereferencing elem or any other outer entity requires
  * active reference.
  */
+context_lock_struct(kernfs_node);
 struct kernfs_node {
 	atomic_t		count;
 	atomic_t		active;

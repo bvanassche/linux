@@ -341,6 +341,7 @@ static inline void dma_resv_reset_max_fences(struct dma_resv *obj) {}
  */
 static inline __must_check int dma_resv_lock(struct dma_resv *obj,
 					     struct ww_acquire_ctx *ctx)
+	__cond_acquires(0, &obj->lock)
 {
 	return ww_mutex_lock(&obj->lock, ctx);
 }
@@ -368,6 +369,7 @@ static inline __must_check int dma_resv_lock(struct dma_resv *obj,
  */
 static inline int dma_resv_lock_interruptible(struct dma_resv *obj,
 					      struct ww_acquire_ctx *ctx)
+	__cond_acquires(0, &obj->lock)
 {
 	return ww_mutex_lock_interruptible(&obj->lock, ctx);
 }
@@ -385,6 +387,8 @@ static inline int dma_resv_lock_interruptible(struct dma_resv *obj,
  */
 static inline void dma_resv_lock_slow(struct dma_resv *obj,
 				      struct ww_acquire_ctx *ctx)
+	__acquires(&obj->lock)
+	__must_hold(ctx)
 {
 	ww_mutex_lock_slow(&obj->lock, ctx);
 }
@@ -401,6 +405,7 @@ static inline void dma_resv_lock_slow(struct dma_resv *obj,
  */
 static inline int dma_resv_lock_slow_interruptible(struct dma_resv *obj,
 						   struct ww_acquire_ctx *ctx)
+	__cond_acquires(0, &obj->lock)
 {
 	return ww_mutex_lock_slow_interruptible(&obj->lock, ctx);
 }
@@ -420,6 +425,7 @@ static inline int dma_resv_lock_slow_interruptible(struct dma_resv *obj,
  * Returns true if the lock was acquired, false otherwise.
  */
 static inline bool __must_check dma_resv_trylock(struct dma_resv *obj)
+	__cond_acquires(true, &obj->lock)
 {
 	return ww_mutex_trylock(&obj->lock, NULL);
 }
@@ -459,6 +465,7 @@ static inline struct ww_acquire_ctx *dma_resv_locking_ctx(struct dma_resv *obj)
  * Unlocks the reservation object following exclusive access.
  */
 static inline void dma_resv_unlock(struct dma_resv *obj)
+	__releases(&obj->lock)
 {
 	dma_resv_reset_max_fences(obj);
 	ww_mutex_unlock(&obj->lock);

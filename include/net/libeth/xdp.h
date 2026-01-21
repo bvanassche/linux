@@ -1551,6 +1551,7 @@ __libeth_xdp_finalize_rx(struct libeth_xdp_tx_bulk *bq, u32 flags,
 			 bool (*flush_bulk)(struct libeth_xdp_tx_bulk *bq,
 					    u32 flags),
 			 void (*finalize)(void *xdpsq, bool sent, bool flush))
+	__releases_shared(RCU)
 {
 	if (bq->act_mask & LIBETH_XDP_TX) {
 		if (bq->count)
@@ -1683,11 +1684,11 @@ name(struct libeth_xdp_buff *xdp, struct libeth_xdp_tx_bulk *bq,	      \
  * @flush: driver callback to flush an ``XDP_TX`` bulk
  * @finalize: driver callback to finalize an XDPSQ and run the timer
  */
-#define LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize)		      \
-	__LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, xdp)
+#define LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, attr)		\
+	__LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, xdp, attr)
 
-#define __LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, pfx)	      \
-void name(struct libeth_xdp_tx_bulk *bq)				      \
+#define __LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, pfx, attr)	\
+void name(struct libeth_xdp_tx_bulk *bq) attr				      \
 {									      \
 	libeth_##pfx##_finalize_rx(bq, flush, finalize);		      \
 }

@@ -153,15 +153,19 @@ static inline void serio_set_drvdata(struct serio *serio, void *data)
  * driver code from port's interrupt handler
  */
 static inline void serio_pause_rx(struct serio *serio)
+	__acquires(&serio->lock)
 {
 	spin_lock_irq(&serio->lock);
 }
 
 static inline void serio_continue_rx(struct serio *serio)
+	__releases(&serio->lock)
 {
 	spin_unlock_irq(&serio->lock);
 }
 
-DEFINE_GUARD(serio_pause_rx, struct serio *, serio_pause_rx(_T), serio_continue_rx(_T))
+DEFINE_LOCK_GUARD_1(serio_pause_rx, struct serio, serio_pause_rx(_T->lock), serio_continue_rx(_T->lock))
+DECLARE_LOCK_GUARD_1_ATTRS(serio_pause_rx, __acquires(_T->lock), __releases((*(struct serio **)_T)->lock))
+#define class_serio_pause_rx_constructor(_T) WITH_LOCK_GUARD_1_ATTRS(serio_pause_rx, _T)
 
 #endif

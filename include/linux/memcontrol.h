@@ -741,10 +741,22 @@ struct mem_cgroup *get_mem_cgroup_from_current(void);
 
 struct mem_cgroup *get_mem_cgroup_from_folio(struct folio *folio);
 
-struct lruvec *folio_lruvec_lock(struct folio *folio);
-struct lruvec *folio_lruvec_lock_irq(struct folio *folio);
-struct lruvec *folio_lruvec_lock_irqsave(struct folio *folio,
-						unsigned long *flags);
+#define folio_lruvec_lock(...)					\
+	__acquire_ret(__folio_lruvec_lock(__VA_ARGS__), &__ret->lru_lock)
+struct lruvec *__folio_lruvec_lock(struct folio *folio)
+	__acquires_shared(RCU);
+
+#define folio_lruvec_lock_irq(...)					\
+	__acquire_ret(__folio_lruvec_lock_irq(__VA_ARGS__), &__ret->lru_lock)
+struct lruvec *__folio_lruvec_lock_irq(struct folio *folio)
+	__acquires_shared(RCU);
+
+#define folio_lruvec_lock_irqsave(...)					\
+	__acquire_ret(__folio_lruvec_lock_irqsave(__VA_ARGS__),		\
+		      &__ret->lru_lock)
+struct lruvec *__folio_lruvec_lock_irqsave(struct folio *folio,
+					   unsigned long *flags)
+	__acquires_shared(RCU);
 
 static inline
 struct mem_cgroup *mem_cgroup_from_css(struct cgroup_subsys_state *css){
@@ -1225,7 +1237,12 @@ static inline void mem_cgroup_put(struct mem_cgroup *memcg)
 {
 }
 
-static inline struct lruvec *folio_lruvec_lock(struct folio *folio)
+#define folio_lruvec_lock(...)					\
+	__acquire_ret(__folio_lruvec_lock(__VA_ARGS__), &__ret->lru_lock)
+
+static inline struct lruvec *__folio_lruvec_lock(struct folio *folio)
+	__acquires_shared(RCU)
+	__no_context_analysis
 {
 	struct pglist_data *pgdat = folio_pgdat(folio);
 
@@ -1234,7 +1251,12 @@ static inline struct lruvec *folio_lruvec_lock(struct folio *folio)
 	return &pgdat->__lruvec;
 }
 
-static inline struct lruvec *folio_lruvec_lock_irq(struct folio *folio)
+#define folio_lruvec_lock_irq(...)					\
+	__acquire_ret(__folio_lruvec_lock_irq(__VA_ARGS__), &__ret->lru_lock)
+
+static inline struct lruvec *__folio_lruvec_lock_irq(struct folio *folio)
+	__acquires_shared(RCU)
+	__no_context_analysis
 {
 	struct pglist_data *pgdat = folio_pgdat(folio);
 
@@ -1243,8 +1265,14 @@ static inline struct lruvec *folio_lruvec_lock_irq(struct folio *folio)
 	return &pgdat->__lruvec;
 }
 
-static inline struct lruvec *folio_lruvec_lock_irqsave(struct folio *folio,
+#define folio_lruvec_lock_irqsave(...)					\
+	__acquire_ret(__folio_lruvec_lock_irqsave(__VA_ARGS__),		\
+		      &__ret->lru_lock)
+
+static inline struct lruvec *__folio_lruvec_lock_irqsave(struct folio *folio,
 		unsigned long *flagsp)
+	__acquires_shared(RCU)
+	__no_context_analysis
 {
 	struct pglist_data *pgdat = folio_pgdat(folio);
 
@@ -1470,24 +1498,32 @@ static inline struct lruvec *parent_lruvec(struct lruvec *lruvec)
 }
 
 static inline void lruvec_lock_irq(struct lruvec *lruvec)
+	__acquires_shared(RCU)
+	__acquires(&lruvec->lru_lock)
 {
 	rcu_read_lock();
 	spin_lock_irq(&lruvec->lru_lock);
 }
 
 static inline void lruvec_unlock(struct lruvec *lruvec)
+	__releases(&lruvec->lru_lock)
+	__releases_shared(RCU)
 {
 	spin_unlock(&lruvec->lru_lock);
 	rcu_read_unlock();
 }
 
 static inline void lruvec_unlock_irq(struct lruvec *lruvec)
+	__releases(&lruvec->lru_lock)
+	__releases_shared(RCU)
 {
 	spin_unlock_irq(&lruvec->lru_lock);
 	rcu_read_unlock();
 }
 
 static inline void lruvec_unlock_irqrestore(struct lruvec *lruvec, unsigned long flags)
+	__releases(&lruvec->lru_lock)
+	__releases_shared(RCU)
 {
 	spin_unlock_irqrestore(&lruvec->lru_lock, flags);
 	rcu_read_unlock();
@@ -1504,6 +1540,7 @@ static inline bool folio_matches_lruvec(struct folio *folio,
 /* Don't lock again iff page's lruvec locked */
 static inline struct lruvec *folio_lruvec_relock_irq(struct folio *folio,
 		struct lruvec *locked_lruvec)
+	__context_unsafe(conditional locking)
 {
 	if (locked_lruvec) {
 		if (folio_matches_lruvec(folio, locked_lruvec))
@@ -1518,6 +1555,7 @@ static inline struct lruvec *folio_lruvec_relock_irq(struct folio *folio,
 /* Don't lock again iff folio's lruvec locked */
 static inline void folio_lruvec_relock_irqsave(struct folio *folio,
 		struct lruvec **lruvecp, unsigned long *flags)
+	__no_context_analysis /* conditional locking */
 {
 	if (*lruvecp) {
 		if (folio_matches_lruvec(folio, *lruvecp))

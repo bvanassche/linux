@@ -112,7 +112,12 @@ static inline pte_t *__pte_map(pmd_t *pmd, unsigned long address)
 {
 	return pte_offset_kernel(pmd, address);
 }
+/*
+ * The function below has not been annotated with __releases_shared(RCU) because
+ * none of the pte_map functions have been annotated with __acquires_shared(RCU).
+ */
 static inline void pte_unmap(pte_t *pte)
+	__no_context_analysis
 {
 	rcu_read_unlock();
 }

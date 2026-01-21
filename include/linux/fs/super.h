@@ -10,16 +10,19 @@
  * instead.
  */
 static inline void __sb_end_write(struct super_block *sb, int level)
+	__releases_shared(sb->s_writers.rw_sem + level - 1)
 {
 	percpu_up_read(sb->s_writers.rw_sem + level - 1);
 }
 
 static inline void __sb_start_write(struct super_block *sb, int level)
+	__acquires_shared(sb->s_writers.rw_sem + level - 1)
 {
 	percpu_down_read_freezable(sb->s_writers.rw_sem + level - 1, true);
 }
 
 static inline bool __sb_start_write_trylock(struct super_block *sb, int level)
+	__cond_acquires_shared(true, sb->s_writers.rw_sem + level - 1)
 {
 	return percpu_down_read_trylock(sb->s_writers.rw_sem + level - 1);
 }
@@ -73,7 +76,10 @@ static inline bool sb_write_not_started(const struct super_block *sb)
  * wanting to freeze the filesystem.
  */
 static inline void sb_end_write(struct super_block *sb)
+	__releases_shared(sb)
 {
+	__release_shared(sb);
+	__acquire_shared(sb->s_writers.rw_sem + SB_FREEZE_WRITE - 1);
 	__sb_end_write(sb, SB_FREEZE_WRITE);
 }
 
@@ -85,6 +91,7 @@ static inline void sb_end_write(struct super_block *sb)
  * Wake up possible waiters wanting to freeze the filesystem.
  */
 static inline void sb_end_pagefault(struct super_block *sb)
+	__releases_shared(sb->s_writers.rw_sem + SB_FREEZE_PAGEFAULT - 1)
 {
 	__sb_end_write(sb, SB_FREEZE_PAGEFAULT);
 }
@@ -97,6 +104,7 @@ static inline void sb_end_pagefault(struct super_block *sb)
  * waiters wanting to freeze the filesystem.
  */
 static inline void sb_end_intwrite(struct super_block *sb)
+	__no_context_analysis /* called conditionally */
 {
 	__sb_end_write(sb, SB_FREEZE_FS);
 }
@@ -121,8 +129,11 @@ static inline void sb_end_intwrite(struct super_block *sb)
  *   -> s_umount		(freeze_super, thaw_super)
  */
 static inline void sb_start_write(struct super_block *sb)
+	__acquires_shared(sb)
 {
 	__sb_start_write(sb, SB_FREEZE_WRITE);
+	__release_shared(sb->s_writers.rw_sem + SB_FREEZE_WRITE - 1);
+	__acquire_shared(sb);
 }
 
 DEFINE_GUARD(super_write,
@@ -131,8 +142,13 @@ DEFINE_GUARD(super_write,
 	     sb_end_write(_T))
 
 static inline bool sb_start_write_trylock(struct super_block *sb)
+	__cond_acquires_shared(true, sb)
 {
-	return __sb_start_write_trylock(sb, SB_FREEZE_WRITE);
+	if (!__sb_start_write_trylock(sb, SB_FREEZE_WRITE))
+		return false;
+	__release_shared(sb->s_writers.rw_sem + SB_FREEZE_WRITE - 1);
+	__acquire_shared(sb);
+	return true;
 }
 
 /**
@@ -155,6 +171,7 @@ static inline bool sb_start_write_trylock(struct super_block *sb)
  *   -> sb_start_pagefault
  */
 static inline void sb_start_pagefault(struct super_block *sb)
+	__acquires_shared(sb->s_writers.rw_sem + SB_FREEZE_PAGEFAULT - 1)
 {
 	__sb_start_write(sb, SB_FREEZE_PAGEFAULT);
 }
@@ -173,11 +190,13 @@ static inline void sb_start_pagefault(struct super_block *sb)
  * close, etc.).
  */
 static inline void sb_start_intwrite(struct super_block *sb)
+	__no_context_analysis /* called conditionally */
 {
 	__sb_start_write(sb, SB_FREEZE_FS);
 }
 
 static inline bool sb_start_intwrite_trylock(struct super_block *sb)
+	__no_context_analysis /* called conditionally */
 {
 	return __sb_start_write_trylock(sb, SB_FREEZE_FS);
 }

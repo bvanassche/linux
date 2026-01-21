@@ -135,6 +135,8 @@ struct fsnotify_iter_info;
 
 struct mem_cgroup;
 
+extern struct srcu_struct fsnotify_mark_srcu;
+
 /*
  * Each group much define these ops.  The fsnotify infrastructure will call
  * these operations for each relevant group.
@@ -285,12 +287,14 @@ struct fsnotify_group {
  * evictable marks of the same group that is allocating a new mark.
  */
 static inline void fsnotify_group_lock(struct fsnotify_group *group)
+	__acquires(group->mark_mutex)
 {
 	mutex_lock(&group->mark_mutex);
 	group->owner_flags = memalloc_nofs_save();
 }
 
 static inline void fsnotify_group_unlock(struct fsnotify_group *group)
+	__releases(group->mark_mutex)
 {
 	memalloc_nofs_restore(group->owner_flags);
 	mutex_unlock(&group->mark_mutex);
@@ -916,8 +920,11 @@ extern void fsnotify_clear_marks_by_group(struct fsnotify_group *group,
 extern void fsnotify_get_mark(struct fsnotify_mark *mark);
 extern void fsnotify_put_mark(struct fsnotify_mark *mark);
 struct fsnotify_mark *fsnotify_next_mark(struct fsnotify_mark *mark);
-extern void fsnotify_finish_user_wait(struct fsnotify_iter_info *iter_info);
-extern bool fsnotify_prepare_user_wait(struct fsnotify_iter_info *iter_info);
+extern void fsnotify_finish_user_wait(struct fsnotify_iter_info *iter_info)
+	__acquires_shared(&fsnotify_mark_srcu);
+extern bool fsnotify_prepare_user_wait(struct fsnotify_iter_info *iter_info)
+	__releases_shared(&fsnotify_mark_srcu)
+	__cond_acquires_shared(0, &fsnotify_mark_srcu);
 
 static inline void fsnotify_init_event(struct fsnotify_event *event)
 {

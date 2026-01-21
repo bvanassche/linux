@@ -1035,6 +1035,7 @@ do {									\
 
 static __always_inline void unlock_requestor(struct vmbus_channel *channel,
 					     unsigned long flags)
+	__releases(&channel->requestor.req_lock)
 {
 	struct vmbus_requestor *rqstor = &channel->requestor;
 

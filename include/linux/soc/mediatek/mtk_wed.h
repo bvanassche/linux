@@ -193,7 +193,7 @@ struct mtk_wed_device {
 };
 
 struct mtk_wed_ops {
-	int (*attach)(struct mtk_wed_device *dev) __releases(RCU);
+	int (*attach)(struct mtk_wed_device *dev) /*__releases(RCU)*/;
 	int (*tx_ring_setup)(struct mtk_wed_device *dev, int ring,
 			     void __iomem *regs, bool reset);
 	int (*rx_ring_setup)(struct mtk_wed_device *dev, int ring,
@@ -237,10 +237,12 @@ mtk_wed_device_attach(struct mtk_wed_device *dev)
 #ifdef CONFIG_NET_MEDIATEK_SOC_WED
 	rcu_read_lock();
 	dev->ops = rcu_dereference(mtk_soc_wed_ops);
-	if (dev->ops)
+	if (dev->ops) {
 		ret = dev->ops->attach(dev);
-	else
+		__release_shared(RCU);
+	} else {
 		rcu_read_unlock();
+	}
 
 	if (ret)
 		dev->ops = NULL;

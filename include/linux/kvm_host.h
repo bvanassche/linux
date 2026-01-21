@@ -955,6 +955,7 @@ static inline void kvm_vm_bugged(struct kvm *kvm)
 })
 
 static inline void kvm_vcpu_srcu_read_lock(struct kvm_vcpu *vcpu)
+	__acquires_shared(&vcpu->kvm->srcu)
 {
 #ifdef CONFIG_PROVE_RCU
 	WARN_ONCE(vcpu->srcu_depth++,
@@ -964,6 +965,7 @@ static inline void kvm_vcpu_srcu_read_lock(struct kvm_vcpu *vcpu)
 }
 
 static inline void kvm_vcpu_srcu_read_unlock(struct kvm_vcpu *vcpu)
+	__releases_shared(&vcpu->kvm->srcu)
 {
 	srcu_read_unlock(&vcpu->kvm->srcu, vcpu->____srcu_idx);
 

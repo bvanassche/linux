@@ -189,7 +189,8 @@ struct folio_walk {
 
 struct folio *folio_walk_start(struct folio_walk *fw,
 		struct vm_area_struct *vma, unsigned long addr,
-		folio_walk_flags_t flags);
+		folio_walk_flags_t flags)
+	__cond_acquires(nonnull, &fw->ptl);
 
 #define folio_walk_end(__fw, __vma) do { \
 	spin_unlock((__fw)->ptl); \

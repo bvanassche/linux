@@ -2252,11 +2252,13 @@ static inline const char *phydev_name(const struct phy_device *phydev)
 }
 
 static inline void phy_lock_mdio_bus(struct phy_device *phydev)
+	__acquires(phydev->mdio.bus->mdio_lock)
 {
 	mutex_lock(&phydev->mdio.bus->mdio_lock);
 }
 
 static inline void phy_unlock_mdio_bus(struct phy_device *phydev)
+	__releases(phydev->mdio.bus->mdio_lock)
 {
 	mutex_unlock(&phydev->mdio.bus->mdio_lock);
 }

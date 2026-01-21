@@ -200,6 +200,7 @@ static inline bool qdisc_is_empty(const struct Qdisc *qdisc)
  * the qdisc root lock acquired.
  */
 static inline bool qdisc_run_begin(struct Qdisc *qdisc)
+	__no_context_analysis /* conditional locking */
 {
 	if (qdisc->flags & TCQ_F_NOLOCK) {
 		if (spin_trylock(&qdisc->seqlock))
@@ -226,6 +227,7 @@ static inline bool qdisc_run_begin(struct Qdisc *qdisc)
 }
 
 static inline struct sk_buff *qdisc_run_end(struct Qdisc *qdisc)
+	__no_context_analysis /* conditional locking */
 {
 	struct sk_buff *to_free = NULL;
 
@@ -598,6 +600,7 @@ static inline struct net_device *qdisc_dev(const struct Qdisc *qdisc)
 }
 
 static inline void sch_tree_lock(struct Qdisc *q)
+	__no_context_analysis /* conditional locking */
 {
 	if (q->flags & TCQ_F_MQROOT)
 		spin_lock_bh(qdisc_lock(q));
@@ -606,6 +609,7 @@ static inline void sch_tree_lock(struct Qdisc *q)
 }
 
 static inline void sch_tree_unlock(struct Qdisc *q)
+	__no_context_analysis /* conditional locking */
 {
 	if (q->flags & TCQ_F_MQROOT)
 		spin_unlock_bh(qdisc_lock(q));
@@ -723,6 +727,7 @@ void qdisc_tree_reduce_backlog(struct Qdisc *qdisc, int n, int len);
 static inline void dev_reset_queue(struct net_device *dev,
 				   struct netdev_queue *dev_queue,
 				   void *_unused)
+	__no_context_analysis /* conditional locking */
 {
 	struct Qdisc *qdisc;
 	bool nolock;
@@ -807,6 +812,7 @@ static inline bool skb_skip_tc_classify(struct sk_buff *skb)
 
 /* Reset all TX qdiscs greater than index of a device.  */
 static inline void qdisc_reset_all_tx_gt(struct net_device *dev, unsigned int i)
+	__no_context_analysis /* conditional locking */
 {
 	struct Qdisc *qdisc;
 	bool nolock;

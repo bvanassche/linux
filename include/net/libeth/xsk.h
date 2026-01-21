@@ -581,8 +581,8 @@ __libeth_xsk_run_pass(struct libeth_xdp_buff *xdp,
  * @flush: driver callback to flush an XSk ``XDP_TX`` bulk
  * @finalize: driver callback to finalize an XDPSQ and run the timer
  */
-#define LIBETH_XSK_DEFINE_FINALIZE(name, flush, finalize)		     \
-	__LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, xsk)
+#define LIBETH_XSK_DEFINE_FINALIZE(name, flush, finalize, attr)		\
+	__LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, xsk, attr)
 
 /* Refilling */
 

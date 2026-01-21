@@ -1449,16 +1449,19 @@ enum snd_soc_dapm_subclass {
 };
 
 static inline void _snd_soc_dapm_mutex_lock_root_c(struct snd_soc_card *card)
+	__acquires(card->dapm_mutex)
 {
 	mutex_lock_nested(&card->dapm_mutex, SND_SOC_DAPM_CLASS_ROOT);
 }
 
 static inline void _snd_soc_dapm_mutex_lock_c(struct snd_soc_card *card)
+	__acquires(card->dapm_mutex)
 {
 	mutex_lock_nested(&card->dapm_mutex, SND_SOC_DAPM_CLASS_RUNTIME);
 }
 
 static inline void _snd_soc_dapm_mutex_unlock_c(struct snd_soc_card *card)
+	__releases(card->dapm_mutex)
 {
 	mutex_unlock(&card->dapm_mutex);
 }
@@ -1469,16 +1472,19 @@ static inline void _snd_soc_dapm_mutex_assert_held_c(struct snd_soc_card *card)
 }
 
 static inline void _snd_soc_dapm_mutex_lock_root_d(struct snd_soc_dapm_context *dapm)
+	__acquires(&snd_soc_dapm_to_card(dapm)->dapm_mutex)
 {
 	_snd_soc_dapm_mutex_lock_root_c(snd_soc_dapm_to_card(dapm));
 }
 
 static inline void _snd_soc_dapm_mutex_lock_d(struct snd_soc_dapm_context *dapm)
+	__acquires(&snd_soc_dapm_to_card(dapm)->dapm_mutex)
 {
 	_snd_soc_dapm_mutex_lock_c(snd_soc_dapm_to_card(dapm));
 }
 
 static inline void _snd_soc_dapm_mutex_unlock_d(struct snd_soc_dapm_context *dapm)
+	__releases(&snd_soc_dapm_to_card(dapm)->dapm_mutex)
 {
 	_snd_soc_dapm_mutex_unlock_c(snd_soc_dapm_to_card(dapm));
 }
@@ -1505,11 +1511,13 @@ static inline void _snd_soc_dapm_mutex_assert_held_d(struct snd_soc_dapm_context
  *	PCM helper functions
  */
 static inline void _snd_soc_dpcm_mutex_lock_c(struct snd_soc_card *card)
+	__acquires(card->pcm_mutex)
 {
 	mutex_lock(&card->pcm_mutex);
 }
 
 static inline void _snd_soc_dpcm_mutex_unlock_c(struct snd_soc_card *card)
+	__releases(card->pcm_mutex)
 {
 	mutex_unlock(&card->pcm_mutex);
 }
@@ -1520,11 +1528,13 @@ static inline void _snd_soc_dpcm_mutex_assert_held_c(struct snd_soc_card *card)
 }
 
 static inline void _snd_soc_dpcm_mutex_lock_r(struct snd_soc_pcm_runtime *rtd)
+	__acquires(rtd->card->pcm_mutex)
 {
 	_snd_soc_dpcm_mutex_lock_c(rtd->card);
 }
 
 static inline void _snd_soc_dpcm_mutex_unlock_r(struct snd_soc_pcm_runtime *rtd)
+	__releases(rtd->card->pcm_mutex)
 {
 	_snd_soc_dpcm_mutex_unlock_c(rtd->card);
 }

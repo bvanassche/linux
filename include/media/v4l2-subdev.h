@@ -1791,6 +1791,7 @@ int v4l2_subdev_get_frame_desc_passthrough(struct v4l2_subdev *sd,
  * The state must be unlocked with v4l2_subdev_unlock_state() after use.
  */
 static inline void v4l2_subdev_lock_state(struct v4l2_subdev_state *state)
+	__no_context_analysis
 {
 	mutex_lock(state->lock);
 }
@@ -1802,6 +1803,7 @@ static inline void v4l2_subdev_lock_state(struct v4l2_subdev_state *state)
  * Unlocks the given subdev state.
  */
 static inline void v4l2_subdev_unlock_state(struct v4l2_subdev_state *state)
+	__no_context_analysis
 {
 	mutex_unlock(state->lock);
 }
@@ -1822,6 +1824,7 @@ static inline void v4l2_subdev_unlock_state(struct v4l2_subdev_state *state)
  */
 static inline void v4l2_subdev_lock_states(struct v4l2_subdev_state *state1,
 					   struct v4l2_subdev_state *state2)
+	__no_context_analysis
 {
 	mutex_lock(state1->lock);
 	if (state1->lock != state2->lock)
@@ -1840,6 +1843,7 @@ static inline void v4l2_subdev_lock_states(struct v4l2_subdev_state *state1,
  */
 static inline void v4l2_subdev_unlock_states(struct v4l2_subdev_state *state1,
 					     struct v4l2_subdev_state *state2)
+	__no_context_analysis
 {
 	mutex_unlock(state1->lock);
 	if (state1->lock != state2->lock)
@@ -1899,6 +1903,7 @@ v4l2_subdev_get_locked_active_state(struct v4l2_subdev *sd)
  */
 static inline struct v4l2_subdev_state *
 v4l2_subdev_lock_and_get_active_state(struct v4l2_subdev *sd)
+	__no_context_analysis
 {
 	if (sd->active_state)
 		v4l2_subdev_lock_state(sd->active_state);

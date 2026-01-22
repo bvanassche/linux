@@ -326,7 +326,21 @@ static int stub_probe(struct usb_device *udev)
 
 	/* check we should claim or not by busid_table */
 	busid_priv = get_busid_priv(udev_busid);
-	if (!busid_priv || (busid_priv->status == STUB_BUSID_REMOV) ||
+	if (!busid_priv) {
+		dev_info(&udev->dev,
+			"%s is not in match_busid table... skip!\n",
+			udev_busid);
+
+		/*
+		 * Return value should be ENODEV or ENOXIO to continue trying
+		 * other matched drivers by the driver core.
+		 * See driver_probe_device() in driver/base/dd.c
+		 */
+		rc = -ENODEV;
+		goto sdev_free;
+	}
+
+	if ((busid_priv->status == STUB_BUSID_REMOV) ||
 	    (busid_priv->status == STUB_BUSID_OTHER)) {
 		dev_info(&udev->dev,
 			"%s is not in match_busid table... skip!\n",
@@ -338,9 +352,6 @@ static int stub_probe(struct usb_device *udev)
 		 * See driver_probe_device() in driver/base/dd.c
 		 */
 		rc = -ENODEV;
-		if (!busid_priv)
-			goto sdev_free;
-
 		goto call_put_busid_priv;
 	}
 

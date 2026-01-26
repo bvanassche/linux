@@ -465,12 +465,13 @@ int mddev_suspend(struct mddev *mddev, bool interruptible)
 	 */
 	lockdep_assert_not_held(&mddev->reconfig_mutex);
 
-	if (interruptible)
+	if (interruptible) {
 		err = mutex_lock_interruptible(&mddev->suspend_mutex);
-	else
+		if (err)
+			return err;
+	} else {
 		mutex_lock(&mddev->suspend_mutex);
-	if (err)
-		return err;
+	}
 
 	if (mddev->suspended) {
 		WRITE_ONCE(mddev->suspended, mddev->suspended + 1);

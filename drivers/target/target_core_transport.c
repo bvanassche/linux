@@ -2523,7 +2523,7 @@ static void transport_handle_queue_full(struct se_cmd *cmd, struct se_device *de
 	spin_lock_irq(&dev->qf_cmd_lock);
 	list_add_tail(&cmd->se_qf_node, &cmd->se_dev->qf_cmd_list);
 	atomic_inc_mb(&dev->dev_qf_count);
-	spin_unlock_irq(&cmd->se_dev->qf_cmd_lock);
+	spin_unlock_irq(&dev->qf_cmd_lock);
 
 	schedule_work(&cmd->se_dev->qf_work_queue);
 }

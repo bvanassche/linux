@@ -572,8 +572,9 @@ ssize_t drm_read(struct file *filp, char __user *buffer,
 			mutex_unlock(&file_priv->event_read_lock);
 			ret = wait_event_interruptible(file_priv->event_wait,
 						       !list_empty(&file_priv->event_list));
-			if (ret >= 0)
-				ret = mutex_lock_interruptible(&file_priv->event_read_lock);
+			if (ret < 0)
+				return ret;
+			ret = mutex_lock_interruptible(&file_priv->event_read_lock);
 			if (ret)
 				return ret;
 		} else {

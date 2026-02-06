@@ -261,9 +261,9 @@ static int omapfb_setup_mem(struct fb_info *fbi, struct omapfb_mem_info *mi)
 static int omapfb_query_mem(struct fb_info *fbi, struct omapfb_mem_info *mi)
 {
 	struct omapfb_info *ofbi = FB2OFB(fbi);
-	struct omapfb2_mem_region *rg;
+	struct omapfb2_mem_region *rg = ofbi->region;
 
-	rg = omapfb_get_mem_region(ofbi->region);
+	omapfb_get_mem_region(rg);
 	memset(mi, 0, sizeof(*mi));
 
 	mi->size = rg->size;

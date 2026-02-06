@@ -56,7 +56,8 @@ static ssize_t store_rotate_type(struct device *dev,
 	if (rot_type == ofbi->rotation_type)
 		goto out;
 
-	rg = omapfb_get_mem_region(ofbi->region);
+	rg = ofbi->region;
+	omapfb_get_mem_region(rg);
 
 	if (rg->size) {
 		r = -EBUSY;

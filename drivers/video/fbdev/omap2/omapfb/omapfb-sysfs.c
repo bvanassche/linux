@@ -39,7 +39,7 @@ static ssize_t store_rotate_type(struct device *dev,
 {
 	struct fb_info *fbi = dev_get_drvdata(dev);
 	struct omapfb_info *ofbi = FB2OFB(fbi);
-	struct omapfb2_mem_region *rg;
+	struct omapfb2_mem_region *rg = ofbi->region;
 	int rot_type;
 	int r;
 
@@ -56,7 +56,7 @@ static ssize_t store_rotate_type(struct device *dev,
 	if (rot_type == ofbi->rotation_type)
 		goto out;
 
-	rg = omapfb_get_mem_region(ofbi->region);
+	omapfb_get_mem_region(rg);
 
 	if (rg->size) {
 		r = -EBUSY;

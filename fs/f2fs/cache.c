@@ -240,8 +240,11 @@ static struct f2fs_cached_block *f2fs_insert_cache(
 	int ret;
 	unsigned long flags;
 
-	ret = radix_tree_preload(GFP_NOFS | __GFP_NOFAIL);
-	f2fs_bug_on(cache->sbi, ret);
+	if (radix_tree_preload(GFP_NOFS | __GFP_NOFAIL) < 0) {
+		f2fs_bug_on(cache->sbi, 1);
+		f2fs_do_free_cache(new);
+		return ERR_PTR(-ENOMEM);
+	}
 
 	spin_lock(&cache->list_lock);
 	spin_lock_irqsave(&cache->tree_lock, flags);
@@ -319,6 +322,8 @@ repeat:
 		return new;
 
 	entry = f2fs_insert_cache(cache, index, new);
+	if (IS_ERR(entry))
+		return entry;
 found:
 	if (lock) {
 		f2fs_lock_cache(entry);

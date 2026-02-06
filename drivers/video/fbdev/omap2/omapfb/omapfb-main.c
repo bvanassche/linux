@@ -1090,14 +1090,14 @@ static int omapfb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
 {
 	struct omapfb_info *ofbi = FB2OFB(fbi);
 	struct fb_fix_screeninfo *fix = &fbi->fix;
-	struct omapfb2_mem_region *rg;
+	struct omapfb2_mem_region *rg = ofbi->region;
 	unsigned long start;
 	u32 len;
 	int r;
 
 	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
 
-	rg = omapfb_get_mem_region(ofbi->region);
+	omapfb_get_mem_region(rg);
 
 	if (ofbi->rotation_type == OMAP_DSS_ROT_VRFB)
 		start = rg->vrfb.paddr[0];

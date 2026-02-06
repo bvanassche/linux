@@ -2419,8 +2419,11 @@ static bool add_free_nid(struct f2fs_sb_info *sbi,
 	i->nid = nid;
 	i->state = FREE_NID;
 
-	err = radix_tree_preload(GFP_NOFS | __GFP_NOFAIL);
-	f2fs_bug_on(sbi, err);
+	if (radix_tree_preload(GFP_NOFS | __GFP_NOFAIL)) {
+		err = -ENOMEM;
+		f2fs_bug_on(sbi, 1);
+		goto free;
+	}
 
 	err = -EINVAL;
 
@@ -2471,6 +2474,7 @@ err_out:
 	spin_unlock(&nm_i->nid_list_lock);
 	radix_tree_preload_end();
 
+free:
 	if (err)
 		kmem_cache_free(free_nid_slab, i);
 	return ret;

@@ -688,7 +688,6 @@ static void __add_ino_entry(struct f2fs_sb_info *sbi, nid_t ino,
 {
 	struct inode_management *im = &sbi->im[type];
 	struct ino_entry *e = NULL, *new = NULL;
-	int ret;
 
 	if (type == FLUSH_INO) {
 		rcu_read_lock();
@@ -701,8 +700,12 @@ retry:
 		new = f2fs_kmem_cache_alloc(ino_entry_slab,
 						GFP_NOFS, true, NULL);
 
-	ret = radix_tree_preload(GFP_NOFS | __GFP_NOFAIL);
-	f2fs_bug_on(sbi, ret);
+	if (radix_tree_preload(GFP_NOFS | __GFP_NOFAIL)) {
+		f2fs_bug_on(sbi, 1);
+		if (new)
+			kmem_cache_free(ino_entry_slab, new);
+		return;
+	}
 
 	spin_lock(&im->ino_lock);
 	e = radix_tree_lookup(&im->ino_root, ino);

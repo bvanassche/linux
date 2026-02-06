@@ -715,8 +715,12 @@ retry:
 		new = f2fs_kmem_cache_alloc(ino_entry_slab,
 						GFP_NOFS, true, NULL);
 
-	ret = radix_tree_preload(GFP_NOFS | __GFP_NOFAIL);
-	f2fs_bug_on(sbi, ret);
+	if (radix_tree_preload(GFP_NOFS | __GFP_NOFAIL)) {
+		ret = -ENOMEM;
+		f2fs_bug_on(sbi, ret);
+		kmem_cache_free(ino_entry_slab, new);
+		return;
+	}
 
 	spin_lock(&im->ino_lock);
 	e = radix_tree_lookup(&im->ino_root, ino);

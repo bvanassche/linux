@@ -196,7 +196,10 @@ void drm_gem_shmem_release(struct drm_gem_shmem_object *shmem)
 	if (drm_gem_is_imported(obj)) {
 		drm_prime_gem_destroy(obj, shmem->sgt);
 	} else {
-		dma_resv_lock(shmem->base.resv, NULL);
+		if (dma_resv_lock(shmem->base.resv, NULL) != 0) {
+			WARN_ON_ONCE(true);
+			goto release_obj;
+		}
 
 		drm_WARN_ON(obj->dev, refcount_read(&shmem->vmap_use_count));
 
@@ -211,6 +214,7 @@ void drm_gem_shmem_release(struct drm_gem_shmem_object *shmem)
 		dma_resv_unlock(shmem->base.resv);
 	}
 
+release_obj:
 	drm_gem_object_release(obj);
 }
 EXPORT_SYMBOL_GPL(drm_gem_shmem_release);
@@ -365,9 +369,12 @@ void drm_gem_shmem_unpin(struct drm_gem_shmem_object *shmem)
 	if (refcount_dec_not_one(&shmem->pages_pin_count))
 		return;
 
-	dma_resv_lock(shmem->base.resv, NULL);
-	drm_gem_shmem_unpin_locked(shmem);
-	dma_resv_unlock(shmem->base.resv);
+	if (dma_resv_lock(shmem->base.resv, NULL) == 0) {
+		drm_gem_shmem_unpin_locked(shmem);
+		dma_resv_unlock(shmem->base.resv);
+	} else {
+		WARN_ON_ONCE(true);
+	}
 }
 EXPORT_SYMBOL_GPL(drm_gem_shmem_unpin);
 
@@ -659,7 +666,8 @@ static vm_fault_t drm_gem_shmem_any_fault(struct vm_fault *vmf, unsigned int ord
 	if (order && order != PMD_ORDER)
 		return VM_FAULT_FALLBACK;
 
-	dma_resv_lock(obj->resv, NULL);
+	if (dma_resv_lock(obj->resv, NULL))
+		return VM_FAULT_SIGBUS;
 
 	if (page_offset >= num_pages || drm_WARN_ON_ONCE(dev, !shmem->pages) ||
 	    shmem->madv < 0)
@@ -694,7 +702,17 @@ static void drm_gem_shmem_vm_open(struct vm_area_struct *vma)
 
 	drm_WARN_ON(obj->dev, drm_gem_is_imported(obj));
 
-	dma_resv_lock(shmem->base.resv, NULL);
+	if (dma_resv_lock(shmem->base.resv, NULL) != 0) {
+		/*
+		 * Take the page reference anyway without holding the resv
+		 * lock since drm_gem_shmem_vm_close() drops it.
+		 */
+		WARN_ON_ONCE(true);
+		drm_WARN_ON_ONCE(obj->dev,
+				 !refcount_inc_not_zero(&shmem->pages_use_count));
+		drm_gem_vm_open(vma);
+		return;
+	}
 
 	/*
 	 * We should have already pinned the pages when the buffer was first
@@ -714,9 +732,12 @@ static void drm_gem_shmem_vm_close(struct vm_area_struct *vma)
 	struct drm_gem_object *obj = vma->vm_private_data;
 	struct drm_gem_shmem_object *shmem = to_drm_gem_shmem_obj(obj);
 
-	dma_resv_lock(shmem->base.resv, NULL);
-	drm_gem_shmem_put_pages_locked(shmem);
-	dma_resv_unlock(shmem->base.resv);
+	if (dma_resv_lock(shmem->base.resv, NULL) == 0) {
+		drm_gem_shmem_put_pages_locked(shmem);
+		dma_resv_unlock(shmem->base.resv);
+	} else {
+		WARN_ON_ONCE(true);
+	}
 
 	drm_gem_vm_close(vma);
 }
@@ -774,7 +795,9 @@ int drm_gem_shmem_mmap(struct drm_gem_shmem_object *shmem, struct vm_area_struct
 	if (vma_is_cow_mapping(vma))
 		return -EINVAL;
 
-	dma_resv_lock(shmem->base.resv, NULL);
+	ret = dma_resv_lock(shmem->base.resv, NULL);
+	if (ret)
+		return ret;
 	ret = drm_gem_shmem_get_pages_locked(shmem);
 	dma_resv_unlock(shmem->base.resv);
 
@@ -1017,9 +1040,12 @@ void drm_gem_shmem_vunmap(struct drm_gem_shmem_object *shmem, struct iosys_map *
 {
 	struct drm_gem_object *obj = &shmem->base;
 
-	dma_resv_lock(obj->resv, NULL);
-	drm_gem_shmem_vunmap_locked(shmem, map);
-	dma_resv_unlock(obj->resv);
+	if (dma_resv_lock(obj->resv, NULL) == 0) {
+		drm_gem_shmem_vunmap_locked(shmem, map);
+		dma_resv_unlock(obj->resv);
+	} else {
+		WARN_ON_ONCE(true);
+	}
 }
 EXPORT_SYMBOL_IF_KUNIT(drm_gem_shmem_vunmap);
 

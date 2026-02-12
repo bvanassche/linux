@@ -1448,7 +1448,8 @@ EXPORT_SYMBOL(drm_gem_vunmap_locked);
 
 void drm_gem_lock(struct drm_gem_object *obj)
 {
-	dma_resv_lock(obj->resv, NULL);
+	if (dma_resv_lock(obj->resv, NULL))
+		unreachable();
 }
 EXPORT_SYMBOL(drm_gem_lock);
 
@@ -1462,7 +1463,9 @@ int drm_gem_vmap(struct drm_gem_object *obj, struct iosys_map *map)
 {
 	int ret;
 
-	dma_resv_lock(obj->resv, NULL);
+	ret = dma_resv_lock(obj->resv, NULL);
+	if (ret)
+		return ret;
 	ret = drm_gem_vmap_locked(obj, map);
 	dma_resv_unlock(obj->resv);
 
@@ -1472,9 +1475,12 @@ EXPORT_SYMBOL(drm_gem_vmap);
 
 void drm_gem_vunmap(struct drm_gem_object *obj, struct iosys_map *map)
 {
-	dma_resv_lock(obj->resv, NULL);
-	drm_gem_vunmap_locked(obj, map);
-	dma_resv_unlock(obj->resv);
+	if (dma_resv_lock(obj->resv, NULL) == 0) {
+		drm_gem_vunmap_locked(obj, map);
+		dma_resv_unlock(obj->resv);
+	} else {
+		WARN_ON_ONCE(true);
+	}
 }
 EXPORT_SYMBOL(drm_gem_vunmap);
 

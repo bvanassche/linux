@@ -80,7 +80,8 @@ static void ttm_bo_reserve_locked_no_sleep(struct kunit *test)
 	bo = ttm_bo_kunit_init(test, test->priv, BO_SIZE, NULL);
 
 	/* Let's lock it beforehand */
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 
 	err = ttm_bo_reserve(bo, interruptible, no_wait, NULL);
 	dma_resv_unlock(bo->base.resv);
@@ -222,7 +223,10 @@ static void ttm_bo_reserve_interrupted(struct kunit *test)
 		KUNIT_FAIL(test, "Couldn't create ttm bo reserve task\n");
 
 	/* Take a lock so the threaded reserve has to wait */
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
+	if (err)
+		return;
 
 	wake_up_process(task);
 	msleep(20);
@@ -266,7 +270,8 @@ static void ttm_bo_unreserve_basic(struct kunit *test)
 	/* Add a dummy resource to populate LRU */
 	ttm_resource_alloc(bo, place, &res2, NULL);
 
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	ttm_bo_unreserve(bo);
 
 	man = ttm_manager_type(priv->ttm_dev, mem_type);
@@ -297,7 +302,8 @@ static void ttm_bo_unreserve_pinned(struct kunit *test)
 	bo = ttm_bo_kunit_init(test, test->priv, BO_SIZE, NULL);
 	place = ttm_place_kunit_init(test, mem_type, 0);
 
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	ttm_bo_pin(bo);
 
 	err = ttm_resource_alloc(bo, place, &res1, NULL);
@@ -351,7 +357,8 @@ static void ttm_bo_unreserve_bulk(struct kunit *test)
 	bo1 = ttm_bo_kunit_init(test, test->priv, BO_SIZE, resv);
 	bo2 = ttm_bo_kunit_init(test, test->priv, BO_SIZE, resv);
 
-	dma_resv_lock(bo1->base.resv, NULL);
+	err = dma_resv_lock(bo1->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	ttm_bo_set_bulk_move(bo1, &lru_bulk_move);
 	dma_resv_unlock(bo1->base.resv);
 
@@ -359,7 +366,8 @@ static void ttm_bo_unreserve_bulk(struct kunit *test)
 	KUNIT_ASSERT_EQ(test, err, 0);
 	bo1->resource = res1;
 
-	dma_resv_lock(bo2->base.resv, NULL);
+	err = dma_resv_lock(bo2->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	ttm_bo_set_bulk_move(bo2, &lru_bulk_move);
 	dma_resv_unlock(bo2->base.resv);
 
@@ -405,7 +413,8 @@ static void ttm_bo_fini_basic(struct kunit *test)
 	KUNIT_ASSERT_EQ(test, err, 0);
 	bo->resource = res;
 
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	err = ttm_tt_create(bo, false);
 	dma_resv_unlock(bo->base.resv);
 	KUNIT_EXPECT_EQ(test, err, 0);
@@ -452,7 +461,8 @@ static void ttm_bo_fini_shared_resv(struct kunit *test)
 	spin_lock_init(&fence_lock);
 	dma_fence_init(fence, &mock_fence_ops, &fence_lock, 0, 0);
 
-	dma_resv_lock(external_resv, NULL);
+	err = dma_resv_lock(external_resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	dma_resv_reserve_fences(external_resv, 1);
 	dma_resv_add_fence(external_resv, fence, DMA_RESV_USAGE_BOOKKEEP);
 	dma_resv_unlock(external_resv);
@@ -484,7 +494,8 @@ static void ttm_bo_pin_basic(struct kunit *test)
 	bo = ttm_bo_kunit_init(test, test->priv, BO_SIZE, NULL);
 
 	for (int i = 0; i < no_pins; i++) {
-		dma_resv_lock(bo->base.resv, NULL);
+		err = dma_resv_lock(bo->base.resv, NULL);
+		KUNIT_ASSERT_EQ(test, err, 0);
 		ttm_bo_pin(bo);
 		dma_resv_unlock(bo->base.resv);
 	}
@@ -522,7 +533,8 @@ static void ttm_bo_pin_unpin_resource(struct kunit *test)
 	KUNIT_ASSERT_EQ(test, err, 0);
 	bo->resource = res;
 
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	ttm_bo_set_bulk_move(bo, &lru_bulk_move);
 	ttm_bo_pin(bo);
 	dma_resv_unlock(bo->base.resv);
@@ -533,7 +545,8 @@ static void ttm_bo_pin_unpin_resource(struct kunit *test)
 	KUNIT_ASSERT_NULL(test, pos->first);
 	KUNIT_ASSERT_NULL(test, pos->last);
 
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	ttm_bo_unpin(bo);
 	dma_resv_unlock(bo->base.resv);
 
@@ -573,7 +586,8 @@ static void ttm_bo_multiple_pin_one_unpin(struct kunit *test)
 	KUNIT_ASSERT_EQ(test, err, 0);
 	bo->resource = res;
 
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	ttm_bo_set_bulk_move(bo, &lru_bulk_move);
 
 	/* Multiple pins */
@@ -588,7 +602,8 @@ static void ttm_bo_multiple_pin_one_unpin(struct kunit *test)
 	KUNIT_ASSERT_NULL(test, pos->first);
 	KUNIT_ASSERT_NULL(test, pos->last);
 
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	ttm_bo_unpin(bo);
 	dma_resv_unlock(bo->base.resv);
 
@@ -596,7 +611,8 @@ static void ttm_bo_multiple_pin_one_unpin(struct kunit *test)
 	KUNIT_ASSERT_NULL(test, pos->first);
 	KUNIT_ASSERT_NULL(test, pos->last);
 
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	ttm_bo_unpin(bo);
 	dma_resv_unlock(bo->base.resv);
 

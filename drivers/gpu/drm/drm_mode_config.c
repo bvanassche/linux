@@ -490,10 +490,13 @@ int drmm_mode_config_init(struct drm_device *dev)
 
 		ww_acquire_init(&resv_ctx, &reservation_ww_class);
 		ret = dma_resv_lock(&resv, &resv_ctx);
-		if (ret == -EDEADLK)
+		if (ret == 0) {
+			dma_resv_unlock(&resv);
+		} else if (ret == -EDEADLK) {
 			dma_resv_lock_slow(&resv, &resv_ctx);
+			dma_resv_unlock(&resv);
+		}
 
-		dma_resv_unlock(&resv);
 		ww_acquire_fini(&resv_ctx);
 
 		drm_modeset_drop_locks(&modeset_ctx);

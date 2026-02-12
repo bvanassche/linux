@@ -165,7 +165,10 @@ static void uverbs_dmabuf_fd_destroy_uobj(struct ib_uobject *uobj,
 	bool wait_for_comp = false;
 
 	mutex_lock(&uverbs_dmabuf->mmap_entry->dmabufs_lock);
-	dma_resv_lock(uverbs_dmabuf->dmabuf->resv, NULL);
+	if (dma_resv_lock(uverbs_dmabuf->dmabuf->resv, NULL)) {
+		WARN_ON_ONCE(true);
+		goto unlock;
+	}
 	if (!uverbs_dmabuf->revoked) {
 		uverbs_dmabuf->revoked = true;
 		list_del(&uverbs_dmabuf->dmabufs_elm);
@@ -181,6 +184,7 @@ static void uverbs_dmabuf_fd_destroy_uobj(struct ib_uobject *uobj,
 		/* Let's wait till all DMA unmap are completed. */
 		wait_for_completion(&uverbs_dmabuf->comp);
 	}
+unlock:
 	mutex_unlock(&uverbs_dmabuf->mmap_entry->dmabufs_lock);
 
 	/* Matches the get done as part of pgoff_to_mmap_entry() */

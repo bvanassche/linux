@@ -243,7 +243,10 @@ void rdma_user_mmap_entry_remove(struct rdma_user_mmap_entry *entry)
 	entry->driver_removed = true;
 	xa_unlock(&entry->ucontext->mmap_xa);
 	list_for_each_entry_safe(uverbs_dmabuf, tmp, &entry->dmabufs, dmabufs_elm) {
-		dma_resv_lock(uverbs_dmabuf->dmabuf->resv, NULL);
+		if (dma_resv_lock(uverbs_dmabuf->dmabuf->resv, NULL)) {
+			WARN_ON_ONCE(true);
+			continue;
+		}
 		list_del(&uverbs_dmabuf->dmabufs_elm);
 		uverbs_dmabuf->revoked = true;
 		dma_buf_invalidate_mappings(uverbs_dmabuf->dmabuf);

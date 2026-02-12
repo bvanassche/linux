@@ -226,7 +226,9 @@ ib_umem_dmabuf_get_pinned_and_lock(struct ib_device *device,
 	if (IS_ERR(umem_dmabuf))
 		return umem_dmabuf;
 
-	dma_resv_lock(umem_dmabuf->attach->dmabuf->resv, NULL);
+	err = dma_resv_lock(umem_dmabuf->attach->dmabuf->resv, NULL);
+	if (err)
+		goto umem_release;
 	err = dma_buf_pin(umem_dmabuf->attach);
 	if (err)
 		goto err_release;
@@ -240,6 +242,7 @@ ib_umem_dmabuf_get_pinned_and_lock(struct ib_device *device,
 
 err_release:
 	dma_resv_unlock(umem_dmabuf->attach->dmabuf->resv);
+umem_release:
 	ib_umem_release(&umem_dmabuf->umem);
 	return ERR_PTR(err);
 }
@@ -327,8 +330,10 @@ EXPORT_SYMBOL(ib_umem_dmabuf_get_pinned);
 void ib_umem_dmabuf_revoke_lock(struct ib_umem_dmabuf *umem_dmabuf)
 {
 	struct dma_buf *dmabuf = umem_dmabuf->attach->dmabuf;
+	int ret;
 
-	dma_resv_lock(dmabuf->resv, NULL);
+	ret = dma_resv_lock(dmabuf->resv, NULL);
+	BUG_ON(ret);
 }
 EXPORT_SYMBOL(ib_umem_dmabuf_revoke_lock);
 
@@ -344,7 +349,10 @@ void ib_umem_dmabuf_revoke(struct ib_umem_dmabuf *umem_dmabuf)
 {
 	struct dma_buf *dmabuf = umem_dmabuf->attach->dmabuf;
 
-	dma_resv_lock(dmabuf->resv, NULL);
+	if (dma_resv_lock(dmabuf->resv, NULL)) {
+		WARN_ON_ONCE(true);
+		return;
+	}
 	ib_umem_dmabuf_revoke_locked(umem_dmabuf->attach);
 	dma_resv_unlock(dmabuf->resv);
 }

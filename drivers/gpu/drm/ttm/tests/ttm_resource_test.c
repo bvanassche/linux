@@ -155,6 +155,7 @@ static void ttm_resource_init_pinned(struct kunit *test)
 	struct ttm_buffer_object *bo;
 	struct ttm_place *place;
 	struct ttm_resource_manager *man;
+	int err;
 
 	ttm_init_test_mocks(test, priv, TTM_PL_SYSTEM, 0);
 	bo = priv->bo;
@@ -166,7 +167,8 @@ static void ttm_resource_init_pinned(struct kunit *test)
 	KUNIT_ASSERT_NOT_NULL(test, res);
 	KUNIT_ASSERT_TRUE(test, list_empty(&bo->bdev->unevictable));
 
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	ttm_bo_pin(bo);
 	ttm_resource_init(bo, place, res);
 	KUNIT_ASSERT_TRUE(test, list_is_singular(&bo->bdev->unevictable));

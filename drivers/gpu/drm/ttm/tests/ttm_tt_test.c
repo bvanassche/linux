@@ -158,7 +158,8 @@ static void ttm_tt_create_basic(struct kunit *test)
 	bo = ttm_bo_kunit_init(test, test->priv, BO_SIZE, NULL);
 	bo->type = ttm_bo_type_device;
 
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	err = ttm_tt_create(bo, false);
 	dma_resv_unlock(bo->base.resv);
 
@@ -177,7 +178,8 @@ static void ttm_tt_create_invalid_bo_type(struct kunit *test)
 	bo = ttm_bo_kunit_init(test, test->priv, BO_SIZE, NULL);
 	bo->type = ttm_bo_type_sg + 1;
 
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	err = ttm_tt_create(bo, false);
 	dma_resv_unlock(bo->base.resv);
 
@@ -201,7 +203,8 @@ static void ttm_tt_create_ttm_exists(struct kunit *test)
 	KUNIT_ASSERT_EQ(test, err, 0);
 	bo->ttm = tt;
 
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	err = ttm_tt_create(bo, false);
 	dma_resv_unlock(bo->base.resv);
 
@@ -231,7 +234,8 @@ static void ttm_tt_create_failed(struct kunit *test)
 	/* Update ttm_device_funcs so we don't alloc ttm_tt */
 	devs->ttm_dev->funcs = &ttm_dev_empty_funcs;
 
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	err = ttm_tt_create(bo, false);
 	dma_resv_unlock(bo->base.resv);
 
@@ -246,7 +250,8 @@ static void ttm_tt_destroy_basic(struct kunit *test)
 
 	bo = ttm_bo_kunit_init(test, test->priv, BO_SIZE, NULL);
 
-	dma_resv_lock(bo->base.resv, NULL);
+	err = dma_resv_lock(bo->base.resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	err = ttm_tt_create(bo, false);
 	dma_resv_unlock(bo->base.resv);
 

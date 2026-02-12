@@ -7,8 +7,3 @@
 # selected.
 
 [thread-safety]
-# Opt-in headers:
-src:*include/*=emit
-
-# Suppress arch/*/include headers:
-src:*arch/*/include/*

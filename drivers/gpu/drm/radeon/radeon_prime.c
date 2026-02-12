@@ -51,7 +51,9 @@ struct drm_gem_object *radeon_gem_prime_import_sg_table(struct drm_device *dev,
 	struct radeon_bo *bo;
 	int ret;
 
-	dma_resv_lock(resv, NULL);
+	ret = dma_resv_lock(resv, NULL);
+	if (ret)
+		return ERR_PTR(ret);
 	ret = radeon_bo_create(rdev, attach->dmabuf->size, PAGE_SIZE, false,
 			       RADEON_GEM_DOMAIN_GTT, 0, sg, resv, &bo);
 	dma_resv_unlock(resv);

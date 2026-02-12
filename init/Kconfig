@@ -1639,10 +1639,7 @@ config LD_DEAD_CODE_DATA_ELIMINATION
 	  own risk.
 
 config LD_ORPHAN_WARN
-	def_bool y
-	depends on ARCH_WANT_LD_ORPHAN_WARN
-	depends on $(ld-option,--orphan-handling=warn)
-	depends on $(ld-option,--orphan-handling=error)
+	def_bool n
 
 config LD_ORPHAN_WARN_LEVEL
         string

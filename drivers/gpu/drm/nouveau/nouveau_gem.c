@@ -266,13 +266,15 @@ nouveau_gem_new(struct nouveau_cli *cli, u64 size, int align, uint32_t domain,
 		return ret;
 	}
 
-	if (resv)
-		dma_resv_lock(resv, NULL);
-
-	ret = nouveau_bo_init(nvbo, size, align, domain, NULL, resv);
-
-	if (resv)
+	if (resv) {
+		ret = dma_resv_lock(resv, NULL);
+		if (ret)
+			return ret;
+		ret = nouveau_bo_init(nvbo, size, align, domain, NULL, resv);
 		dma_resv_unlock(resv);
+	} else {
+		ret = nouveau_bo_init(nvbo, size, align, domain, NULL, resv);
+	}
 
 	if (ret)
 		return ret;

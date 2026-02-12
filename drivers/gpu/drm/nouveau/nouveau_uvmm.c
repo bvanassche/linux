@@ -1274,7 +1274,9 @@ nouveau_uvmm_bind_job_submit(struct nouveau_job *job,
 			if (!obj)
 				return -ENOENT;
 
-			dma_resv_lock(obj->resv, NULL);
+			ret = dma_resv_lock(obj->resv, NULL);
+			if (ret)
+				return ret;
 			op->vm_bo = drm_gpuvm_bo_obtain_locked(&uvmm->base, obj);
 			dma_resv_unlock(obj->resv);
 			if (IS_ERR(op->vm_bo))
@@ -1589,8 +1591,8 @@ nouveau_uvmm_bind_job_cleanup(struct nouveau_job *job)
 		if (!IS_ERR_OR_NULL(op->ops))
 			drm_gpuva_ops_free(&uvmm->base, op->ops);
 
-		if (!IS_ERR_OR_NULL(op->vm_bo)) {
-			dma_resv_lock(obj->resv, NULL);
+		if (!IS_ERR_OR_NULL(op->vm_bo) &&
+		    dma_resv_lock(obj->resv, NULL) == 0) {
 			drm_gpuvm_bo_put(op->vm_bo);
 			dma_resv_unlock(obj->resv);
 		}
@@ -1976,9 +1978,10 @@ nouveau_uvmm_fini(struct nouveau_uvmm *uvmm)
 
 		drm_gpuva_remove(va);
 
-		dma_resv_lock(obj->resv, NULL);
-		drm_gpuva_unlink(va);
-		dma_resv_unlock(obj->resv);
+		if (dma_resv_lock(obj->resv, NULL) == 0) {
+			drm_gpuva_unlink(va);
+			dma_resv_unlock(obj->resv);
+		}
 
 		nouveau_uvma_unmap(uvma);
 		nouveau_uvma_vmm_put(uvma);

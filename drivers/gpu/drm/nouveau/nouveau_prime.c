@@ -48,7 +48,9 @@ struct drm_gem_object *nouveau_gem_prime_import_sg_table(struct drm_device *dev,
 	int align = 0;
 	int ret;
 
-	dma_resv_lock(robj, NULL);
+	ret = dma_resv_lock(robj, NULL);
+	if (ret)
+		return ERR_PTR(ret);
 	nvbo = nouveau_bo_alloc(&drm->client, &size, &align,
 				NOUVEAU_GEM_DOMAIN_GART, 0, 0, true);
 	if (IS_ERR(nvbo)) {

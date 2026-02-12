@@ -644,8 +644,10 @@ void drm_gem_map_detach(struct dma_buf *dma_buf,
 		return;
 
 	ret = dma_resv_lock(obj->resv, NULL);
-	if (drm_WARN_ON(obj->dev, ret))
+	if (ret) {
+		drm_WARN_ON(obj->dev, ret);
 		return;
+	}
 	obj->funcs->unpin(obj);
 	dma_resv_unlock(obj->resv);
 }

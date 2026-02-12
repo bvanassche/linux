@@ -1787,7 +1787,14 @@ drm_gpuvm_bo_deferred_cleanup(struct drm_gpuvm *gpuvm)
 		return;
 
 	if (drm_gpuvm_resv_protected(gpuvm)) {
-		dma_resv_lock(drm_gpuvm_resv(gpuvm), NULL);
+		if (dma_resv_lock(drm_gpuvm_resv(gpuvm), NULL) != 0) {
+			/*
+			 * Leak the vm_bos instead of freeing them while these
+			 * are still on the extobj and evict lists.
+			 */
+			WARN_ON_ONCE(true);
+			return;
+		}
 		llist_for_each_entry(vm_bo, bo_defer, list.entry.bo_defer) {
 			drm_gpuvm_bo_list_del(vm_bo, extobj, false);
 			drm_gpuvm_bo_list_del(vm_bo, evict, false);

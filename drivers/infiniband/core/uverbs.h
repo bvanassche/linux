@@ -378,7 +378,9 @@ static inline void ib_uverbs_dmabuf_revoke(struct ib_uverbs_dmabuf_file *priv)
 {
 	mutex_lock(&priv->dmabuf_release_lock);
 	if (priv->dmabuf) {
-		dma_resv_lock(priv->dmabuf->resv, NULL);
+		/* dma_resv_lock() cannot fail if the second argument is NULL. */
+		if (dma_resv_lock(priv->dmabuf->resv, NULL))
+			unreachable();
 		priv->revoked = true;
 		dma_buf_invalidate_mappings(priv->dmabuf);
 		dma_resv_wait_timeout(priv->dmabuf->resv,

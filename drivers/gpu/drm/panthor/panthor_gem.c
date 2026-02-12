@@ -344,8 +344,13 @@ struct sg_table *
 panthor_gem_get_dev_sgt(struct panthor_gem_object *bo)
 {
 	struct sg_table *sgt;
+	int ret;
 
-	dma_resv_lock(bo->base.resv, NULL);
+	ret = dma_resv_lock(bo->base.resv, NULL);
+	if (ret) {
+		WARN_ON_ONCE(true);
+		return ERR_PTR(ret);
+	}
 	sgt = panthor_gem_dev_map_get_sgt_locked(bo);
 	dma_resv_unlock(bo->base.resv);
 
@@ -500,8 +505,11 @@ panthor_gem_prime_begin_cpu_access(struct dma_buf *dma_buf,
 	struct drm_device *dev = obj->dev;
 	struct panthor_gem_object *bo = to_panthor_bo(obj);
 	struct dma_buf_attachment *attach;
+	int ret;
 
-	dma_resv_lock(obj->resv, NULL);
+	ret = dma_resv_lock(obj->resv, NULL);
+	if (ret)
+		return ret;
 	if (bo->dmap.sgt)
 		dma_sync_sgtable_for_cpu(drm_dev_dma_dev(dev), bo->dmap.sgt, dir);
 
@@ -527,8 +535,11 @@ panthor_gem_prime_end_cpu_access(struct dma_buf *dma_buf,
 	struct drm_device *dev = obj->dev;
 	struct panthor_gem_object *bo = to_panthor_bo(obj);
 	struct dma_buf_attachment *attach;
+	int ret;
 
-	dma_resv_lock(obj->resv, NULL);
+	ret = dma_resv_lock(obj->resv, NULL);
+	if (ret)
+		return ret;
 	list_for_each_entry(attach, &dma_buf->attachments, node) {
 		struct sg_table *sgt = attach->priv;
 
@@ -637,7 +648,9 @@ int panthor_gem_pin(struct panthor_gem_object *bo)
 	if (refcount_inc_not_zero(&bo->backing.pin_count))
 		return 0;
 
-	dma_resv_lock(bo->base.resv, NULL);
+	ret = dma_resv_lock(bo->base.resv, NULL);
+	if (ret)
+		return ret;
 	ret = panthor_gem_backing_pin_locked(bo);
 	dma_resv_unlock(bo->base.resv);
 
@@ -652,7 +665,10 @@ void panthor_gem_unpin(struct panthor_gem_object *bo)
 	if (refcount_dec_not_one(&bo->backing.pin_count))
 		return;
 
-	dma_resv_lock(bo->base.resv, NULL);
+	if (dma_resv_lock(bo->base.resv, NULL)) {
+		WARN_ON_ONCE(true);
+		return;
+	}
 	panthor_gem_backing_unpin_locked(bo);
 	dma_resv_unlock(bo->base.resv);
 }
@@ -768,7 +784,9 @@ static int panthor_gem_mmap(struct drm_gem_object *obj, struct vm_area_struct *v
 		return -EINVAL;
 
 	if (!refcount_inc_not_zero(&bo->cmap.mmap_count)) {
-		dma_resv_lock(obj->resv, NULL);
+		ret = dma_resv_lock(obj->resv, NULL);
+		if (ret)
+			return ret;
 		if (!refcount_inc_not_zero(&bo->cmap.mmap_count)) {
 			refcount_set(&bo->cmap.mmap_count, 1);
 			mutex_lock(&bo->base.gpuva.lock);
@@ -947,7 +965,16 @@ static void panthor_gem_vm_close(struct vm_area_struct *vma)
 	if (refcount_dec_not_one(&bo->cmap.mmap_count))
 		goto out;
 
-	dma_resv_lock(bo->base.resv, NULL);
+	if (dma_resv_lock(bo->base.resv, NULL)) {
+		/*
+		 * Drop the mmap reference anyway instead of leaking it. Complain
+		 * if this was the last reference because the reclaim state can
+		 * only be updated with the resv lock held.
+		 */
+		drm_WARN_ON_ONCE(bo->base.dev,
+				 refcount_dec_and_test(&bo->cmap.mmap_count));
+		goto out;
+	}
 	if (refcount_dec_and_test(&bo->cmap.mmap_count)) {
 		mutex_lock(&bo->base.gpuva.lock);
 		panthor_gem_update_reclaim_state_locked(bo, NULL);

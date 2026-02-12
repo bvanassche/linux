@@ -34,7 +34,9 @@ int lima_heap_alloc(struct lima_bo *bo, struct lima_vm *vm)
 
 	new_size = min(new_size, bo->base.base.size);
 
-	dma_resv_lock(bo->base.base.resv, NULL);
+	ret = dma_resv_lock(bo->base.base.resv, NULL);
+	if (ret)
+		return ret;
 
 	if (bo->base.pages) {
 		pages = bo->base.pages;

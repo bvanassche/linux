@@ -214,7 +214,9 @@ pvr_gem_object_vmap(struct pvr_gem_object *pvr_obj)
 	struct iosys_map map;
 	int err;
 
-	dma_resv_lock(obj->resv, NULL);
+	err = dma_resv_lock(obj->resv, NULL);
+	if (err)
+		return ERR_PTR(err);
 
 	err = drm_gem_shmem_vmap_locked(shmem_obj, &map);
 	if (err)
@@ -258,7 +260,10 @@ pvr_gem_object_vunmap(struct pvr_gem_object *pvr_obj)
 	if (WARN_ON(!map.vaddr))
 		return;
 
-	dma_resv_lock(obj->resv, NULL);
+	if (dma_resv_lock(obj->resv, NULL)) {
+		WARN_ON_ONCE(true);
+		return;
+	}
 
 	if (pvr_obj->flags & PVR_BO_CPU_CACHED) {
 		struct device *dev = shmem_obj->base.dev->dev;

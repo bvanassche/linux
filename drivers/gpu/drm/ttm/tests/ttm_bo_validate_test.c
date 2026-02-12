@@ -67,11 +67,13 @@ static void dma_resv_kunit_active_fence_init(struct kunit *test,
 					     enum dma_resv_usage usage)
 {
 	struct dma_fence *fence;
+	int err;
 
 	fence = alloc_mock_fence(test);
 	dma_fence_enable_sw_signaling(fence);
 
-	dma_resv_lock(resv, NULL);
+	err = dma_resv_lock(resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 	dma_resv_reserve_fences(resv, 1);
 	dma_resv_add_fence(resv, fence, usage);
 	dma_resv_unlock(resv);
@@ -210,7 +212,8 @@ static void ttm_bo_init_reserved_resv(struct kunit *test)
 
 	drm_gem_private_object_init(priv->drm, &bo->base, size);
 	dma_resv_init(&resv);
-	dma_resv_lock(&resv, NULL);
+	err = dma_resv_lock(&resv, NULL);
+	KUNIT_ASSERT_EQ(test, err, 0);
 
 	err = ttm_bo_init_reserved(priv->ttm_dev, bo, bo_type, placement,
 				   PAGE_SIZE, &ctx, NULL, &resv,

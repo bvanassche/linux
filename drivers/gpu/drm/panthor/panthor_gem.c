@@ -265,8 +265,11 @@ panthor_gem_prime_begin_cpu_access(struct dma_buf *dma_buf,
 	struct drm_device *dev = obj->dev;
 	struct drm_gem_shmem_object *shmem = to_drm_gem_shmem_obj(obj);
 	struct dma_buf_attachment *attach;
+	int ret;
 
-	dma_resv_lock(obj->resv, NULL);
+	ret = dma_resv_lock(obj->resv, NULL);
+	if (ret)
+		return ret;
 	if (shmem->sgt)
 		dma_sync_sgtable_for_cpu(dev->dev, shmem->sgt, dir);
 
@@ -292,8 +295,11 @@ panthor_gem_prime_end_cpu_access(struct dma_buf *dma_buf,
 	struct drm_device *dev = obj->dev;
 	struct drm_gem_shmem_object *shmem = to_drm_gem_shmem_obj(obj);
 	struct dma_buf_attachment *attach;
+	int ret;
 
-	dma_resv_lock(obj->resv, NULL);
+	ret = dma_resv_lock(obj->resv, NULL);
+	if (ret)
+		return ret;
 	list_for_each_entry(attach, &dma_buf->attachments, node) {
 		struct sg_table *sgt = attach->priv;
 

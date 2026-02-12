@@ -1283,9 +1283,10 @@ static int panthor_vm_prepare_map_op_ctx(struct panthor_vm_op_ctx *op_ctx,
 	}
 
 	/* Insert BO into the extobj list last, when we know nothing can fail. */
-	dma_resv_lock(panthor_vm_resv(vm), NULL);
-	drm_gpuvm_bo_extobj_add(op_ctx->map.vm_bo);
-	dma_resv_unlock(panthor_vm_resv(vm));
+	if (dma_resv_lock(panthor_vm_resv(vm), NULL) == 0) {
+		drm_gpuvm_bo_extobj_add(op_ctx->map.vm_bo);
+		dma_resv_unlock(panthor_vm_resv(vm));
+	}
 
 	return 0;
 

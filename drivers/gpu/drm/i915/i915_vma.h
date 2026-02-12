@@ -277,7 +277,8 @@ void i915_vma_destroy(struct i915_vma *vma);
 
 static inline void i915_vma_lock(struct i915_vma *vma)
 {
-	dma_resv_lock(vma->obj->base.resv, NULL);
+	if (dma_resv_lock(vma->obj->base.resv, NULL))
+		unreachable();
 }
 
 static inline void i915_vma_unlock(struct i915_vma *vma)

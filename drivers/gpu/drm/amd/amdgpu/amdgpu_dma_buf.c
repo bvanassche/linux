@@ -422,7 +422,9 @@ amdgpu_dma_buf_create_obj(struct drm_device *dev, struct dma_buf *dma_buf)
 	uint64_t flags = 0;
 	int ret;
 
-	dma_resv_lock(resv, NULL);
+	ret = dma_resv_lock(resv, NULL);
+	if (ret)
+		return ERR_PTR(ret);
 
 	if (dma_buf->ops == &amdgpu_dmabuf_ops) {
 		struct amdgpu_bo *other = gem_to_amdgpu_bo(dma_buf->priv);

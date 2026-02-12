@@ -322,7 +322,9 @@ void msm_gem_describe_objects(struct list_head *list, struct seq_file *m);
 static inline void
 msm_gem_lock(struct drm_gem_object *obj)
 {
-	dma_resv_lock(obj->resv, NULL);
+	if (dma_resv_lock(obj->resv, NULL) == 0)
+		return;
+	WARN_ON_ONCE(true);
 }
 
 static inline bool __must_check

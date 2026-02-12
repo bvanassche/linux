@@ -1151,11 +1151,13 @@ static void panthor_vm_bo_free(struct drm_gpuvm_bo *vm_bo)
 	/* We couldn't call this when we unlinked, because the resv lock can't
 	 * be taken in the dma signalling path, so call it now.
 	 */
-	dma_resv_lock(bo->base.resv, NULL);
-	mutex_lock(&bo->base.gpuva.lock);
-	panthor_gem_update_reclaim_state_locked(bo, NULL);
-	mutex_unlock(&bo->base.gpuva.lock);
-	dma_resv_unlock(bo->base.resv);
+	if (!drm_WARN_ON_ONCE(bo->base.dev,
+			       dma_resv_lock(bo->base.resv, NULL))) {
+		mutex_lock(&bo->base.gpuva.lock);
+		panthor_gem_update_reclaim_state_locked(bo, NULL);
+		mutex_unlock(&bo->base.gpuva.lock);
+		dma_resv_unlock(bo->base.resv);
+	}
 
 	kfree(vm_bo);
 }
@@ -1387,19 +1389,27 @@ static int panthor_vm_prepare_map_op_ctx(struct panthor_vm_op_ctx *op_ctx,
 	if (ret)
 		goto err_cleanup;
 
-	/* Insert BO into the extobj list last, when we know nothing can fail. */
+	/*
+	 * Insert BO into the extobj list last, when we know nothing else can
+	 * fail. dma_resv_lock() cannot fail either because the acquire
+	 * context is NULL, so the error path below is unreachable.
+	 */
 	if (bo->base.resv != panthor_vm_resv(vm)) {
-		dma_resv_lock(panthor_vm_resv(vm), NULL);
+		ret = dma_resv_lock(panthor_vm_resv(vm), NULL);
+		if (drm_WARN_ON_ONCE(bo->base.dev, ret))
+			goto err_cleanup;
 		drm_gpuvm_bo_extobj_add(op_ctx->map.vm_bo);
 		dma_resv_unlock(panthor_vm_resv(vm));
 	}
 
 	/* And finally update the BO state. */
-	dma_resv_lock(bo->base.resv, NULL);
-	mutex_lock(&bo->base.gpuva.lock);
-	panthor_gem_update_reclaim_state_locked(bo, NULL);
-	mutex_unlock(&bo->base.gpuva.lock);
-	dma_resv_unlock(bo->base.resv);
+	if (!drm_WARN_ON_ONCE(bo->base.dev,
+			       dma_resv_lock(bo->base.resv, NULL))) {
+		mutex_lock(&bo->base.gpuva.lock);
+		panthor_gem_update_reclaim_state_locked(bo, NULL);
+		mutex_unlock(&bo->base.gpuva.lock);
+		dma_resv_unlock(bo->base.resv);
+	}
 
 	return 0;
 

@@ -1492,7 +1492,9 @@ static int iopt_map_dmabuf(struct iommufd_ctx *ictx, struct iopt_pages *pages,
 	if (IS_ERR(attach))
 		return PTR_ERR(attach);
 
-	dma_resv_lock(dmabuf->resv, NULL);
+	rc = dma_resv_lock(dmabuf->resv, NULL);
+	if (rc)
+		goto err_detach;
 	/*
 	 * Lock ordering requires the mutex to be taken inside the reservation,
 	 * make sure lockdep sees this.
@@ -1504,7 +1506,7 @@ static int iopt_map_dmabuf(struct iommufd_ctx *ictx, struct iopt_pages *pages,
 
 	rc = dma_buf_pin(attach);
 	if (rc)
-		goto err_detach;
+		goto err_unlock;
 
 	rc = sym_vfio_pci_dma_buf_iommufd_map(attach, &pages->dmabuf.phys);
 	if (rc)
@@ -1518,8 +1520,9 @@ static int iopt_map_dmabuf(struct iommufd_ctx *ictx, struct iopt_pages *pages,
 
 err_unpin:
 	dma_buf_unpin(attach);
-err_detach:
+err_unlock:
 	dma_resv_unlock(dmabuf->resv);
+err_detach:
 	dma_buf_detach(dmabuf, attach);
 	return rc;
 }

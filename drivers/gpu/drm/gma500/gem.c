@@ -37,8 +37,11 @@ int psb_gem_pin(struct psb_gem_object *pobj)
 	int ret;
 
 	ret = dma_resv_lock(obj->resv, NULL);
-	if (drm_WARN_ONCE(dev, ret, "dma_resv_lock() failed, ret=%d\n", ret))
+	if (ret) {
+		drm_WARN_ONCE(dev, ret, "dma_resv_lock() failed, ret=%d\n",
+			      ret);
 		return ret;
+	}
 
 	if (pobj->in_gart || pobj->stolen)
 		goto out; /* already mapped */
@@ -81,8 +84,11 @@ void psb_gem_unpin(struct psb_gem_object *pobj)
 	int ret;
 
 	ret = dma_resv_lock(obj->resv, NULL);
-	if (drm_WARN_ONCE(dev, ret, "dma_resv_lock() failed, ret=%d\n", ret))
+	if (ret) {
+		drm_WARN_ONCE(dev, ret, "dma_resv_lock() failed, ret=%d\n",
+			      ret);
 		return;
+	}
 
 	WARN_ON(!pobj->in_gart);
 

@@ -138,10 +138,13 @@ struct dma_buf_io_map *dma_buf_io_create_map(struct dma_buf_io_ctx *ctx)
 
 static void dma_buf_io_ctx_shutdown(struct dma_buf_io_ctx *ctx)
 {
-	dma_resv_lock(ctx->dmabuf->resv, NULL);
-	ctx->is_dead = true;
-	dma_buf_io_kill_map(ctx);
-	dma_resv_unlock(ctx->dmabuf->resv);
+	if (dma_resv_lock(ctx->dmabuf->resv, NULL) == 0) {
+		ctx->is_dead = true;
+		dma_buf_io_kill_map(ctx);
+		dma_resv_unlock(ctx->dmabuf->resv);
+	} else {
+		WARN_ON_ONCE(true);
+	}
 }
 
 /*

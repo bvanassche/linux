@@ -352,7 +352,10 @@ static __poll_t dma_buf_poll(struct file *file, poll_table *poll)
 	if (!events)
 		return 0;
 
-	dma_resv_lock(resv, NULL);
+	if (dma_resv_lock(resv, NULL)) {
+		WARN_ON_ONCE(true);
+		return 0;
+	}
 
 	if (events & EPOLLOUT) {
 		struct dma_buf_poll_cb_t *dcb = &dmabuf->cb_out;
@@ -520,7 +523,9 @@ static long dma_buf_import_sync_file(struct dma_buf *dmabuf,
 		++num_fences;
 
 	if (num_fences > 0) {
-		dma_resv_lock(dmabuf->resv, NULL);
+		ret = dma_resv_lock(dmabuf->resv, NULL);
+		if (ret)
+			goto put_fence;
 
 		ret = dma_resv_reserve_fences(dmabuf->resv, num_fences);
 		if (!ret) {
@@ -531,6 +536,7 @@ static long dma_buf_import_sync_file(struct dma_buf *dmabuf,
 		dma_resv_unlock(dmabuf->resv);
 	}
 
+put_fence:
 	dma_fence_put(fence);
 
 	return ret;
@@ -1055,7 +1061,11 @@ dma_buf_dynamic_attach(struct dma_buf *dmabuf, struct device *dev,
 		if (ret)
 			goto err_attach;
 	}
-	dma_resv_lock(dmabuf->resv, NULL);
+	ret = dma_resv_lock(dmabuf->resv, NULL);
+	if (ret) {
+		WARN_ON_ONCE(true);
+		goto err_detach;
+	}
 	list_add(&attach->node, &dmabuf->attachments);
 	dma_resv_unlock(dmabuf->resv);
 
@@ -1064,6 +1074,9 @@ dma_buf_dynamic_attach(struct dma_buf *dmabuf, struct device *dev,
 
 	return attach;
 
+err_detach:
+	if (dmabuf->ops->detach)
+		dmabuf->ops->detach(dmabuf, attach);
 err_attach:
 	kfree(attach);
 	return ERR_PTR(ret);
@@ -1099,7 +1112,14 @@ void dma_buf_detach(struct dma_buf *dmabuf, struct dma_buf_attachment *attach)
 	if (WARN_ON(!dmabuf || !attach || dmabuf != attach->dmabuf))
 		return;
 
-	dma_resv_lock(dmabuf->resv, NULL);
+	if (dma_resv_lock(dmabuf->resv, NULL)) {
+		/*
+		 * Leak the attachment instead of freeing it while it is
+		 * still on the dmabuf->attachments list.
+		 */
+		WARN_ON_ONCE(true);
+		return;
+	}
 	list_del(&attach->node);
 	dma_resv_unlock(dmabuf->resv);
 
@@ -1273,13 +1293,17 @@ dma_buf_map_attachment_unlocked(struct dma_buf_attachment *attach,
 				enum dma_data_direction direction)
 {
 	struct sg_table *sg_table;
+	int res;
 
 	might_sleep();
 
 	if (WARN_ON(!attach || !attach->dmabuf))
 		return ERR_PTR(-EINVAL);
 
-	dma_resv_lock(attach->dmabuf->resv, NULL);
+	res = dma_resv_lock(attach->dmabuf->resv, NULL);
+	if (res)
+		return ERR_PTR(res);
+
 	sg_table = dma_buf_map_attachment(attach, direction);
 	dma_resv_unlock(attach->dmabuf->resv);
 
@@ -1335,9 +1359,12 @@ void dma_buf_unmap_attachment_unlocked(struct dma_buf_attachment *attach,
 	if (WARN_ON(!attach || !attach->dmabuf || !sg_table))
 		return;
 
-	dma_resv_lock(attach->dmabuf->resv, NULL);
-	dma_buf_unmap_attachment(attach, sg_table, direction);
-	dma_resv_unlock(attach->dmabuf->resv);
+	if (dma_resv_lock(attach->dmabuf->resv, NULL) == 0) {
+		dma_buf_unmap_attachment(attach, sg_table, direction);
+		dma_resv_unlock(attach->dmabuf->resv);
+	} else {
+		WARN_ON_ONCE(true);
+	}
 }
 EXPORT_SYMBOL_NS_GPL(dma_buf_unmap_attachment_unlocked, "DMA_BUF");
 
@@ -1701,7 +1728,9 @@ int dma_buf_vmap_unlocked(struct dma_buf *dmabuf, struct iosys_map *map)
 	if (WARN_ON(!dmabuf))
 		return -EINVAL;
 
-	dma_resv_lock(dmabuf->resv, NULL);
+	ret = dma_resv_lock(dmabuf->resv, NULL);
+	if (ret)
+		return ret;
 	ret = dma_buf_vmap(dmabuf, map);
 	dma_resv_unlock(dmabuf->resv);
 
@@ -1743,9 +1772,12 @@ void dma_buf_vunmap_unlocked(struct dma_buf *dmabuf, struct iosys_map *map)
 	if (WARN_ON(!dmabuf))
 		return;
 
-	dma_resv_lock(dmabuf->resv, NULL);
-	dma_buf_vunmap(dmabuf, map);
-	dma_resv_unlock(dmabuf->resv);
+	if (dma_resv_lock(dmabuf->resv, NULL) == 0) {
+		dma_buf_vunmap(dmabuf, map);
+		dma_resv_unlock(dmabuf->resv);
+	} else {
+		WARN_ON_ONCE(true);
+	}
 }
 EXPORT_SYMBOL_NS_GPL(dma_buf_vunmap_unlocked, "DMA_BUF");
 

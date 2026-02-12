@@ -144,7 +144,9 @@ int vgem_fence_attach_ioctl(struct drm_device *dev,
 	}
 
 	/* Expose the fence via the dma-buf */
-	dma_resv_lock(resv, NULL);
+	ret = dma_resv_lock(resv, NULL);
+	if (ret)
+		goto err_fence;
 	ret = dma_resv_reserve_fences(resv, 1);
 	if (!ret)
 		dma_resv_add_fence(resv, fence, arg->flags & VGEM_FENCE_WRITE ?

@@ -198,7 +198,9 @@ struct drm_gem_object *vmw_prime_import_sg_table(struct drm_device *dev,
 
 	};
 
-	dma_resv_lock(params.resv, NULL);
+	ret = dma_resv_lock(params.resv, NULL);
+	if (ret)
+		return NULL;
 
 	ret = vmw_bo_create(dev_priv, &params, &vbo);
 	if (ret != 0)

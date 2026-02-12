@@ -1372,8 +1372,9 @@ static int mlx5_umr_revoke_mr_with_lock(struct mlx5_ib_mr *mr)
 		mutex_lock(&to_ib_umem_odp(mr->umem)->umem_mutex);
 
 	if (is_odp_dma_buf)
-		dma_resv_lock(to_ib_umem_dmabuf(mr->umem)->attach->dmabuf->resv,
-			      NULL);
+		if (dma_resv_lock(to_ib_umem_dmabuf(mr->umem)->attach->dmabuf->resv,
+				  NULL))
+			unreachable();
 
 	ret = mlx5r_umr_revoke_mr(mr);
 
@@ -1412,8 +1413,9 @@ static int mlx5r_handle_mkey_cleanup(struct mlx5_ib_mr *mr)
 		mutex_lock(&to_ib_umem_odp(mr->umem)->umem_mutex);
 
 	if (is_odp_dma_buf)
-		dma_resv_lock(to_ib_umem_dmabuf(mr->umem)->attach->dmabuf->resv,
-			      NULL);
+		if (dma_resv_lock(to_ib_umem_dmabuf(mr->umem)->attach->dmabuf->resv,
+				  NULL))
+			unreachable();
 	ret = destroy_mkey(dev, mr);
 	if (is_odp) {
 		if (!ret)

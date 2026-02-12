@@ -182,8 +182,12 @@ lsdc_prime_import_sg_table(struct drm_device *ddev,
 	u64 size = attach->dmabuf->size;
 	struct drm_gem_object *gobj;
 	struct lsdc_bo *lbo;
+	int res;
 
-	dma_resv_lock(resv, NULL);
+	res = dma_resv_lock(resv, NULL);
+	if (res)
+		return ERR_PTR(res);
+
 	gobj = lsdc_gem_object_create(ddev, LSDC_GEM_DOMAIN_GTT, size, false,
 				      sg, resv);
 	dma_resv_unlock(resv);

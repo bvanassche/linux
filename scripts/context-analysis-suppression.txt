@@ -7,7 +7,5 @@
 # selected.
 
 [thread-safety]
-src:*arch/*/include/*
-
 # Opt-in headers:
 src:*include/*=emit

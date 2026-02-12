@@ -240,7 +240,8 @@ static void ttm_bo_delayed_delete(struct work_struct *work)
 
 	dma_resv_wait_timeout(&bo->base._resv, DMA_RESV_USAGE_BOOKKEEP, false,
 			      MAX_SCHEDULE_TIMEOUT);
-	dma_resv_lock(bo->base.resv, NULL);
+	if (dma_resv_lock(bo->base.resv, NULL))
+		unreachable();
 	ttm_bo_cleanup_memtype_use(bo);
 	dma_resv_unlock(bo->base.resv);
 	ttm_bo_put(bo);

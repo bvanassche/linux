@@ -156,9 +156,10 @@ void xe_mmio_gem_destroy(struct xe_mmio_gem *gem, struct drm_file *file)
 
 	drm_vma_node_revoke(&base->vma_node, file);
 
-	dma_resv_lock(base->resv, NULL);
-	gem->destroyed = true;
-	dma_resv_unlock(base->resv);
+	if (dma_resv_lock(base->resv, NULL) == 0) {
+		gem->destroyed = true;
+		dma_resv_unlock(base->resv);
+	}
 	/*
 	 * Setting 'destroyed' under lock takes care of the subsequent faults.
 	 * Zap the existing PTEs to cut off access to the real MMIO through
@@ -258,7 +259,7 @@ static vm_fault_t xe_mmio_gem_vm_fault(struct vm_fault *vmf)
 	struct drm_gem_object *base = vma->vm_private_data;
 	vm_fault_t ret;
 
-	dma_resv_lock(base->resv, NULL);
+	BUG_ON(dma_resv_lock(base->resv, NULL));
 	ret = xe_mmio_gem_vm_fault_locked(vmf);
 	dma_resv_unlock(base->resv);
 	return ret;

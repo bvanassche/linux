@@ -737,8 +737,8 @@ static void xe_pm_runtime_lockdep_prime(void)
 	dma_resv_init(&lockdep_resv);
 	lock_map_acquire(&xe_pm_runtime_d3cold_map);
 	/* D3Cold takes the dma_resv locks to evict bos */
-	dma_resv_lock(&lockdep_resv, NULL);
-	dma_resv_unlock(&lockdep_resv);
+	if (dma_resv_lock(&lockdep_resv, NULL) == 0)
+		dma_resv_unlock(&lockdep_resv);
 	lock_map_release(&xe_pm_runtime_d3cold_map);
 
 	/* Shrinkers might like to wake up the device under reclaim. */

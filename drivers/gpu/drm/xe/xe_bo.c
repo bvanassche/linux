@@ -3580,9 +3580,7 @@ int xe_bo_lock(struct xe_bo *bo, bool intr)
 	if (intr)
 		return dma_resv_lock_interruptible(bo->ttm.base.resv, NULL);
 
-	dma_resv_lock(bo->ttm.base.resv, NULL);
-
-	return 0;
+	return dma_resv_lock(bo->ttm.base.resv, NULL);
 }
 
 /**

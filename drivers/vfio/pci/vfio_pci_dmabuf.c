@@ -306,7 +306,12 @@ int vfio_pci_core_feature_dma_buf(struct vfio_pci_core_device *vdev, u32 flags,
 	/* dma_buf_put() now frees priv */
 	INIT_LIST_HEAD(&priv->dmabufs_elm);
 	down_write(&vdev->memory_lock);
-	dma_resv_lock(priv->dmabuf->resv, NULL);
+	ret = dma_resv_lock(priv->dmabuf->resv, NULL);
+	if (ret) {
+		up_write(&vdev->memory_lock);
+		dma_buf_put(priv->dmabuf);
+		return ret;
+	}
 	priv->revoked = !__vfio_pci_memory_enabled(vdev);
 	list_add_tail(&priv->dmabufs_elm, &vdev->dmabufs);
 	dma_resv_unlock(priv->dmabuf->resv);
@@ -344,8 +349,8 @@ void vfio_pci_dma_buf_move(struct vfio_pci_core_device *vdev, bool revoked)
 		if (!get_file_active(&priv->dmabuf->file))
 			continue;
 
-		if (priv->revoked != revoked) {
-			dma_resv_lock(priv->dmabuf->resv, NULL);
+		if (priv->revoked != revoked &&
+		    dma_resv_lock(priv->dmabuf->resv, NULL) == 0) {
 			if (revoked)
 				priv->revoked = true;
 			dma_buf_invalidate_mappings(priv->dmabuf);
@@ -368,9 +373,10 @@ void vfio_pci_dma_buf_move(struct vfio_pci_core_device *vdev, bool revoked)
 				kref_init(&priv->kref);
 				reinit_completion(&priv->comp);
 			} else {
-				dma_resv_lock(priv->dmabuf->resv, NULL);
-				priv->revoked = false;
-				dma_resv_unlock(priv->dmabuf->resv);
+				if (!dma_resv_lock(priv->dmabuf->resv, NULL)) {
+					priv->revoked = false;
+					dma_resv_unlock(priv->dmabuf->resv);
+				}
 			}
 		}
 		fput(priv->dmabuf->file);

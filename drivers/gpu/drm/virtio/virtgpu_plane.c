@@ -317,7 +317,9 @@ static int virtio_gpu_prepare_imported_obj(struct drm_plane *plane,
 	unsigned int nents;
 	int ret;
 
-	dma_resv_lock(resv, NULL);
+	ret = dma_resv_lock(resv, NULL);
+	if (ret)
+		return ret;
 
 	ret = dma_buf_pin(attach);
 	if (ret) {
@@ -397,9 +399,10 @@ static void virtio_gpu_cleanup_imported_obj(struct drm_gem_object *obj)
 	struct dma_buf_attachment *attach = obj->import_attach;
 	struct dma_resv *resv = attach->dmabuf->resv;
 
-	dma_resv_lock(resv, NULL);
-	dma_buf_unpin(attach);
-	dma_resv_unlock(resv);
+	if (dma_resv_lock(resv, NULL) == 0) {
+		dma_buf_unpin(attach);
+		dma_resv_unlock(resv);
+	}
 }
 
 static void virtio_gpu_plane_cleanup_fb(struct drm_plane *plane,

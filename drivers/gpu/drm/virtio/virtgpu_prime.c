@@ -207,9 +207,10 @@ static void virtgpu_dma_buf_free_obj(struct drm_gem_object *obj)
 	if (drm_gem_is_imported(obj)) {
 		struct dma_buf *dmabuf = attach->dmabuf;
 
-		dma_resv_lock(dmabuf->resv, NULL);
-		virtgpu_dma_buf_unmap(bo);
-		dma_resv_unlock(dmabuf->resv);
+		if (dma_resv_lock(dmabuf->resv, NULL) == 0) {
+			virtgpu_dma_buf_unmap(bo);
+			dma_resv_unlock(dmabuf->resv);
+		}
 
 		dma_buf_detach(dmabuf, attach);
 		dma_buf_put(dmabuf);
@@ -235,12 +236,12 @@ static int virtgpu_dma_buf_init_obj(struct drm_device *dev,
 	int ret;
 
 	ret = virtio_gpu_resource_id_get(vgdev, &bo->hw_res_handle);
-	if (ret) {
-		virtgpu_dma_buf_free_obj(&bo->base.base);
-		return ret;
-	}
+	if (ret)
+		goto free_obj;
 
-	dma_resv_lock(resv, NULL);
+	ret = dma_resv_lock(resv, NULL);
+	if (ret)
+		goto free_obj;
 
 	ret = dma_buf_pin(attach);
 	if (ret)
@@ -268,6 +269,7 @@ err_import:
 	dma_buf_unpin(attach);
 err_pin:
 	dma_resv_unlock(resv);
+free_obj:
 	virtgpu_dma_buf_free_obj(&bo->base.base);
 	return ret;
 }

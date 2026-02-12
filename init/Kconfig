@@ -1513,7 +1513,6 @@ config LD_ORPHAN_WARN
 config LD_ORPHAN_WARN_LEVEL
 	string
 	depends on LD_ORPHAN_WARN
-	default "error" if WERROR
 	default "warn"
 
 config HAVE_UID16

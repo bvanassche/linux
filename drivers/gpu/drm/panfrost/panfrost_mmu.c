@@ -617,7 +617,9 @@ static int panfrost_mmu_map_fault_addr(struct panfrost_device *pfdev, int as,
 
 	obj = &bo->base.base;
 
-	dma_resv_lock(obj->resv, NULL);
+	ret = dma_resv_lock(obj->resv, NULL);
+	if (ret)
+		goto err_bo;
 
 	if (!bo->base.pages) {
 		bo->sgts = kvmalloc_objs(struct sg_table,

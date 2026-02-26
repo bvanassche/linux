@@ -1801,6 +1801,7 @@ static inline struct ext4_sb_info *EXT4_SB(struct super_block *sb)
 {
 	return sb->s_fs_info;
 }
+
 static inline struct ext4_inode_info *EXT4_I(struct inode *inode)
 {
 	return container_of(inode, struct ext4_inode_info, vfs_inode);

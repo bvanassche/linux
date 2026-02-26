@@ -19,8 +19,6 @@ struct extent_status;
 struct ext4_fsmap;
 struct partial_cluster;
 
-#define EXT4_I(inode) (container_of(inode, struct ext4_inode_info, vfs_inode))
-
 #define show_mballoc_flags(flags) __print_flags(flags, "|",	\
 	{ EXT4_MB_HINT_MERGE,		"HINT_MERGE" },		\
 	{ EXT4_MB_HINT_FIRST,		"HINT_FIRST" },		\

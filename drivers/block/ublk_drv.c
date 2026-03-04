@@ -386,11 +386,13 @@ static inline bool ublk_support_batch_io(const struct ublk_queue *ubq)
 }
 
 static inline void ublk_io_lock(struct ublk_io *io)
+	__acquires(&io->lock)
 {
 	spin_lock(&io->lock);
 }
 
 static inline void ublk_io_unlock(struct ublk_io *io)
+	__releases(&io->lock)
 {
 	spin_unlock(&io->lock);
 }
@@ -3121,7 +3123,6 @@ static void ublk_queue_reset_io_flags(struct ublk_device *ub,
 /* device can only be started after all IOs are ready */
 static void ublk_mark_io_ready(struct ublk_device *ub, u16 q_id,
 	struct ublk_io *io)
-	__must_hold(&ub->mutex)
 {
 	struct ublk_queue *ubq = ublk_get_queue(ub, q_id);
 
@@ -4550,6 +4551,7 @@ static bool ublk_dev_ready_or_stopping(const struct ublk_device *ub)
  * daemon death), so re-check it under the mutex and wait again.
  */
 static int ublk_wait_dev_ready_and_lock(struct ublk_device *ub)
+	__cond_acquires(0, &ub->mutex)
 {
 	while (true) {
 		if (wait_var_event_interruptible(&ub->nr_queue_ready,
@@ -5500,6 +5502,7 @@ exit:
  * already holds ub->mutex when calling del_gendisk() which freezes the queue.
 */
 static unsigned int ublk_lock_buf_tree(struct ublk_device *ub)
+	__acquires(&ub->mutex)
 {
 	unsigned int memflags = 0;
 
@@ -5511,6 +5514,7 @@ static unsigned int ublk_lock_buf_tree(struct ublk_device *ub)
 }
 
 static void ublk_unlock_buf_tree(struct ublk_device *ub, unsigned int memflags)
+	__releases(&ub->mutex)
 {
 	if (ub->ub_disk)
 		blk_mq_unfreeze_queue(ub->ub_disk->queue, memflags);

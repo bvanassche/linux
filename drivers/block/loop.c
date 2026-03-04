@@ -108,17 +108,19 @@ static DEFINE_MUTEX(loop_validate_mutex);
  * loop_configure()/__loop_clr_fd() calls.
  */
 static int loop_global_lock_killable(struct loop_device *lo, bool global)
+	__cond_acquires_range(0, INT_MAX, &lo->lo_mutex)
 {
 	int err;
 
 	if (global) {
 		err = mutex_lock_killable(&loop_validate_mutex);
-		if (err)
+		if (err < 0)
 			return err;
+		__release(&loop_validate_mutex);
 	}
 	err = mutex_lock_killable(&lo->lo_mutex);
-	if (err && global)
-		mutex_unlock(&loop_validate_mutex);
+	if (err < 0 && global)
+		context_unsafe(mutex_unlock(&loop_validate_mutex));
 	return err;
 }
 
@@ -129,10 +131,11 @@ static int loop_global_lock_killable(struct loop_device *lo, bool global)
  * @global: true if @lo was about to bind another "struct loop_device", false otherwise
  */
 static void loop_global_unlock(struct loop_device *lo, bool global)
+	__releases(&lo->lo_mutex)
 {
 	mutex_unlock(&lo->lo_mutex);
 	if (global)
-		mutex_unlock(&loop_validate_mutex);
+		context_unsafe(mutex_unlock(&loop_validate_mutex));
 }
 
 static int max_part;
@@ -935,7 +938,7 @@ static int loop_configure(struct loop_device *lo, blk_mode_t mode,
 	}
 
 	error = loop_global_lock_killable(lo, is_loop);
-	if (error)
+	if (error < 0)
 		goto out_bdev;
 
 	error = -EBUSY;
@@ -1119,7 +1122,7 @@ static int loop_clr_fd(struct loop_device *lo)
 	 * which loop_configure() found via fget() was this loop device.
 	 */
 	err = loop_global_lock_killable(lo, true);
-	if (err)
+	if (err < 0)
 		return err;
 	if (lo->lo_state != Lo_bound) {
 		loop_global_unlock(lo, true);

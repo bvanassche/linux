@@ -516,6 +516,7 @@ static void zloop_rw_complete(struct kiocb *iocb, long ret)
 }
 
 static int zloop_do_rw(struct zloop_cmd *cmd)
+	__no_context_analysis /* conditional locking */
 {
 	struct request *rq = blk_mq_rq_from_pdu(cmd);
 	int rw = req_op(rq) == REQ_OP_READ ? ITER_DEST : ITER_SOURCE;

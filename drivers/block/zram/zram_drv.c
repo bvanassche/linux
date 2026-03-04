@@ -1554,6 +1554,7 @@ static void zram_debugfs_destroy(void)
 }
 
 static void *zram_block_state_start(struct seq_file *seq, loff_t *pos)
+	__acquires_shared(&((struct zram *)seq->private)->dev_lock)
 {
 	struct zram *zram = seq->private;
 	unsigned long nr_pages;
@@ -1582,6 +1583,7 @@ static void *zram_block_state_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void zram_block_state_stop(struct seq_file *seq, void *v)
+	__releases_shared(&((struct zram *)seq->private)->dev_lock)
 {
 	struct zram *zram = seq->private;
 

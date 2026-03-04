@@ -114,7 +114,8 @@ ssize_t zcomp_available_show(const char *comp, char *buf, ssize_t at)
 	return at;
 }
 
-struct zcomp_strm *zcomp_stream_get(struct zcomp *comp)
+struct zcomp_strm *__zcomp_stream_get(struct zcomp *comp)
+	__acquires_ret
 {
 	for (;;) {
 		struct zcomp_strm *zstrm = raw_cpu_ptr(comp->stream);
@@ -137,6 +138,7 @@ struct zcomp_strm *zcomp_stream_get(struct zcomp *comp)
 }
 
 void zcomp_stream_put(struct zcomp_strm *zstrm)
+	__releases(&zstrm->lock)
 {
 	mutex_unlock(&zstrm->lock);
 }

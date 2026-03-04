@@ -364,7 +364,8 @@ struct ublk_params_header {
 };
 
 static void ublk_io_release(void *priv);
-static void ublk_stop_dev_unlocked(struct ublk_device *ub);
+static void ublk_stop_dev_unlocked(struct ublk_device *ub)
+	__must_hold(&ub->mutex);
 static bool ublk_try_buf_match(struct ublk_device *ub, struct request *rq,
 				  u32 *buf_idx, u32 *buf_off);
 static void ublk_buf_cleanup(struct ublk_device *ub);
@@ -386,11 +387,13 @@ static inline bool ublk_support_batch_io(const struct ublk_queue *ubq)
 }
 
 static inline void ublk_io_lock(struct ublk_io *io)
+	__acquires(&io->lock)
 {
 	spin_lock(&io->lock);
 }
 
 static inline void ublk_io_unlock(struct ublk_io *io)
+	__releases(&io->lock)
 {
 	spin_unlock(&io->lock);
 }
@@ -3796,6 +3799,7 @@ static void ublk_batch_revert_prep_cmd(struct ublk_batch_io_iter *iter,
 static int ublk_batch_prep_io(struct ublk_queue *ubq,
 			      const struct ublk_batch_io_data *data,
 			      const struct ublk_elem_header *elem)
+	__must_hold(&data->ub->mutex)
 {
 	struct ublk_io *io = &ubq->ios[elem->tag];
 	const struct ublk_batch_io *uc = &data->header;
@@ -4562,6 +4566,7 @@ static bool ublk_dev_ready_or_stopping(const struct ublk_device *ub)
  * daemon death), so re-check it under the mutex and wait again.
  */
 static int ublk_wait_dev_ready_and_lock(struct ublk_device *ub)
+	__cond_acquires_range(0, INT_MAX, &ub->mutex)
 {
 	while (true) {
 		if (wait_var_event_interruptible(&ub->nr_queue_ready,
@@ -4658,7 +4663,7 @@ static int ublk_ctrl_start_dev(struct ublk_device *ub,
 		};
 	}
 
-	if (ublk_wait_dev_ready_and_lock(ub))
+	if (ublk_wait_dev_ready_and_lock(ub) < 0)
 		return -EINTR;
 
 	if (!ublk_validate_user_pid(ub, ublksrv_pid)) {
@@ -5286,7 +5291,7 @@ static int ublk_ctrl_end_recovery(struct ublk_device *ub,
 	pr_devel("%s: Waiting for all FETCH_REQs, dev id %d...\n", __func__,
 		 header->dev_id);
 
-	if (ublk_wait_dev_ready_and_lock(ub))
+	if (ublk_wait_dev_ready_and_lock(ub) < 0)
 		return -EINTR;
 
 	pr_devel("%s: All FETCH_REQs received, dev id %d\n", __func__,
@@ -5514,6 +5519,7 @@ exit:
  * already holds ub->mutex when calling del_gendisk() which freezes the queue.
 */
 static unsigned int ublk_lock_buf_tree(struct ublk_device *ub)
+	__acquires(&ub->mutex)
 {
 	unsigned int memflags = 0;
 
@@ -5525,6 +5531,7 @@ static unsigned int ublk_lock_buf_tree(struct ublk_device *ub)
 }
 
 static void ublk_unlock_buf_tree(struct ublk_device *ub, unsigned int memflags)
+	__releases(&ub->mutex)
 {
 	if (ub->ub_disk)
 		blk_mq_unfreeze_queue(ub->ub_disk->queue, memflags);

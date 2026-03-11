@@ -1089,6 +1089,7 @@ static int iscsi_nop_out_rsp(struct iscsi_task *task,
 static int iscsi_handle_reject(struct iscsi_session *session,
 			       struct iscsi_conn *conn, struct iscsi_hdr *hdr,
 			       char *data, int datalen)
+	__must_hold(&session->back_lock)
 {
 	struct iscsi_reject *reject = (struct iscsi_reject *)hdr;
 	struct iscsi_hdr rejected_pdu;
@@ -1213,6 +1214,7 @@ EXPORT_SYMBOL_GPL(iscsi_itt_to_task);
  */
 int __iscsi_complete_pdu(struct iscsi_session *session, struct iscsi_conn *conn,
 			 struct iscsi_hdr *hdr, char *data, int datalen)
+	__must_hold(&session->back_lock)
 {
 	int opcode = hdr->opcode & ISCSI_OPCODE_MASK, rc = 0;
 	struct iscsi_task *task;
@@ -1502,6 +1504,7 @@ static int iscsi_check_cmdsn_window_closed(struct iscsi_conn *conn)
 
 static int iscsi_xmit_task(struct iscsi_session *session, struct iscsi_conn *conn,
 			   struct iscsi_task *task, bool was_requeue)
+	__must_hold(&session->frwd_lock)
 {
 	int rc;
 
@@ -1919,6 +1922,7 @@ static int iscsi_exec_task_mgmt_fn(struct iscsi_session *session,
 				   struct iscsi_tm *hdr, int age,
 				   int timeout)
 	__must_hold(&session->frwd_lock)
+	__must_hold(&session->eh_mutex)
 {
 	if (__iscsi_conn_send_pdu(conn, (struct iscsi_hdr *)hdr, NULL, 0)) {
 		spin_unlock_bh(&session->frwd_lock);
@@ -1964,6 +1968,7 @@ static int iscsi_exec_task_mgmt_fn(struct iscsi_session *session,
  */
 static void fail_scsi_tasks(struct iscsi_session *session, struct iscsi_conn *conn,
 			    u64 lun, int error)
+	__must_hold(&session->frwd_lock)
 {
 	struct iscsi_task *task;
 	int i;

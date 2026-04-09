@@ -119,6 +119,11 @@ static void linear_status(struct dm_target *ti, status_type_t type,
 	}
 }
 
+static void linear_io_hints(struct dm_target *ti, struct queue_limits *limits)
+{
+	limits->features |= BLK_FEAT_STACKING_COPY_OFFL;
+}
+
 static int linear_prepare_ioctl(struct dm_target *ti, struct block_device **bdev,
 				unsigned int cmd, unsigned long arg,
 				bool *forward)
@@ -211,6 +216,7 @@ static struct target_type linear_target = {
 	.dtr    = linear_dtr,
 	.map    = linear_map,
 	.status = linear_status,
+	.io_hints = linear_io_hints,
 	.prepare_ioctl = linear_prepare_ioctl,
 	.iterate_devices = linear_iterate_devices,
 	.direct_access = linear_dax_direct_access,

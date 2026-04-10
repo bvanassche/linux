@@ -29,10 +29,10 @@ static const char base64_tables[][65] = {
  * ch_62 maps to 62, ch_63 maps to 63, and other characters return -1
  */
 #define INIT_1(v, ch_62, ch_63) \
-	[v] = (v) >= 'A' && (v) <= 'Z' ? (v) - 'A' \
+	[v] = (s8)((v) >= 'A' && (v) <= 'Z' ? (v) - 'A' \
 		: (v) >= 'a' && (v) <= 'z' ? (v) - 'a' + 26 \
 		: (v) >= '0' && (v) <= '9' ? (v) - '0' + 52 \
-		: (v) == (ch_62) ? 62 : (v) == (ch_63) ? 63 : -1
+		: (v) == (ch_62) ? 62 : (v) == (ch_63) ? 63 : -1)
 
 /*
  * Recursive macros to generate multiple Base64 reverse mapping table entries.

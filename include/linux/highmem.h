@@ -231,8 +231,9 @@ static inline void clear_user_page(void *addr, unsigned long vaddr, struct page 
  * If the architecture provides a clear_user_page(), use that;
  * otherwise, we can safely use clear_pages().
  */
-static inline void clear_user_pages(void *addr, unsigned long vaddr,
-		struct page *page, unsigned int npages)
+static inline void clear_user_pages(void *addr,
+		unsigned long vaddr __maybe_unused, struct page *page,
+		unsigned int npages)
 {
 
 #ifdef clear_user_page

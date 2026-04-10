@@ -1206,7 +1206,8 @@ static inline void __iomem *ioremap_np(phys_addr_t offset, size_t size)
 static inline void __iomem *ioport_map(unsigned long port, unsigned int nr)
 {
 	port &= IO_SPACE_LIMIT;
-	return (port > MMIO_UPPER_LIMIT) ? NULL : PCI_IOBASE + port;
+	return (port > MMIO_UPPER_LIMIT) ? NULL :
+		(void __iomem *)((uintptr_t)PCI_IOBASE + port);
 }
 #define ARCH_HAS_GENERIC_IOPORT_MAP
 #endif

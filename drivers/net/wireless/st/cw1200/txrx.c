@@ -16,6 +16,7 @@
 #include "sta.h"
 #include "hwbus.h"
 #include "debug.h"
+#include "pm.h"
 
 #define CW1200_INVALID_RATE_ID (0xFF)
 

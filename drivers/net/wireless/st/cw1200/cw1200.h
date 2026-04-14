@@ -24,7 +24,6 @@
 #include "wsm.h"
 #include "scan.h"
 #include "txrx.h"
-#include "pm.h"
 
 /* Forward declarations */
 struct hwbus_ops;
@@ -86,6 +85,13 @@ struct cw1200_link_entry {
 	u8				mac[ETH_ALEN];
 	u8				buffered[CW1200_MAX_TID];
 	struct sk_buff_head		rx_queue;
+};
+
+struct cw1200_pm_state {
+	struct cw1200_suspend_state *suspend_state;
+	struct timer_list stay_awake;
+	struct platform_device *pm_dev;
+	spinlock_t lock; /* Protect access */
 };
 
 struct cw1200_common {

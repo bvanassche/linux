@@ -9,18 +9,14 @@
 #ifndef PM_H_INCLUDED
 #define PM_H_INCLUDED
 
+#include <net/mac80211.h>
+#include "cw1200.h"
+
 /* ******************************************************************** */
 /* mac80211 API								*/
 
 /* extern */  struct cw1200_common;
 /* private */ struct cw1200_suspend_state;
-
-struct cw1200_pm_state {
-	struct cw1200_suspend_state *suspend_state;
-	struct timer_list stay_awake;
-	struct platform_device *pm_dev;
-	spinlock_t lock; /* Protect access */
-};
 
 #ifdef CONFIG_PM
 int cw1200_pm_init(struct cw1200_pm_state *pm,

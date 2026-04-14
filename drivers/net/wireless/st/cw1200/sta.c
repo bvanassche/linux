@@ -17,6 +17,7 @@
 #include "fwio.h"
 #include "bh.h"
 #include "debug.h"
+#include "pm.h"
 
 #ifndef ERP_INFO_BYTE_OFFSET
 #define ERP_INFO_BYTE_OFFSET 2

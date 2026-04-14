@@ -12,6 +12,7 @@
 #include "queue.h"
 #include "cw1200.h"
 #include "debug.h"
+#include "pm.h"
 
 /* private */ struct cw1200_queue_item
 {

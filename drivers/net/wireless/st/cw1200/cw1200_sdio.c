@@ -21,6 +21,7 @@
 #include "hwbus.h"
 #include <linux/platform_data/net-cw1200.h>
 #include "hwio.h"
+#include "pm.h"
 
 MODULE_AUTHOR("Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>");
 MODULE_DESCRIPTION("mac80211 ST-Ericsson CW1200 SDIO driver");

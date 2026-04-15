@@ -1,4 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
+
+CONTEXT_ANALYSIS := y
+
 cw1200_core-y := \
 		fwio.o \
 		txrx.o \

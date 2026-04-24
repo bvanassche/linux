@@ -535,4 +535,44 @@ struct blk_rq_stat {
 	u64 batch;
 };
 
+/* A single input or output segment descriptor. */
+struct blk_copy_seg {
+	loff_t pos;
+	loff_t len;
+};
+
+/**
+ * struct blk_copy_params - input parameters and internal parameters for copy
+ *	operations.
+ * @in_bdev: Input block device.
+ * @in_segs: Input LBA ranges.
+ * @in_nseg: Number of elements in @in_segs.
+ * @out_bdev: Output block device.
+ * @out_segs: Output LBA ranges.
+ * @out_nseg: Number of elements in @out_segs.
+ * @end_io: Called after copying data finished. If %NULL, copying data happens
+ *	synchronously instead of asynchronously.
+ * @private: May be used by @end_io. Not used directly.
+ * @len: Total number of bytes to copy. Set by blkdev_copy_offload() or
+ *	blkdev_copy_onload().
+ * @copy_ctxs: Number of in-flight copy contexts associated with copy offload
+ *	operations.
+ * @lock: Protects @status updates.
+ * @status: I/O completion status.
+ */
+struct blk_copy_params {
+	struct block_device *in_bdev;
+	struct blk_copy_seg *in_segs;
+	unsigned int in_nseg;
+	struct block_device *out_bdev;
+	struct blk_copy_seg *out_segs;
+	unsigned int out_nseg;
+	void (*end_io)(const struct blk_copy_params *params);
+	void *private;
+	loff_t len;
+	atomic_t copy_ctx_count;
+	spinlock_t lock;
+	blk_status_t status;
+};
+
 #endif /* __LINUX_BLK_TYPES_H */

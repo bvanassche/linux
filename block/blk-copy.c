@@ -7,6 +7,53 @@
 #include <linux/blk-copy.h>
 #include <linux/blk-mq.h>
 
+static struct bio *__blk_next_copy_bio(struct request *rq, struct bio *prev_bio,
+				       enum req_op op)
+{
+	struct bio *bio;
+
+	if (prev_bio) {
+		bio = prev_bio->bi_next;
+	} else {
+		struct bio_copy_offload_ctx *copy_ctx = rq->bio->bi_copy_ctx;
+
+		bio = copy_ctx->bios;
+	}
+
+	for (; bio && bio_op(bio) != op; bio = bio->bi_next)
+		;
+	return bio;
+}
+
+struct bio *blk_first_copy_bio(struct request *rq, enum req_op op)
+{
+	struct bio *bio = rq->bio;
+
+	if (bio_op(bio) == op)
+		return bio;
+
+	return __blk_next_copy_bio(rq, NULL, op);
+}
+EXPORT_SYMBOL_GPL(blk_first_copy_bio);
+
+struct bio *blk_next_copy_bio(struct bio *bio)
+{
+	return __blk_next_copy_bio(NULL, bio, bio_op(bio));
+}
+EXPORT_SYMBOL_GPL(blk_next_copy_bio);
+
+unsigned int blk_copy_bio_count(struct request *rq, enum req_op op)
+{
+	unsigned int count = 0;
+
+	for (struct bio *bio = blk_first_copy_bio(rq, op); bio;
+	     bio = blk_next_copy_bio(bio))
+		count++;
+
+	return count;
+}
+EXPORT_SYMBOL_GPL(blk_copy_bio_count);
+
 /**
  * struct blkdev_copy_onload_ctx - Tracks the state of a single onloaded copy operation.
  * @params: Data copy parameters.

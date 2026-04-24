@@ -43,4 +43,8 @@ struct bio_copy_offload_ctx {
 	void (*translation_complete)(struct bio_copy_offload_ctx *ctx);
 };
 
+struct bio *blk_first_copy_bio(struct request *rq, enum req_op op);
+struct bio *blk_next_copy_bio(struct bio *bio);
+unsigned int blk_copy_bio_count(struct request *rq, enum req_op op);
+
 #endif /* __LINUX_BLK_COPY_H */

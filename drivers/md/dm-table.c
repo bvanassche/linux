@@ -1816,6 +1816,14 @@ int dm_calculate_queue_limits(struct dm_table *t,
 			return -EINVAL;
 
 combine_limits:
+		if (!(ti_limits.features & BLK_FEAT_STACKING_COPY_OFFL)) {
+			ti_limits.max_copy_hw_sectors = 0;
+			ti_limits.max_copy_src_segments = 0;
+			ti_limits.max_copy_dst_segments = 0;
+			ti_limits.max_user_copy_sectors = 0;
+			ti_limits.max_copy_sectors = 0;
+		}
+
 		/*
 		 * Merge this target's queue limits into the overall limits
 		 * for the table.

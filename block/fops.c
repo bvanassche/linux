@@ -906,9 +906,19 @@ static ssize_t blkdev_copy_file_range(struct file *file_in, loff_t pos_in,
 					       pos_out, out_end);
 		if (err)
 			return err;
-		if (blkdev_copy_offload(&params) == 0)
+		if (blkdev_copy_offload(&params) == 0) {
+			pr_info("%s: offloaded copying %zd bytes from %lld to %lld\n",
+				in_bdev->bd_disk->disk_name, len, pos_in, pos_out);
 			return len;
+		} else {
+			pr_info("%s: failed to offload copying %zd bytes from %lld to %lld - falling back to onloading\n",
+				in_bdev->bd_disk->disk_name, len, pos_in, pos_out);
+		}
 		/* If copy offloading fails, fall back to onloading. */
+	} else {
+		pr_info("%s: copy offloading is not supported to %s. Onloading.\n",
+			in_bdev->bd_disk->disk_name,
+			out_bdev->bd_disk->disk_name);
 	}
 
 	return splice_copy_file_range(file_in, pos_in, file_out, pos_out, len);

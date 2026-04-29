@@ -5507,6 +5507,7 @@ vm_fault_t do_set_pmd(struct vm_fault *vmf, struct folio *folio, struct page *pa
 	struct vm_area_struct *vma = vmf->vma;
 	bool write = vmf->flags & FAULT_FLAG_WRITE;
 	unsigned long haddr = vmf->address & HPAGE_PMD_MASK;
+	spinlock_t *ptl;
 	pmd_t entry;
 	vm_fault_t ret = VM_FAULT_FALLBACK;
 
@@ -5547,7 +5548,8 @@ vm_fault_t do_set_pmd(struct vm_fault *vmf, struct folio *folio, struct page *pa
 			return VM_FAULT_OOM;
 	}
 
-	vmf->ptl = pmd_lock(vma->vm_mm, vmf->pmd);
+	ptl = pmd_lock(vma->vm_mm, vmf->pmd);
+	vmf->ptl = ptl;
 	if (unlikely(!pmd_none(*vmf->pmd)))
 		goto out;
 
@@ -5574,7 +5576,7 @@ vm_fault_t do_set_pmd(struct vm_fault *vmf, struct folio *folio, struct page *pa
 	ret = 0;
 	count_vm_event(THP_FILE_MAPPED);
 out:
-	spin_unlock(vmf->ptl);
+	spin_unlock(ptl);
 	return ret;
 }
 #else
@@ -6541,10 +6543,13 @@ retry_pud:
 			if (!(ret & VM_FAULT_FALLBACK))
 				return ret;
 		} else {
-			vmf.ptl = pmd_lock(mm, vmf.pmd);
+			spinlock_t *ptl;
+
+			ptl = pmd_lock(mm, vmf.pmd);
+			vmf.ptl = ptl;
 			if (!huge_pmd_set_accessed(&vmf))
 				fix_spurious_fault(&vmf, PGTABLE_LEVEL_PMD);
-			spin_unlock(vmf.ptl);
+			spin_unlock(ptl);
 			return 0;
 		}
 	}

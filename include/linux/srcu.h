@@ -235,7 +235,6 @@ static inline void __srcu_read_lock_must_hold(const struct srcu_struct *ssp) __m
  */
 #define srcu_dereference_check(p, ssp, c)					\
 ({										\
-	__srcu_read_lock_must_hold(ssp);					\
 	__acquire_shared_ctx_lock(RCU);					\
 	__auto_type __v = __rcu_dereference_check((p), __UNIQUE_ID(rcu),	\
 				(c) || srcu_read_lock_held(ssp), __rcu);	\

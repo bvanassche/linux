@@ -238,15 +238,6 @@ static inline int srcu_read_lock_held(const struct srcu_struct *ssp)
 
 #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
 
-/*
- * No-op helper to denote that ssp must be held. Because SRCU-protected pointers
- * should still be marked with __rcu_guarded, and we do not want to mark them
- * with __guarded_by(ssp) as it would complicate annotations for writers, we
- * choose the following strategy: srcu_dereference_check() calls this helper
- * that checks that the passed ssp is held, and then fake-acquires 'RCU'.
- */
-static inline void __srcu_read_lock_must_hold(const struct srcu_struct *ssp) __must_hold_shared(ssp) { }
-
 /**
  * srcu_dereference_check - fetch SRCU-protected pointer for later dereferencing
  * @p: the pointer to fetch and protect for later dereferencing
@@ -261,7 +252,6 @@ static inline void __srcu_read_lock_must_hold(const struct srcu_struct *ssp) __m
  */
 #define srcu_dereference_check(p, ssp, c)					\
 ({										\
-	__srcu_read_lock_must_hold(ssp);					\
 	__acquire_shared_ctx_lock(RCU);					\
 	__auto_type __v = __rcu_dereference_check((p), __UNIQUE_ID(rcu),	\
 				(c) || srcu_read_lock_held(ssp), __rcu);	\

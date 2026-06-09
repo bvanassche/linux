@@ -588,7 +588,6 @@ static int loop_change_fd(struct loop_device *lo, struct block_device *bdev,
 	unsigned int memflags;
 	int error;
 	bool partscan;
-	bool is_loop;
 
 	if (!file)
 		return -EBADF;
@@ -602,8 +601,7 @@ static int loop_change_fd(struct loop_device *lo, struct block_device *bdev,
 	/* suppress uevents while reconfiguring the device */
 	dev_set_uevent_suppress(disk_to_dev(lo->lo_disk), 1);
 
-	is_loop = is_loop_device(file);
-	error = loop_global_lock_killable(lo, is_loop);
+	error = loop_global_lock_killable(lo, true);
 	if (error)
 		goto out_putf;
 	error = -ENXIO;
@@ -642,16 +640,8 @@ static int loop_change_fd(struct loop_device *lo, struct block_device *bdev,
 	loop_update_dio(lo);
 	blk_mq_unfreeze_queue(lo->lo_queue, memflags);
 	partscan = lo->lo_flags & LO_FLAGS_PARTSCAN;
-	loop_global_unlock(lo, is_loop);
+	loop_global_unlock(lo, true);
 
-	/*
-	 * Flush loop_validate_file() before fput(), for l->lo_backing_file
-	 * might be pointing at old_file which might be the last reference.
-	 */
-	if (!is_loop) {
-		mutex_lock(&loop_validate_mutex);
-		mutex_unlock(&loop_validate_mutex);
-	}
 	fput(old_file);
 	dev_set_uevent_suppress(disk_to_dev(lo->lo_disk), 0);
 	if (partscan)
@@ -663,7 +653,7 @@ done:
 	return error;
 
 out_err:
-	loop_global_unlock(lo, is_loop);
+	loop_global_unlock(lo, true);
 out_putf:
 	fput(file);
 	dev_set_uevent_suppress(disk_to_dev(lo->lo_disk), 0);

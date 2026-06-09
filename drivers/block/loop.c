@@ -109,27 +109,24 @@ static DEFINE_MUTEX(loop_validate_mutex);
  * loop_global_lock_killable() - take locks for safe loop_validate_file() test
  *
  * @lo: struct loop_device
- * @global: true if @lo is about to bind another "struct loop_device", false otherwise
  *
  * Returns 0 on success, -EINTR otherwise.
  *
- * Since loop_validate_file() traverses on other "struct loop_device" if
- * is_loop_device() is true, we need a global lock for serializing concurrent
+ * Since loop_validate_file() traverses on other "struct loop_device", we need a
+ * global lock for serializing concurrent
  * loop_configure()/loop_change_fd()/__loop_clr_fd() calls.
  */
-static int loop_global_lock_killable(struct loop_device *lo, bool global)
+static int loop_global_lock_killable(struct loop_device *lo)
+	__cond_acquires(0, &loop_validate_mutex)
 	__cond_acquires(0, &lo->lo_mutex)
-	__context_unsafe(conditional locking)
 {
 	int err;
 
-	if (global) {
-		err = mutex_lock_killable(&loop_validate_mutex);
-		if (err)
-			return err;
-	}
+	err = mutex_lock_killable(&loop_validate_mutex);
+	if (err)
+		return err;
 	err = mutex_lock_killable(&lo->lo_mutex);
-	if (err && global)
+	if (err)
 		mutex_unlock(&loop_validate_mutex);
 	return err;
 }
@@ -138,15 +135,13 @@ static int loop_global_lock_killable(struct loop_device *lo, bool global)
  * loop_global_unlock() - release locks taken by loop_global_lock_killable()
  *
  * @lo: struct loop_device
- * @global: true if @lo was about to bind another "struct loop_device", false otherwise
  */
-static void loop_global_unlock(struct loop_device *lo, bool global)
+static void loop_global_unlock(struct loop_device *lo)
 	__releases(&lo->lo_mutex)
-	__context_unsafe(conditional locking)
+	__releases(&loop_validate_mutex)
 {
 	mutex_unlock(&lo->lo_mutex);
-	if (global)
-		mutex_unlock(&loop_validate_mutex);
+	mutex_unlock(&loop_validate_mutex);
 }
 
 static int max_part;
@@ -601,7 +596,7 @@ static int loop_change_fd(struct loop_device *lo, struct block_device *bdev,
 	/* suppress uevents while reconfiguring the device */
 	dev_set_uevent_suppress(disk_to_dev(lo->lo_disk), 1);
 
-	error = loop_global_lock_killable(lo, true);
+	error = loop_global_lock_killable(lo);
 	if (error)
 		goto out_putf;
 	error = -ENXIO;
@@ -640,7 +635,7 @@ static int loop_change_fd(struct loop_device *lo, struct block_device *bdev,
 	loop_update_dio(lo);
 	blk_mq_unfreeze_queue(lo->lo_queue, memflags);
 	partscan = lo->lo_flags & LO_FLAGS_PARTSCAN;
-	loop_global_unlock(lo, true);
+	loop_global_unlock(lo);
 
 	fput(old_file);
 	dev_set_uevent_suppress(disk_to_dev(lo->lo_disk), 0);
@@ -653,7 +648,7 @@ done:
 	return error;
 
 out_err:
-	loop_global_unlock(lo, true);
+	loop_global_unlock(lo);
 out_putf:
 	fput(file);
 	dev_set_uevent_suppress(disk_to_dev(lo->lo_disk), 0);
@@ -1057,7 +1052,7 @@ static int loop_configure(struct loop_device *lo, blk_mode_t mode,
 			goto out_putf;
 	}
 
-	error = loop_global_lock_killable(lo, true);
+	error = loop_global_lock_killable(lo);
 	if (error)
 		goto out_bdev;
 
@@ -1135,7 +1130,7 @@ static int loop_configure(struct loop_device *lo, blk_mode_t mode,
 	dev_set_uevent_suppress(disk_to_dev(lo->lo_disk), 0);
 	kobject_uevent(&disk_to_dev(lo->lo_disk)->kobj, KOBJ_CHANGE);
 
-	loop_global_unlock(lo, true);
+	loop_global_unlock(lo);
 	if (partscan)
 		loop_reread_partitions(lo);
 
@@ -1145,7 +1140,7 @@ static int loop_configure(struct loop_device *lo, blk_mode_t mode,
 	return 0;
 
 out_unlock:
-	loop_global_unlock(lo, true);
+	loop_global_unlock(lo);
 out_bdev:
 	if (!(mode & BLK_OPEN_EXCL))
 		bd_abort_claiming(bdev, loop_configure);
@@ -1238,11 +1233,11 @@ static int loop_clr_fd(struct loop_device *lo)
 	 * which loop_configure()/loop_change_fd() found via fget() was this
 	 * loop device.
 	 */
-	err = loop_global_lock_killable(lo, true);
+	err = loop_global_lock_killable(lo);
 	if (err)
 		return err;
 	if (lo->lo_state != Lo_bound) {
-		loop_global_unlock(lo, true);
+		loop_global_unlock(lo);
 		return -ENXIO;
 	}
 	/*
@@ -1254,7 +1249,7 @@ static int loop_clr_fd(struct loop_device *lo)
 	lo->lo_flags |= LO_FLAGS_AUTOCLEAR;
 	if (disk_openers(lo->lo_disk) == 1)
 		WRITE_ONCE(lo->lo_state, Lo_rundown);
-	loop_global_unlock(lo, true);
+	loop_global_unlock(lo);
 
 	return 0;
 }

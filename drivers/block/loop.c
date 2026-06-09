@@ -1034,7 +1034,6 @@ static int loop_configure(struct loop_device *lo, blk_mode_t mode,
 	int error;
 	loff_t size;
 	bool partscan;
-	bool is_loop;
 
 	if (!file)
 		return -EBADF;
@@ -1044,8 +1043,6 @@ static int loop_configure(struct loop_device *lo, blk_mode_t mode,
 		fput(file);
 		return error;
 	}
-
-	is_loop = is_loop_device(file);
 
 	/* This is safe, since we have a reference from open(). */
 	__module_get(THIS_MODULE);
@@ -1060,7 +1057,7 @@ static int loop_configure(struct loop_device *lo, blk_mode_t mode,
 			goto out_putf;
 	}
 
-	error = loop_global_lock_killable(lo, is_loop);
+	error = loop_global_lock_killable(lo, true);
 	if (error)
 		goto out_bdev;
 
@@ -1138,7 +1135,7 @@ static int loop_configure(struct loop_device *lo, blk_mode_t mode,
 	dev_set_uevent_suppress(disk_to_dev(lo->lo_disk), 0);
 	kobject_uevent(&disk_to_dev(lo->lo_disk)->kobj, KOBJ_CHANGE);
 
-	loop_global_unlock(lo, is_loop);
+	loop_global_unlock(lo, true);
 	if (partscan)
 		loop_reread_partitions(lo);
 
@@ -1148,7 +1145,7 @@ static int loop_configure(struct loop_device *lo, blk_mode_t mode,
 	return 0;
 
 out_unlock:
-	loop_global_unlock(lo, is_loop);
+	loop_global_unlock(lo, true);
 out_bdev:
 	if (!(mode & BLK_OPEN_EXCL))
 		bd_abort_claiming(bdev, loop_configure);

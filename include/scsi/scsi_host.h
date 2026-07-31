@@ -531,12 +531,11 @@ struct scsi_host_template {
 	enum scsi_qc_status func_name(struct Scsi_Host *shost,		\
 				      struct scsi_cmnd *cmd)		\
 	{								\
-		unsigned long irq_flags;				\
 		enum scsi_qc_status rc;					\
 									\
-		spin_lock_irqsave(shost->host_lock, irq_flags);		\
+		spin_lock_irq(cmd->device->host->host_lock);		\
 		rc = func_name##_lck(cmd);				\
-		spin_unlock_irqrestore(shost->host_lock, irq_flags);	\
+		spin_unlock_irq(cmd->device->host->host_lock);		\
 		return rc;						\
 	}
 

@@ -154,6 +154,7 @@ static int max_part;
 static int part_shift;
 
 static loff_t lo_calculate_size(struct loop_device *lo, struct file *file)
+	__must_hold(&lo->lo_mutex)
 {
 	loff_t loopsize;
 	int ret;
@@ -195,6 +196,7 @@ static loff_t lo_calculate_size(struct loop_device *lo, struct file *file)
  * the backing device.
  */
 static bool lo_can_use_dio(struct loop_device *lo)
+	__must_hold(&lo->lo_mutex)
 {
 	if (!(lo->lo_backing_file->f_mode & FMODE_CAN_ODIRECT))
 		return false;
@@ -214,6 +216,7 @@ static bool lo_can_use_dio(struct loop_device *lo)
  * not the originally passed in one.
  */
 static inline void loop_update_dio(struct loop_device *lo)
+	__must_hold(&lo->lo_mutex)
 {
 	lockdep_assert_held(&lo->lo_mutex);
 	WARN_ON_ONCE(lo->lo_state == Lo_bound &&
@@ -232,6 +235,7 @@ static inline void loop_update_dio(struct loop_device *lo)
  * a sector_t, eg using loop_validate_size()
  */
 static void loop_set_size(struct loop_device *lo, loff_t size)
+	__must_hold(&lo->lo_mutex)
 {
 	if (!set_capacity_and_notify(lo->lo_disk, size))
 		kobject_uevent(&disk_to_dev(lo->lo_disk)->kobj, KOBJ_CHANGE);
@@ -464,6 +468,7 @@ static void loop_reread_partitions(struct loop_device *lo)
 }
 
 static void loop_update_dio_alignment(struct loop_device *lo)
+	__must_hold(&lo->lo_mutex)
 {
 	struct file *file = lo->lo_backing_file;
 	struct block_device *sb_bdev = file->f_mapping->host->i_sb->s_bdev;
@@ -516,7 +521,9 @@ static inline bool is_loop_device(struct file *file)
 }
 
 /* Returns 0 if and only if @file is not backed by loop device @bdev. */
-static int loop_validate_file(struct file *file, struct block_device *bdev)
+static int loop_validate_file(struct loop_device *lo, struct file *file,
+			      struct block_device *bdev)
+	__must_hold(&lo->lo_mutex)
 {
 	struct inode	*inode = file->f_mapping->host;
 	struct file	*f = file;
@@ -544,6 +551,7 @@ static int loop_validate_file(struct file *file, struct block_device *bdev)
 }
 
 static void loop_assign_backing_file(struct loop_device *lo, struct file *file)
+	__must_hold(&lo->lo_mutex)
 {
 	lo->lo_backing_file = file;
 	lo->old_gfp_mask = mapping_gfp_mask(file->f_mapping);
@@ -608,7 +616,7 @@ static int loop_change_fd(struct loop_device *lo, struct block_device *bdev,
 	if (!(lo->lo_flags & LO_FLAGS_READ_ONLY))
 		goto out_err;
 
-	error = loop_validate_file(file, bdev);
+	error = loop_validate_file(lo, file, bdev);
 	if (error)
 		goto out_err;
 
@@ -774,6 +782,7 @@ static void loop_sysfs_exit(struct loop_device *lo)
 
 static void loop_get_discard_config(struct loop_device *lo,
 				    u32 *granularity, u32 *max_discard_sectors)
+	__must_hold(&lo->lo_mutex)
 {
 	struct file *file = lo->lo_backing_file;
 	struct inode *inode = file->f_mapping->host;
@@ -940,6 +949,7 @@ static void loop_free_idle_workers_timer(struct timer_list *timer)
 static int
 loop_set_status_from_info(struct loop_device *lo,
 			  const struct loop_info64 *info)
+	__must_hold(&lo->lo_mutex)
 {
 	if ((unsigned int) info->lo_encrypt_key_size > LO_KEY_SIZE)
 		return -EINVAL;
@@ -978,6 +988,7 @@ static unsigned int loop_default_blocksize(struct loop_device *lo)
 }
 
 static void loop_set_dma_limit(struct loop_device *lo, struct queue_limits *lim)
+	__must_hold(&lo->lo_mutex)
 {
 	/*
 	 * Direct I/O forwards the user pages to the backing file unchanged, so
@@ -992,6 +1003,7 @@ static void loop_set_dma_limit(struct loop_device *lo, struct queue_limits *lim)
 
 static void loop_update_limits(struct loop_device *lo, struct queue_limits *lim,
 		unsigned int bsize)
+	__must_hold(&lo->lo_mutex)
 {
 	struct file *file = lo->lo_backing_file;
 	struct inode *inode = file->f_mapping->host;
@@ -1068,7 +1080,7 @@ static int loop_configure(struct loop_device *lo, blk_mode_t mode,
 	if (lo->lo_state != Lo_unbound)
 		goto out_unlock;
 
-	error = loop_validate_file(file, bdev);
+	error = loop_validate_file(lo, file, bdev);
 	if (error)
 		goto out_unlock;
 
@@ -1442,6 +1454,7 @@ loop_get_status64(struct loop_device *lo, struct loop_info64 __user *arg) {
 }
 
 static int loop_set_capacity(struct loop_device *lo)
+	__must_hold(&lo->lo_mutex)
 {
 	loff_t size;
 
@@ -1455,6 +1468,7 @@ static int loop_set_capacity(struct loop_device *lo)
 }
 
 static int loop_set_dio(struct loop_device *lo, unsigned long arg)
+	__must_hold(&lo->lo_mutex)
 {
 	bool use_dio = !!arg;
 	unsigned int memflags;

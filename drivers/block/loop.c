@@ -63,14 +63,13 @@ struct loop_device {
 	int		lo_flags;
 	char		lo_file_name[LO_NAME_SIZE];
 
-	struct file	*lo_backing_file;
+	struct file	*lo_backing_file __guarded_by(&lo_mutex);
 	unsigned int	lo_min_dio_size;
 	unsigned int	lo_dio_mem_align;
 	struct block_device *lo_device;
 
 	gfp_t		old_gfp_mask;
 
-	spinlock_t		lo_lock;
 	int			lo_state;
 	spinlock_t              lo_work_lock;
 	struct workqueue_struct *workqueue;
@@ -270,7 +269,7 @@ static int lo_fallocate(struct loop_device *lo, struct request *rq, loff_t pos,
 	 * We use fallocate to manipulate the space mappings used by the image
 	 * a.k.a. discard/zerorange.
 	 */
-	struct file *file = lo->lo_backing_file;
+	struct file *file = context_unsafe(READ_ONCE(lo->lo_backing_file));
 	int ret;
 
 	mode |= FALLOC_FL_KEEP_SIZE;
@@ -294,7 +293,7 @@ static int lo_fallocate(struct loop_device *lo, struct request *rq, loff_t pos,
 
 static int lo_req_flush(struct loop_device *lo, struct request *rq)
 {
-	int ret = vfs_fsync(lo->lo_backing_file, 0);
+	int ret = vfs_fsync(context_unsafe(READ_ONCE(lo->lo_backing_file)), 0);
 	if (unlikely(ret && ret != -EINVAL))
 		ret = -EIO;
 
@@ -363,7 +362,7 @@ static int lo_rw_aio(struct loop_device *lo, struct loop_cmd *cmd,
 	struct iov_iter iter;
 	struct req_iterator rq_iter;
 	struct request *rq = blk_mq_rq_from_pdu(cmd);
-	struct file *file = lo->lo_backing_file;
+	struct file *file = context_unsafe(READ_ONCE(lo->lo_backing_file));
 	unsigned int nr_bvec;
 	int ret;
 
@@ -697,10 +696,9 @@ static ssize_t loop_attr_backing_file_show(struct loop_device *lo, char *buf)
 	ssize_t ret;
 	char *p = NULL;
 
-	spin_lock_irq(&lo->lo_lock);
-	if (lo->lo_backing_file)
-		p = file_path(lo->lo_backing_file, buf, PAGE_SIZE - 1);
-	spin_unlock_irq(&lo->lo_lock);
+	scoped_guard(mutex, &lo->lo_mutex)
+		if (lo->lo_backing_file)
+			p = file_path(lo->lo_backing_file, buf, PAGE_SIZE - 1);
 
 	if (IS_ERR_OR_NULL(p))
 		ret = PTR_ERR(p);
@@ -1179,10 +1177,10 @@ static void __loop_clr_fd(struct gendisk *disk, struct loop_device *lo)
 	gfp_t gfp = lo->old_gfp_mask;
 	int err;
 
-	spin_lock_irq(&lo->lo_lock);
+	mutex_lock(&lo->lo_mutex);
 	filp = lo->lo_backing_file;
 	lo->lo_backing_file = NULL;
-	spin_unlock_irq(&lo->lo_lock);
+	mutex_unlock(&lo->lo_mutex);
 
 	lo->lo_device = NULL;
 	lo->lo_offset = 0;
@@ -2134,7 +2132,6 @@ static int loop_add(int i)
 		set_bit(GD_SUPPRESS_PART_SCAN, &disk->state);
 	mutex_init(&lo->lo_mutex);
 	lo->lo_number		= i;
-	spin_lock_init(&lo->lo_lock);
 	spin_lock_init(&lo->lo_work_lock);
 	INIT_WORK(&lo->rootcg_work, loop_rootcg_workfn);
 	INIT_LIST_HEAD(&lo->rootcg_cmd_list);

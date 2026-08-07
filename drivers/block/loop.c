@@ -70,13 +70,13 @@ struct loop_device {
 
 	gfp_t		old_gfp_mask;
 
-	int			lo_state;
+	int			lo_state __guarded_by(&lo_mutex);
 	spinlock_t              lo_work_lock;
 	struct workqueue_struct *workqueue;
 	struct work_struct      rootcg_work;
-	struct list_head        rootcg_cmd_list;
-	struct list_head        idle_worker_list;
-	struct rb_root          worker_tree;
+	struct list_head        rootcg_cmd_list __guarded_by(&lo_work_lock);
+	struct list_head        idle_worker_list __guarded_by(&lo_work_lock);
+	struct rb_root          worker_tree __guarded_by(&lo_work_lock);
 	struct timer_list       timer;
 	bool			sysfs_inited;
 
@@ -101,8 +101,8 @@ struct loop_cmd {
 #define LOOP_IDLE_WORKER_TIMEOUT (60 * HZ)
 #define LOOP_DEFAULT_HW_Q_DEPTH 128
 
-static DEFINE_IDR(loop_index_idr);
 static DEFINE_MUTEX(loop_ctl_mutex);
+static __guarded_by(&loop_ctl_mutex) DEFINE_IDR(loop_index_idr);
 static DEFINE_MUTEX(loop_validate_mutex);
 
 /**
@@ -2053,10 +2053,10 @@ static int loop_add(int i)
 	lo = kzalloc_obj(*lo);
 	if (!lo)
 		goto out;
-	lo->worker_tree = RB_ROOT;
-	INIT_LIST_HEAD(&lo->idle_worker_list);
+	context_unsafe(lo->worker_tree = RB_ROOT);
+	context_unsafe(INIT_LIST_HEAD(&lo->idle_worker_list));
 	timer_setup(&lo->timer, loop_free_idle_workers_timer, TIMER_DEFERRABLE);
-	WRITE_ONCE(lo->lo_state, Lo_unbound);
+	context_unsafe(WRITE_ONCE(lo->lo_state, Lo_unbound));
 
 	err = mutex_lock_killable(&loop_ctl_mutex);
 	if (err)
@@ -2118,7 +2118,7 @@ static int loop_add(int i)
 	lo->lo_number		= i;
 	spin_lock_init(&lo->lo_work_lock);
 	INIT_WORK(&lo->rootcg_work, loop_rootcg_workfn);
-	INIT_LIST_HEAD(&lo->rootcg_cmd_list);
+	context_unsafe(INIT_LIST_HEAD(&lo->rootcg_cmd_list));
 	disk->major		= LOOP_MAJOR;
 	disk->first_minor	= i << part_shift;
 	disk->minors		= 1 << part_shift;
@@ -2357,6 +2357,7 @@ static void __exit loop_exit(void)
 	 * module unloading is requested). If this is not a clean unloading,
 	 * we have no means to avoid kernel crash.
 	 */
+	__assume_ctx_lock(&loop_ctl_mutex);
 	idr_for_each_entry(&loop_index_idr, lo, id)
 		loop_remove(lo);
 

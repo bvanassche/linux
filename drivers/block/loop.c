@@ -481,13 +481,26 @@ static void loop_update_dio_alignment(struct loop_device *lo)
 	lo->lo_dio_mem_align = SECTOR_SIZE - 1;
 }
 
-static inline int is_loop_device(struct file *file)
+/* Returns the block device that underpins a file.  */
+static inline struct block_device *loop_get_bdev(struct file *file)
 {
-	struct inode *i = file->f_mapping->host;
+	struct inode *inode = file->f_mapping->host;
 
-	return i && S_ISBLK(i->i_mode) && imajor(i) == LOOP_MAJOR;
+	if (S_ISBLK(inode->i_mode))
+		return I_BDEV(inode);
+	if (S_ISREG(inode->i_mode) && inode->i_sb)
+		return inode->i_sb->s_bdev;
+	return NULL;
 }
 
+static inline bool is_loop_device(struct file *file)
+{
+	struct block_device *bdev = loop_get_bdev(file);
+
+	return bdev && bdev->bd_disk->major == LOOP_MAJOR;
+}
+
+/* Returns 0 if and only if @file is not backed by loop device @bdev. */
 static int loop_validate_file(struct file *file, struct block_device *bdev)
 {
 	struct inode	*inode = file->f_mapping->host;
@@ -496,12 +509,13 @@ static int loop_validate_file(struct file *file, struct block_device *bdev)
 	/* Avoid recursion */
 	while (is_loop_device(f)) {
 		struct loop_device *l;
+		struct block_device *f_bdev = loop_get_bdev(f);
 
 		lockdep_assert_held(&loop_validate_mutex);
-		if (f->f_mapping->host->i_rdev == bdev->bd_dev)
+		if (f_bdev->bd_disk == bdev->bd_disk)
 			return -EBADF;
 
-		l = I_BDEV(f->f_mapping->host)->bd_disk->private_data;
+		l = f_bdev->bd_disk->private_data;
 		if (l->lo_state != Lo_bound)
 			return -EINVAL;
 		/* Order wrt setting lo->lo_backing_file in loop_configure(). */

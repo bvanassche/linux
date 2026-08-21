@@ -37,6 +37,17 @@
 #include <linux/spinlock.h>
 #include <uapi/linux/loop.h>
 
+/*
+ * Lock order:
+ * 1. loop_ctl_mutex: protects loop_index_idr.
+ * 2. disk->open_mutex: gendisk mutex held during open, release, etc.
+ * 3. loop_validate_mutex: global lock for loop_validate_file() check.
+ * 4. lo->lo_mutex: protects loop device configuration and state changes.
+ * 5. q->limits_lock: serializes request queue limits changes.
+ * 6. q->q_usage_counter: acquired by blk_mq_freeze_queue().
+ * 7. lo->lo_work_lock: spinlock protecting worker lists and tree.
+ */
+
 /* Possible states of device */
 enum {
 	Lo_unbound,

@@ -629,11 +629,6 @@ static int loop_change_fd(struct loop_device *lo, struct block_device *bdev,
 		mutex_lock(&loop_validate_mutex);
 		mutex_unlock(&loop_validate_mutex);
 	}
-	/*
-	 * We must drop file reference outside of lo_mutex as dropping
-	 * the file ref can take open_mutex which creates circular locking
-	 * dependency.
-	 */
 	fput(old_file);
 	dev_set_uevent_suppress(disk_to_dev(lo->lo_disk), 0);
 	if (partscan)
@@ -1213,11 +1208,6 @@ static void __loop_clr_fd(struct loop_device *lo)
 	WRITE_ONCE(lo->lo_state, Lo_unbound);
 	mutex_unlock(&lo->lo_mutex);
 
-	/*
-	 * Need not hold lo_mutex to fput backing file. Calling fput holding
-	 * lo_mutex triggers a circular lock dependency possibility warning as
-	 * fput can take open_mutex which is usually taken before lo_mutex.
-	 */
 	fput(filp);
 }
 

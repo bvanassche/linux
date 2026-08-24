@@ -2201,17 +2201,24 @@ static int loop_control_remove(int idx)
 		return ret;
 
 	/* Check whether this loop device can be removed. */
-	ret = mutex_lock_killable(&lo->lo_mutex);
+	ret = mutex_lock_killable(&lo->lo_disk->open_mutex);
 	if (ret)
 		goto mark_visible;
+	ret = mutex_lock_killable(&lo->lo_mutex);
+	if (ret) {
+		mutex_unlock(&lo->lo_disk->open_mutex);
+		goto mark_visible;
+	}
 	if (lo->lo_state != Lo_unbound || disk_openers(lo->lo_disk) > 0) {
 		mutex_unlock(&lo->lo_mutex);
+		mutex_unlock(&lo->lo_disk->open_mutex);
 		ret = -EBUSY;
 		goto mark_visible;
 	}
 	/* Mark this loop device as no more bound, but not quite unbound yet */
 	WRITE_ONCE(lo->lo_state, Lo_deleting);
 	mutex_unlock(&lo->lo_mutex);
+	mutex_unlock(&lo->lo_disk->open_mutex);
 
 	loop_remove(lo);
 	return 0;

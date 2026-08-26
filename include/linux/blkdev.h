@@ -1575,8 +1575,10 @@ struct block_device_operations {
 	void (*submit_bio)(struct bio *bio);
 	int (*poll_bio)(struct bio *bio, struct io_comp_batch *iob,
 			unsigned int flags);
-	int (*open)(struct gendisk *disk, blk_mode_t mode);
-	void (*release)(struct gendisk *disk);
+	int (*open)(struct gendisk *disk, blk_mode_t mode)
+		__must_hold(&disk->open_mutex);
+	void (*release)(struct gendisk *disk)
+		__must_hold(&disk->open_mutex);
 	int (*ioctl)(struct block_device *bdev, blk_mode_t mode,
 			unsigned cmd, unsigned long arg);
 	int (*compat_ioctl)(struct block_device *bdev, blk_mode_t mode,

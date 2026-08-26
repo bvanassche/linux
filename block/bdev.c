@@ -60,7 +60,8 @@ struct block_device *file_bdev(struct file *bdev_file)
 }
 EXPORT_SYMBOL(file_bdev);
 
-static void bdev_write_inode(struct block_device *bdev)
+static void bdev_write_inode(struct gendisk *disk, struct block_device *bdev)
+	__must_hold(&disk->open_mutex)
 {
 	struct inode *inode = BD_INODE(bdev);
 	int ret;
@@ -136,7 +137,8 @@ invalidate:
 					     lend >> PAGE_SHIFT);
 }
 
-static void set_init_blocksize(struct block_device *bdev)
+static void set_init_blocksize(struct gendisk *disk, struct block_device *bdev)
+	__must_hold(&disk->open_mutex)
 {
 	unsigned int bsize = bdev_logical_block_size(bdev);
 	loff_t size = i_size_read(BD_INODE(bdev));
@@ -677,7 +679,8 @@ static void bd_clear_claiming(struct block_device *whole, void *holder)
  * open by the holder and wake up all waiters for exclusive open to finish.
  */
 static void bd_finish_claiming(struct block_device *bdev, void *holder,
-		const struct blk_holder_ops *hops)
+			       const struct blk_holder_ops *hops)
+	__must_hold(&bdev->bd_disk->open_mutex)
 {
 	struct block_device *whole = bdev_whole(bdev);
 
@@ -716,6 +719,7 @@ void bd_abort_claiming(struct block_device *bdev, void *holder)
 EXPORT_SYMBOL(bd_abort_claiming);
 
 static void bd_end_claim(struct block_device *bdev, void *holder)
+	__must_hold(&bdev->bd_disk->open_mutex)
 {
 	struct block_device *whole = bdev_whole(bdev);
 	bool unblock = false;
@@ -750,25 +754,29 @@ static void bd_end_claim(struct block_device *bdev, void *holder)
 	}
 }
 
-static void blkdev_flush_mapping(struct block_device *bdev)
+static void blkdev_flush_mapping(struct gendisk *disk,
+				 struct block_device *bdev)
+	__must_hold(&disk->open_mutex)
 {
 	WARN_ON_ONCE(bdev->bd_holders);
 	sync_blockdev(bdev);
 	kill_bdev(bdev);
-	bdev_write_inode(bdev);
+	bdev_write_inode(disk, bdev);
 }
 
-static void blkdev_put_whole(struct block_device *bdev)
+static void blkdev_put_whole(struct gendisk *disk, struct block_device *bdev)
+	__must_hold(&disk->open_mutex)
 {
 	if (atomic_dec_and_test(&bdev->bd_openers))
-		blkdev_flush_mapping(bdev);
-	if (bdev->bd_disk->fops->release)
-		bdev->bd_disk->fops->release(bdev->bd_disk);
+		blkdev_flush_mapping(disk, bdev);
+	if (disk->fops->release)
+		disk->fops->release(disk);
 }
 
-static int blkdev_get_whole(struct block_device *bdev, blk_mode_t mode)
+static int blkdev_get_whole(struct gendisk *disk, struct block_device *bdev,
+			    blk_mode_t mode)
+	__must_hold(&disk->open_mutex)
 {
-	struct gendisk *disk = bdev->bd_disk;
 	int ret;
 
 	if (disk->fops->open) {
@@ -783,7 +791,7 @@ static int blkdev_get_whole(struct block_device *bdev, blk_mode_t mode)
 	}
 
 	if (!atomic_read(&bdev->bd_openers))
-		set_init_blocksize(bdev);
+		set_init_blocksize(disk, bdev);
 	atomic_inc(&bdev->bd_openers);
 	if (test_bit(GD_NEED_PART_SCAN, &disk->state)) {
 		/*
@@ -792,19 +800,20 @@ static int blkdev_get_whole(struct block_device *bdev, blk_mode_t mode)
 		 */
 		ret = bdev_disk_changed(disk, false);
 		if (ret && (mode & BLK_OPEN_STRICT_SCAN)) {
-			blkdev_put_whole(bdev);
+			blkdev_put_whole(disk, bdev);
 			return ret;
 		}
 	}
 	return 0;
 }
 
-static int blkdev_get_part(struct block_device *part, blk_mode_t mode)
+static int blkdev_get_part(struct gendisk *disk, struct block_device *part,
+			   blk_mode_t mode)
+	__must_hold(&disk->open_mutex)
 {
-	struct gendisk *disk = part->bd_disk;
 	int ret;
 
-	ret = blkdev_get_whole(bdev_whole(part), mode);
+	ret = blkdev_get_whole(disk, bdev_whole(part), mode);
 	if (ret)
 		return ret;
 
@@ -814,13 +823,13 @@ static int blkdev_get_part(struct block_device *part, blk_mode_t mode)
 
 	if (!atomic_read(&part->bd_openers)) {
 		disk->open_partitions++;
-		set_init_blocksize(part);
+		set_init_blocksize(disk, part);
 	}
 	atomic_inc(&part->bd_openers);
 	return 0;
 
 out_blkdev_put:
-	blkdev_put_whole(bdev_whole(part));
+	blkdev_put_whole(disk, bdev_whole(part));
 	return ret;
 }
 
@@ -849,15 +858,16 @@ int bdev_permission(dev_t dev, blk_mode_t mode, void *holder)
 	return 0;
 }
 
-static void blkdev_put_part(struct block_device *part)
+static void blkdev_put_part(struct gendisk *disk, struct block_device *part)
+	__must_hold(&disk->open_mutex)
 {
 	struct block_device *whole = bdev_whole(part);
 
 	if (atomic_dec_and_test(&part->bd_openers)) {
-		blkdev_flush_mapping(part);
+		blkdev_flush_mapping(disk, part);
 		whole->bd_disk->open_partitions--;
 	}
-	blkdev_put_whole(whole);
+	blkdev_put_whole(disk, whole);
 }
 
 struct block_device *blkdev_get_no_open(dev_t dev, bool autoload)
@@ -890,21 +900,25 @@ void blkdev_put_no_open(struct block_device *bdev)
 }
 
 static bool bdev_writes_blocked(struct block_device *bdev)
+	__must_hold(&bdev->bd_disk->open_mutex)
 {
 	return bdev->bd_writers < 0;
 }
 
 static void bdev_block_writes(struct block_device *bdev)
+	__must_hold(&bdev->bd_disk->open_mutex)
 {
 	bdev->bd_writers--;
 }
 
-static void bdev_unblock_writes(struct block_device *bdev)
+static void bdev_unblock_writes(struct gendisk *disk, struct block_device *bdev)
+	__must_hold(&disk->open_mutex)
 {
 	bdev->bd_writers++;
 }
 
 static bool bdev_may_open(struct block_device *bdev, blk_mode_t mode)
+	__must_hold(&bdev->bd_disk->open_mutex)
 {
 	if (bdev_allow_write_mounted)
 		return true;
@@ -917,6 +931,7 @@ static bool bdev_may_open(struct block_device *bdev, blk_mode_t mode)
 }
 
 static void bdev_claim_write_access(struct block_device *bdev, blk_mode_t mode)
+	__must_hold(&bdev->bd_disk->open_mutex)
 {
 	if (bdev_allow_write_mounted)
 		return;
@@ -928,25 +943,29 @@ static void bdev_claim_write_access(struct block_device *bdev, blk_mode_t mode)
 		bdev->bd_writers++;
 }
 
-static inline bool bdev_unclaimed(const struct file *bdev_file)
+static inline bool bdev_unclaimed(struct gendisk *disk,
+				  const struct file *bdev_file)
+	__must_hold(&disk->open_mutex)
 {
 	return bdev_file->private_data == BDEV_I(bdev_file->f_mapping->host);
 }
 
-static void bdev_yield_write_access(struct file *bdev_file)
+static void bdev_yield_write_access(struct gendisk *disk,
+				    struct file *bdev_file)
+	__must_hold(&disk->open_mutex)
 {
 	struct block_device *bdev;
 
 	if (bdev_allow_write_mounted)
 		return;
 
-	if (bdev_unclaimed(bdev_file))
+	if (bdev_unclaimed(disk, bdev_file))
 		return;
 
 	bdev = file_bdev(bdev_file);
 
 	if (bdev_file->f_mode & FMODE_WRITE_RESTRICTED)
-		bdev_unblock_writes(bdev);
+		bdev_unblock_writes(disk, bdev);
 	else if (bdev_file->f_mode & FMODE_WRITE)
 		bdev->bd_writers--;
 }
@@ -997,9 +1016,9 @@ int bdev_open(struct block_device *bdev, blk_mode_t mode, void *holder,
 	if (!bdev_may_open(bdev, mode))
 		goto put_module;
 	if (bdev_is_partition(bdev))
-		ret = blkdev_get_part(bdev, mode);
+		ret = blkdev_get_part(disk, bdev, mode);
 	else
-		ret = blkdev_get_whole(bdev, mode);
+		ret = blkdev_get_whole(disk, bdev, mode);
 	if (ret)
 		goto put_module;
 	bdev_claim_write_access(bdev, mode);
@@ -1136,7 +1155,8 @@ struct file *bdev_file_open_by_path(const char *path, blk_mode_t mode,
 }
 EXPORT_SYMBOL(bdev_file_open_by_path);
 
-static inline void bd_yield_claim(struct file *bdev_file)
+static inline void bd_yield_claim(struct gendisk *disk, struct file *bdev_file)
+	__must_hold(&disk->open_mutex)
 {
 	struct block_device *bdev = file_bdev(bdev_file);
 	void *holder = bdev_file->private_data;
@@ -1146,7 +1166,7 @@ static inline void bd_yield_claim(struct file *bdev_file)
 	if (WARN_ON_ONCE(IS_ERR_OR_NULL(holder)))
 		return;
 
-	if (!bdev_unclaimed(bdev_file))
+	if (!bdev_unclaimed(disk, bdev_file))
 		bd_end_claim(bdev, holder);
 }
 
@@ -1171,10 +1191,10 @@ void bdev_release(struct file *bdev_file)
 		sync_blockdev(bdev);
 
 	mutex_lock(&disk->open_mutex);
-	bdev_yield_write_access(bdev_file);
+	bdev_yield_write_access(disk, bdev_file);
 
 	if (holder)
-		bd_yield_claim(bdev_file);
+		bd_yield_claim(disk, bdev_file);
 
 	/*
 	 * Trigger event checking and tell drivers to flush MEDIA_CHANGE
@@ -1184,9 +1204,9 @@ void bdev_release(struct file *bdev_file)
 	disk_flush_events(disk, DISK_EVENT_MEDIA_CHANGE);
 
 	if (bdev_is_partition(bdev))
-		blkdev_put_part(bdev);
+		blkdev_put_part(disk, bdev);
 	else
-		blkdev_put_whole(bdev);
+		blkdev_put_whole(disk, bdev);
 	mutex_unlock(&disk->open_mutex);
 
 	module_put(disk->fops->owner);
@@ -1215,8 +1235,8 @@ void bdev_yield_claim(struct file *bdev_file)
 	disk = bdev->bd_disk;
 
 	mutex_lock(&disk->open_mutex);
-	bdev_yield_write_access(bdev_file);
-	bd_yield_claim(bdev_file);
+	bdev_yield_write_access(disk, bdev_file);
+	bd_yield_claim(disk, bdev_file);
 	/*
 	 * Tell release we already gave up our hold on the
 	 * device and if write restrictions are available that

@@ -1171,7 +1171,8 @@ out_putf:
 	return error;
 }
 
-static void __loop_clr_fd(struct loop_device *lo)
+static void __loop_clr_fd(struct gendisk *disk, struct loop_device *lo)
+	__must_hold(&disk->open_mutex)
 {
 	struct queue_limits lim;
 	struct file *filp;
@@ -1200,15 +1201,15 @@ static void __loop_clr_fd(struct loop_device *lo)
 	lim.io_min = SECTOR_SIZE;
 	queue_limits_commit_update(lo->lo_queue, &lim);
 
-	invalidate_disk(lo->lo_disk);
+	invalidate_disk(disk);
 	loop_sysfs_exit(lo);
 	/* let user-space know about this change */
-	kobject_uevent(&disk_to_dev(lo->lo_disk)->kobj, KOBJ_CHANGE);
+	kobject_uevent(&disk_to_dev(disk)->kobj, KOBJ_CHANGE);
 	mapping_set_gfp_mask(filp->f_mapping, gfp);
 	/* This is safe: open() is still holding a reference. */
 	module_put(THIS_MODULE);
 
-	disk_force_media_change(lo->lo_disk);
+	disk_force_media_change(disk);
 
 	/*
 	 * Remove all partitions, including partitions added manually with
@@ -1217,7 +1218,7 @@ static void __loop_clr_fd(struct loop_device *lo)
 	 * open_mutex has been held already in release path, so don't acquire
 	 * it here.
 	 */
-	err = bdev_disk_changed(lo->lo_disk, false);
+	err = bdev_disk_changed(disk, false);
 	if (err)
 		pr_warn("%s: partition scan of loop%d failed (rc=%d)\n",
 			__func__, lo->lo_number, err);
@@ -1231,7 +1232,7 @@ static void __loop_clr_fd(struct loop_device *lo)
 	 */
 	lo->lo_flags = 0;
 	if (!part_shift)
-		set_bit(GD_SUPPRESS_PART_SCAN, &lo->lo_disk->state);
+		set_bit(GD_SUPPRESS_PART_SCAN, &disk->state);
 	mutex_lock(&lo->lo_mutex);
 	WRITE_ONCE(lo->lo_state, Lo_unbound);
 	mutex_unlock(&lo->lo_mutex);
@@ -1769,6 +1770,7 @@ static int lo_compat_ioctl(struct block_device *bdev, blk_mode_t mode,
 #endif
 
 static int lo_open(struct gendisk *disk, blk_mode_t mode)
+	__must_hold(&disk->open_mutex)
 {
 	struct loop_device *lo = disk->private_data;
 	int err;
@@ -1784,6 +1786,7 @@ static int lo_open(struct gendisk *disk, blk_mode_t mode)
 }
 
 static void lo_release(struct gendisk *disk)
+	__must_hold(&disk->open_mutex)
 {
 	struct loop_device *lo = disk->private_data;
 	bool need_clear = false;
@@ -1804,7 +1807,7 @@ static void lo_release(struct gendisk *disk)
 	mutex_unlock(&lo->lo_mutex);
 
 	if (need_clear)
-		__loop_clr_fd(lo);
+		__loop_clr_fd(disk, lo);
 }
 
 static void lo_free_disk(struct gendisk *disk)

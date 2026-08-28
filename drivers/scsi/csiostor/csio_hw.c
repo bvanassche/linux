@@ -2897,9 +2897,9 @@ csio_hws_ready(struct csio_hw *hw, enum csio_hw_ev evt)
 		/* cleanup all outstanding cmds */
 		if (evt == CSIO_HWE_HBA_RESET ||
 		    evt == CSIO_HWE_PCIERR_DETECTED)
-			csio_scsim_cleanup_io(csio_hw_to_scsim(hw), false);
+			csio_scsim_cleanup_io(hw, false);
 		else
-			csio_scsim_cleanup_io(csio_hw_to_scsim(hw), true);
+			csio_scsim_cleanup_io(hw, true);
 
 		csio_hw_intr_disable(hw);
 		csio_hw_mbm_cleanup(hw);

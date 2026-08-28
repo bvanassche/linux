@@ -277,6 +277,7 @@ static void blogic_create_addlccbs(struct blogic_adapter *adapter,
 */
 
 static struct blogic_ccb *blogic_alloc_ccb(struct Scsi_Host *host)
+	__must_hold(host->host_lock)
 {
 	struct blogic_adapter *adapter = (void *)host->hostdata;
 	static unsigned long serial;
@@ -2826,6 +2827,7 @@ static irqreturn_t blogic_inthandler(int irq_ch, void *devid)
 
 static bool blogic_write_outbox(struct Scsi_Host *host,
 		enum blogic_action action, struct blogic_ccb *ccb)
+	__must_hold(host->host_lock)
 {
 	struct blogic_adapter *adapter = (void *)host->hostdata;
 	struct blogic_outbox *next_outbox;
@@ -2880,6 +2882,7 @@ static int blogic_hostreset(struct scsi_cmnd *SCpnt)
 */
 
 static enum scsi_qc_status blogic_qcmd_lck(struct scsi_cmnd *command)
+	__must_hold(command->device->host->host_lock)
 {
 	void (*comp_cb)(struct scsi_cmnd *) = scsi_done;
 	struct blogic_adapter *adapter =

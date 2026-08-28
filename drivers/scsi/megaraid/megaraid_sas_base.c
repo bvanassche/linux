@@ -134,7 +134,8 @@ MODULE_DESCRIPTION("Broadcom MegaRAID SAS Driver");
 int megasas_transition_to_ready(struct megasas_instance *instance, int ocr);
 static int megasas_get_pd_list(struct megasas_instance *instance);
 static int megasas_ld_list_query(struct megasas_instance *instance,
-				 u8 query_type);
+				 u8 query_type)
+		__must_hold(&instance->reset_mutex);
 static int megasas_issue_init_mfi(struct megasas_instance *instance);
 static int megasas_register_aen(struct megasas_instance *instance,
 				u32 seq_num, u32 class_locale_word);
@@ -5264,6 +5265,7 @@ void megasas_get_snapdump_properties(struct megasas_instance *instance)
  */
 int
 megasas_get_ctrl_info(struct megasas_instance *instance)
+	__must_hold(&instance->reset_mutex)
 {
 	int ret = 0;
 	struct megasas_cmd *cmd;
@@ -5614,11 +5616,13 @@ megasas_init_adapter_mfi(struct megasas_instance *instance)
 	if (megasas_issue_init_mfi(instance))
 		goto fail_fw_init;
 
-	if (megasas_get_ctrl_info(instance)) {
-		dev_err(&instance->pdev->dev, "(%d): Could get controller info "
-			"Fail from %s %d\n", instance->unique_id,
-			__func__, __LINE__);
-		goto fail_fw_init;
+	scoped_guard(mutex, &instance->reset_mutex) {
+		if (megasas_get_ctrl_info(instance)) {
+			dev_err(&instance->pdev->dev,
+				"(%d): Could get controller info Fail from %s %d\n",
+				instance->unique_id, __func__, __LINE__);
+			goto fail_fw_init;
+		}
 	}
 
 	instance->fw_support_ieee = 0;
@@ -7875,7 +7879,9 @@ megasas_resume(struct device *dev)
 			goto fail_init_mfi;
 	}
 
-	if (megasas_get_ctrl_info(instance) != DCMD_SUCCESS)
+	scoped_guard(mutex, &instance->reset_mutex)
+		rval = megasas_get_ctrl_info(instance);
+	if (rval != DCMD_SUCCESS)
 		goto fail_init_mfi;
 
 	tasklet_init(&instance->isr_tasklet, instance->instancet->tasklet,

@@ -1205,7 +1205,7 @@ be_complete_logout(struct beiscsi_conn *beiscsi_conn,
 	hdr->dlength[2] = 0;
 	hdr->hlength = 0;
 	hdr->itt = io_task->libiscsi_itt;
-	__iscsi_complete_pdu(conn, (struct iscsi_hdr *)hdr, NULL, 0);
+	__iscsi_complete_pdu(conn->session, conn, (struct iscsi_hdr *)hdr, NULL, 0);
 }
 
 static void
@@ -1226,7 +1226,7 @@ be_complete_tmf(struct beiscsi_conn *beiscsi_conn,
 				     csol_cqe->cmd_wnd - 1);
 
 	hdr->itt = io_task->libiscsi_itt;
-	__iscsi_complete_pdu(conn, (struct iscsi_hdr *)hdr, NULL, 0);
+	__iscsi_complete_pdu(conn->session, conn, (struct iscsi_hdr *)hdr, NULL, 0);
 }
 
 static void
@@ -1281,7 +1281,7 @@ be_complete_nopin_resp(struct beiscsi_conn *beiscsi_conn,
 
 	hdr->opcode = ISCSI_OP_NOOP_IN;
 	hdr->itt = io_task->libiscsi_itt;
-	__iscsi_complete_pdu(conn, (struct iscsi_hdr *)hdr, NULL, 0);
+	__iscsi_complete_pdu(conn->session, conn, (struct iscsi_hdr *)hdr, NULL, 0);
 }
 
 static void adapter_get_sol_cqe(struct beiscsi_hba *phba,
@@ -1460,7 +1460,8 @@ beiscsi_complete_pdu(struct beiscsi_conn *beiscsi_conn,
 			    code);
 		return 1;
 	}
-	__iscsi_complete_pdu(conn, (struct iscsi_hdr *)phdr, pdata, dlen);
+	__iscsi_complete_pdu(conn->session, conn, (struct iscsi_hdr *)phdr, pdata,
+			     dlen);
 	return 0;
 }
 

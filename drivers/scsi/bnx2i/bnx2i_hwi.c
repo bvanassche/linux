@@ -1414,7 +1414,7 @@ int bnx2i_process_scsi_cmd_resp(struct iscsi_session *session,
 	}
 
 done:
-	__iscsi_complete_pdu(conn, (struct iscsi_hdr *)hdr,
+	__iscsi_complete_pdu(session, conn, (struct iscsi_hdr *)hdr,
 			     conn->data, datalen);
 fail:
 	spin_unlock_bh(&session->back_lock);
@@ -1481,7 +1481,7 @@ static int bnx2i_process_login_resp(struct iscsi_session *session,
 		}
 	}
 
-	__iscsi_complete_pdu(conn, (struct iscsi_hdr *)resp_hdr,
+	__iscsi_complete_pdu(session, conn, (struct iscsi_hdr *)resp_hdr,
 		bnx2i_conn->gen_pdu.resp_buf,
 		bnx2i_conn->gen_pdu.resp_wr_ptr - bnx2i_conn->gen_pdu.resp_buf);
 done:
@@ -1541,7 +1541,7 @@ static int bnx2i_process_text_resp(struct iscsi_session *session,
 			bnx2i_conn->gen_pdu.resp_wr_ptr++;
 		}
 	}
-	__iscsi_complete_pdu(conn, (struct iscsi_hdr *)resp_hdr,
+	__iscsi_complete_pdu(session, conn, (struct iscsi_hdr *)resp_hdr,
 			     bnx2i_conn->gen_pdu.resp_buf,
 			     bnx2i_conn->gen_pdu.resp_wr_ptr -
 			     bnx2i_conn->gen_pdu.resp_buf);
@@ -1583,7 +1583,7 @@ static int bnx2i_process_tmf_resp(struct iscsi_session *session,
 	resp_hdr->itt = task->hdr->itt;
 	resp_hdr->response = tmf_cqe->response;
 
-	__iscsi_complete_pdu(conn, (struct iscsi_hdr *)resp_hdr, NULL, 0);
+	__iscsi_complete_pdu(session, conn, (struct iscsi_hdr *)resp_hdr, NULL, 0);
 done:
 	spin_unlock(&session->back_lock);
 	return 0;
@@ -1628,7 +1628,7 @@ static int bnx2i_process_logout_resp(struct iscsi_session *session,
 	resp_hdr->t2wait = cpu_to_be32(logout->time_to_wait);
 	resp_hdr->t2retain = cpu_to_be32(logout->time_to_retain);
 
-	__iscsi_complete_pdu(conn, (struct iscsi_hdr *)resp_hdr, NULL, 0);
+	__iscsi_complete_pdu(session, conn, (struct iscsi_hdr *)resp_hdr, NULL, 0);
 
 	bnx2i_conn->ep->state = EP_STATE_LOGOUT_RESP_RCVD;
 done:
@@ -1722,7 +1722,7 @@ static int bnx2i_process_nopin_mesg(struct iscsi_session *session,
 		memcpy(&hdr->lun, nop_in->lun, 8);
 	}
 done:
-	__iscsi_complete_pdu(conn, (struct iscsi_hdr *)hdr, NULL, 0);
+	__iscsi_complete_pdu(session, conn, (struct iscsi_hdr *)hdr, NULL, 0);
 	spin_unlock(&session->back_lock);
 
 	return tgt_async_nop;
@@ -1773,7 +1773,7 @@ static void bnx2i_process_async_mesg(struct iscsi_session *session,
 	resp_hdr->param2 = cpu_to_be16(async_cqe->param2);
 	resp_hdr->param3 = cpu_to_be16(async_cqe->param3);
 
-	__iscsi_complete_pdu(bnx2i_conn->cls_conn->dd_data,
+	__iscsi_complete_pdu(session, bnx2i_conn->cls_conn->dd_data,
 			     (struct iscsi_hdr *)resp_hdr, NULL, 0);
 	spin_unlock(&session->back_lock);
 }
@@ -1811,7 +1811,7 @@ static void bnx2i_process_reject_mesg(struct iscsi_session *session,
 	hdr->max_cmdsn = cpu_to_be32(reject->max_cmd_sn);
 	hdr->exp_cmdsn = cpu_to_be32(reject->exp_cmd_sn);
 	hdr->ffffffff = cpu_to_be32(RESERVED_ITT);
-	__iscsi_complete_pdu(conn, (struct iscsi_hdr *)hdr, conn->data,
+	__iscsi_complete_pdu(session, conn, (struct iscsi_hdr *)hdr, conn->data,
 			     reject->data_length);
 	spin_unlock(&session->back_lock);
 }

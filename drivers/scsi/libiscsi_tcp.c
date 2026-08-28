@@ -749,7 +749,7 @@ iscsi_tcp_hdr_dissect(struct iscsi_conn *conn, struct iscsi_hdr *hdr)
 			spin_unlock(&conn->session->back_lock);
 			return rc;
 		}
-		rc = __iscsi_complete_pdu(conn, hdr, NULL, 0);
+		rc = __iscsi_complete_pdu(conn->session, conn, hdr, NULL, 0);
 		spin_unlock(&conn->session->back_lock);
 		break;
 	case ISCSI_OP_R2T:

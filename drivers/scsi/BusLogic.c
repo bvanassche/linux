@@ -276,8 +276,9 @@ static void blogic_create_addlccbs(struct blogic_adapter *adapter,
   Lock should already have been acquired by the caller.
 */
 
-static struct blogic_ccb *blogic_alloc_ccb(struct blogic_adapter *adapter)
+static struct blogic_ccb *blogic_alloc_ccb(struct Scsi_Host *host)
 {
+	struct blogic_adapter *adapter = (void *)host->hostdata;
 	static unsigned long serial;
 	struct blogic_ccb *ccb;
 	ccb = adapter->free_ccbs;
@@ -2823,9 +2824,10 @@ static irqreturn_t blogic_inthandler(int irq_ch, void *devid)
   already have been acquired by the caller.
 */
 
-static bool blogic_write_outbox(struct blogic_adapter *adapter,
+static bool blogic_write_outbox(struct Scsi_Host *host,
 		enum blogic_action action, struct blogic_ccb *ccb)
 {
+	struct blogic_adapter *adapter = (void *)host->hostdata;
 	struct blogic_outbox *next_outbox;
 
 	next_outbox = adapter->next_outbox;
@@ -2859,17 +2861,16 @@ static int blogic_hostreset(struct scsi_cmnd *SCpnt)
 {
 	struct blogic_adapter *adapter =
 		(struct blogic_adapter *) SCpnt->device->host->hostdata;
-
+	struct Scsi_Host *shost = adapter->scsi_host;
 	unsigned int id = SCpnt->device->id;
 	struct blogic_tgt_stats *stats = &adapter->tgt_stats[id];
 	int rc;
 
-	spin_lock_irq(SCpnt->device->host->host_lock);
-
+	spin_lock_irq(shost->host_lock);
 	blogic_inc_count(&stats->adapter_reset_req);
-
 	rc = blogic_resetadapter(adapter, false);
-	spin_unlock_irq(SCpnt->device->host->host_lock);
+	spin_unlock_irq(shost->host_lock);
+
 	return rc;
 }
 
@@ -2886,6 +2887,7 @@ static enum scsi_qc_status blogic_qcmd_lck(struct scsi_cmnd *command)
 	struct blogic_tgt_flags *tgt_flags =
 		&adapter->tgt_flags[command->device->id];
 	struct blogic_tgt_stats *tgt_stats = adapter->tgt_stats;
+	struct Scsi_Host *const shost = command->device->host;
 	unsigned char *cdb = command->cmnd;
 	int cdblen = command->cmd_len;
 	int tgt_id = command->device->id;
@@ -2913,12 +2915,12 @@ static enum scsi_qc_status blogic_qcmd_lck(struct scsi_cmnd *command)
 	   probably hung so signal an error as a Host Adapter Hard Reset
 	   should be initiated soon.
 	 */
-	ccb = blogic_alloc_ccb(adapter);
+	ccb = blogic_alloc_ccb(shost);
 	if (ccb == NULL) {
-		spin_unlock_irq(adapter->scsi_host->host_lock);
+		spin_unlock_irq(shost->host_lock);
 		blogic_delay(1);
-		spin_lock_irq(adapter->scsi_host->host_lock);
-		ccb = blogic_alloc_ccb(adapter);
+		spin_lock_irq(shost->host_lock);
+		ccb = blogic_alloc_ccb(shost);
 		if (ccb == NULL) {
 			command->result = DID_ERROR << 16;
 			comp_cb(command);
@@ -3061,12 +3063,12 @@ static enum scsi_qc_status blogic_qcmd_lck(struct scsi_cmnd *command)
 		   so signal an error as a Host Adapter Hard Reset should
 		   be initiated soon.
 		 */
-		if (!blogic_write_outbox(adapter, BLOGIC_MBOX_START, ccb)) {
-			spin_unlock_irq(adapter->scsi_host->host_lock);
+		if (!blogic_write_outbox(shost, BLOGIC_MBOX_START, ccb)) {
+			spin_unlock_irq(shost->host_lock);
 			blogic_warn("Unable to write Outgoing Mailbox - Pausing for 1 second\n", adapter);
 			blogic_delay(1);
-			spin_lock_irq(adapter->scsi_host->host_lock);
-			if (!blogic_write_outbox(adapter, BLOGIC_MBOX_START,
+			spin_lock_irq(shost->host_lock);
+			if (!blogic_write_outbox(shost, BLOGIC_MBOX_START,
 						ccb)) {
 				blogic_warn("Still unable to write Outgoing Mailbox - Host Adapter Dead?\n", adapter);
 				blogic_dealloc_ccb(ccb, 1);
@@ -3144,7 +3146,7 @@ static int blogic_abort(struct scsi_cmnd *command)
 				adapter->fw_ver[0] < '5') {
 			blogic_warn("Unable to Abort CCB #%ld to Target %d - Abort Tag Not Supported\n", adapter, ccb->serial, tgt_id);
 			return FAILURE;
-		} else if (blogic_write_outbox(adapter, BLOGIC_MBOX_ABORT,
+		} else if (blogic_write_outbox(shost, BLOGIC_MBOX_ABORT,
 					ccb)) {
 			blogic_warn("Aborting CCB #%ld to Target %d\n",
 					adapter, ccb->serial, tgt_id);

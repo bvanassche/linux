@@ -384,11 +384,18 @@ struct sdebug_host_info {
 	struct list_head dev_info_list;
 };
 
+context_lock_struct(__ctx_lock_data) {};
+context_lock_struct(__ctx_lock_sector) {};
+context_lock_struct(__ctx_lock_meta) {};
+
 /* There is an xarray of pointers to this struct's objects, one per host */
 struct sdeb_store_info {
 	rwlock_t macc_data_lck;	/* for media data access on this store */
 	rwlock_t macc_meta_lck;	/* for atomic media meta access on this store */
 	rwlock_t macc_sector_lck;	/* per-sector media data access on this store */
+	struct __ctx_lock_data data_lck;
+	struct __ctx_lock_sector sector_lck;
+	struct __ctx_lock_meta meta_lck;
 	u8 *storep;		/* user data storage (ram) */
 	struct t10_pi_tuple *dif_storep; /* protection info */
 	void *map_storep;	/* provisioning map */
@@ -3960,42 +3967,44 @@ static inline struct sdeb_store_info *devip2sip(struct sdebug_dev_info *devip,
 
 static inline void
 sdeb_read_lock(rwlock_t *lock)
+	__acquires_shared(lock)
+	__context_unsafe(conditional locking)
 {
-	if (sdebug_no_rwlock)
-		__acquire(lock);
-	else
+	if (!sdebug_no_rwlock)
 		read_lock(lock);
 }
 
 static inline void
 sdeb_read_unlock(rwlock_t *lock)
+	__releases_shared(lock)
+	__context_unsafe(conditional locking)
 {
-	if (sdebug_no_rwlock)
-		__release(lock);
-	else
+	if (!sdebug_no_rwlock)
 		read_unlock(lock);
 }
 
 static inline void
 sdeb_write_lock(rwlock_t *lock)
+	__acquires(lock)
+	__context_unsafe(conditional locking)
 {
-	if (sdebug_no_rwlock)
-		__acquire(lock);
-	else
+	if (!sdebug_no_rwlock)
 		write_lock(lock);
 }
 
 static inline void
 sdeb_write_unlock(rwlock_t *lock)
+	__releases(lock)
+	__context_unsafe(conditional locking)
 {
-	if (sdebug_no_rwlock)
-		__release(lock);
-	else
+	if (!sdebug_no_rwlock)
 		write_unlock(lock);
 }
 
 static inline void
 sdeb_data_read_lock(struct sdeb_store_info *sip)
+	__acquires_shared(&sip->macc_data_lck)
+	__context_unsafe(conditional locking)
 {
 	BUG_ON(!sip);
 
@@ -4004,6 +4013,7 @@ sdeb_data_read_lock(struct sdeb_store_info *sip)
 
 static inline void
 sdeb_data_read_unlock(struct sdeb_store_info *sip)
+	__releases_shared(&sip->macc_data_lck)
 {
 	BUG_ON(!sip);
 
@@ -4012,6 +4022,7 @@ sdeb_data_read_unlock(struct sdeb_store_info *sip)
 
 static inline void
 sdeb_data_write_lock(struct sdeb_store_info *sip)
+	__acquires(&sip->macc_data_lck)
 {
 	BUG_ON(!sip);
 
@@ -4020,6 +4031,7 @@ sdeb_data_write_lock(struct sdeb_store_info *sip)
 
 static inline void
 sdeb_data_write_unlock(struct sdeb_store_info *sip)
+	__releases(&sip->macc_data_lck)
 {
 	BUG_ON(!sip);
 
@@ -4028,6 +4040,7 @@ sdeb_data_write_unlock(struct sdeb_store_info *sip)
 
 static inline void
 sdeb_data_sector_read_lock(struct sdeb_store_info *sip)
+	__acquires_shared(&sip->macc_sector_lck)
 {
 	BUG_ON(!sip);
 
@@ -4036,6 +4049,7 @@ sdeb_data_sector_read_lock(struct sdeb_store_info *sip)
 
 static inline void
 sdeb_data_sector_read_unlock(struct sdeb_store_info *sip)
+	__releases_shared(&sip->macc_sector_lck)
 {
 	BUG_ON(!sip);
 
@@ -4044,6 +4058,7 @@ sdeb_data_sector_read_unlock(struct sdeb_store_info *sip)
 
 static inline void
 sdeb_data_sector_write_lock(struct sdeb_store_info *sip)
+	__acquires(&sip->macc_sector_lck)
 {
 	BUG_ON(!sip);
 
@@ -4052,6 +4067,7 @@ sdeb_data_sector_write_lock(struct sdeb_store_info *sip)
 
 static inline void
 sdeb_data_sector_write_unlock(struct sdeb_store_info *sip)
+	__releases(&sip->macc_sector_lck)
 {
 	BUG_ON(!sip);
 
@@ -4073,6 +4089,8 @@ sdeb_data_sector_write_unlock(struct sdeb_store_info *sip)
 
 static inline void
 sdeb_data_lock(struct sdeb_store_info *sip, bool atomic)
+	__acquires(&sip->data_lck)
+	__context_unsafe(conditional locking)
 {
 	if (atomic)
 		sdeb_data_write_lock(sip);
@@ -4082,6 +4100,8 @@ sdeb_data_lock(struct sdeb_store_info *sip, bool atomic)
 
 static inline void
 sdeb_data_unlock(struct sdeb_store_info *sip, bool atomic)
+	__releases(&sip->data_lck)
+	__context_unsafe(conditional locking)
 {
 	if (atomic)
 		sdeb_data_write_unlock(sip);
@@ -4092,6 +4112,8 @@ sdeb_data_unlock(struct sdeb_store_info *sip, bool atomic)
 /* Allow many reads but only 1x write per sector */
 static inline void
 sdeb_data_sector_lock(struct sdeb_store_info *sip, bool do_write)
+	__acquires(&sip->sector_lck)
+	__context_unsafe(conditional locking)
 {
 	if (do_write)
 		sdeb_data_sector_write_lock(sip);
@@ -4101,6 +4123,8 @@ sdeb_data_sector_lock(struct sdeb_store_info *sip, bool do_write)
 
 static inline void
 sdeb_data_sector_unlock(struct sdeb_store_info *sip, bool do_write)
+	__releases(&sip->sector_lck)
+	__context_unsafe(conditional locking)
 {
 	if (do_write)
 		sdeb_data_sector_write_unlock(sip);
@@ -4110,13 +4134,10 @@ sdeb_data_sector_unlock(struct sdeb_store_info *sip, bool do_write)
 
 static inline void
 sdeb_meta_read_lock(struct sdeb_store_info *sip)
+	__acquires_shared(&sip->meta_lck)
+	__context_unsafe(conditional locking)
 {
-	if (sdebug_no_rwlock) {
-		if (sip)
-			__acquire(&sip->macc_meta_lck);
-		else
-			__acquire(&sdeb_fake_rw_lck);
-	} else {
+	if (!sdebug_no_rwlock) {
 		if (sip)
 			read_lock(&sip->macc_meta_lck);
 		else
@@ -4126,13 +4147,10 @@ sdeb_meta_read_lock(struct sdeb_store_info *sip)
 
 static inline void
 sdeb_meta_read_unlock(struct sdeb_store_info *sip)
+	__releases_shared(&sip->meta_lck)
+	__context_unsafe(conditional locking)
 {
-	if (sdebug_no_rwlock) {
-		if (sip)
-			__release(&sip->macc_meta_lck);
-		else
-			__release(&sdeb_fake_rw_lck);
-	} else {
+	if (!sdebug_no_rwlock) {
 		if (sip)
 			read_unlock(&sip->macc_meta_lck);
 		else
@@ -4142,13 +4160,10 @@ sdeb_meta_read_unlock(struct sdeb_store_info *sip)
 
 static inline void
 sdeb_meta_write_lock(struct sdeb_store_info *sip)
+	__acquires(&sip->meta_lck)
+	__context_unsafe(conditional locking)
 {
-	if (sdebug_no_rwlock) {
-		if (sip)
-			__acquire(&sip->macc_meta_lck);
-		else
-			__acquire(&sdeb_fake_rw_lck);
-	} else {
+	if (!sdebug_no_rwlock) {
 		if (sip)
 			write_lock(&sip->macc_meta_lck);
 		else
@@ -4158,13 +4173,10 @@ sdeb_meta_write_lock(struct sdeb_store_info *sip)
 
 static inline void
 sdeb_meta_write_unlock(struct sdeb_store_info *sip)
+	__releases(&sip->meta_lck)
+	__context_unsafe(conditional locking)
 {
-	if (sdebug_no_rwlock) {
-		if (sip)
-			__release(&sip->macc_meta_lck);
-		else
-			__release(&sdeb_fake_rw_lck);
-	} else {
+	if (!sdebug_no_rwlock) {
 		if (sip)
 			write_unlock(&sip->macc_meta_lck);
 		else
@@ -4585,6 +4597,8 @@ static int resp_read_dt0(struct scsi_cmnd *scp, struct sdebug_dev_info *devip)
 		return check_condition_result;
 	}
 
+	context_unsafe(
+
 	if (sdebug_dev_is_zoned(devip) ||
 	    (sdebug_dix && scsi_prot_sg_count(scp)))  {
 		sdeb_meta_read_lock(sip);
@@ -4622,6 +4636,9 @@ static int resp_read_dt0(struct scsi_cmnd *scp, struct sdebug_dev_info *devip)
 	ret = do_device_access(sip, scp, 0, lba, num, 0, false, false);
 	if (meta_data_locked)
 		sdeb_meta_read_unlock(sip);
+
+	);
+
 	if (unlikely(ret == -1))
 		return DID_ERROR << 16;
 
@@ -4939,6 +4956,8 @@ static int resp_write_dt0(struct scsi_cmnd *scp, struct sdebug_dev_info *devip)
 				    "to DIF device\n");
 	}
 
+	context_unsafe(
+
 	if (sdebug_dev_is_zoned(devip) ||
 	    (sdebug_dix && scsi_prot_sg_count(scp)) ||
 	    scsi_debug_lbp())  {
@@ -4990,6 +5009,8 @@ static int resp_write_dt0(struct scsi_cmnd *scp, struct sdebug_dev_info *devip)
 		zbc_inc_wp(devip, lba, num);
 	if (meta_data_locked)
 		sdeb_meta_write_unlock(sip);
+
+	);
 
 	if (unlikely(-1 == ret))
 		return DID_ERROR << 16;
@@ -5193,6 +5214,7 @@ err_out:
 
 static int resp_write_same(struct scsi_cmnd *scp, u64 lba, u32 num,
 			   u32 ei_lba, bool unmap, bool ndob)
+	__context_unsafe(conditional locking)
 {
 	struct scsi_device *sdp = scp->device;
 	struct sdebug_dev_info *devip = (struct sdebug_dev_info *)sdp->hostdata;

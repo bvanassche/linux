@@ -15,7 +15,6 @@
 # *!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
 
 CONTEXT_ANALYSIS := y
-CONTEXT_ANALYSIS_BusLogic.o := n
 
 CFLAGS_aha152x.o =   -DAHA152X_STAT -DAUTOCONF
 

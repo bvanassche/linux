@@ -124,7 +124,10 @@ struct blk_integrity {
 	unsigned char				interval_exp;
 	unsigned char				tag_size;
 	unsigned char				pi_tuple_size;
+	unsigned char				reserved;
 };
+
+static_assert(sizeof(struct blk_integrity) == 8);
 
 /* open for reading */
 #define BLK_OPEN_READ		((__force blk_mode_t)(1 << 0))

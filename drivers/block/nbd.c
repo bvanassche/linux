@@ -2441,10 +2441,6 @@ static int nbd_genl_reconfigure(struct sk_buff *skb, struct genl_info *info)
 		goto out;
 	}
 
-	ret = nbd_genl_size_set(info, nbd);
-	if (ret)
-		goto out;
-
 	if (info->attrs[NBD_ATTR_TIMEOUT])
 		nbd_set_cmd_timeout(nbd,
 				    nla_get_u64(info->attrs[NBD_ATTR_TIMEOUT]));
@@ -2475,9 +2471,10 @@ static int nbd_genl_reconfigure(struct sk_buff *skb, struct genl_info *info)
 	}
 
 	ret = nbd_genl_foreach_sock(info, nbd_genl_reconnect_sock_cb, nbd);
-	/* foreach_sock returns a positive count on success; doit must return 0 */
-	if (ret >= 0)
-		ret = 0;
+	if (ret < 0)
+		goto out;
+
+	ret = nbd_genl_size_set(info, nbd);
 out:
 	mutex_unlock(&nbd->config_lock);
 	nbd_config_put(nbd);

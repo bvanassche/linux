@@ -377,10 +377,14 @@ static int nbd_set_size(struct nbd_device *nbd, loff_t bytesize, loff_t blksize)
 	lim.logical_block_size = blksize;
 	lim.physical_block_size = blksize;
 	/* No need freeze with 0 capacity and write cache disabled */
-	if (!get_capacity(nbd->disk) && !blk_queue_write_cache(nbd->disk->queue))
+	if (!get_capacity(nbd->disk) && !blk_queue_write_cache(nbd->disk->queue)) {
 		error = queue_limits_commit_update(nbd->disk->queue, &lim);
-	else
+	} else if (!memcmp(&lim, &nbd->disk->queue->limits, sizeof(lim))) {
+		queue_limits_cancel_update(nbd->disk->queue);
+		error = 0;
+	} else {
 		error = queue_limits_commit_update_frozen(nbd->disk->queue, &lim);
+	}
 	if (error)
 		return error;
 

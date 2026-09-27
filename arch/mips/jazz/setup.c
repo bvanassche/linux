@@ -18,12 +18,13 @@
 #include <linux/dma-mapping.h>
 #include <linux/pgtable.h>
 
+#include <asm/bootinfo.h>
 #include <asm/jazz.h>
 #include <asm/jazzdma.h>
 #include <asm/reboot.h>
 #include <asm/tlbmisc.h>
 
-extern void jazz_machine_restart(char *command);
+#include "reset.h"
 
 static struct resource jazz_io_resources[] = {
 	{

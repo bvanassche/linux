@@ -7,6 +7,7 @@
  */
 #include <linux/jiffies.h>
 #include <asm/jazz.h>
+#include "reset.h"
 
 #define KBD_STAT_IBF		0x02	/* Keyboard input buffer full */
 

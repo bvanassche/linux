@@ -20,6 +20,7 @@
 #include <asm/i8259.h>
 #include <asm/io.h>
 #include <asm/jazz.h>
+#include <asm/time.h>
 #include <asm/tlbmisc.h>
 
 static DEFINE_RAW_SPINLOCK(r4030_lock);
@@ -35,7 +36,7 @@ static void enable_r4030_irq(struct irq_data *d)
 	raw_spin_unlock_irqrestore(&r4030_lock, flags);
 }
 
-void disable_r4030_irq(struct irq_data *d)
+static void disable_r4030_irq(struct irq_data *d)
 {
 	unsigned int mask = ~(1 << (d->irq - JAZZ_IRQ_START));
 	unsigned long flags;
@@ -52,7 +53,7 @@ static struct irq_chip r4030_irq_type = {
 	.irq_unmask = enable_r4030_irq,
 };
 
-void __init init_r4030_ints(void)
+static void __init init_r4030_ints(void)
 {
 	int i;
 

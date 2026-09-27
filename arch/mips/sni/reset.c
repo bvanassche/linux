@@ -10,6 +10,8 @@
 #include <asm/reboot.h>
 #include <asm/sni.h>
 
+#include "reset.h"
+
 /*
  * This routine reboots the machine by asking the keyboard
  * controller to pulse the reset-line low. We try that for a while,

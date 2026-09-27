@@ -76,7 +76,7 @@ static void r5k_sc_disable(void)
 	local_irq_restore(flags);
 }
 
-static inline int __init r5k_sc_probe(void)
+static inline int r5k_sc_probe(void)
 {
 	unsigned long config = read_c0_config();
 

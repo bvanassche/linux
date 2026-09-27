@@ -30,11 +30,10 @@
 #include <asm/reboot.h>
 #include <asm/sni.h>
 
+#include "reset.h"
+
 unsigned int sni_brd_type;
 EXPORT_SYMBOL(sni_brd_type);
-
-extern void sni_machine_restart(char *command);
-extern void sni_machine_power_off(void);
 
 static void __init sni_display_setup(void)
 {

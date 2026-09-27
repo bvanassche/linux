@@ -208,7 +208,7 @@ static inline int sni_rm200_i8259A_irq_real(unsigned int irq)
  * first, _then_ send the EOI, and the order of EOI
  * to the two 8259s is important!
  */
-void sni_rm200_mask_and_ack_8259A(struct irq_data *d)
+static void sni_rm200_mask_and_ack_8259A(struct irq_data *d)
 {
 	unsigned int irqmask, irq = d->irq - RM200_I8259A_IRQ_BASE;
 	unsigned long flags;
@@ -328,7 +328,7 @@ static inline int sni_rm200_i8259_irq(void)
 	return likely(irq >= 0) ? irq + RM200_I8259A_IRQ_BASE : irq;
 }
 
-void sni_rm200_init_8259A(void)
+static void sni_rm200_init_8259A(void)
 {
 	unsigned long flags;
 
@@ -384,7 +384,7 @@ static irqreturn_t sni_rm200_i8259A_irq_handler(int dummy, void *p)
 	return IRQ_HANDLED;
 }
 
-void __init sni_rm200_i8259_irqs(void)
+static void __init sni_rm200_i8259_irqs(void)
 {
 	int i;
 
@@ -425,7 +425,7 @@ static void enable_rm200_irq(struct irq_data *d)
 	*(volatile u8 *)SNI_RM200_INT_ENA_REG &= ~mask;
 }
 
-void disable_rm200_irq(struct irq_data *d)
+static void disable_rm200_irq(struct irq_data *d)
 {
 	unsigned int mask = 1 << (d->irq - SNI_RM200_INT_START);
 

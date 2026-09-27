@@ -203,7 +203,7 @@ static void enable_pcimt_irq(struct irq_data *d)
 	*(volatile u8 *) PCIMT_IRQSEL |= mask;
 }
 
-void disable_pcimt_irq(struct irq_data *d)
+static void disable_pcimt_irq(struct irq_data *d)
 {
 	unsigned int mask = ~(1 << (d->irq - PCIMT_IRQ_INT2));
 

@@ -431,10 +431,17 @@ static void __attach_to_pi_owner(struct task_struct *p, union futex_key *key,
 	struct futex_pi_state *pi_state = alloc_pi_state();
 
 	/*
+	 * rt_mutex_init_proxy_locked() is annotated with
+	 * __must_hold(&lock->wait_lock). Use __assume_ctx_lock_raw() instead of
+	 * __assume_ctx_lock() because pi_state->pi_mutex.wait_lock has not yet
+	 * been initialized and is not held, so lockdep_assert_held() would
+	 * fail.
+	 */
+	__assume_ctx_lock_raw(&pi_state->pi_mutex.wait_lock);
+	/*
 	 * Initialize the pi_mutex in locked state and make @p
 	 * the owner of it:
 	 */
-	__assume_ctx_lock(&pi_state->pi_mutex.wait_lock);
 	rt_mutex_init_proxy_locked(&pi_state->pi_mutex, p);
 
 	/* Store the key for possible exit cleanups: */

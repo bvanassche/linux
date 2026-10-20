@@ -462,10 +462,10 @@ static __always_inline bool lockdep_assert_rcu_helper(bool c, const struct __ctx
 #define RCU_LOCKDEP_WARN(c, s) do { } while (0 && (c))
 #define rcu_sleep_check() do { } while (0)
 
-#define lockdep_assert_in_rcu_read_lock() __assume_shared_ctx_lock(RCU)
-#define lockdep_assert_in_rcu_read_lock_bh() __assume_shared_ctx_lock(RCU_BH)
-#define lockdep_assert_in_rcu_read_lock_sched() __assume_shared_ctx_lock(RCU_SCHED)
-#define lockdep_assert_in_rcu_reader() __assume_shared_ctx_lock(RCU)
+#define lockdep_assert_in_rcu_read_lock() __assume_shared_ctx_lock_raw(RCU)
+#define lockdep_assert_in_rcu_read_lock_bh() __assume_shared_ctx_lock_raw(RCU_BH)
+#define lockdep_assert_in_rcu_read_lock_sched() __assume_shared_ctx_lock_raw(RCU_SCHED)
+#define lockdep_assert_in_rcu_reader() __assume_shared_ctx_lock_raw(RCU)
 
 #endif /* #else #ifdef CONFIG_PROVE_RCU */
 

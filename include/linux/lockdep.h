@@ -285,16 +285,16 @@ extern u32 lock_sequence(struct lockdep_map *lock);
 	do { WARN_ON_ONCE(debug_locks && !(cond)); } while (0)
 
 #define lockdep_assert_held(l)		\
-	do { lockdep_assert(lockdep_is_held(l) != LOCK_STATE_NOT_HELD); __assume_ctx_lock(l); } while (0)
+	lockdep_assert(lockdep_is_held(l) != LOCK_STATE_NOT_HELD)
 
 #define lockdep_assert_not_held(l)	\
 	lockdep_assert(lockdep_is_held(l) != LOCK_STATE_HELD)
 
 #define lockdep_assert_held_write(l)	\
-	do { lockdep_assert(lockdep_is_held_type(l, 0)); __assume_ctx_lock(l); } while (0)
+	lockdep_assert(lockdep_is_held_type(l, 0))
 
 #define lockdep_assert_held_read(l)	\
-	do { lockdep_assert(lockdep_is_held_type(l, 1)); __assume_shared_ctx_lock(l); } while (0)
+	lockdep_assert(lockdep_is_held_type(l, 1))
 
 #define lockdep_assert_held_once(l)		\
 	lockdep_assert_once(lockdep_is_held(l) != LOCK_STATE_NOT_HELD)
@@ -392,10 +392,10 @@ extern int lockdep_is_held(const void *);
 #define lockdep_assert(c)			do { } while (0)
 #define lockdep_assert_once(c)			do { } while (0)
 
-#define lockdep_assert_held(l)			__assume_ctx_lock(l)
+#define lockdep_assert_held(l)			do { (void)(l); } while (0)
 #define lockdep_assert_not_held(l)		do { (void)(l); } while (0)
-#define lockdep_assert_held_write(l)		__assume_ctx_lock(l)
-#define lockdep_assert_held_read(l)		__assume_shared_ctx_lock(l)
+#define lockdep_assert_held_write(l)		do { (void)(l); } while (0)
+#define lockdep_assert_held_read(l)		do { (void)(l); } while (0)
 #define lockdep_assert_held_once(l)		do { (void)(l); } while (0)
 #define lockdep_assert_none_held_once()	do { } while (0)
 
@@ -411,6 +411,54 @@ extern int lockdep_is_held(const void *);
 	struct lockdep_map __maybe_unused _name = {}
 
 #endif /* !LOCKDEP */
+
+#define ___assume_ctx_lock(var, uniq)					\
+	do {								\
+		__auto_type uniq = (var);				\
+									\
+		__assume_ctx_lock_raw(uniq);				\
+		lockdep_assert_held(uniq);				\
+	} while (0)
+
+/**
+ * __assume_ctx_lock() - assume and verify that a context lock is held
+ * @var: context lock instance pointer
+ *
+ * Instruct the compiler's context analysis to assume that @var is held
+ * exclusively from this point on and verify at runtime with
+ * lockdep_assert_held() that @var is held. Use this macro in code paths
+ * where lock ownership cannot be proven at compile time, e.g. because the
+ * lock is accessed through an alias the analysis cannot resolve or because
+ * a function does not always require the lock, making __must_hold()
+ * inappropriate. @var is evaluated only once.
+ *
+ * Note: lockdep_assert_held() does not inform the compiler's context
+ * analysis that a lock is held. Use this macro if that is needed.
+ */
+#define __assume_ctx_lock(var)						\
+	___assume_ctx_lock(var, __UNIQUE_ID(ctx_lock))
+
+#define ___assume_shared_ctx_lock(var, uniq)				\
+	do {								\
+		__auto_type uniq = (var);				\
+									\
+		__assume_shared_ctx_lock_raw(uniq);			\
+		lockdep_assert_held_read(uniq);				\
+	} while (0)
+
+/**
+ * __assume_shared_ctx_lock() - assume and verify shared lock ownership
+ * @var: context lock instance pointer
+ *
+ * Instruct the compiler's context analysis to assume that @var is held with
+ * shared access from this point on and verify at runtime with
+ * lockdep_assert_held_read() that @var is held for reading. Use this macro
+ * for reader-writer locks, e.g. rwlock_t and struct rw_semaphore, in code
+ * paths where shared lock ownership cannot be proven at compile time. @var
+ * is evaluated only once.
+ */
+#define __assume_shared_ctx_lock(var)					\
+	___assume_shared_ctx_lock(var, __UNIQUE_ID(ctx_lock))
 
 #ifdef CONFIG_PROVE_LOCKING
 void lockdep_set_lock_cmp_fn(struct lockdep_map *, lock_cmp_fn, lock_print_fn);

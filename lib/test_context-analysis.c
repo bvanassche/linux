@@ -68,7 +68,7 @@ static void __used test_common_helpers(void)
 	}											\
 	static void __used test_##class##_assert(struct test_##class##_data *d)			\
 	{											\
-		lockdep_assert_held(&d->lock);							\
+		__assume_ctx_lock(&d->lock);							\
 		op(d->counter);									\
 	}											\
 	static void __used test_##class##_guard(struct test_##class##_data *d)			\
@@ -88,6 +88,7 @@ TEST_SPINLOCK_COMMON(raw_spinlock,
 		     raw_spin_unlock,
 		     raw_spin_trylock,
 		     TEST_OP_RW);
+
 static void __used test_raw_spinlock_trylock_extra(struct test_raw_spinlock_data *d)
 {
 	unsigned long flags;
@@ -114,6 +115,7 @@ TEST_SPINLOCK_COMMON(spinlock,
 		     spin_unlock,
 		     spin_trylock,
 		     TEST_OP_RW);
+
 static void __used test_spinlock_trylock_extra(struct test_spinlock_data *d)
 {
 	unsigned long flags;
@@ -138,6 +140,7 @@ TEST_SPINLOCK_COMMON(write_lock,
 		     write_unlock,
 		     write_trylock,
 		     TEST_OP_RW);
+
 static void __used test_write_trylock_extra(struct test_write_lock_data *d)
 {
 	unsigned long flags;
@@ -155,6 +158,12 @@ TEST_SPINLOCK_COMMON(read_lock,
 		     read_unlock,
 		     read_trylock,
 		     TEST_OP_RO);
+
+static void __used test_read_lock_assert_shared(struct test_read_lock_data *d)
+{
+	__assume_shared_ctx_lock(&d->lock);
+	TEST_OP_RO(d->counter);
+}
 
 struct test_mutex_data {
 	struct mutex mtx;
@@ -203,7 +212,7 @@ static void __used test_mutex_trylock(struct test_mutex_data *d, atomic_t *a)
 
 static void __used test_mutex_assert(struct test_mutex_data *d)
 {
-	lockdep_assert_held(&d->mtx);
+	__assume_ctx_lock(&d->mtx);
 	d->counter++;
 }
 
@@ -337,6 +346,12 @@ static void __used test_rwsem_assert(struct test_rwsem_data *d)
 {
 	rwsem_assert_held_nolockdep(&d->sem);
 	d->counter++;
+}
+
+static void __used test_rwsem_assert_shared(struct test_rwsem_data *d)
+{
+	__assume_shared_ctx_lock(&d->sem);
+	(void)d->counter;
 }
 
 static void __used test_rwsem_guard(struct test_rwsem_data *d)

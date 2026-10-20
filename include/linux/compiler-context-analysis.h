@@ -125,9 +125,9 @@
 		__attribute__((overloadable)) __no_context_analysis __releases_ctx_lock(var) { }	\
 	static __always_inline void __release_shared_ctx_lock(const struct name *var)			\
 		__attribute__((overloadable)) __no_context_analysis __releases_shared_ctx_lock(var) { } \
-	static __always_inline void __assume_ctx_lock(const struct name *var)				\
+	static __always_inline void __assume_ctx_lock_raw(const struct name *var)			\
 		__attribute__((overloadable)) __assumes_ctx_lock(var) { }				\
-	static __always_inline void __assume_shared_ctx_lock(const struct name *var)			\
+	static __always_inline void __assume_shared_ctx_lock_raw(const struct name *var)		\
 		__attribute__((overloadable)) __assumes_shared_ctx_lock(var) { }			\
 	struct name
 
@@ -183,8 +183,8 @@
 # define __try_acquire_shared_ctx_lock(var, ret)	(ret)
 # define __release_ctx_lock(var)			do { } while (0)
 # define __release_shared_ctx_lock(var)		do { } while (0)
-# define __assume_ctx_lock(var)			do { (void)(var); } while (0)
-# define __assume_shared_ctx_lock(var)			do { (void)(var); } while (0)
+# define __assume_ctx_lock_raw(var)		do { (void)(var); } while (0)
+# define __assume_shared_ctx_lock_raw(var)	do { (void)(var); } while (0)
 # define context_lock_struct(name, ...)		struct __VA_ARGS__ name
 # define disable_context_analysis()
 # define enable_context_analysis()

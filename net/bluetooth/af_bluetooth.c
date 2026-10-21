@@ -413,6 +413,7 @@ int bt_sock_recvmsg(struct socket *sock, struct msghdr *msg, size_t len,
 EXPORT_SYMBOL(bt_sock_recvmsg);
 
 static long bt_sock_data_wait(struct sock *sk, long timeo)
+	__must_hold(sk)
 {
 	DECLARE_WAITQUEUE(wait, current);
 
@@ -740,6 +741,7 @@ EXPORT_SYMBOL(bt_sock_ioctl);
 
 /* This function expects the sk lock to be held when called */
 int bt_sock_wait_state(struct sock *sk, int state, unsigned long timeo)
+	__must_hold(sk)
 {
 	DECLARE_WAITQUEUE(wait, current);
 	int err = 0;
@@ -776,6 +778,7 @@ EXPORT_SYMBOL(bt_sock_wait_state);
 
 /* This function expects the sk lock to be held when called */
 int bt_sock_wait_ready(struct sock *sk, unsigned int msg_flags)
+	__must_hold(sk)
 {
 	DECLARE_WAITQUEUE(wait, current);
 	unsigned long timeo;

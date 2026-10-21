@@ -1162,6 +1162,7 @@ static struct hci_dev *iso_conn_get_hdev(struct iso_conn *conn)
 /* Must be called on the locked socket. */
 static int iso_sock_rebind_bc(struct sock *sk, struct sockaddr_iso *sa,
 			      int addr_len)
+	__must_hold(sk)
 {
 	struct hci_dev *hdev;
 	struct hci_conn *bis;

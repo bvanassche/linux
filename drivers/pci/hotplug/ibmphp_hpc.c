@@ -1045,10 +1045,6 @@ void __exit ibmphp_hpc_stop_poll_thread(void)
 	wait_for_completion(&exit_complete);
 	debug("after exit_completion down\n");
 
-	// cleanup
-	debug("before free_hpc_access\n");
-	free_hpc_access();
-	debug("after free_hpc_access\n");
 	ibmphp_unlock_operations();
 	debug("after unlock operations\n");
 

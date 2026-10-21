@@ -1901,11 +1901,13 @@ megasas_init_adapter_fusion(struct megasas_instance *instance)
 	}
 
 	megasas_display_intel_branding(instance);
-	if (megasas_get_ctrl_info(instance)) {
-		dev_err(&instance->pdev->dev,
-			"Could not get controller info. Fail from %s %d\n",
-			__func__, __LINE__);
-		goto fail_ioc_init;
+	scoped_guard(mutex, &instance->reset_mutex) {
+		if (megasas_get_ctrl_info(instance)) {
+			dev_err(&instance->pdev->dev,
+				"Could not get controller info. Fail from %s %d\n",
+				__func__, __LINE__);
+			goto fail_ioc_init;
+		}
 	}
 
 	instance->flag_ieee = 1;

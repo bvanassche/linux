@@ -610,6 +610,8 @@ struct iio_buffer_setup_ops {
 				   const unsigned long *scan_mask);
 };
 
+context_lock_struct(iio_dev);
+
 /**
  * struct iio_dev - industrial I/O device
  * @modes:		[DRIVER] bitmask listing all the operating modes

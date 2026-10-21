@@ -14,6 +14,7 @@ struct tty_struct;
 /*
  * the semaphore definition
  */
+context_lock_struct(ld_semaphore);
 struct ld_semaphore {
 	atomic_long_t		count;
 	raw_spinlock_t		wait_lock;

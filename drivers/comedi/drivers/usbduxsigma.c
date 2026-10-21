@@ -824,7 +824,6 @@ static int usbduxsigma_ao_cmdtest(struct comedi_device *dev,
 				  struct comedi_subdevice *s,
 				  struct comedi_cmd *cmd)
 {
-	struct usbduxsigma_private *devpriv = dev->private;
 	unsigned int tmp;
 	int err = 0;
 
@@ -845,10 +844,8 @@ static int usbduxsigma_ao_cmdtest(struct comedi_device *dev,
 	err |= comedi_check_trigger_src(&cmd->scan_end_src, TRIG_COUNT);
 	err |= comedi_check_trigger_src(&cmd->stop_src, TRIG_COUNT | TRIG_NONE);
 
-	if (err) {
-		mutex_unlock(&devpriv->mut);
+	if (err)
 		return 1;
-	}
 
 	/* Step 2a : make sure trigger sources are unique */
 

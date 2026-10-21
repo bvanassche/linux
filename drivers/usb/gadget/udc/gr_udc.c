@@ -281,8 +281,7 @@ static void gr_ep0_setup(struct gr_udc *dev, struct gr_request *req);
  */
 static void gr_finish_request(struct gr_ep *ep, struct gr_request *req,
 			      int status)
-	__releases(&dev->lock)
-	__acquires(&dev->lock)
+	__context_unsafe(/* drops and reacquires dev->lock */)
 {
 	struct gr_udc *dev;
 

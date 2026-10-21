@@ -914,7 +914,7 @@ void nd_region_advance_seeds(struct nd_region *nd_region, struct device *dev)
  * BTT's ->submit_bio handler (btt_read_pg / btt_write_pg).
  */
 unsigned int nd_region_acquire_lane(struct nd_region *nd_region)
-	__acquires(&nd_region->lane[lane].lock)
+	__context_unsafe(/* dynamic lane index */)
 {
 	unsigned int lane;
 
@@ -927,7 +927,7 @@ unsigned int nd_region_acquire_lane(struct nd_region *nd_region)
 EXPORT_SYMBOL(nd_region_acquire_lane);
 
 void nd_region_release_lane(struct nd_region *nd_region, unsigned int lane)
-	__releases(&nd_region->lane[lane].lock)
+	__context_unsafe(/* matches nd_region_acquire_lane() */)
 {
 	mutex_unlock(&nd_region->lane[lane].lock);
 }

@@ -2371,7 +2371,7 @@ static void rcu_report_qs_rsp(unsigned long flags)
  */
 static void rcu_report_qs_rnp(unsigned long mask, struct rcu_node *rnp,
 			      unsigned long gps, unsigned long flags)
-	__releases(rnp->lock)
+	__context_unsafe(/* releases rcu_node lock held by caller */)
 {
 	unsigned long oldmask = 0;
 	struct rcu_node *rnp_c;
@@ -2435,7 +2435,7 @@ static void rcu_report_qs_rnp(unsigned long mask, struct rcu_node *rnp,
  */
 static void __maybe_unused
 rcu_report_unblock_qs_rnp(struct rcu_node *rnp, unsigned long flags)
-	__releases(rnp->lock)
+	__context_unsafe(/* releases rcu_node lock held by caller */)
 {
 	unsigned long gps;
 	unsigned long mask;

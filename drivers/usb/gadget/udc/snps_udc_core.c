@@ -958,8 +958,7 @@ static int prep_dma(struct udc_ep *ep, struct udc_request *req, gfp_t gfp)
 /* Completes request packet ... caller MUST hold lock */
 static void
 complete_req(struct udc_ep *ep, struct udc_request *req, int sts)
-__releases(ep->dev->lock)
-__acquires(ep->dev->lock)
+	__context_unsafe(/* drops and reacquires dev->lock */)
 {
 	struct udc		*dev;
 	unsigned		halted;

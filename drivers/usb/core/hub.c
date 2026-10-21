@@ -3917,7 +3917,7 @@ int usb_remote_wakeup(struct usb_device *udev)
 /* Returns 1 if there was a remote wakeup and a connect status change. */
 static int hub_handle_remote_wakeup(struct usb_hub *hub, unsigned int port,
 		u16 portstatus, u16 portchange)
-		__must_hold(&port_dev->status_lock)
+	__context_unsafe(/* port_dev is not in scope */)
 {
 	struct usb_port *port_dev = hub->ports[port - 1];
 	struct usb_device *hdev;
@@ -5654,7 +5654,7 @@ done:
  */
 static void hub_port_connect_change(struct usb_hub *hub, int port1,
 					u16 portstatus, u16 portchange)
-		__must_hold(&port_dev->status_lock)
+	__context_unsafe(/* port_dev is not in scope */)
 {
 	struct usb_port *port_dev = hub->ports[port1 - 1];
 	struct usb_device *udev = port_dev->child;
@@ -5762,7 +5762,7 @@ exit:
 }
 
 static void port_event(struct usb_hub *hub, int port1)
-		__must_hold(&port_dev->status_lock)
+	__context_unsafe(/* port_dev is not in scope */)
 {
 	int connect_change;
 	struct usb_port *port_dev = hub->ports[port1 - 1];

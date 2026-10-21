@@ -6922,7 +6922,7 @@ static void cgroup_fork_child_unlock(struct task_struct *child)
  * to the target cgroup.
  */
 static int cgroup_css_set_fork(struct kernel_clone_args *kargs)
-	__acquires(&cgroup_mutex) __acquires(&cgroup_threadgroup_rwsem)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 	struct cgroup *dst_cgrp = NULL;
@@ -7023,7 +7023,7 @@ err:
  * CLONE_INTO_CGROUP was requested.
  */
 static void cgroup_css_set_put_fork(struct kernel_clone_args *kargs)
-	__releases(&cgroup_threadgroup_rwsem) __releases(&cgroup_mutex)
+	__context_unsafe(/* conditional locking */)
 {
 	struct cgroup *cgrp = kargs->cgrp;
 	struct css_set *cset = kargs->cset;
@@ -7119,7 +7119,7 @@ void cgroup_cancel_fork(struct task_struct *child,
  */
 void cgroup_post_fork(struct task_struct *child,
 		      struct kernel_clone_args *kargs)
-	__releases(&cgroup_threadgroup_rwsem) __releases(&cgroup_mutex)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned int cgrp_kill_seq = 0;
 	unsigned long cgrp_flags = 0;

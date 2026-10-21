@@ -101,7 +101,7 @@ static inline void unlock_device_hash_lock(struct r5conf *conf, int hash)
 }
 
 static inline void lock_all_device_hash_locks_irq(struct r5conf *conf)
-	__acquires(&conf->device_lock)
+	__context_unsafe(/* locking loop */)
 {
 	int i;
 	spin_lock_irq(conf->hash_locks);
@@ -111,7 +111,7 @@ static inline void lock_all_device_hash_locks_irq(struct r5conf *conf)
 }
 
 static inline void unlock_all_device_hash_locks_irq(struct r5conf *conf)
-	__releases(&conf->device_lock)
+	__context_unsafe(/* unlock loop */)
 {
 	int i;
 	spin_unlock(&conf->device_lock);

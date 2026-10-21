@@ -897,8 +897,7 @@ static struct r8a66597_request *get_request_from_ep(struct r8a66597_ep *ep)
 /*-------------------------------------------------------------------------*/
 static void transfer_complete(struct r8a66597_ep *ep,
 		struct r8a66597_request *req, int status)
-__releases(r8a66597->lock)
-__acquires(r8a66597->lock)
+	__context_unsafe(/* drops and reacquires ep->r8a66597->lock */)
 {
 	int restart = 0;
 
@@ -1157,8 +1156,7 @@ static void irq_pipe_empty(struct r8a66597 *r8a66597, u16 status, u16 enb)
 }
 
 static void get_status(struct r8a66597 *r8a66597, struct usb_ctrlrequest *ctrl)
-__releases(r8a66597->lock)
-__acquires(r8a66597->lock)
+	__context_unsafe(/* drops and reacquires r8a66597->lock */)
 {
 	struct r8a66597_ep *ep;
 	u16 pid;

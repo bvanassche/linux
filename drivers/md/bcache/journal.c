@@ -660,7 +660,7 @@ static CLOSURE_CALLBACK(journal_write_done)
 }
 
 static CLOSURE_CALLBACK(journal_write_unlock)
-	__releases(&c->journal.lock)
+	__context_unsafe(/* __releases(&c->journal.lock) */)
 {
 	closure_type(c, struct cache_set, journal.io);
 
@@ -669,7 +669,7 @@ static CLOSURE_CALLBACK(journal_write_unlock)
 }
 
 static CLOSURE_CALLBACK(journal_write_unlocked)
-	__releases(c->journal.lock)
+	__context_unsafe(/* __releases(&c->journal.lock) */)
 {
 	closure_type(c, struct cache_set, journal.io);
 	struct cache *ca = c->cache;
@@ -755,7 +755,7 @@ static CLOSURE_CALLBACK(journal_write)
 }
 
 static void journal_try_write(struct cache_set *c)
-	__releases(c->journal.lock)
+	__context_unsafe(/* __releases(&c->journal.lock) */)
 {
 	struct closure *cl = &c->journal.io;
 	struct journal_write *w = c->journal.cur;
@@ -772,7 +772,7 @@ static void journal_try_write(struct cache_set *c)
 
 static struct journal_write *journal_wait_for_write(struct cache_set *c,
 						    unsigned int nkeys)
-	__acquires(&c->journal.lock)
+	__context_unsafe(/* __acquires(&c->journal.lock) */)
 {
 	size_t sectors;
 	struct closure cl;

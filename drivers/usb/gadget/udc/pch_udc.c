@@ -1419,8 +1419,7 @@ static void pch_vbus_gpio_free(struct pch_udc_dev *dev)
  */
 static void complete_req(struct pch_udc_ep *ep, struct pch_udc_request *req,
 								 int status)
-	__releases(&dev->lock)
-	__acquires(&dev->lock)
+	__context_unsafe(/* drops and reacquires dev->lock */)
 {
 	struct pch_udc_dev	*dev;
 	unsigned halted = ep->halted;

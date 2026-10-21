@@ -1595,7 +1595,7 @@ static inline void mas_adopt_children(struct ma_state *mas,
  */
 static inline void mas_put_in_tree(struct ma_state *mas,
 		struct maple_enode *old_enode, char new_height)
-	__must_hold(mas->tree->ma_lock)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	unsigned char offset;
 	void __rcu **slots;
@@ -1625,7 +1625,7 @@ static inline void mas_put_in_tree(struct ma_state *mas,
  */
 static inline void mas_replace_node(struct ma_state *mas,
 		struct maple_enode *old_enode, unsigned char new_height)
-	__must_hold(mas->tree->ma_lock)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	mas_put_in_tree(mas, old_enode, new_height);
 	mas_free(mas, old_enode);
@@ -1637,7 +1637,7 @@ static inline void mas_replace_node(struct ma_state *mas,
  * @child: the maple state to store the child.
  */
 static inline bool mas_find_child(struct ma_state *mas, struct ma_state *child)
-	__must_hold(mas->tree->ma_lock)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	enum maple_type mt;
 	unsigned char offset;
@@ -7043,7 +7043,7 @@ static void mt_validate_nulls(struct maple_tree *mt)
  * 2. The gap is correctly set in the parents
  */
 void mt_validate(struct maple_tree *mt)
-	__must_hold(mas->tree->ma_lock)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	unsigned char end;
 

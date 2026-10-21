@@ -2625,7 +2625,7 @@ int ptrace_notify(int exit_code, unsigned long message)
  * %true if participated in group stop.
  */
 static bool do_signal_stop(int signr)
-	__releases(&current->sighand->siglock)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct signal_struct *sig = current->signal;
 

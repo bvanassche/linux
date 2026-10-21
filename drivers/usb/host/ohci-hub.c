@@ -150,8 +150,7 @@ static inline struct ed *find_head (struct ed *ed)
 
 /* caller has locked the root hub */
 static int ohci_rh_resume (struct ohci_hcd *ohci)
-__releases(ohci->lock)
-__acquires(ohci->lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct usb_hcd		*hcd = ohci_to_hcd (ohci);
 	u32			temp, enables;

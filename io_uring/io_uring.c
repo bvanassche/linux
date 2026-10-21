@@ -2008,6 +2008,7 @@ static __cold int io_submit_fail_init(const struct io_uring_sqe *sqe,
 static inline int io_submit_sqe(struct io_ring_ctx *ctx, struct io_kiocb *req,
 			 const struct io_uring_sqe *sqe, unsigned int *left)
 	__must_hold(&ctx->uring_lock)
+	__context_unsafe(/* req->ctx is an alias of ctx */)
 {
 	struct io_submit_link *link = &ctx->submit_state.link;
 	int ret;

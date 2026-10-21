@@ -178,7 +178,7 @@ release_freefall:
 
 static int __init ams_init(void)
 {
-	struct device_node *np;
+	struct device_node *np __maybe_unused;
 
 	spin_lock_init(&ams_info.irq_lock);
 	mutex_init(&ams_info.lock);

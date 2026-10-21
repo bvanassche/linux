@@ -3951,7 +3951,8 @@ void release_sock(struct sock *sk)
 }
 EXPORT_SYMBOL(release_sock);
 
-bool __lock_sock_fast(struct sock *sk) __acquires(&sk->sk_lock.slock)
+bool __lock_sock_fast(struct sock *sk)
+	__cond_acquires(0, &sk->sk_lock.slock)
 {
 	might_sleep();
 	spin_lock_bh(&sk->sk_lock.slock);
@@ -3977,7 +3978,6 @@ bool __lock_sock_fast(struct sock *sk) __acquires(&sk->sk_lock.slock)
 
 	__lock_sock(sk);
 	sk->sk_lock.owned = 1;
-	__acquire(&sk->sk_lock.slock);
 	spin_unlock_bh(&sk->sk_lock.slock);
 	return true;
 }

@@ -168,9 +168,12 @@ static void percpu_rwsem_wait(struct percpu_rw_semaphore *sem, bool reader,
 
 bool __sched __percpu_down_read(struct percpu_rw_semaphore *sem, bool try,
 				bool freeze)
+	__cond_acquires_shared(true, sem)
 {
-	if (__percpu_down_read_trylock(sem))
+	if (__percpu_down_read_trylock(sem)) {
+		__acquire_shared(sem);
 		return true;
+	}
 
 	if (try)
 		return false;
@@ -181,6 +184,7 @@ bool __sched __percpu_down_read(struct percpu_rw_semaphore *sem, bool try,
 	preempt_disable();
 	trace_contention_end(sem, 0);
 
+	__acquire_shared(sem);
 	return true;
 }
 EXPORT_SYMBOL_GPL(__percpu_down_read);
@@ -225,6 +229,7 @@ static bool readers_active_check(struct percpu_rw_semaphore *sem)
 }
 
 void __sched percpu_down_write(struct percpu_rw_semaphore *sem)
+	__acquires(sem)
 {
 	bool contended = false;
 
@@ -256,10 +261,12 @@ void __sched percpu_down_write(struct percpu_rw_semaphore *sem)
 	rcuwait_wait_event(&sem->writer, readers_active_check(sem), TASK_UNINTERRUPTIBLE);
 	if (contended)
 		trace_contention_end(sem, 0);
+	__acquire(sem);
 }
 EXPORT_SYMBOL_GPL(percpu_down_write);
 
 void percpu_up_write(struct percpu_rw_semaphore *sem)
+	__releases(sem)
 {
 	rwsem_release(&sem->dep_map, _RET_IP_);
 
@@ -289,6 +296,7 @@ void percpu_up_write(struct percpu_rw_semaphore *sem)
 	 * exclusive write lock because its counting.
 	 */
 	rcu_sync_exit(&sem->rss);
+	__release(sem);
 }
 EXPORT_SYMBOL_GPL(percpu_up_write);
 

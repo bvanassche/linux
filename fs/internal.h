@@ -5,6 +5,8 @@
  * Written by David Howells (dhowells@redhat.com)
  */
 
+#include <linux/fs_context.h>
+
 struct super_block;
 struct file_system_type;
 struct iomap;

@@ -506,6 +506,7 @@ __ioat_prep_pq16_lock(struct dma_chan *c, enum sum_check_flags *result,
 		if (!desc->sed) {
 			dev_err(to_dev(ioat_chan),
 				"%s: no free sed entries\n", __func__);
+			spin_unlock_bh(&ioat_chan->prep_lock);
 			return NULL;
 		}
 

@@ -1132,21 +1132,14 @@ dmaengine_prep_config_sg_safe(struct dma_chan *chan, struct scatterlist *sgl,
 			      unsigned long flags,
 			      struct dma_slave_config *config)
 {
-	struct dma_async_tx_descriptor *tx;
-	unsigned long spinlock_flags;
-
 	if (!chan || !chan->device)
 		return NULL;
 
-	if (!chan->device->device_prep_config_sg)
-		spin_lock_irqsave(&chan->lock, spinlock_flags);
+	if (chan->device->device_prep_config_sg)
+		return dmaengine_prep_config_sg(chan, sgl, sg_len, dir, flags, config);
 
-	tx = dmaengine_prep_config_sg(chan, sgl, sg_len, dir, flags, config);
-
-	if (!chan->device->device_prep_config_sg)
-		spin_unlock_irqrestore(&chan->lock, spinlock_flags);
-
-	return tx;
+	guard(spinlock_irqsave)(&chan->lock);
+	return dmaengine_prep_config_sg(chan, sgl, sg_len, dir, flags, config);
 }
 
 /**

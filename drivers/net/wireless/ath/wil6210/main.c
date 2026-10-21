@@ -241,7 +241,6 @@ static bool wil_vif_is_connected(struct wil6210_priv *wil, u8 mid)
 
 static void wil_disconnect_cid_complete(struct wil6210_vif *vif, int cid,
 					u16 reason_code)
-__acquires(&sta->tid_rx_lock) __releases(&sta->tid_rx_lock)
 {
 	uint i;
 	struct wil6210_priv *wil = vif_to_wil(vif);

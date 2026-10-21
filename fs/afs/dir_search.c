@@ -185,7 +185,8 @@ int afs_dir_search(struct afs_vnode *dvnode, const struct qstr *name,
 		   struct afs_fid *_fid, afs_dataversion_t *_dir_version)
 {
 	struct afs_dir_iter iter = { .dvnode = dvnode, };
-	int ret, retry_limit = 3;
+	int retry_limit = 3;
+	ssize_t ret;
 
 	_enter("{%llu},,,", dvnode->netfs.inode.i_ino);
 
@@ -215,6 +216,6 @@ int afs_dir_search(struct afs_vnode *dvnode, const struct qstr *name,
 			afs_dir_reset_iter(&iter);
 	} while (ret == -ESTALE);
 
-	_leave(" = %d", ret);
+	_leave(" = %zd", ret);
 	return ret;
 }

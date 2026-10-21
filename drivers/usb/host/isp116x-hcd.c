@@ -293,7 +293,7 @@ static void preproc_atl_queue(struct isp116x *isp116x)
 */
 static void finish_request(struct isp116x *isp116x, struct isp116x_ep *ep,
 			   struct urb *urb, int status)
-__releases(isp116x->lock) __acquires(isp116x->lock)
+	__context_unsafe(/* drops and reacquires isp116x->lock */)
 {
 	unsigned i;
 

@@ -1595,7 +1595,6 @@ has_keys:
 }
 
 static int sta_show(struct seq_file *s, void *data)
-__acquires(&p->tid_rx_lock) __releases(&p->tid_rx_lock)
 {
 	struct wil6210_priv *wil = s->private;
 	int i, tid, mcs;
@@ -1704,7 +1703,6 @@ static int mids_show(struct seq_file *s, void *data)
 DEFINE_SHOW_ATTRIBUTE(mids);
 
 static int wil_tx_latency_debugfs_show(struct seq_file *s, void *data)
-__acquires(&p->tid_rx_lock) __releases(&p->tid_rx_lock)
 {
 	struct wil6210_priv *wil = s->private;
 	int i, bin;

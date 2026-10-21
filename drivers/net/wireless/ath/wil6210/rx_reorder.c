@@ -80,7 +80,6 @@ static void wil_reorder_release(struct net_device *ndev,
 
 /* called in NAPI context */
 void wil_rx_reorder(struct wil6210_priv *wil, struct sk_buff *skb)
-__acquires(&sta->tid_rx_lock) __releases(&sta->tid_rx_lock)
 {
 	struct wil6210_vif *vif;
 	struct net_device *ndev;

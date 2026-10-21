@@ -1110,7 +1110,7 @@ extern const struct address_space_operations afs_dir_aops;
 extern const struct dentry_operations afs_fs_dentry_operations;
 
 ssize_t afs_read_dir(struct afs_vnode *dvnode, struct file *file)
-	__acquires(&dvnode->validate_lock);
+	__cond_acquires_shared_range(0, SSIZE_MAX, &dvnode->validate_lock);
 extern void afs_d_release(struct dentry *);
 extern void afs_check_for_remote_deletion(struct afs_operation *);
 

@@ -48,8 +48,7 @@ dbc_kfifo_to_req(struct dbc_port *port, char *packet)
 }
 
 static int dbc_do_start_tx(struct dbc_port *port)
-	__releases(&port->port_lock)
-	__acquires(&port->port_lock)
+	__must_hold(&port->port_lock)
 {
 	int			len;
 	struct dbc_request	*req;
@@ -89,6 +88,7 @@ static int dbc_do_start_tx(struct dbc_port *port)
 
 /* must be called with port->port_lock held */
 static int dbc_start_tx(struct dbc_port *port)
+	__must_hold(&port->port_lock)
 {
 	lockdep_assert_held(&port->port_lock);
 

@@ -191,7 +191,7 @@ static bool sync_rcu_exp_done_unlocked(struct rcu_node *rnp)
  */
 static void __rcu_report_exp_rnp(struct rcu_node *rnp,
 				 bool wake, unsigned long flags)
-	__releases(rnp->lock)
+	__context_unsafe(/* releases rcu_node lock held by caller */)
 {
 	unsigned long mask;
 
@@ -238,7 +238,7 @@ static void __maybe_unused rcu_report_exp_rnp(struct rcu_node *rnp, bool wake)
  */
 static void rcu_report_exp_cpu_mult(struct rcu_node *rnp, unsigned long flags,
 				    unsigned long mask_in, bool wake)
-				    __releases(rnp->lock)
+	__context_unsafe(/* releases rcu_node lock held by caller */)
 {
 	int cpu;
 	unsigned long mask;

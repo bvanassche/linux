@@ -74,7 +74,7 @@ void i915_gem_object_frontbuffer_ref(struct i915_frontbuffer *front)
 }
 
 static void frontbuffer_release(struct kref *ref)
-	__releases(&i915->frontbuffer_lock)
+	__releases(&to_i915(container_of(ref, struct i915_frontbuffer, ref)->obj->base.dev)->frontbuffer_lock)
 {
 	struct i915_frontbuffer *front =
 		container_of(ref, typeof(*front), ref);

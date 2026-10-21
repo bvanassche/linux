@@ -298,12 +298,14 @@ static ssize_t afs_read_single(struct afs_vnode *dvnode, struct file *file)
  * previous contents.  We return -ESTALE if the caller needs to call us again.
  */
 ssize_t afs_read_dir(struct afs_vnode *dvnode, struct file *file)
-	__acquires(&dvnode->validate_lock)
+	__cond_acquires_shared_range(0, SSIZE_MAX, &dvnode->validate_lock)
 {
 	ssize_t ret;
 	loff_t i_size;
 
 	i_size = i_size_read(&dvnode->netfs.inode);
+	if (i_size < 0 || i_size > SSIZE_MAX)
+		return -EFBIG;
 
 	ret = -ERESTARTSYS;
 	if (down_read_killable(&dvnode->validate_lock) < 0)
@@ -342,6 +344,8 @@ ssize_t afs_read_dir(struct afs_vnode *dvnode, struct file *file)
 
 	downgrade_write(&dvnode->validate_lock);
 valid:
+	if (ret < 0)
+		unreachable();
 	return ret;
 
 error_unlock:
@@ -517,7 +521,7 @@ static int afs_dir_iterate(struct inode *dir, struct dir_context *ctx,
 {
 	struct afs_vnode *dvnode = AFS_FS_I(dir);
 	int retry_limit = 100;
-	int ret;
+	ssize_t ret;
 
 	_enter("{%llu},%llx,,", dir->i_ino, ctx->pos);
 
@@ -543,7 +547,7 @@ static int afs_dir_iterate(struct inode *dir, struct dir_context *ctx,
 		up_read(&dvnode->validate_lock);
 	} while (ret == -ESTALE);
 
-	_leave(" = %d", ret);
+	_leave(" = %zd", ret);
 	return ret;
 }
 

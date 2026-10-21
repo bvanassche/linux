@@ -1097,12 +1097,13 @@ static void mvs_port_notify_formed(struct asd_sas_phy *sas_phy, int lock)
 		spin_unlock_irqrestore(&mvi->lock, flags);
 }
 
-static void mvs_port_notify_deformed(struct asd_sas_phy *sas_phy, int lock)
+static void mvs_port_notify_deformed(struct asd_sas_phy *sas_phy)
 {
 	struct domain_device *dev;
 	struct mvs_phy *phy = sas_phy->lldd_phy;
 	struct mvs_info *mvi = phy->mvi;
 	struct asd_sas_port *port = sas_phy->port;
+	unsigned long flags;
 	int phy_no = 0;
 
 	while (phy != &mvi->phy[phy_no]) {
@@ -1110,8 +1111,10 @@ static void mvs_port_notify_deformed(struct asd_sas_phy *sas_phy, int lock)
 		if (phy_no >= MVS_MAX_PHYS)
 			return;
 	}
+	spin_lock_irqsave(&mvi->lock, flags);
 	list_for_each_entry(dev, &port->dev_list, dev_list_node)
-		mvs_do_release_task(phy->mvi, phy_no, dev);
+		mvs_do_release_task(mvi, phy_no, dev);
+	spin_unlock_irqrestore(&mvi->lock, flags);
 
 }
 
@@ -1123,7 +1126,7 @@ void mvs_port_formed(struct asd_sas_phy *sas_phy)
 
 void mvs_port_deformed(struct asd_sas_phy *sas_phy)
 {
-	mvs_port_notify_deformed(sas_phy, 1);
+	mvs_port_notify_deformed(sas_phy);
 }
 
 static struct mvs_device *mvs_alloc_dev(struct mvs_info *mvi)

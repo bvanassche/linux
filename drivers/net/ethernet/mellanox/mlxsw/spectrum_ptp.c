@@ -544,6 +544,7 @@ mlxsw_sp1_ptp_unmatched_save(struct mlxsw_sp *mlxsw_sp,
 static struct mlxsw_sp1_ptp_unmatched *
 mlxsw_sp1_ptp_unmatched_lookup(struct mlxsw_sp *mlxsw_sp,
 			       struct mlxsw_sp1_ptp_key key, int *p_length)
+	__must_hold_shared(RCU)
 {
 	struct mlxsw_sp1_ptp_state *ptp_state = mlxsw_sp1_ptp_state(mlxsw_sp);
 	struct mlxsw_sp1_ptp_unmatched *unmatched, *last = NULL;

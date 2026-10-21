@@ -51,6 +51,7 @@ static int rvu_rep_mcam_flow_init(struct rep_dev *rep)
 	if (!rep->flow_cfg->flow_ent)
 		return -ENOMEM;
 
+	mutex_lock(&priv->mbox.lock);
 	while (allocated < count) {
 		req = otx2_mbox_alloc_msg_npc_mcam_alloc_entry(&priv->mbox);
 		if (!req)

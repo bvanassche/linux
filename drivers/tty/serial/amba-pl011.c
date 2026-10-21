@@ -856,8 +856,7 @@ static inline bool pl011_dma_tx_start(struct uart_amba_port *uap)
  * Locking: called with port lock held and IRQs disabled.
  */
 static void pl011_dma_flush_buffer(struct uart_port *port)
-__releases(&uap->port.lock)
-__acquires(&uap->port.lock)
+	__context_unsafe(/* container_of() */)
 {
 	struct uart_amba_port *uap =
 	    container_of(port, struct uart_amba_port, port);

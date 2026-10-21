@@ -124,8 +124,7 @@ void musb_g_giveback(
 	struct musb_ep		*ep,
 	struct usb_request	*request,
 	int			status)
-__releases(ep->musb->lock)
-__acquires(ep->musb->lock)
+	__context_unsafe(/* to_musb_request() uses container_of() */)
 {
 	struct musb_request	*req;
 	struct musb		*musb;

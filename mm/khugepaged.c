@@ -2883,8 +2883,7 @@ static enum scan_result collapse_single_pmd(unsigned long addr,
 
 static void collapse_scan_mm_slot(unsigned int progress_max,
 		enum scan_result *result, struct collapse_control *cc)
-	__releases(&khugepaged_mm_lock)
-	__acquires(&khugepaged_mm_lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct vma_iterator vmi;
 	struct mm_slot *slot;

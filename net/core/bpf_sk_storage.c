@@ -733,7 +733,7 @@ bpf_sk_storage_map_seq_free_sks(struct bpf_iter_seq_sk_storage_map_info *info)
 static struct bpf_local_storage_elem *
 bpf_sk_storage_map_seq_find_next(struct bpf_iter_seq_sk_storage_map_info *info,
 				 struct bpf_local_storage_elem *prev_selem)
-	__acquires(RCU) __releases(RCU)
+	__context_unsafe(/* conditionally calls rcu_read_unlock() */)
 {
 	struct bpf_local_storage *sk_storage;
 	struct bpf_local_storage_elem *selem;
@@ -893,7 +893,7 @@ static int bpf_sk_storage_map_seq_show(struct seq_file *seq, void *v)
 }
 
 static void bpf_sk_storage_map_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__context_unsafe(/* conditionally calls rcu_read_unlock() */)
 {
 	if (!v)
 		(void)__bpf_sk_storage_map_seq_show(seq, v);

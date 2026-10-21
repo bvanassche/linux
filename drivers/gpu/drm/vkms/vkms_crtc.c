@@ -160,7 +160,7 @@ static int vkms_crtc_atomic_check(struct drm_crtc *crtc,
 
 static void vkms_crtc_atomic_begin(struct drm_crtc *crtc,
 				   struct drm_atomic_commit *state)
-	__acquires(&vkms_output->lock)
+	__context_unsafe(/* acquires spinlock for caller */)
 {
 	struct vkms_output *vkms_output = drm_crtc_to_vkms_output(crtc);
 
@@ -172,7 +172,7 @@ static void vkms_crtc_atomic_begin(struct drm_crtc *crtc,
 
 static void vkms_crtc_atomic_flush(struct drm_crtc *crtc,
 				   struct drm_atomic_commit *state)
-	__releases(&vkms_output->lock)
+	__context_unsafe(/* releases spinlock held by caller */)
 {
 	struct vkms_output *vkms_output = drm_crtc_to_vkms_output(crtc);
 

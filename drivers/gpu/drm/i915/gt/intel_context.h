@@ -246,7 +246,7 @@ static inline void intel_context_put(struct intel_context *ce)
 
 static inline struct intel_timeline *__must_check
 intel_context_timeline_lock(struct intel_context *ce)
-	__acquires(&ce->timeline->mutex)
+	__context_unsafe(/* returns ERR_PTR() */)
 {
 	struct intel_timeline *tl = ce->timeline;
 	int err;
@@ -265,7 +265,7 @@ intel_context_timeline_lock(struct intel_context *ce)
 }
 
 static inline void intel_context_timeline_unlock(struct intel_timeline *tl)
-	__releases(&tl->mutex)
+	__context_unsafe(/* to match the corresponding lock function */)
 {
 	mutex_unlock(&tl->mutex);
 }

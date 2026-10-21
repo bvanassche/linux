@@ -987,7 +987,7 @@ static inline void forward_timer_base(struct timer_base *base)
  */
 static struct timer_base *lock_timer_base(struct timer_list *timer,
 					  unsigned long *flags)
-	__acquires(timer->base->lock)
+	__context_unsafe(/* acquires base->lock for caller */)
 {
 	for (;;) {
 		struct timer_base *base;
@@ -2079,8 +2079,7 @@ void fetch_next_timer_interrupt_remote(unsigned long basej, u64 basem,
  * Unlocks the remote timer bases.
  */
 void timer_unlock_remote_bases(unsigned int cpu)
-	__releases(timer_bases[BASE_LOCAL]->lock)
-	__releases(timer_bases[BASE_GLOBAL]->lock)
+	__context_unsafe(/* releases remote timer base locks held by caller */)
 {
 	struct timer_base *base_local, *base_global;
 
@@ -2098,8 +2097,7 @@ void timer_unlock_remote_bases(unsigned int cpu)
  * Locks the remote timer bases.
  */
 void timer_lock_remote_bases(unsigned int cpu)
-	__acquires(timer_bases[BASE_LOCAL]->lock)
-	__acquires(timer_bases[BASE_GLOBAL]->lock)
+	__context_unsafe(/* acquires remote timer base locks for caller */)
 {
 	struct timer_base *base_local, *base_global;
 

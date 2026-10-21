@@ -709,7 +709,9 @@ static int restore_dsp_settings(struct echoaudio *chip)
 	if (err < 0)
 		return err;
 
+	spin_lock_irq(&chip->lock);
 	err = set_sample_rate(chip, chip->sample_rate);
+	spin_unlock_irq(&chip->lock);
 	if (err < 0)
 		return err;
 
@@ -736,7 +738,10 @@ static int restore_dsp_settings(struct echoaudio *chip)
 
 #ifdef ECHOCARD_HAS_EXTERNAL_CLOCK
 	/* set_input_clock() also restores automute setting */
-	if (set_input_clock(chip, chip->input_clock) < 0)
+	spin_lock_irq(&chip->lock);
+	err = set_input_clock(chip, chip->input_clock);
+	spin_unlock_irq(&chip->lock);
+	if (err < 0)
 		return -EIO;
 #endif
 

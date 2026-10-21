@@ -50,6 +50,7 @@
 #include <asm/idtentry.h>
 #include <asm/reboot.h>
 #include <asm/intel_pt.h>
+#include <asm/smp.h>
 
 bool hv_crash_enabled;
 EXPORT_SYMBOL_GPL(hv_crash_enabled);

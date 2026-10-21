@@ -27,7 +27,6 @@
 #include "vnic_stats.h"
 #include "vnic_scsi.h"
 #include "fnic_fdls.h"
-#include "fnic_nvme.h"
 
 #define DRV_NAME		"fnic"
 #define DRV_DESCRIPTION		"Cisco FCoE HBA Driver"
@@ -659,4 +658,5 @@ static inline void
 fnic_debug_dump_fc_frame(struct fnic *fnic, struct fc_frame_header *fchdr,
 				uint32_t len, char *pfx) {}
 #endif /* FNIC_DEBUG */
+#include "fnic_nvme.h"
 #endif /* _FNIC_H_ */

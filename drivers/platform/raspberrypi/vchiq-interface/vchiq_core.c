@@ -1187,8 +1187,11 @@ queue_message_sync(struct vchiq_state *state, struct vchiq_service *service,
 		return -EAGAIN;
 
 	ret = remote_event_wait(&state->sync_release_event, &local->sync_release);
-	if (ret)
+	if (ret) {
+		if (VCHIQ_MSG_TYPE(msgid) != VCHIQ_MSG_RESUME)
+			mutex_unlock(&state->sync_mutex);
 		return ret;
+	}
 
 	/* Ensure that reads don't overtake the remote_event_wait. */
 	rmb();
@@ -1212,7 +1215,8 @@ queue_message_sync(struct vchiq_state *state, struct vchiq_service *service,
 					    header->data, size);
 
 	if (callback_result < 0) {
-		mutex_unlock(&state->slot_mutex);
+		if (VCHIQ_MSG_TYPE(msgid) != VCHIQ_MSG_RESUME)
+			mutex_unlock(&state->sync_mutex);
 		VCHIQ_SERVICE_STATS_INC(service, error_count);
 		return -EINVAL;
 	}

@@ -9,6 +9,7 @@
 
 struct codetag_iterator;
 struct codetag_type;
+context_lock_struct(codetag_type);
 struct codetag_module;
 struct seq_buf;
 struct module;

@@ -241,6 +241,8 @@ struct sock_common {
 struct bpf_local_storage;
 struct sk_filter;
 
+context_lock_struct(sock);
+
 /**
   *	struct sock - network layer representation of sockets
   *	@__sk_common: shared layout with inet_timewait_sock

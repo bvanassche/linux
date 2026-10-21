@@ -1729,7 +1729,7 @@ void release_sock(struct sock *sk);
 				SINGLE_DEPTH_NESTING)
 #define bh_unlock_sock(__sk)	spin_unlock(&((__sk)->sk_lock.slock))
 
-bool __lock_sock_fast(struct sock *sk) __acquires(&sk->sk_lock.slock);
+bool __lock_sock_fast(struct sock *sk) __cond_acquires(0, &sk->sk_lock.slock);
 
 /**
  * lock_sock_fast - fast version of lock_sock
@@ -1745,6 +1745,7 @@ bool __lock_sock_fast(struct sock *sk) __acquires(&sk->sk_lock.slock);
  *   sk_lock.slock unlocked, owned = 1, BH enabled
  */
 static inline bool lock_sock_fast(struct sock *sk)
+	__cond_acquires(0, &sk->sk_lock.slock)
 {
 	/* The sk_lock has mutex_lock() semantics here. */
 	mutex_acquire(&sk->sk_lock.dep_map, 0, 0, _RET_IP_);
@@ -1754,6 +1755,7 @@ static inline bool lock_sock_fast(struct sock *sk)
 
 /* fast socket lock variant for caller already holding a [different] socket lock */
 static inline bool lock_sock_fast_nested(struct sock *sk)
+	__cond_acquires(0, &sk->sk_lock.slock)
 {
 	mutex_acquire(&sk->sk_lock.dep_map, SINGLE_DEPTH_NESTING, 0, _RET_IP_);
 
@@ -1769,11 +1771,10 @@ static inline bool lock_sock_fast_nested(struct sock *sk)
  * If slow mode is on, we call regular release_sock()
  */
 static inline void unlock_sock_fast(struct sock *sk, bool slow)
-	__releases(&sk->sk_lock.slock)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (slow) {
 		release_sock(sk);
-		__release(&sk->sk_lock.slock);
 	} else {
 		mutex_release(&sk->sk_lock.dep_map, _RET_IP_);
 		spin_unlock_bh(&sk->sk_lock.slock);

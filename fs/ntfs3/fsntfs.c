@@ -1009,7 +1009,7 @@ int ntfs_set_state(struct ntfs_sb_info *sbi, enum NTFS_DIRTY_FLAGS dirty)
 	err = 0;
 
 out:
-	ni_unlock(ni);
+	mutex_unlock(&ni->ni_lock);
 	if (err)
 		return err;
 
@@ -2070,7 +2070,7 @@ int ntfs_get_security_by_id(struct ntfs_sb_info *sbi, __le32 security_id,
 out:
 	kfree(p);
 	fnd_put(fnd_sii);
-	ni_unlock(ni);
+	mutex_unlock(&ni->ni_lock);
 
 	return err;
 }
@@ -2281,7 +2281,7 @@ int ntfs_insert_security(struct ntfs_sb_info *sbi,
 out:
 	fnd_put(fnd_sdh);
 	mark_inode_dirty(&ni->vfs_inode);
-	ni_unlock(ni);
+	mutex_unlock(&ni->ni_lock);
 	kfree(d_security);
 
 	return err;
@@ -2377,7 +2377,7 @@ int ntfs_objid_remove(struct ntfs_sb_info *sbi, struct GUID *guid)
 	err = indx_delete_entry(indx, ni, guid, sizeof(*guid), NULL);
 
 	mark_inode_dirty(&ni->vfs_inode);
-	ni_unlock(ni);
+	mutex_unlock(&ni->ni_lock);
 
 	return err;
 }
@@ -2407,7 +2407,7 @@ int ntfs_insert_reparse(struct ntfs_sb_info *sbi, __le32 rtag,
 	err = indx_insert_entry(indx, ni, &re.de, NULL, NULL, 0);
 
 	mark_inode_dirty(&ni->vfs_inode);
-	ni_unlock(ni);
+	mutex_unlock(&ni->ni_lock);
 
 	return err;
 }
@@ -2473,7 +2473,7 @@ out:
 
 out1:
 	mark_inode_dirty(&ni->vfs_inode);
-	ni_unlock(ni);
+	mutex_unlock(&ni->ni_lock);
 
 	return err;
 }

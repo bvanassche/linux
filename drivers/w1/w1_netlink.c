@@ -357,7 +357,9 @@ static int w1_process_command_master(struct w1_master *dev,
 	case W1_CMD_ALARM_SEARCH:
 	case W1_CMD_LIST_SLAVES:
 		mutex_unlock(&dev->bus_mutex);
+		mutex_lock(&dev->mutex);
 		err = w1_get_slaves(dev, req_cmd);
+		mutex_unlock(&dev->mutex);
 		mutex_lock(&dev->bus_mutex);
 		break;
 	case W1_CMD_READ:

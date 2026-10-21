@@ -700,7 +700,8 @@ static inline unsigned long rvt_timeout_to_jiffies(u8 timeout)
  */
 static inline struct rvt_qp *rvt_lookup_qpn(struct rvt_dev_info *rdi,
 					    struct rvt_ibport *rvp,
-					    u32 qpn) __must_hold(RCU)
+					    u32 qpn)
+	__must_hold_shared(RCU)
 {
 	struct rvt_qp *qp = NULL;
 

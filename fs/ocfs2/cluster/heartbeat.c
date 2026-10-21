@@ -37,7 +37,7 @@
  * we've made sure that all callees can deal with being called concurrently
  * from multiple hb region threads.
  */
-static DECLARE_RWSEM(o2hb_callback_sem);
+DECLARE_RWSEM(o2hb_callback_sem);
 
 /*
  * multiple hb threads are watching multiple regions.  A node is live

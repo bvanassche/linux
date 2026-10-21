@@ -10,6 +10,8 @@
 #ifndef O2CLUSTER_HEARTBEAT_H
 #define O2CLUSTER_HEARTBEAT_H
 
+#include <linux/rwsem.h>
+
 #include "ocfs2_heartbeat.h"
 
 #define O2HB_REGION_TIMEOUT_MS		2000
@@ -60,6 +62,8 @@ void o2hb_unregister_callback(const char *region_uuid,
 			      struct o2hb_callback_func *hc);
 void o2hb_callback_read_lock(void);
 void o2hb_callback_read_unlock(void);
+extern struct rw_semaphore o2hb_callback_sem;
+
 void o2hb_synchronize_callbacks(void);
 void o2hb_fill_node_map_locked(unsigned long *map,
 			       unsigned int bits);

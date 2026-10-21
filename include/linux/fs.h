@@ -1224,6 +1224,8 @@ static inline int ra_has_index(struct file_ra_state *ra, pgoff_t index)
 		index <  ra->start + ra->size);
 }
 
+context_lock_struct(file);
+
 /**
  * struct file - Represents a file
  * @f_lock: Protects f_ep, f_flags. Must not be taken from IRQ context.

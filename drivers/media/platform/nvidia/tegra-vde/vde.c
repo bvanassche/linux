@@ -434,8 +434,10 @@ static __maybe_unused int tegra_vde_pm_suspend(struct device *dev)
 	mutex_lock(&vde->lock);
 
 	err = pm_runtime_force_suspend(dev);
-	if (err < 0)
+	if (err < 0) {
+		mutex_unlock(&vde->lock);
 		return err;
+	}
 
 	return 0;
 }
@@ -446,12 +448,9 @@ static __maybe_unused int tegra_vde_pm_resume(struct device *dev)
 	int err;
 
 	err = pm_runtime_force_resume(dev);
-	if (err < 0)
-		return err;
-
 	mutex_unlock(&vde->lock);
 
-	return 0;
+	return err;
 }
 
 static const struct dev_pm_ops tegra_vde_pm_ops = {

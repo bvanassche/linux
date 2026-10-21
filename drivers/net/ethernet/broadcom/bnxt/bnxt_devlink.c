@@ -466,8 +466,15 @@ static int bnxt_dl_reload_down(struct devlink *dl, bool netns_change,
 		break;
 	}
 	case DEVLINK_RELOAD_ACTION_FW_ACTIVATE: {
-		if (limit == DEVLINK_RELOAD_LIMIT_NO_RESET)
-			return bnxt_dl_livepatch_activate(bp, extack);
+		if (limit == DEVLINK_RELOAD_LIMIT_NO_RESET) {
+			rc = bnxt_dl_livepatch_activate(bp, extack);
+			if (rc)
+				return rc;
+			/* bnxt_dl_reload_up() expects these locks to be held. */
+			rtnl_lock();
+			netdev_lock(bp->dev);
+			return 0;
+		}
 		if (~bp->fw_cap & BNXT_FW_CAP_HOT_RESET) {
 			NL_SET_ERR_MSG_MOD(extack, "Device not capable, requires reboot");
 			return -EOPNOTSUPP;

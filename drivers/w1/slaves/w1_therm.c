@@ -53,9 +53,6 @@ static u16 bulk_read_device_counter; /* =0 as per C standard */
 /* Nb of try for an operation */
 #define W1_THERM_MAX_TRY		5
 
-/* ms delay to retry bus mutex */
-#define W1_THERM_RETRY_DELAY		20
-
 /* delay in ms to write in EEPROM */
 #define W1_THERM_EEPROM_WRITE_DELAY	10
 
@@ -849,28 +846,17 @@ static struct w1_therm_family_converter *device_family(struct w1_slave *sl)
  * bus_mutex_lock() - Acquire the mutex
  * @lock: w1 bus mutex to acquire
  *
- * It try to acquire the mutex W1_THERM_MAX_TRY times and wait
- * W1_THERM_RETRY_DELAY between 2 attempts.
+ * mutex_lock_interruptible() only fails if a signal is pending. Do not retry
+ * in that case since the signal remains pending until it has been handled.
  *
  * Return: true is mutex is acquired and lock, false otherwise
  */
 static inline bool bus_mutex_lock(struct mutex *lock)
 {
-	int max_trying = W1_THERM_MAX_TRY;
+	if (mutex_lock_interruptible(lock) == 0)
+		return true;
 
-	/* try to acquire the mutex, if not, sleep retry_delay before retry) */
-	while (mutex_lock_interruptible(lock) != 0 && max_trying > 0) {
-		unsigned long sleep_rem;
-
-		sleep_rem = msleep_interruptible(W1_THERM_RETRY_DELAY);
-		if (!sleep_rem)
-			max_trying--;
-	}
-
-	if (!max_trying)
-		return false;	/* Didn't acquire the bus mutex */
-
-	return true;
+	return false;	/* Didn't acquire the bus mutex */
 }
 
 /**

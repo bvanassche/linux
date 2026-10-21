@@ -37,7 +37,6 @@ int sst_register_dsp(struct sst_device *dev)
 	if (sst) {
 		dev_err(dev->dev, "we already have a device %s\n", sst->name);
 		module_put(dev->dev->driver->owner);
-		mutex_unlock(&sst_lock);
 		return -EEXIST;
 	}
 	dev_dbg(dev->dev, "registering device %s\n", dev->name);

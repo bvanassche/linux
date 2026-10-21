@@ -5,6 +5,8 @@
  * Written by David Howells (dhowells@redhat.com)
  */
 
+#include <linux/fs_context.h>
+
 struct super_block;
 struct file_system_type;
 struct iomap;
@@ -12,7 +14,6 @@ struct linux_binprm;
 struct path;
 struct mount;
 struct shrink_control;
-struct fs_context;
 struct pipe_inode_info;
 struct iov_iter;
 struct mnt_idmap;

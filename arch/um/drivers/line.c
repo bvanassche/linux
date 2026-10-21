@@ -724,7 +724,7 @@ static void unregister_winch(struct tty_struct *tty)
 			list_del(&winch->list);
 			spin_unlock(&winch_handler_lock);
 			free_winch(winch);
-			break;
+			return;
 		}
 		tty_kref_put(wtty);
 	}

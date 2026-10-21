@@ -859,18 +859,18 @@ static inline bool bus_mutex_lock(struct mutex *lock)
 	int max_trying = W1_THERM_MAX_TRY;
 
 	/* try to acquire the mutex, if not, sleep retry_delay before retry) */
-	while (mutex_lock_interruptible(lock) != 0 && max_trying > 0) {
+	while (max_trying > 0) {
 		unsigned long sleep_rem;
+
+		if (mutex_lock_interruptible(lock) == 0)
+			return true;
 
 		sleep_rem = msleep_interruptible(W1_THERM_RETRY_DELAY);
 		if (!sleep_rem)
 			max_trying--;
 	}
 
-	if (!max_trying)
-		return false;	/* Didn't acquire the bus mutex */
-
-	return true;
+	return false;	/* Didn't acquire the bus mutex */
 }
 
 /**

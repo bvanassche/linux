@@ -45,10 +45,12 @@ is_static struct percpu_rw_semaphore name = {				\
 #define DEFINE_STATIC_PERCPU_RWSEM(name)	\
 	__DEFINE_PERCPU_RWSEM(name, static)
 
-extern bool __percpu_down_read(struct percpu_rw_semaphore *, bool, bool);
+extern bool __percpu_down_read(struct percpu_rw_semaphore *sem, bool, bool)
+	__cond_acquires_shared(true, sem);
 
 static inline void percpu_down_read_internal(struct percpu_rw_semaphore *sem,
 					     bool freezable)
+	__acquires_shared(sem)
 {
 	might_sleep();
 
@@ -72,20 +74,25 @@ static inline void percpu_down_read_internal(struct percpu_rw_semaphore *sem,
 	 * bleeding the critical section out.
 	 */
 	preempt_enable();
+
+	__acquire_shared(sem);
 }
 
 static inline void percpu_down_read(struct percpu_rw_semaphore *sem)
+	__acquires_shared(sem)
 {
 	percpu_down_read_internal(sem, false);
 }
 
 static inline void percpu_down_read_freezable(struct percpu_rw_semaphore *sem,
 					      bool freeze)
+	__acquires_shared(sem)
 {
 	percpu_down_read_internal(sem, freeze);
 }
 
 static inline bool percpu_down_read_trylock(struct percpu_rw_semaphore *sem)
+	__cond_acquires_shared(true, sem)
 {
 	bool ret = true;
 
@@ -103,15 +110,19 @@ static inline bool percpu_down_read_trylock(struct percpu_rw_semaphore *sem)
 	 * bleeding the critical section out.
 	 */
 
-	if (ret)
-		rwsem_acquire_read(&sem->dep_map, 0, 1, _RET_IP_);
+	if (!ret)
+		return false;
 
-	return ret;
+	rwsem_acquire_read(&sem->dep_map, 0, 1, _RET_IP_);
+	__acquire_shared(sem);
+
+	return true;
 }
 
 extern void __percpu_up_read(struct percpu_rw_semaphore *sem);
 
 static inline void percpu_up_read(struct percpu_rw_semaphore *sem)
+	__releases_shared(sem)
 {
 	rwsem_release(&sem->dep_map, _RET_IP_);
 
@@ -125,11 +136,15 @@ static inline void percpu_up_read(struct percpu_rw_semaphore *sem)
 		__percpu_up_read(sem);
 	}
 	preempt_enable();
+
+	__release_shared(sem);
 }
 
 extern bool percpu_is_read_locked(struct percpu_rw_semaphore *);
-extern void percpu_down_write(struct percpu_rw_semaphore *);
-extern void percpu_up_write(struct percpu_rw_semaphore *);
+extern void percpu_down_write(struct percpu_rw_semaphore *sem)
+	__acquires(sem);
+extern void percpu_up_write(struct percpu_rw_semaphore *sem)
+	__releases(sem);
 
 DEFINE_GUARD(percpu_read, struct percpu_rw_semaphore *,
 	     percpu_down_read(_T), percpu_up_read(_T))

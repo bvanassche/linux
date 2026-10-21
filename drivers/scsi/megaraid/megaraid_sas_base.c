@@ -5625,11 +5625,13 @@ megasas_init_adapter_mfi(struct megasas_instance *instance)
 	if (megasas_issue_init_mfi(instance))
 		goto fail_fw_init;
 
-	if (megasas_get_ctrl_info(instance)) {
-		dev_err(&instance->pdev->dev, "(%d): Could get controller info "
-			"Fail from %s %d\n", instance->unique_id,
-			__func__, __LINE__);
-		goto fail_fw_init;
+	scoped_guard(mutex, &instance->reset_mutex) {
+		if (megasas_get_ctrl_info(instance)) {
+			dev_err(&instance->pdev->dev, "(%d): Could get controller info "
+				"Fail from %s %d\n", instance->unique_id,
+				__func__, __LINE__);
+			goto fail_fw_init;
+		}
 	}
 
 	instance->fw_support_ieee = 0;

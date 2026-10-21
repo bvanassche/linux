@@ -478,7 +478,8 @@ validate_init(struct nouveau_channel *chan, struct drm_file *file_priv,
 retry:
 	if (++trycnt > 100000) {
 		NV_PRINTK(err, cli, "%s failed and gave up.\n", __func__);
-		return -EINVAL;
+		ret = -EINVAL;
+		goto out;
 	}
 
 	for (i = 0; i < nr_buffers; i++) {
@@ -564,6 +565,7 @@ retry:
 			goto retry;
 	}
 
+out:
 	ww_acquire_done(&op->ticket);
 	list_splice_tail(&vram_list, &op->list);
 	list_splice_tail(&gart_list, &op->list);
@@ -641,8 +643,11 @@ nouveau_gem_pushbuf_validate(struct nouveau_channel *chan,
 
 	INIT_LIST_HEAD(&op->list);
 
-	if (nr_buffers == 0)
+	if (nr_buffers == 0) {
+		ww_acquire_init(&op->ticket, &reservation_ww_class);
+		ww_acquire_done(&op->ticket);
 		return 0;
+	}
 
 	ret = validate_init(chan, file_priv, pbbo, nr_buffers, op);
 	if (unlikely(ret)) {

@@ -442,11 +442,12 @@ static void ip6mr_free_table(struct mr_table *mrt,
  */
 
 static void *ip6mr_vif_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__cond_acquires_shared_err_ptr(RCU)
 {
 	struct mr_vif_iter *iter = seq->private;
 	struct net *net = seq_file_net(seq);
 	struct mr_table *mrt;
+	void *ret;
 
 	rcu_read_lock();
 	mrt = __ip6mr_get_table(net, RT6_TABLE_DFLT);
@@ -457,11 +458,14 @@ static void *ip6mr_vif_seq_start(struct seq_file *seq, loff_t *pos)
 
 	iter->mrt = mrt;
 
-	return mr_vif_seq_start(seq, pos);
+	ret = mr_vif_seq_start(seq, pos);
+	if (IS_ERR(ret))
+		unreachable();
+	return ret;
 }
 
 static void ip6mr_vif_seq_stop(struct seq_file *seq, void *v)
-	__releases(RCU)
+	__context_unsafe(/* releases RCU held by caller */)
 {
 	rcu_read_unlock();
 }

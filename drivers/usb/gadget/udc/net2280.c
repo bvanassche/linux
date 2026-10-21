@@ -3356,8 +3356,7 @@ next_endpoints:
 		BIT(PCI_RETRY_ABORT_INTERRUPT))
 
 static void handle_stat1_irqs(struct net2280 *dev, u32 stat)
-__releases(dev->lock)
-__acquires(dev->lock)
+	__context_unsafe(/* drops and reacquires dev->lock */)
 {
 	struct net2280_ep	*ep;
 	u32			tmp, num, mask, scratch;

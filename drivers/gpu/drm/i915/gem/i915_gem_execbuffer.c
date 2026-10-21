@@ -2532,7 +2532,7 @@ static int eb_pin_timeline(struct i915_execbuffer *eb, struct intel_context *ce,
 	intel_context_enter(ce);
 	if (throttle)
 		rq = eb_throttle(eb, ce);
-	intel_context_timeline_unlock(tl);
+	intel_context_timeline_unlock(ce->timeline);
 
 	if (rq) {
 		bool nonblock = eb->file->filp->f_flags & O_NONBLOCK;

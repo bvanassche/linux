@@ -1134,8 +1134,7 @@ static void xhci_get_usb2_port_status(struct xhci_port *port, u32 *status,
  */
 static u32 xhci_get_port_status(struct usb_hcd *hcd, struct xhci_bus_state *bus_state,
 				int portnum, u32 portsc, unsigned long *flags)
-	__releases(&xhci->lock)
-	__acquires(&xhci->lock)
+	__context_unsafe(/* drops and reacquires xhci->lock */)
 {
 	u32 status = 0;
 	struct xhci_hub *rhub;

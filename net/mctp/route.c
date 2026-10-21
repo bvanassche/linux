@@ -184,7 +184,7 @@ static bool mctp_key_match(struct mctp_sk_key *key, unsigned int net,
 static struct mctp_sk_key *mctp_lookup_key(struct net *net, struct sk_buff *skb,
 					   unsigned int netid, mctp_eid_t peer,
 					   unsigned long *irqflags)
-	__acquires(&key->lock)
+	__context_unsafe(/* returns with &ret->lock held if non-NULL */)
 {
 	struct mctp_sk_key *key, *ret;
 	unsigned long flags;
@@ -311,7 +311,7 @@ out_unlock:
  */
 static void __mctp_key_done_in(struct mctp_sk_key *key, struct net *net,
 			       unsigned long flags, unsigned long reason)
-__releases(&key->lock)
+	__context_unsafe(/* releases &key->lock acquired by mctp_lookup_key() */)
 {
 	struct sk_buff *skb;
 

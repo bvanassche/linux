@@ -153,8 +153,7 @@ static inline void fsl_set_accessors(struct fsl_usb2_platform_data *pdata) {}
  *	request is still in progress.
  *--------------------------------------------------------------*/
 static void done(struct fsl_ep *ep, struct fsl_req *req, int status)
-__releases(ep->udc->lock)
-__acquires(ep->udc->lock)
+	__context_unsafe(/* callers refer to ep->udc->lock via various aliases */)
 {
 	struct fsl_udc *udc = NULL;
 	unsigned char stopped = ep->stopped;

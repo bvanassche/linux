@@ -13,8 +13,7 @@
 
 void mtu3_req_complete(struct mtu3_ep *mep,
 		     struct usb_request *req, int status)
-__releases(mep->mtu->lock)
-__acquires(mep->mtu->lock)
+	__context_unsafe(/* drops and reacquires mtu->lock */)
 {
 	struct mtu3_request *mreq = to_mtu3_request(req);
 	struct mtu3 *mtu = mreq->mtu;

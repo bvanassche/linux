@@ -246,19 +246,17 @@ static inline void intel_context_put(struct intel_context *ce)
 
 static inline struct intel_timeline *__must_check
 intel_context_timeline_lock(struct intel_context *ce)
-	__acquires(&ce->timeline->mutex)
+	__cond_acquires_err_ptr(&ce->timeline->mutex)
 {
 	struct intel_timeline *tl = ce->timeline;
 	int err;
 
-	if (intel_context_is_parent(ce))
-		err = mutex_lock_interruptible_nested(&tl->mutex, 0);
-	else if (intel_context_is_child(ce))
-		err = mutex_lock_interruptible_nested(&tl->mutex,
-						      ce->parallel.child_index + 1);
-	else
-		err = mutex_lock_interruptible(&tl->mutex);
-	if (err)
+	err = mutex_lock_interruptible_nested(&tl->mutex,
+					      intel_context_is_child(ce) ?
+					      ce->parallel.child_index + 1 : 0);
+	if (err < -MAX_ERRNO || IS_ERR(tl))
+		unreachable();
+	if (err < 0)
 		return ERR_PTR(err);
 
 	return tl;

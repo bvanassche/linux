@@ -298,7 +298,7 @@ static ssize_t afs_read_single(struct afs_vnode *dvnode, struct file *file)
  * previous contents.  We return -ESTALE if the caller needs to call us again.
  */
 ssize_t afs_read_dir(struct afs_vnode *dvnode, struct file *file)
-	__acquires(&dvnode->validate_lock)
+	__context_unsafe(/* validate_lock held iff return value >= 0 */)
 {
 	ssize_t ret;
 	loff_t i_size;

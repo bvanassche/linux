@@ -1026,6 +1026,7 @@ err_unreserve:
 
 struct i915_request *
 i915_request_create(struct intel_context *ce)
+	__context_unsafe(/*__cond_acquires_err_ptr(&ce->timeline->mutex)*/)
 {
 	struct i915_request *rq;
 	struct intel_timeline *tl;
@@ -1051,7 +1052,7 @@ i915_request_create(struct intel_context *ce)
 	return rq;
 
 err_unlock:
-	intel_context_timeline_unlock(tl);
+	intel_context_timeline_unlock(ce->timeline);
 	return rq;
 }
 

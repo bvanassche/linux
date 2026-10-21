@@ -69,6 +69,7 @@ static bool next_heartbeat(struct intel_engine_cs *engine)
 
 static struct i915_request *
 heartbeat_create(struct intel_context *ce, gfp_t gfp)
+	__must_hold(&ce->timeline->mutex)
 {
 	struct i915_request *rq;
 
@@ -286,6 +287,7 @@ void intel_engine_init_heartbeat(struct intel_engine_cs *engine)
 }
 
 static int __intel_engine_pulse(struct intel_engine_cs *engine)
+	__must_hold(&engine->kernel_context->timeline->mutex)
 {
 	struct i915_sched_attr attr = { .priority = I915_PRIORITY_BARRIER };
 	struct intel_context *ce = engine->kernel_context;

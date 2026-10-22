@@ -2432,6 +2432,7 @@ unlock:
 
 int smp_cancel_and_remove_pairing(struct hci_dev *hdev, bdaddr_t *bdaddr,
 				  u8 addr_type)
+	__must_hold(&hdev->lock)
 {
 	struct hci_conn *hcon;
 	struct l2cap_conn *conn;
@@ -2446,7 +2447,7 @@ int smp_cancel_and_remove_pairing(struct hci_dev *hdev, bdaddr_t *bdaddr,
 	if (!hcon)
 		goto done;
 
-	lockdep_assert_held(&hcon->hdev->lock);
+	__assume_ctx_lock(&hcon->hdev->lock);
 
 	conn = hcon->l2cap_data;
 	if (!conn)

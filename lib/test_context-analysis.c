@@ -467,16 +467,30 @@ static void __used test_rcu_lock_reentrant(void)
 	rcu_read_unlock();
 }
 
-static void __used test_rcu_assert_variants(void)
+static void __used test_rcu_assert(void)
 {
-	lockdep_assert_in_rcu_read_lock();
+	__assume_in_rcu_read_lock();
 	wants_rcu_held();
+}
 
-	lockdep_assert_in_rcu_read_lock_bh();
+static void __used test_rcu_assert_bh(void)
+{
+	__assume_in_rcu_read_lock_bh();
+	wants_rcu_held();
 	wants_rcu_held_bh();
+}
 
-	lockdep_assert_in_rcu_read_lock_sched();
+static void __used test_rcu_assert_sched(void)
+{
+	__assume_in_rcu_read_lock_sched();
+	wants_rcu_held();
 	wants_rcu_held_sched();
+}
+
+static void __used test_rcu_assert_reader(void)
+{
+	__assume_in_rcu_reader();
+	wants_rcu_held();
 }
 
 struct test_srcu_data {

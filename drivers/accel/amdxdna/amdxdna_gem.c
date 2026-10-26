@@ -519,7 +519,8 @@ static int amdxdna_insert_pages(struct amdxdna_gem_obj *abo,
 	ret = vm_insert_pages(vma, vma->vm_start, abo->base.pages, &num_pages);
 	if (ret) {
 		XDNA_ERR(xdna, "Failed to insert pages %d", ret);
-		dma_resv_lock(to_gobj(abo)->resv, NULL);
+		/* dma_resv_lock() cannot fail if the second argument is NULL. */
+		BUG_ON(dma_resv_lock(to_gobj(abo)->resv, NULL));
 		drm_gem_shmem_put_pages_locked(&abo->base);
 		dma_resv_unlock(to_gobj(abo)->resv);
 		return ret;
@@ -586,7 +587,8 @@ static vm_fault_t amdxdna_gem_mixedmap_fault(struct vm_fault *vmf)
 	 */
 	page_offset = linear_page_delta(vma, vmf->address);
 
-	dma_resv_lock(gobj->resv, NULL);
+	if (dma_resv_lock(gobj->resv, NULL))
+		return VM_FAULT_SIGBUS;
 
 	if (!shmem->pages || shmem->madv < 0 || page_offset >= num_pages)
 		goto out;
@@ -617,7 +619,8 @@ static void amdxdna_gem_mixedmap_vm_open(struct vm_area_struct *vma)
 	 * Bump pages_use_count so the page array stays alive for the new
 	 * mapping copy created by fork().  Mirrors drm_gem_shmem_vm_open().
 	 */
-	dma_resv_lock(gobj->resv, NULL);
+	/* dma_resv_lock() cannot fail if the second argument is NULL. */
+	BUG_ON(dma_resv_lock(gobj->resv, NULL));
 	drm_WARN_ON_ONCE(gobj->dev, !refcount_inc_not_zero(&shmem->pages_use_count));
 	dma_resv_unlock(gobj->resv);
 
@@ -629,7 +632,8 @@ static void amdxdna_gem_mixedmap_vm_close(struct vm_area_struct *vma)
 	struct drm_gem_object *gobj = vma->vm_private_data;
 	struct drm_gem_shmem_object *shmem = to_drm_gem_shmem_obj(gobj);
 
-	dma_resv_lock(gobj->resv, NULL);
+	/* dma_resv_lock() cannot fail if the second argument is NULL. */
+	BUG_ON(dma_resv_lock(gobj->resv, NULL));
 	drm_gem_shmem_put_pages_locked(shmem);
 	dma_resv_unlock(gobj->resv);
 

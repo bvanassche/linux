@@ -1575,7 +1575,8 @@ __libeth_xdp_finalize_rx(struct libeth_xdp_tx_bulk *bq, u32 flags,
  * LIBETH_XDP_DEFINE_RUN(static driver_xdp_run, driver_xdp_run_prog,
  *			 driver_xdp_flush_tx, driver_populate_skb);
  * LIBETH_XDP_DEFINE_FINALIZE(static driver_xdp_finalize_rx,
- *			      driver_xdp_flush_tx, driver_xdp_finalize_sq);
+ *			      driver_xdp_flush_tx, driver_xdp_finalize_sq,
+ *			      __releases_shared(RCU));
  * LIBETH_XDP_DEFINE_END();
  *
  * This will build a set of 4 static functions. The compiler is free to decide
@@ -1683,12 +1684,13 @@ name(struct libeth_xdp_buff *xdp, struct libeth_xdp_tx_bulk *bq,	      \
  * @name: name of the function to define
  * @flush: driver callback to flush an ``XDP_TX`` bulk
  * @finalize: driver callback to finalize an XDPSQ and run the timer
+ * @attr: function attributes
  */
-#define LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize)		      \
-	__LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, xdp)
+#define LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, attr)		\
+	__LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, xdp, attr)
 
-#define __LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, pfx)	      \
-void name(struct libeth_xdp_tx_bulk *bq)				      \
+#define __LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, pfx, attr)	\
+void name(struct libeth_xdp_tx_bulk *bq) attr				      \
 {									      \
 	libeth_##pfx##_finalize_rx(bq, flush, finalize);		      \
 }

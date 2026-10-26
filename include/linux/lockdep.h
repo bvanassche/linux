@@ -412,6 +412,49 @@ extern int lockdep_is_held(const void *);
 
 #endif /* !LOCKDEP */
 
+/**
+ * lockdep_assume_ctx_held() - assume and verify that a context lock is held
+ * @l: context lock instance pointer
+ *
+ * Instruct the compiler's context analysis to assume that @l is held
+ * exclusively from this point on and verify at runtime with
+ * lockdep_assert_held() that @l is held. Use this macro in code paths
+ * where lock ownership cannot be proven at compile time, e.g. because the
+ * lock is accessed through an alias the analysis cannot resolve or because
+ * a function does not always require the lock, making __must_hold()
+ * inappropriate.
+ *
+ * @l must point at a lock object that is tracked by lockdep, i.e. that
+ * has a dep_map member. For context locks that are not tracked by lockdep,
+ * e.g. bit spinlocks and the RCU context tokens, use
+ * __assume_ctx_lock() instead.
+ */
+#define lockdep_assume_ctx_held(l)					\
+	do {								\
+		__assume_ctx_lock(l);					\
+		lockdep_assert_held(l);					\
+	} while (0)
+
+/**
+ * lockdep_assume_shared_ctx_held() - assume and verify shared lock ownership
+ * @l: context lock instance pointer
+ *
+ * Instruct the compiler's context analysis to assume that @l is held with
+ * shared access from this point on and verify at runtime with
+ * lockdep_assert_held_read() that @l is held for reading. Use this macro
+ * for reader-writer locks, e.g. rwlock_t and struct rw_semaphore, in code
+ * paths where shared lock ownership cannot be proven at compile time.
+ *
+ * @l must point at a lock object that is tracked by lockdep, i.e. that
+ * has a dep_map member. For context locks that are not tracked by lockdep,
+ * e.g. the RCU context tokens, use __assume_shared_ctx_lock() instead.
+ */
+#define lockdep_assume_shared_ctx_held(l)				\
+	do {								\
+		__assume_shared_ctx_lock(l);				\
+		lockdep_assert_held_read(l);				\
+	} while (0)
+
 #ifdef CONFIG_PROVE_LOCKING
 void lockdep_set_lock_cmp_fn(struct lockdep_map *, lock_cmp_fn, lock_print_fn);
 

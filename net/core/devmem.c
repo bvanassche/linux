@@ -74,7 +74,8 @@ void __net_devmem_dmabuf_binding_free(struct work_struct *wq)
 		     binding->area.num_niovs, binding->free_count);
 
 	kvfree(binding->area.niovs);
-	dma_resv_lock(binding->dmabuf->resv, NULL);
+	/* dma_resv_lock() cannot fail if the second argument is NULL. */
+	BUG_ON(dma_resv_lock(binding->dmabuf->resv, NULL));
 	dma_buf_unmap_attachment(binding->attachment, binding->sgt,
 				 binding->direction);
 	dma_buf_unpin(binding->attachment);
@@ -243,7 +244,9 @@ net_devmem_bind_dmabuf(struct net_device *dev, void *vdev,
 		goto err_exit_ref;
 	}
 
-	dma_resv_lock(dmabuf->resv, NULL);
+	err = dma_resv_lock(dmabuf->resv, NULL);
+	if (err)
+		goto err_detach;
 	err = dma_buf_pin(binding->attachment);
 	if (err) {
 		NL_SET_ERR_MSG(extack, "Failed to pin dmabuf");
@@ -356,12 +359,14 @@ err_free_freelist:
 	kvfree(binding->freelist);
 	kvfree(binding->tx_vec);
 err_unmap:
-	dma_resv_lock(dmabuf->resv, NULL);
+	/* dma_resv_lock() cannot fail if the second argument is NULL. */
+	BUG_ON(dma_resv_lock(dmabuf->resv, NULL));
 	dma_buf_unmap_attachment(binding->attachment, binding->sgt, direction);
 err_unpin:
 	dma_buf_unpin(binding->attachment);
 err_unlock:
 	dma_resv_unlock(dmabuf->resv);
+err_detach:
 	dma_buf_detach(dmabuf, binding->attachment);
 err_exit_ref:
 	percpu_ref_exit(&binding->ref);

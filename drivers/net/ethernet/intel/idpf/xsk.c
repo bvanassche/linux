@@ -336,7 +336,7 @@ LIBETH_XSK_DEFINE_FLUSH_TX(static idpf_xsk_tx_flush_bulk, idpf_xsk_tx_prep,
 LIBETH_XSK_DEFINE_RUN(static idpf_xsk_run_pass, idpf_xsk_run_prog,
 		      idpf_xsk_tx_flush_bulk, idpf_rx_process_skb_fields);
 LIBETH_XSK_DEFINE_FINALIZE(static idpf_xsk_finalize_rx, idpf_xsk_tx_flush_bulk,
-			   idpf_xdp_tx_finalize);
+			   idpf_xdp_tx_finalize, __releases_shared(RCU));
 LIBETH_XDP_DEFINE_END();
 
 static void idpf_xskfqe_init(const struct libeth_xskfq_fp *fq, u32 i)

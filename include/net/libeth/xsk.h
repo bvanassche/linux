@@ -524,7 +524,8 @@ __libeth_xsk_run_pass(struct libeth_xdp_buff *xdp,
  * LIBETH_XSK_DEFINE_RUN(static driver_xsk_run, driver_xsk_run_prog,
  *			 driver_xsk_flush_tx, driver_populate_skb);
  * LIBETH_XSK_DEFINE_FINALIZE(static driver_xsk_finalize_rx,
- *			      driver_xsk_flush_tx, driver_xdp_finalize_sq);
+ *			      driver_xsk_flush_tx, driver_xdp_finalize_sq,
+ *			      __releases_shared(RCU));
  * LIBETH_XDP_DEFINE_END();
  *
  * This will build a set of 4 static functions. The compiler is free to decide
@@ -580,9 +581,10 @@ __libeth_xsk_run_pass(struct libeth_xdp_buff *xdp,
  * @name: name of the function to define
  * @flush: driver callback to flush an XSk ``XDP_TX`` bulk
  * @finalize: driver callback to finalize an XDPSQ and run the timer
+ * @attr: function attributes
  */
-#define LIBETH_XSK_DEFINE_FINALIZE(name, flush, finalize)		     \
-	__LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, xsk)
+#define LIBETH_XSK_DEFINE_FINALIZE(name, flush, finalize, attr)		\
+	__LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, xsk, attr)
 
 /* Refilling */
 

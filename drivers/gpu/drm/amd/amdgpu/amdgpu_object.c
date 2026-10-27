@@ -1329,8 +1329,10 @@ void amdgpu_bo_release_notify(struct ttm_buffer_object *bo)
 	 * So when this locking here fails something is wrong with the reference
 	 * counting.
 	 */
-	if (WARN_ON_ONCE(!dma_resv_trylock(&bo->base._resv)))
+	if (!dma_resv_trylock(&bo->base._resv)) {
+		WARN_ON_ONCE(true);
 		return;
+	}
 
 	amdgpu_amdkfd_remove_all_eviction_fences(abo);
 

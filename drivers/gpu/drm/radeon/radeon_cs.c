@@ -190,13 +190,13 @@ static int radeon_cs_parser_relocs(struct radeon_cs_parser *p)
 	if (p->cs_flags & RADEON_CS_USE_VM)
 		p->vm_bos = radeon_vm_get_bos(p->rdev, p->ib.vm,
 					      &p->validated);
-	if (need_mmap_lock)
+	if (need_mmap_lock) {
 		mmap_read_lock(current->mm);
-
-	r = radeon_bo_list_validate(p->rdev, &p->exec, &p->validated, p->ring);
-
-	if (need_mmap_lock)
+		r = radeon_bo_list_validate(p->rdev, &p->exec, &p->validated, p->ring);
 		mmap_read_unlock(current->mm);
+	} else {
+		r = radeon_bo_list_validate(p->rdev, &p->exec, &p->validated, p->ring);
+	}
 
 	return r;
 }

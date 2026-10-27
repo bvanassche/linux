@@ -1372,7 +1372,7 @@ void kvm_nested_s2_wp(struct kvm *kvm)
 		struct kvm_s2_mmu *mmu = kvm->arch.nested_mmus[i];
 
 		if (kvm_s2_mmu_valid(mmu))
-			kvm_stage2_wp_range(mmu, 0, kvm_phys_size(mmu));
+			kvm_stage2_wp_range(kvm, mmu, 0, kvm_phys_size(mmu));
 	}
 
 	kvm_invalidate_vncr_ipa_all(kvm);
@@ -1441,7 +1441,8 @@ void kvm_nested_s2_unmap(struct kvm *kvm, bool may_block)
 		struct kvm_s2_mmu *mmu = kvm->arch.nested_mmus[i];
 
 		if (kvm_s2_mmu_valid(mmu))
-			kvm_stage2_unmap_range(mmu, 0, kvm_phys_size(mmu), may_block);
+			kvm_stage2_unmap_range(kvm, mmu, 0, kvm_phys_size(mmu),
+					       may_block);
 	}
 
 	kvm_invalidate_vncr_ipa_all(kvm);
@@ -1460,7 +1461,7 @@ void kvm_nested_s2_flush(struct kvm *kvm)
 		struct kvm_s2_mmu *mmu = kvm->arch.nested_mmus[i];
 
 		if (kvm_s2_mmu_valid(mmu))
-			kvm_stage2_flush_range(mmu, 0, kvm_phys_size(mmu));
+			kvm_stage2_flush_range(kvm, mmu, 0, kvm_phys_size(mmu));
 	}
 }
 
@@ -2160,7 +2161,8 @@ void check_nested_vcpu_requests(struct kvm_vcpu *vcpu)
 
 		write_lock(&vcpu->kvm->mmu_lock);
 		if (mmu->pending_unmap) {
-			kvm_stage2_unmap_range(mmu, 0, kvm_phys_size(mmu), true);
+			kvm_stage2_unmap_range(vcpu->kvm, mmu, 0,
+					       kvm_phys_size(mmu), true);
 			mmu->pending_unmap = false;
 		}
 		write_unlock(&vcpu->kvm->mmu_lock);

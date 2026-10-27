@@ -4121,7 +4121,8 @@ static void s2_mmu_unmap_range(struct kvm_s2_mmu *mmu,
 	 * the L1 needs to put its stage-2 in a consistent state before doing
 	 * the TLBI.
 	 */
-	kvm_stage2_unmap_range(mmu, info->range.start, info->range.size, true);
+	kvm_stage2_unmap_range(kvm_s2_mmu_to_kvm(mmu), mmu, info->range.start,
+			       info->range.size, true);
 }
 
 static bool handle_vmalls12e1is(struct kvm_vcpu *vcpu, struct sys_reg_params *p,
@@ -4211,7 +4212,8 @@ static void s2_mmu_unmap_ipa(struct kvm_s2_mmu *mmu,
 	 * See comment in s2_mmu_unmap_range() for why this is allowed to
 	 * reschedule.
 	 */
-	kvm_stage2_unmap_range(mmu, base_addr, max_size, true);
+	kvm_stage2_unmap_range(kvm_s2_mmu_to_kvm(mmu), mmu, base_addr, max_size,
+			       true);
 }
 
 static bool handle_ipas2e1is(struct kvm_vcpu *vcpu, struct sys_reg_params *p,

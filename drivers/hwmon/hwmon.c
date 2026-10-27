@@ -32,19 +32,6 @@
 #define HWMON_ID_PREFIX "hwmon"
 #define HWMON_ID_FORMAT HWMON_ID_PREFIX "%d"
 
-struct hwmon_device {
-	const char *name;
-	const char *label;
-	struct device dev;
-	const struct hwmon_chip_info *chip;
-	struct mutex lock;
-	struct list_head tzdata;
-	struct attribute_group group;
-	const struct attribute_group **groups;
-};
-
-#define to_hwmon_device(d) container_of(d, struct hwmon_device, dev)
-
 #define MAX_SYSFS_ATTR_NAME_LENGTH	32
 
 struct hwmon_device_attribute {

@@ -14,9 +14,10 @@
 
 #include <linux/bitops.h>
 #include <linux/cleanup.h>
-
-struct device;
-struct attribute_group;
+#include <linux/device.h>
+#include <linux/list.h>
+#include <linux/mutex.h>
+#include <linux/sysfs.h>
 
 enum hwmon_sensor_types {
 	hwmon_chip,
@@ -469,6 +470,22 @@ struct hwmon_chip_info {
 	const struct hwmon_ops *ops;
 	const struct hwmon_channel_info * const *info;
 };
+
+struct hwmon_device {
+	const char *name;
+	const char *label;
+	struct device dev;
+	const struct hwmon_chip_info *chip;
+	struct mutex lock;
+	struct list_head tzdata;
+	struct attribute_group group;
+	const struct attribute_group **groups;
+};
+
+static inline struct hwmon_device *to_hwmon_device(struct device *d)
+{
+	return container_of(d, struct hwmon_device, dev);
+}
 
 /* hwmon_device_register() is deprecated */
 struct device *hwmon_device_register(struct device *dev);

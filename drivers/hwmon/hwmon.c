@@ -43,7 +43,10 @@ struct hwmon_device {
 	const struct attribute_group **groups;
 };
 
-#define to_hwmon_device(d) container_of(d, struct hwmon_device, dev)
+static inline struct hwmon_device *to_hwmon_device(struct device *d)
+{
+	return container_of(d, struct hwmon_device, dev);
+}
 
 #define MAX_SYSFS_ATTR_NAME_LENGTH	32
 

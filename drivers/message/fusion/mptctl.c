@@ -670,7 +670,8 @@ __mptctl_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	/* All of these commands require an interrupt or
 	 * are unknown/illegal.
 	 */
-	if ((ret = mptctl_syscall_down(iocp, nonblock)) != 0)
+	ret = mptctl_syscall_down(iocp, nonblock);
+	if (ret != 0)
 		return ret;
 
 	if (cmd == MPTFWDOWNLOAD)
@@ -2732,7 +2733,8 @@ compat_mptfwxfer_ioctl(struct file *filp, unsigned int cmd,
 		return -ENODEV;
 	}
 
-	if ((ret = mptctl_syscall_down(iocp, nonblock)) != 0)
+	ret = mptctl_syscall_down(iocp, nonblock);
+	if (ret != 0)
 		return ret;
 
 	dctlprintk(iocp, printk(MYIOC_s_DEBUG_FMT "compat_mptfwxfer_ioctl() called\n",
@@ -2772,7 +2774,8 @@ compat_mpt_command(struct file *filp, unsigned int cmd,
 		return -ENODEV;
 	}
 
-	if ((ret = mptctl_syscall_down(iocp, nonblock)) != 0)
+	ret = mptctl_syscall_down(iocp, nonblock);
+	if (ret != 0)
 		return ret;
 
 	dctlprintk(iocp, printk(MYIOC_s_DEBUG_FMT "compat_mpt_command() called\n",

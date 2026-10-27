@@ -637,11 +637,13 @@ void bus_probe_device(struct device *dev)
 
 void bus_probe_device_deferred(struct device *dev)
 {
-	if (dev->type && dev->type->need_parent_lock)
+	if (dev->type && dev->type->need_parent_lock) {
 		device_lock(dev->parent);
-	__bus_probe_device(dev);
-	if (dev->type && dev->type->need_parent_lock)
+		__bus_probe_device(dev);
 		device_unlock(dev->parent);
+	} else {
+		__bus_probe_device(dev);
+	}
 }
 
 /**

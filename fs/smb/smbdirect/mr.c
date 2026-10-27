@@ -97,10 +97,14 @@ static void smbdirect_mr_io_disable_locked(struct smbdirect_mr_io *mr)
 	mr->state = SMBDIRECT_MR_DISABLED;
 }
 
+static inline struct smbdirect_mr_io *kref_to_mr_io(struct kref *kref)
+{
+	return container_of(kref, struct smbdirect_mr_io, kref);
+}
+
 static void smbdirect_mr_io_free_locked(struct kref *kref)
 {
-	struct smbdirect_mr_io *mr =
-		container_of(kref, struct smbdirect_mr_io, kref);
+	struct smbdirect_mr_io *mr = kref_to_mr_io(kref);
 
 	lockdep_assert_held(&mr->mutex);
 

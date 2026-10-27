@@ -225,46 +225,7 @@ enum vgic_irq_config {
 	VGIC_CONFIG_LEVEL
 };
 
-struct vgic_irq;
-
-/*
- * Per-irq ops overriding some common behavious.
- *
- * Always called in non-preemptible section and the functions can use
- * kvm_arm_get_running_vcpu() to get the vcpu pointer for private IRQs.
- */
-struct irq_ops {
-	/* Per interrupt flags for special-cased interrupts */
-	unsigned long (*get_flags)(void);
-
-#define VGIC_IRQ_SW_RESAMPLE	BIT(0)	/* Clear the active state for resampling */
-
-	/*
-	 * Callback function pointer to in-kernel devices that can tell us the
-	 * state of the input level of mapped level-triggered IRQ faster than
-	 * peaking into the physical GIC.
-	 */
-	bool (*get_input_level)(int vintid);
-
-	/*
-	 * Function pointer to directly update hardware pending state after the
-	 * VGIC shadow pending state has changed.
-	 */
-	bool (*set_pending_state)(struct kvm_vcpu *vcpu, struct vgic_irq *irq);
-
-	/*
-	 * Function pointer to override the queuing of an IRQ.
-	 */
-	bool (*queue_irq_unlock)(struct kvm *kvm, struct vgic_irq *irq,
-				unsigned long flags) __releases(&irq->irq_lock);
-
-	/*
-	 * Callback function pointer to either enable or disable direct
-	 * injection for a mapped interrupt.
-	 */
-	void (*set_direct_injection)(struct kvm_vcpu *vcpu,
-				     struct vgic_irq *irq, bool direct);
-};
+struct irq_ops;
 
 struct vgic_irq {
 	raw_spinlock_t irq_lock;	/* Protects the content of the struct */
@@ -308,6 +269,45 @@ struct vgic_irq {
 
 	void *owner;			/* Opaque pointer to reserve an interrupt
 					   for in-kernel devices. */
+};
+
+/*
+ * Per-irq ops overriding some common behavious.
+ *
+ * Always called in non-preemptible section and the functions can use
+ * kvm_arm_get_running_vcpu() to get the vcpu pointer for private IRQs.
+ */
+struct irq_ops {
+	/* Per interrupt flags for special-cased interrupts */
+	unsigned long (*get_flags)(void);
+
+#define VGIC_IRQ_SW_RESAMPLE	BIT(0)	/* Clear the active state for resampling */
+
+	/*
+	 * Callback function pointer to in-kernel devices that can tell us the
+	 * state of the input level of mapped level-triggered IRQ faster than
+	 * peaking into the physical GIC.
+	 */
+	bool (*get_input_level)(int vintid);
+
+	/*
+	 * Function pointer to directly update hardware pending state after the
+	 * VGIC shadow pending state has changed.
+	 */
+	bool (*set_pending_state)(struct kvm_vcpu *vcpu, struct vgic_irq *irq);
+
+	/*
+	 * Function pointer to override the queuing of an IRQ.
+	 */
+	bool (*queue_irq_unlock)(struct kvm *kvm, struct vgic_irq *irq,
+				unsigned long flags) __releases(&irq->irq_lock);
+
+	/*
+	 * Callback function pointer to either enable or disable direct
+	 * injection for a mapped interrupt.
+	 */
+	void (*set_direct_injection)(struct kvm_vcpu *vcpu,
+				     struct vgic_irq *irq, bool direct);
 };
 
 static inline bool vgic_irq_needs_resampling(struct vgic_irq *irq)

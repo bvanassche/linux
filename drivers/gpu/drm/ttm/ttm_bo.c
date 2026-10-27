@@ -196,7 +196,8 @@ static int ttm_bo_individualize_resv(struct ttm_buffer_object *bo)
 	if (bo->base.resv == &bo->base._resv)
 		return 0;
 
-	BUG_ON(!dma_resv_trylock(&bo->base._resv));
+	if (!dma_resv_trylock(&bo->base._resv))
+		BUG();
 
 	r = dma_resv_copy_fences(&bo->base._resv, bo->base.resv);
 	dma_resv_unlock(&bo->base._resv);

@@ -15,6 +15,11 @@
 
 static struct cached_fid *init_cached_dir(const char *path);
 static void free_cached_dir(struct cached_fid *cfid);
+static inline struct cached_fid *ref_to_cached_fid(struct kref *ref)
+{
+	return container_of(ref, struct cached_fid, refcount);
+}
+
 static void smb2_close_cached_fid(struct kref *ref);
 static void cfids_laundromat_worker(struct work_struct *work);
 static void close_cached_dir_locked(struct cached_fid *cfid);
@@ -465,8 +470,7 @@ static void
 smb2_close_cached_fid(struct kref *ref)
 __releases(&cfid->cfids->cfid_list_lock)
 {
-	struct cached_fid *cfid = container_of(ref, struct cached_fid,
-					       refcount);
+	struct cached_fid *cfid = ref_to_cached_fid(ref);
 	int rc;
 
 	lockdep_assert_held(&cfid->cfids->cfid_list_lock);

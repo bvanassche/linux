@@ -207,17 +207,21 @@ bool nfsd_v4client(struct svc_rqst *rqstp)
 	return rqstp && rqstp->rq_prog == NFS_PROGRAM && rqstp->rq_vers == 4;
 }
 
-bool nfsd_net_try_get(struct net *net) __must_hold(rcu)
+bool nfsd_net_try_get(struct net *net)
 {
-	struct nfsd_net *nn = net_generic(net, nfsd_net_id);
+	struct nfsd_net *nn;
 
+	guard(rcu)();
+	nn = net_generic(net, nfsd_net_id);
 	return (nn && percpu_ref_tryget_live(&nn->nfsd_net_ref));
 }
 
-void nfsd_net_put(struct net *net) __must_hold(rcu)
+void nfsd_net_put(struct net *net)
 {
-	struct nfsd_net *nn = net_generic(net, nfsd_net_id);
+	struct nfsd_net *nn;
 
+	guard(rcu)();
+	nn = net_generic(net, nfsd_net_id);
 	percpu_ref_put(&nn->nfsd_net_ref);
 }
 

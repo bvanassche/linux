@@ -383,11 +383,13 @@ static bool qlt_24xx_atio_pkt_all_vps(struct scsi_qla_host *vha,
 			    vha->vp_idx, entry->vp_index);
 			break;
 		}
-		if (!ha_locked)
+		if (!ha_locked) {
 			spin_lock_irqsave(&host->hw->hardware_lock, flags);
-		qlt_24xx_handle_abts(host, (struct abts_recv_from_24xx *)atio);
-		if (!ha_locked)
+			qlt_24xx_handle_abts(host, (struct abts_recv_from_24xx *)atio);
 			spin_unlock_irqrestore(&host->hw->hardware_lock, flags);
+		} else {
+			qlt_24xx_handle_abts(host, (struct abts_recv_from_24xx *)atio);
+		}
 		break;
 	}
 
@@ -6728,11 +6730,13 @@ qlt_chk_qfull_thresh_hold(struct scsi_qla_host *vha, struct qla_qpair *qpair,
 	if (ha->tgt.num_pend_cmds < Q_FULL_THRESH_HOLD(ha))
 		return 0;
 
-	if (!ha_locked)
+	if (!ha_locked) {
 		spin_lock_irqsave(&ha->hardware_lock, flags);
-	qlt_send_busy(qpair, atio, qla_sam_status);
-	if (!ha_locked)
+		qlt_send_busy(qpair, atio, qla_sam_status);
 		spin_unlock_irqrestore(&ha->hardware_lock, flags);
+	} else {
+		qlt_send_busy(qpair, atio, qla_sam_status);
+	}
 
 	return 1;
 }
@@ -6767,12 +6771,13 @@ static void qlt_24xx_atio_pkt(struct scsi_qla_host *vha,
 			    "qla_target(%d): ATIO_TYPE7 "
 			    "received with UNKNOWN exchange address, "
 			    "sending QUEUE_FULL\n", vha->vp_idx);
-			if (!ha_locked)
+			if (!ha_locked) {
 				spin_lock_irqsave(&ha->hardware_lock, flags);
-			qlt_send_busy(ha->base_qpair, atio, qla_sam_status);
-			if (!ha_locked)
-				spin_unlock_irqrestore(&ha->hardware_lock,
-				    flags);
+				qlt_send_busy(ha->base_qpair, atio, qla_sam_status);
+				spin_unlock_irqrestore(&ha->hardware_lock, flags);
+			} else {
+				qlt_send_busy(ha->base_qpair, atio, qla_sam_status);
+			}
 			break;
 		}
 

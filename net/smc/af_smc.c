@@ -2786,7 +2786,8 @@ int smc_accept(struct socket *sock, struct socket *new_sock,
 			release_sock(clcsk);
 		} else if (!atomic_read(&smc_sk(nsk)->conn.bytes_to_rcv)) {
 			lock_sock(nsk);
-			smc_rx_wait(smc_sk(nsk), &timeo, 0, smc_rx_data_available);
+			smc_rx_wait(nsk, smc_sk(nsk), &timeo, 0,
+				    smc_rx_data_available);
 			release_sock(nsk);
 		}
 	}
@@ -2845,7 +2846,7 @@ int smc_sendmsg(struct socket *sock, struct msghdr *msg, size_t len)
 	if (smc->use_fallback) {
 		rc = smc->clcsock->ops->sendmsg(smc->clcsock, msg, len);
 	} else {
-		rc = smc_tx_sendmsg(smc, msg, len);
+		rc = smc_tx_sendmsg(sk, smc, msg, len);
 		SMC_STAT_TX_PAYLOAD(smc, len, rc);
 	}
 out:
@@ -2881,7 +2882,7 @@ int smc_recvmsg(struct socket *sock, struct msghdr *msg, size_t len,
 		rc = smc->clcsock->ops->recvmsg(smc->clcsock, msg, len, flags);
 	} else {
 		msg->msg_namelen = 0;
-		rc = smc_rx_recvmsg(smc, msg, NULL, len, flags);
+		rc = smc_rx_recvmsg(sk, smc, msg, NULL, len, flags);
 		SMC_STAT_RX_PAYLOAD(smc, rc, rc);
 	}
 
@@ -3343,7 +3344,7 @@ ssize_t smc_splice_read(struct socket *sock, loff_t *ppos,
 		else
 			flags = 0;
 		SMC_STAT_INC(smc, splice_cnt);
-		rc = smc_rx_recvmsg(smc, NULL, pipe, len, flags);
+		rc = smc_rx_recvmsg(sk, smc, NULL, pipe, len, flags);
 	}
 out:
 	release_sock(sk);

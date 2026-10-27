@@ -1919,7 +1919,7 @@ add_ptr_to_bulk_krc_lock(struct kfree_rcu_cpu **krcp,
 
 	*krcp = krc_this_cpu_lock(flags);
 	if (unlikely(!(*krcp)->initialized))
-		return false;
+		goto fail;
 
 	idx = !!is_vmalloc_addr(ptr);
 	bnode = list_first_entry_or_null(&(*krcp)->bulk_head[idx],
@@ -1948,7 +1948,7 @@ add_ptr_to_bulk_krc_lock(struct kfree_rcu_cpu **krcp,
 		}
 
 		if (!bnode)
-			return false;
+			goto fail;
 
 		// Initialize the new block and attach it.
 		bnode->nr_records = 0;
@@ -1962,6 +1962,9 @@ add_ptr_to_bulk_krc_lock(struct kfree_rcu_cpu **krcp,
 	atomic_inc(&(*krcp)->bulk_count[idx]);
 
 	return true;
+
+fail:
+	return false;
 }
 
 static enum hrtimer_restart

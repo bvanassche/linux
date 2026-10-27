@@ -612,14 +612,18 @@ static void switchtec_dma_synchronize(struct dma_chan *chan)
 	spin_unlock_bh(&swdma_chan->complete_lock);
 }
 
+static struct switchtec_dma_chan *to_swdma_chan(struct dma_chan *c)
+{
+	return container_of(c, struct switchtec_dma_chan, dma_chan);
+}
+
 static struct dma_async_tx_descriptor *
 switchtec_dma_prep_desc(struct dma_chan *c, u16 dst_fid, dma_addr_t dma_dst,
 			u16 src_fid, dma_addr_t dma_src, u64 data,
 			size_t len, unsigned long flags)
 	__acquires(swdma_chan->submit_lock)
 {
-	struct switchtec_dma_chan *swdma_chan =
-		container_of(c, struct switchtec_dma_chan, dma_chan);
+	struct switchtec_dma_chan *swdma_chan = to_swdma_chan(c);
 	struct switchtec_dma_desc *desc;
 	int head, tail;
 
@@ -700,8 +704,7 @@ static dma_cookie_t
 switchtec_dma_tx_submit(struct dma_async_tx_descriptor *desc)
 	__releases(swdma_chan->submit_lock)
 {
-	struct switchtec_dma_chan *swdma_chan =
-		container_of(desc->chan, struct switchtec_dma_chan, dma_chan);
+	struct switchtec_dma_chan *swdma_chan = to_swdma_chan(desc->chan);
 	dma_cookie_t cookie;
 	int head;
 

@@ -260,14 +260,14 @@ static int smc_rx_data_available_and_no_splice_pend(struct smc_connection *conn,
  * 1 if at least 1 byte available in rcvbuf or if socket error/shutdown.
  * 0 otherwise (nothing in rcvbuf nor timeout, e.g. interrupted).
  */
-int smc_rx_wait(struct smc_sock *smc, long *timeo, size_t peeked,
+int smc_rx_wait(struct sock *sk, struct smc_sock *smc, long *timeo,
+		size_t peeked,
 		int (*fcrit)(struct smc_connection *conn, size_t baseline))
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct smc_connection *conn = &smc->conn;
 	struct smc_cdc_conn_state_flags *cflags =
-					&conn->local_tx_ctrl.conn_state_flags;
-	struct sock *sk = &smc->sk;
+		&conn->local_tx_ctrl.conn_state_flags;
 	int rc;
 
 	if (fcrit(conn, peeked))
@@ -349,7 +349,7 @@ static bool smc_rx_recvmsg_data_available(struct smc_sock *smc, size_t peeked)
  * rcvbuf consumer: main API called by socket layer.
  * Called under sk lock.
  */
-int smc_rx_recvmsg(struct smc_sock *smc, struct msghdr *msg,
+int smc_rx_recvmsg(struct sock *sk, struct smc_sock *smc, struct msghdr *msg,
 		   struct pipe_inode_info *pipe, size_t len, int flags)
 {
 	size_t copylen, read_done = 0, read_remaining = len, peeked_bytes = 0;
@@ -359,7 +359,6 @@ int smc_rx_recvmsg(struct smc_sock *smc, struct msghdr *msg,
 	union smc_host_cursor cons;
 	int readable, chunk;
 	char *rcvbuf_base;
-	struct sock *sk;
 	int splbytes;
 	long timeo;
 	int target;		/* Read at least these many bytes */
@@ -368,7 +367,6 @@ int smc_rx_recvmsg(struct smc_sock *smc, struct msghdr *msg,
 	if (unlikely(flags & MSG_ERRQUEUE))
 		return -EINVAL; /* future work for sk.sk_family == AF_SMC */
 
-	sk = &smc->sk;
 	if (sk->sk_state == SMC_LISTEN)
 		return -ENOTCONN;
 	if (flags & MSG_OOB)
@@ -434,7 +432,8 @@ int smc_rx_recvmsg(struct smc_sock *smc, struct msghdr *msg,
 		}
 
 		if (!smc_rx_data_available(conn, peeked_bytes)) {
-			smc_rx_wait(smc, &timeo, peeked_bytes, smc_rx_data_available);
+			smc_rx_wait(sk, smc, &timeo, peeked_bytes,
+				    smc_rx_data_available);
 			continue;
 		}
 
@@ -448,7 +447,7 @@ copy:
 				func = smc_rx_data_available_and_no_splice_pend;
 			else
 				func = smc_rx_data_available;
-			smc_rx_wait(smc, &timeo, peeked_bytes, func);
+			smc_rx_wait(sk, smc, &timeo, peeked_bytes, func);
 			continue;
 		}
 

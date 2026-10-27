@@ -98,9 +98,12 @@ static vm_fault_t do_fault(struct vm_fault *vmf);
 static vm_fault_t do_anonymous_page(struct vm_fault *vmf);
 static bool vmf_pte_changed(struct vm_fault *vmf);
 
-#define pte_alloc_map_lock(mm, pmd, address, ptlp)	\
-	(pte_alloc(mm, pmd) ?			\
-		 NULL : pte_offset_map_lock(mm, pmd, address, ptlp))
+static inline pte_t *pte_alloc_map_lock(struct mm_struct *mm, pmd_t *pmd,
+					unsigned long addr, spinlock_t **ptlp)
+{
+	return pte_alloc(mm, pmd) ? NULL :
+				    pte_offset_map_lock(mm, pmd, addr, ptlp);
+}
 
 /*
  * Return true if the original pte was a uffd-wp pte marker (so the pte was

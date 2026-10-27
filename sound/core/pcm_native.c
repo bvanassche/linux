@@ -942,7 +942,7 @@ static int snd_pcm_hw_refine_with_lock(struct snd_pcm_substream *substream,
 		return -ENXIO;
 	runtime = substream->runtime;
 	err = snd_pcm_buffer_access_lock(runtime);
-	if (err < 0)
+	if (err)
 		return err;
 	err = hw_params_state_check(substream);
 	if (err)

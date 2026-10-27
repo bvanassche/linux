@@ -74,11 +74,10 @@ void smc_tx_sndbuf_nonfull(struct smc_sock *smc)
 /* blocks sndbuf producer until at least one byte of free space available
  * or urgent Byte was consumed
  */
-static int smc_tx_wait(struct smc_sock *smc, int flags)
+static int smc_tx_wait(struct sock *sk, struct smc_sock *smc, int flags)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct smc_connection *conn = &smc->conn;
-	struct sock *sk = &smc->sk;
 	long timeo;
 	int rc = 0;
 
@@ -178,13 +177,13 @@ static bool smc_tx_should_cork(struct smc_sock *smc, struct msghdr *msg)
 /* sndbuf producer: main API called by socket layer.
  * called under sock lock.
  */
-int smc_tx_sendmsg(struct smc_sock *smc, struct msghdr *msg, size_t len)
+int smc_tx_sendmsg(struct sock *sk, struct smc_sock *smc, struct msghdr *msg,
+		   size_t len)
 {
 	size_t copylen, send_done = 0, send_remaining = len;
 	size_t chunk_len, chunk_off, chunk_len_sum;
 	struct smc_connection *conn = &smc->conn;
 	union smc_host_cursor prep;
-	struct sock *sk = &smc->sk;
 	char *sndbuf_base;
 	int tx_cnt_prep;
 	int writespace;
@@ -224,7 +223,7 @@ int smc_tx_sendmsg(struct smc_sock *smc, struct msghdr *msg, size_t len)
 		if (!atomic_read(&conn->sndbuf_space) || conn->urg_tx_pend) {
 			if (send_done)
 				return send_done;
-			rc = smc_tx_wait(smc, msg->msg_flags);
+			rc = smc_tx_wait(sk, smc, msg->msg_flags);
 			if (rc)
 				goto out_err;
 			continue;

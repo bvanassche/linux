@@ -1017,7 +1017,7 @@ void drm_gem_shmem_vunmap(struct drm_gem_shmem_object *shmem, struct iosys_map *
 {
 	struct drm_gem_object *obj = &shmem->base;
 
-	dma_resv_lock_interruptible(obj->resv, NULL);
+	dma_resv_lock(obj->resv, NULL);
 	drm_gem_shmem_vunmap_locked(shmem, map);
 	dma_resv_unlock(obj->resv);
 }

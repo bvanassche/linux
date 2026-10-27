@@ -285,9 +285,9 @@ static void smc_restore_fallback_changes(struct smc_sock *smc)
 	}
 }
 
-static int __smc_release(struct smc_sock *smc)
+static int __smc_release(struct sock *sk)
 {
-	struct sock *sk = &smc->sk;
+	struct smc_sock *smc = smc_sk(sk);
 	int rc = 0;
 
 	if (!smc->use_fallback) {
@@ -325,6 +325,24 @@ static int __smc_release(struct smc_sock *smc)
 	return rc;
 }
 
+static int _smc_release(struct socket *sock, struct sock *sk, int old_state)
+{
+	struct smc_sock *smc = smc_sk(sk);
+	int rc;
+
+	if (old_state == SMC_INIT && sk->sk_state == SMC_ACTIVE &&
+	    !smc->use_fallback)
+		smc_close_active_abort(smc);
+
+	rc = __smc_release(sk);
+
+	/* detach socket */
+	sock_orphan(sk);
+	sock->sk = NULL;
+
+	return rc;
+}
+
 int smc_release(struct socket *sock)
 {
 	struct sock *sk = sock->sk;
@@ -346,24 +364,18 @@ int smc_release(struct socket *sock)
 	if (cancel_work_sync(&smc->connect_work))
 		sock_put(&smc->sk); /* sock_hold in smc_connect for passive closing */
 
-	if (sk->sk_state == SMC_LISTEN)
+	if (sk->sk_state == SMC_LISTEN) {
 		/* smc_close_non_accepted() is called and acquires
 		 * sock lock for child sockets again
 		 */
 		lock_sock_nested(sk, SINGLE_DEPTH_NESTING);
-	else
+		rc = _smc_release(sock, sk, old_state);
+		release_sock(sk);
+	} else {
 		lock_sock(sk);
-
-	if (old_state == SMC_INIT && sk->sk_state == SMC_ACTIVE &&
-	    !smc->use_fallback)
-		smc_close_active_abort(smc);
-
-	rc = __smc_release(smc);
-
-	/* detach socket */
-	sock_orphan(sk);
-	sock->sk = NULL;
-	release_sock(sk);
+		rc = _smc_release(sock, sk, old_state);
+		release_sock(sk);
+	}
 
 	sock_put(sk); /* sock_hold above */
 	sock_put(sk); /* final sock_put */
@@ -1860,14 +1872,12 @@ struct sock *smc_accept_dequeue(struct sock *parent,
 /* clean up for a created but never accepted sock */
 void smc_close_non_accepted(struct sock *sk)
 {
-	struct smc_sock *smc = smc_sk(sk);
-
 	sock_hold(sk); /* sock_put below */
 	lock_sock(sk);
 	if (!sk->sk_lingertime)
 		/* wait for peer closing */
 		WRITE_ONCE(sk->sk_lingertime, SMC_MAX_STREAM_WAIT_TIMEOUT);
-	__smc_release(smc);
+	__smc_release(sk);
 	release_sock(sk);
 	sock_put(sk); /* sock_hold above */
 	sock_put(sk); /* final sock_put */

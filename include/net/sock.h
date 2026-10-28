@@ -1831,9 +1831,11 @@ static inline bool sock_owned_by_user_nocheck(const struct sock *sk)
 }
 
 static inline void sock_release_ownership(struct sock *sk)
+	__releases(sk)
 {
 	DEBUG_NET_WARN_ON_ONCE(!sock_owned_by_user_nocheck(sk));
 	sk->sk_lock.owned = 0;
+	__release(sk);
 
 	/* The sk_lock has mutex_unlock() semantics: */
 	mutex_release(&sk->sk_lock.dep_map, _RET_IP_);

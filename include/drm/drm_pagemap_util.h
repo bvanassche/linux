@@ -6,14 +6,43 @@
 #ifndef _DRM_PAGEMAP_UTIL_H_
 #define _DRM_PAGEMAP_UTIL_H_
 
+#include <linux/completion.h>
 #include <linux/list.h>
 #include <linux/mutex.h>
+#include <linux/spinlock.h>
 
 struct drm_device;
 struct drm_pagemap;
-struct drm_pagemap_cache;
 struct drm_pagemap_owner;
 struct drm_pagemap_shrinker;
+
+/**
+ * struct drm_pagemap_cache - Lookup structure for pagemaps
+ *
+ * Structure to keep track of active (refcount > 1) and inactive
+ * (refcount == 0) pagemaps. Inactive pagemaps can be made active
+ * again by waiting for the @queued completion (indicating that the
+ * pagemap has been put on the @shrinker's list of shrinkable
+ * pagemaps, and then successfully removing it from @shrinker's
+ * list. The latter may fail if the shrinker is already in the
+ * process of freeing the pagemap. A struct drm_pagemap_cache can
+ * hold a single struct drm_pagemap.
+ */
+struct drm_pagemap_cache {
+	/** @lookup_mutex: Mutex making the lookup process atomic */
+	struct mutex lookup_mutex;
+	/** @lock: Lock protecting the @dpagemap pointer */
+	spinlock_t lock;
+	/** @shrinker: Pointer to the shrinker used for this cache. Immutable. */
+	struct drm_pagemap_shrinker *shrinker;
+	/** @dpagemap: Non-refcounted pointer to the drm_pagemap */
+	struct drm_pagemap *dpagemap;
+	/**
+	 * @queued: Signals when an inactive drm_pagemap has been put on
+	 * @shrinker's list.
+	 */
+	struct completion queued;
+};
 
 /**
  * struct drm_pagemap_peer - Structure representing a fast interconnect peer

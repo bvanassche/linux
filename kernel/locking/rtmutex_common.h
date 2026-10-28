@@ -79,8 +79,7 @@ struct rt_wake_q_head {
  * PI-futex support (proxy locking functions, etc.):
  */
 extern void rt_mutex_init_proxy_locked(struct rt_mutex_base *lock,
-				       struct task_struct *proxy_owner)
-	__must_hold(&lock->wait_lock);
+				       struct task_struct *proxy_owner);
 
 extern void rt_mutex_proxy_unlock(struct rt_mutex_base *lock)
 	__must_hold(&lock->wait_lock);

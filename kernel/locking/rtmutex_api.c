@@ -295,7 +295,7 @@ void __sched rt_mutex_init_proxy_locked(struct rt_mutex_base *lock,
 	 * recursion. Give the futex/rtmutex wait_lock a separate key.
 	 */
 	lockdep_set_class(&lock->wait_lock, &pi_futex_key);
-	rt_mutex_set_owner(lock, proxy_owner);
+	context_unsafe(rt_mutex_set_owner(lock, proxy_owner));
 }
 
 /**

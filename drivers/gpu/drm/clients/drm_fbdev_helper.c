@@ -234,6 +234,7 @@ retry:
 			break;
 	}
 
+out:
 	drm_modeset_drop_locks(&ctx);
 	drm_modeset_acquire_fini(&ctx);
 
@@ -244,7 +245,8 @@ err_drm_modeset_lock:
 		drm_modeset_backoff(&ctx);
 		goto retry;
 	}
-	return ret;
+	crtc_index = ret;
+	goto out;
 }
 
 static int find_crtc_index_legacy(struct drm_fb_helper *helper)

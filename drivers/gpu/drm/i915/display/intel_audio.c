@@ -1134,11 +1134,11 @@ static void glk_force_audio_cdclk(struct intel_display *display,
 	if (!crtc)
 		return;
 
-	drm_modeset_acquire_init(&ctx, 0);
 	state = drm_atomic_commit_alloc(display->drm);
 	if (drm_WARN_ON(display->drm, !state))
 		return;
 
+	drm_modeset_acquire_init(&ctx, 0);
 	state->acquire_ctx = &ctx;
 	to_intel_atomic_state(state)->internal = true;
 

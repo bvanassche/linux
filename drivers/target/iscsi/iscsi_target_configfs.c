@@ -78,7 +78,7 @@ static ssize_t lio_target_np_driver_store(struct config_item *item,
 	}
 
 	tpg = tpg_np->tpg;
-	if (iscsit_get_tpg(tpg) < 0)
+	if (iscsit_get_tpg(tpg))
 		return -EINVAL;
 
 	if (op) {
@@ -211,8 +211,7 @@ static struct se_tpg_np *lio_target_call_addnptotpg(
 	}
 
 	tpg = to_iscsi_tpg(se_tpg);
-	ret = iscsit_get_tpg(tpg);
-	if (ret < 0)
+	if (iscsit_get_tpg(tpg))
 		return ERR_PTR(-EINVAL);
 
 	pr_debug("LIO_Target_ConfigFS: REGISTER -> %s TPGT: %hu"
@@ -254,8 +253,7 @@ static void lio_target_call_delnpfromtpg(
 
 	tpg_np = container_of(se_tpg_np, struct iscsi_tpg_np, se_tpg_np);
 	tpg = tpg_np->tpg;
-	ret = iscsit_get_tpg(tpg);
-	if (ret < 0)
+	if (iscsit_get_tpg(tpg))
 		return;
 
 	se_tpg = &tpg->tpg_se_tpg;
@@ -679,7 +677,7 @@ static ssize_t lio_target_nacl_cmdsn_depth_store(struct config_item *item,
 		return -EINVAL;
 	}
 
-	if (iscsit_get_tpg(tpg) < 0)
+	if (iscsit_get_tpg(tpg))
 		return -EINVAL;
 
 	ret = core_tpg_set_initiator_node_queue_depth(se_nacl, cmdsn_depth);
@@ -747,7 +745,7 @@ static ssize_t iscsi_tpg_attrib_##name##_show(struct config_item *item,	\
 	struct iscsi_portal_group *tpg = to_iscsi_tpg(se_tpg);		\
 	ssize_t rb;							\
 									\
-	if (iscsit_get_tpg(tpg) < 0)					\
+	if (iscsit_get_tpg(tpg))					\
 		return -EINVAL;						\
 									\
 	rb = sysfs_emit(page, "%u\n", tpg->tpg_attrib.name);		\
@@ -763,7 +761,7 @@ static ssize_t iscsi_tpg_attrib_##name##_store(struct config_item *item,\
 	u32 val;							\
 	int ret;							\
 									\
-	if (iscsit_get_tpg(tpg) < 0)					\
+	if (iscsit_get_tpg(tpg))					\
 		return -EINVAL;						\
 									\
 	ret = kstrtou32(page, 0, &val);					\
@@ -921,7 +919,7 @@ static ssize_t iscsi_tpg_param_##name##_show(struct config_item *item,	\
 	struct iscsi_param *param;					\
 	ssize_t rb;							\
 									\
-	if (iscsit_get_tpg(tpg) < 0)					\
+	if (iscsit_get_tpg(tpg))					\
 		return -EINVAL;						\
 									\
 	param = iscsi_find_param_from_key(__stringify(name),		\
@@ -950,7 +948,7 @@ static ssize_t iscsi_tpg_param_##name##_store(struct config_item *item, \
 	if (isspace(buf[len-1]))					\
 		buf[len-1] = '\0'; /* Kill newline */			\
 									\
-	if (iscsit_get_tpg(tpg) < 0) {					\
+	if (iscsit_get_tpg(tpg)) {					\
 		kfree(buf);						\
 		return -EINVAL;						\
 	}								\
@@ -1091,8 +1089,7 @@ static int lio_target_tiqn_enabletpg(struct se_portal_group *se_tpg,
 	struct iscsi_portal_group *tpg = to_iscsi_tpg(se_tpg);
 	int ret;
 
-	ret = iscsit_get_tpg(tpg);
-	if (ret < 0)
+	if (iscsit_get_tpg(tpg))
 		return -EINVAL;
 
 	if (enable) {
@@ -1306,7 +1303,7 @@ static ssize_t iscsi_disc_enforce_discovery_auth_store(struct config_item *item,
 		return -EINVAL;
 	}
 
-	if (iscsit_get_tpg(discovery_tpg) < 0)
+	if (iscsit_get_tpg(discovery_tpg))
 		return -EINVAL;
 
 	param = iscsi_find_param_from_key(AUTHMETHOD,

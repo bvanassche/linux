@@ -555,7 +555,6 @@ int fnic_stats_debugfs_init(struct fnic *fnic);
 void fnic_stats_debugfs_remove(struct fnic *fnic);
 void fnic_nvmef_debugfs_init(struct fnic *fnic);
 void fnic_nvmef_debugfs_remove(struct fnic *fnic);
-int nvfnic_get_nvmef_info(struct fnic *fnic, struct fnic_nvmef_info *info);
 int fnic_is_abts_pending(struct fnic *, struct scsi_cmnd *);
 
 void fnic_handle_fip_frame(struct work_struct *work);

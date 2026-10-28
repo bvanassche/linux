@@ -637,6 +637,7 @@ retry:
 			if (!ret)
 				goto retry;
 		}
+		i915_gem_ww_ctx_fini(&ww);
 		return ret;
 	}
 

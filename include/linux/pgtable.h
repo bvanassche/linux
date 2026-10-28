@@ -105,6 +105,7 @@ static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
 	((pte_t *)kmap_local_page(pmd_page(*(pmd))) + pte_index((address)))
 #define pte_unmap(pte)	do {	\
 	kunmap_local((pte));	\
+	__acquire_shared_ctx_lock(RCU);	\
 	rcu_read_unlock();	\
 } while (0)
 #else
@@ -112,7 +113,12 @@ static inline pte_t *__pte_map(pmd_t *pmd, unsigned long address)
 {
 	return pte_offset_kernel(pmd, address);
 }
+/*
+ * The function below has not been annotated with __releases_shared(RCU) because
+ * none of the pte_map functions have been annotated with __acquires_shared(RCU).
+ */
 static inline void pte_unmap(pte_t *pte)
+	__context_unsafe(/* see comment above */)
 {
 	rcu_read_unlock();
 }

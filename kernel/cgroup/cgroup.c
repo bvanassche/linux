@@ -6907,6 +6907,7 @@ static struct cgroup *cgroup_get_from_file(struct file *f)
  * parent's signal_struct and are covered by the existing read lock.
  */
 static void cgroup_fork_child_lock(struct task_struct *child)
+	__context_unsafe(/* conditional locking */)
 {
 	if (cgroup_enable_per_threadgroup_rwsem &&
 	    child->signal != current->signal)
@@ -6915,6 +6916,7 @@ static void cgroup_fork_child_lock(struct task_struct *child)
 }
 
 static void cgroup_fork_child_unlock(struct task_struct *child)
+	__context_unsafe(/* conditional locking */)
 {
 	if (cgroup_enable_per_threadgroup_rwsem &&
 	    child->signal != current->signal)

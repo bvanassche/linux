@@ -342,6 +342,7 @@ static inline void dma_resv_reset_max_fences(struct dma_resv *obj) {}
 static inline __must_check int dma_resv_lock(struct dma_resv *obj,
 					     struct ww_acquire_ctx *ctx)
 	__cond_acquires(0, &obj->lock)
+	__must_hold(ctx)
 {
 	return ww_mutex_lock(&obj->lock, ctx);
 }
@@ -370,6 +371,7 @@ static inline __must_check int dma_resv_lock(struct dma_resv *obj,
 static inline int dma_resv_lock_interruptible(struct dma_resv *obj,
 					      struct ww_acquire_ctx *ctx)
 	__cond_acquires(0, &obj->lock)
+	__must_hold(ctx)
 {
 	return ww_mutex_lock_interruptible(&obj->lock, ctx);
 }

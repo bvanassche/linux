@@ -572,8 +572,8 @@ ecryptfs_find_auth_tok_for_sig(
 				& ECRYPTFS_GLOBAL_MOUNT_AUTH_TOK_ONLY)
 			return -EINVAL;
 
-		rc = ecryptfs_keyring_auth_tok_for_sig(auth_tok_key, auth_tok,
-						       sig);
+		return ecryptfs_keyring_auth_tok_for_sig(auth_tok_key, auth_tok,
+							 sig);
 	}
 	return rc;
 }

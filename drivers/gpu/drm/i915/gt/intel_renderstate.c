@@ -153,6 +153,8 @@ int intel_renderstate_init(struct intel_renderstate *so,
 
 	so->rodata = render_state_get_rodata(engine);
 	if (so->rodata) {
+		struct i915_vma *vma;
+
 		if (so->rodata->batch_items * 4 > PAGE_SIZE)
 			return -EINVAL;
 
@@ -160,11 +162,12 @@ int intel_renderstate_init(struct intel_renderstate *so,
 		if (IS_ERR(obj))
 			return PTR_ERR(obj);
 
-		so->vma = i915_vma_instance(obj, &engine->gt->ggtt->vm, NULL);
-		if (IS_ERR(so->vma)) {
-			err = PTR_ERR(so->vma);
+		vma = i915_vma_instance(obj, &engine->gt->ggtt->vm, NULL);
+		if (IS_ERR(vma)) {
+			err = PTR_ERR(vma);
 			goto err_obj;
 		}
+		so->vma = vma;
 	}
 
 	i915_gem_ww_ctx_init(&so->ww, true);

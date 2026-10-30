@@ -42,6 +42,7 @@ const struct mmu_interval_notifier_ops rxe_mn_ops = {
 #define RXE_PAGEFAULT_RDONLY BIT(0)
 #define RXE_PAGEFAULT_SNAPSHOT BIT(1)
 static int rxe_odp_do_pagefault_and_lock(struct rxe_mr *mr, u64 user_va, int bcnt, u32 flags)
+	__cond_acquires_range(0, INT_MAX, &to_ib_umem_odp(mr->umem)->umem_mutex)
 {
 	struct ib_umem_odp *umem_odp = to_ib_umem_odp(mr->umem);
 	bool fault = !(flags & RXE_PAGEFAULT_SNAPSHOT);

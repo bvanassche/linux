@@ -129,10 +129,12 @@ Keywords
                  __must_not_hold
                  __acquires
                  __cond_acquires
+                 __cond_acquires_range
                  __releases
                  __must_hold_shared
                  __acquires_shared
                  __cond_acquires_shared
+                 __cond_acquires_shared_range
                  __releases_shared
                  __acquire
                  __release

@@ -634,6 +634,8 @@ config BUILTIN_MODULE_RANGES
 config WARN_CONTEXT_ANALYSIS
 	bool "Compiler context-analysis warnings"
 	depends on CC_IS_CLANG && CLANG_VERSION >= 230000
+	# The __cond_acquires_range() annotations require these attributes.
+	depends on $(success,echo '__has_attribute(try_acquire_capability_range) && __has_attribute(try_acquire_shared_capability_range)' | $(CC) -E -P -x c - | grep -qx "1 && 1")
 	# Branch profiling re-defines "if", which messes with the compiler's
 	# ability to analyze __cond_acquires(..), resulting in false positives.
 	depends on !TRACE_BRANCH_PROFILING

@@ -151,11 +151,12 @@ nvkm_i2c_bus_acquire(struct nvkm_i2c_bus *bus)
 	BUS_TRACE(bus, "acquire");
 	mutex_lock(&bus->mutex);
 
-	if (bus->enabled)
-		ret = nvkm_i2c_pad_acquire(pad, NVKM_I2C_PAD_I2C);
-	else
-		ret = -EIO;
+	if (!bus->enabled) {
+		mutex_unlock(&bus->mutex);
+		return -EIO;
+	}
 
+	ret = nvkm_i2c_pad_acquire(pad, NVKM_I2C_PAD_I2C);
 	if (ret)
 		mutex_unlock(&bus->mutex);
 	return ret;

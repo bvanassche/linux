@@ -136,7 +136,7 @@ vm_fault_t ttm_bo_vm_reserve(struct ttm_buffer_object *bo,
 		if (fault_flag_allow_retry_first(vmf->flags)) {
 			if (!(vmf->flags & FAULT_FLAG_RETRY_NOWAIT)) {
 				drm_gem_object_get(&bo->base);
-				mmap_read_unlock(vmf->vma->vm_mm);
+				context_unsafe(mmap_read_unlock(vmf->vma->vm_mm));
 				if (!dma_resv_lock_interruptible(bo->base.resv,
 								 NULL))
 					dma_resv_unlock(bo->base.resv);

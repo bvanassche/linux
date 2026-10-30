@@ -1308,7 +1308,8 @@ struct iwl_trans_ops {
 	int (*poll_bits_mask)(struct iwl_trans *trans, u32 addr,
 			      u32 bits, u32 mask, int timeout);
 	int (*read_config32)(struct iwl_trans *trans, u32 ofs, u32 *val);
-	bool (*grab_nic_access)(struct iwl_trans *trans);
+	bool (*grab_nic_access)(struct iwl_trans *trans)
+		__cond_acquires(true, trans);
 	void (*release_nic_access)(struct iwl_trans *trans);
 	void (*resched_with_nic_access)(struct iwl_trans *trans);
 

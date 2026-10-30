@@ -434,6 +434,7 @@ static struct file_system_type ecryptfs_fs_type;
  * @fc: The filesystem context
  */
 static int ecryptfs_get_tree(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &s->s_umount) */)
 {
 	struct super_block *s;
 	struct ecryptfs_fs_context *ctx = fc->fs_private;

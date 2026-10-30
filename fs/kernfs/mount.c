@@ -374,6 +374,7 @@ const struct ns_common *kernfs_super_ns(struct super_block *sb)
  * Return: %0 on success, -errno on failure.
  */
 int kernfs_get_tree(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct kernfs_fs_context *kfc = fc->fs_private;
 	struct super_block *sb;

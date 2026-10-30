@@ -1161,6 +1161,7 @@ static inline bool is_subvolume_inode(struct inode *inode)
 
 static struct dentry *mount_subvol(const char *subvol_name, u64 subvol_objectid,
 				   struct vfsmount *mnt)
+	__context_unsafe(/* may return ERR_PTR() */)
 {
 	struct dentry *root;
 	int ret;
@@ -1850,6 +1851,7 @@ static int btrfs_fc_test_super(struct super_block *sb, struct fs_context *fc)
 }
 
 static int btrfs_get_tree_super(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct btrfs_fs_info *fs_info = fc->s_fs_info;
 	struct btrfs_fs_context *ctx = fc->fs_private;

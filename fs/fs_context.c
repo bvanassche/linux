@@ -352,6 +352,7 @@ struct fs_context *fs_context_for_submount(struct file_system_type *type,
 EXPORT_SYMBOL(fs_context_for_submount);
 
 void fc_drop_locked(struct fs_context *fc)
+	__context_unsafe(/* releases fc->root->d_sb->s_umount */)
 {
 	struct super_block *sb = fc->root->d_sb;
 	dput(fc->root);

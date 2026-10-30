@@ -582,6 +582,9 @@ static inline bool get_mmap_lock_carefully(struct mm_struct *mm, struct pt_regs 
 }
 
 static inline bool mmap_upgrade_trylock(struct mm_struct *mm)
+	__releases_shared(&mm->mmap_lock)
+	__cond_acquires(true, &mm->mmap_lock)
+	__cond_acquires_shared(false, &mm->mmap_lock)
 {
 	/*
 	 * We don't have this operation yet.

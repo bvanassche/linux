@@ -545,6 +545,7 @@ amdgpu_dma_buf_move_notify(struct dma_buf_attachment *attach)
 			 * else is holding the VM lock and updating page tables
 			 * So we can just continue here.
 			 */
+			lockdep_assume_ctx_held(ticket);
 			r = dma_resv_lock(resv, ticket);
 			if (r)
 				continue;

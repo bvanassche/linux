@@ -188,7 +188,7 @@ static void mv88e6xxx_phy_ppu_reenable_timer(struct timer_list *t)
 }
 
 static int mv88e6xxx_phy_ppu_access_get(struct mv88e6xxx_chip *chip)
-	__cond_acquires(0, &chip->ppu_mutex)
+	__cond_acquires_range(0, INT_MAX, &chip->ppu_mutex)
 {
 	int ret;
 

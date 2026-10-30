@@ -712,12 +712,15 @@ static int qcuefi_set_reference(struct qcuefi_client *qcuefi)
 static struct qcuefi_client *qcuefi_acquire(void)
 	__cond_acquires(nonnull, &__qcuefi_lock)
 {
+	struct qcuefi_client *qcuefi;
+
 	mutex_lock(&__qcuefi_lock);
-	if (!__qcuefi) {
+	qcuefi = __qcuefi;
+	if (!qcuefi) {
 		mutex_unlock(&__qcuefi_lock);
 		return NULL;
 	}
-	return __qcuefi;
+	return qcuefi;
 }
 
 static void qcuefi_release(void)

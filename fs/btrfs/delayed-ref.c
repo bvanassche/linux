@@ -376,6 +376,7 @@ static struct btrfs_delayed_ref_head *find_first_ref_head(
 
 static bool btrfs_delayed_ref_lock(struct btrfs_delayed_ref_root *delayed_refs,
 				   struct btrfs_delayed_ref_head *head)
+	__must_hold(&delayed_refs->lock)
 	__cond_acquires(true, &head->mutex)
 {
 	lockdep_assert_held(&delayed_refs->lock);

@@ -292,7 +292,7 @@ EXPORT_SYMBOL(drm_modeset_drop_locks);
 static inline int modeset_lock(struct drm_modeset_lock *lock,
 		struct drm_modeset_acquire_ctx *ctx,
 		bool interruptible, bool slow)
-	__cond_acquires(0, &lock->mutex)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 

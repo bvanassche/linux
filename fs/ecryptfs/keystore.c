@@ -575,8 +575,8 @@ ecryptfs_find_auth_tok_for_sig(
 				& ECRYPTFS_GLOBAL_MOUNT_AUTH_TOK_ONLY)
 			return -EINVAL;
 
-		rc = ecryptfs_keyring_auth_tok_for_sig(auth_tok_key, auth_tok,
-						       sig);
+		return ecryptfs_keyring_auth_tok_for_sig(auth_tok_key, auth_tok,
+							 sig);
 	}
 	return rc;
 }
@@ -1594,6 +1594,7 @@ int ecryptfs_keyring_auth_tok_for_sig(struct key **auth_tok_key,
 				      struct ecryptfs_auth_tok **auth_tok,
 				      char *sig)
 	__cond_acquires(0, &(*auth_tok_key)->sem)
+	__context_unsafe(/* process_request_key_err() always returns an error */)
 {
 	int rc = 0;
 

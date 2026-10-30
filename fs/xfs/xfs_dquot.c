@@ -1101,6 +1101,7 @@ xfs_qm_dqget_next(
 	xfs_dqid_t		id,
 	xfs_dqtype_t		type,
 	struct xfs_dquot	**dqpp)
+	__cond_acquires(0, &(*dqpp)->q_qlock)
 {
 	struct xfs_dquot	*dqp;
 	int			error = 0;
@@ -1116,6 +1117,8 @@ xfs_qm_dqget_next(
 		mutex_lock(&dqp->q_qlock);
 		if (!XFS_IS_DQUOT_UNINITIALIZED(dqp)) {
 			*dqpp = dqp;
+			__release(&dqp->q_qlock);
+			__acquire(&(*dqpp)->q_qlock);
 			return 0;
 		}
 

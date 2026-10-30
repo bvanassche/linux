@@ -900,6 +900,7 @@ int walk_page_mapping(struct address_space *mapping, pgoff_t first_index,
 struct folio *folio_walk_start(struct folio_walk *fw,
 		struct vm_area_struct *vma, unsigned long addr,
 		folio_walk_flags_t flags)
+	__context_unsafe(/* conditionally acquires and stores fw->ptl */)
 {
 	unsigned long entry_size;
 	bool zeropage = false;

@@ -18,6 +18,18 @@
 # define __acquires_shared_ctx_lock(...)	__attribute__((acquire_shared_capability(__VA_ARGS__)))
 # define __try_acquires_ctx_lock(ret, var)	__attribute__((try_acquire_capability(ret, var)))
 # define __try_acquires_shared_ctx_lock(ret, var) __attribute__((try_acquire_shared_capability(ret, var)))
+# if __has_attribute(try_acquire_capability_range)
+#  define __try_acquires_ctx_lock_range(first, last, ...) \
+	__attribute__((try_acquire_capability_range(first, last, __VA_ARGS__)))
+# else
+#  define __try_acquires_ctx_lock_range(first, last, ...)
+# endif
+# if __has_attribute(try_acquire_shared_capability_range)
+#  define __try_acquires_shared_ctx_lock_range(first, last, ...) \
+	__attribute__((try_acquire_shared_capability_range(first, last, __VA_ARGS__)))
+# else
+#  define __try_acquires_shared_ctx_lock_range(first, last, ...)
+# endif
 # define __releases_ctx_lock(...)		__attribute__((release_capability(__VA_ARGS__)))
 # define __releases_shared_ctx_lock(...)	__attribute__((release_shared_capability(__VA_ARGS__)))
 # define __returns_ctx_lock(var)		__attribute__((lock_returned(var)))
@@ -167,6 +179,8 @@
 # define __acquires_shared_ctx_lock(...)
 # define __try_acquires_ctx_lock(ret, var)
 # define __try_acquires_shared_ctx_lock(ret, var)
+# define __try_acquires_ctx_lock_range(first, last, ...)
+# define __try_acquires_shared_ctx_lock_range(first, last, ...)
 # define __releases_ctx_lock(...)
 # define __releases_shared_ctx_lock(...)
 # define __assumes_ctx_lock(...)
@@ -326,6 +340,21 @@ static inline void _context_unsafe_alias(void **p) { }
 #define __cond_acquires(ret, x) __cond_acquires_impl_##ret(x)
 
 /**
+ * __cond_acquires_range() - function attribute, function conditionally
+ *                           acquires context lock(s) exclusively
+ * @first: lowest integer value returned if context lock(s) are acquired
+ * @last: highest integer value returned if context lock(s) are acquired
+ * @...: context lock instance pointer(s)
+ *
+ * Function attribute declaring that the function conditionally acquires the
+ * given context lock instance(s) exclusively, but does not release them. The
+ * context lock(s) are acquired if and only if the function returns an integer
+ * in the closed range [@first, @last].
+ */
+#define __cond_acquires_range(first, last, ...) \
+	__try_acquires_ctx_lock_range(first, last, __VA_ARGS__)
+
+/**
  * __releases() - function attribute, function releases a context lock exclusively
  *
  * Function attribute declaring that the function releases the given context
@@ -411,6 +440,21 @@ static inline void _context_unsafe_alias(void **p) { }
  * @ret may be one of: true, false, nonzero, 0, nonnull, NULL.
  */
 #define __cond_acquires_shared(ret, x) __cond_acquires_impl_##ret(x, _shared)
+
+/**
+ * __cond_acquires_shared_range() - function attribute, function conditionally
+ *                                  acquires context lock(s) shared
+ * @first: lowest integer value returned if context lock(s) are acquired
+ * @last: highest integer value returned if context lock(s) are acquired
+ * @...: context lock instance pointer(s)
+ *
+ * Function attribute declaring that the function conditionally acquires the
+ * given context lock instance(s) with shared access, but does not release them.
+ * The context lock(s) are acquired if and only if the function returns an
+ * integer in the closed range [@first, @last].
+ */
+#define __cond_acquires_shared_range(first, last, ...) \
+	__try_acquires_shared_ctx_lock_range(first, last, __VA_ARGS__)
 
 /**
  * __releases_shared() - function attribute, function releases a

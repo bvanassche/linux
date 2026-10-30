@@ -208,6 +208,7 @@ static int simple_test(struct btrfs_trans_handle *trans,
 			test_err("failed to find delayed ref head");
 		return -EINVAL;
 	}
+	__acquire(&head->mutex);
 
 	ret = -EINVAL;
 	if (validate_ref_head(head, head_check))
@@ -765,8 +766,10 @@ static int merge_tests(struct btrfs_trans_handle *trans,
 	}
 	ret = 0;
 out:
-	if (!IS_ERR_OR_NULL(head))
+	if (!IS_ERR_OR_NULL(head)) {
+		lockdep_assume_ctx_held(&head->mutex);
 		btrfs_unselect_ref_head(&trans->transaction->delayed_refs, head);
+	}
 	btrfs_destroy_delayed_refs(trans->transaction);
 	return ret;
 }
@@ -966,8 +969,10 @@ static int select_delayed_refs_test(struct btrfs_trans_handle *trans)
 	delete_delayed_ref_node(head, node);
 	ret = 0;
 out:
-	if (head)
+	if (head) {
+		lockdep_assume_ctx_held(&head->mutex);
 		btrfs_unselect_ref_head(delayed_refs, head);
+	}
 	btrfs_destroy_delayed_refs(trans->transaction);
 	return ret;
 }

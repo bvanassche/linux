@@ -547,6 +547,7 @@ static void afs_kill_super(struct super_block *sb)
  * Get an AFS superblock and root directory.
  */
 static int afs_get_tree(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct afs_fs_context *ctx = fc->fs_private;
 	struct super_block *sb;

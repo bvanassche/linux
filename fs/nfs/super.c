@@ -1269,6 +1269,7 @@ static int nfs_get_cache_cookie(struct super_block *sb,
 #endif
 
 int nfs_get_tree_common(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &s->s_umount) */)
 {
 	struct nfs_fs_context *ctx = nfs_fc2context(fc);
 	struct super_block *s;

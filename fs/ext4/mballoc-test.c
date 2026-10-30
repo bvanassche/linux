@@ -153,6 +153,7 @@ static struct super_block *mbt_ext4_alloc_super_block(void)
 	put_fs_context(fc);
 	if (IS_ERR(sb))
 		goto out;
+	__acquire(&sb->s_umount);
 
 	sbi = &fsb->sbi;
 
@@ -167,7 +168,6 @@ static struct super_block *mbt_ext4_alloc_super_block(void)
 	sbi->s_sb = sb;
 	sb->s_fs_info = sbi;
 
-	__acquire(&sb->s_umount);
 	up_write(&sb->s_umount);
 	return sb;
 

@@ -471,6 +471,7 @@ static int orangefs_fill_sb(struct super_block *sb,
 }
 
 static int orangefs_get_tree(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	int ret;
 	struct super_block *sb = ERR_PTR(-EINVAL);

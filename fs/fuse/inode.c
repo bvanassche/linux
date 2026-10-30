@@ -1718,6 +1718,7 @@ static int fuse_fill_super_submount(struct super_block *sb,
 
 /* Filesystem context private data holds the FUSE inode of the mount point */
 static int fuse_get_tree_submount(struct fs_context *fsc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct fuse_mount *fm;
 	struct fuse_inode *mp_fi = fsc->fs_private;

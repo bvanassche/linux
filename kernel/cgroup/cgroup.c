@@ -2262,6 +2262,7 @@ out:
 }
 
 int cgroup_do_get_tree(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct cgroup_fs_context *ctx = cgroup_fc2context(fc);
 	int ret;

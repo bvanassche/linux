@@ -2230,6 +2230,7 @@ static int sb_test(struct super_block *sb, struct fs_context *fc)
 }
 
 static int ubifs_get_tree(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct ubi_volume_desc *ubi;
 	struct ubifs_info *c;

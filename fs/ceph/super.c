@@ -1322,6 +1322,7 @@ static int ceph_setup_bdi(struct super_block *sb, struct ceph_fs_client *fsc)
 }
 
 static int ceph_get_tree(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct ceph_parse_opts_ctx *pctx = fc->fs_private;
 	struct ceph_mount_options *fsopt = pctx->opts;

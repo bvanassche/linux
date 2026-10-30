@@ -2258,6 +2258,7 @@ bool vma_wants_writenotify(struct vm_area_struct *vma, pgprot_t vm_page_prot)
 }
 
 static DEFINE_MUTEX(mm_all_locks_mutex);
+void mm_drop_all_locks(struct mm_struct *mm) __releases(&mm_all_locks_mutex);
 
 static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
 	__context_unsafe(/* conditional locking */)

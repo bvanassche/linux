@@ -241,7 +241,7 @@ int mv88e6185_phy_ppu_read(struct mv88e6xxx_chip *chip, struct mii_bus *bus,
 	int err;
 
 	err = mv88e6xxx_phy_ppu_access_get(chip);
-	if (!err) {
+	if (err >= 0) {
 		err = mv88e6xxx_read(chip, addr, reg, val);
 		mv88e6xxx_phy_ppu_access_put(chip);
 	}
@@ -255,7 +255,7 @@ int mv88e6185_phy_ppu_write(struct mv88e6xxx_chip *chip, struct mii_bus *bus,
 	int err;
 
 	err = mv88e6xxx_phy_ppu_access_get(chip);
-	if (!err) {
+	if (err >= 0) {
 		err = mv88e6xxx_write(chip, addr, reg, val);
 		mv88e6xxx_phy_ppu_access_put(chip);
 	}

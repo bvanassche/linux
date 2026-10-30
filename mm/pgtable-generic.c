@@ -424,6 +424,8 @@ again:
 	spin_lock(ptl);
 	if (likely(pmd_same(pmdval, pmdp_get_lockless(pmd)))) {
 		*ptlp = ptl;
+		__release(ptl);
+		__acquire(*ptlp);
 		return pte;
 	}
 	pte_unmap_unlock(pte, ptl);

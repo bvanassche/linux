@@ -19,6 +19,7 @@
  */
 static struct posix_clock *get_posix_clock(struct file *fp)
 	__cond_acquires_shared(nonnull, &get_posix_clock(fp)->rwsem)
+	__context_unsafe(/* acquires clk->rwsem for caller */)
 {
 	struct posix_clock_context *pccontext = fp->private_data;
 	struct posix_clock *clk = pccontext->clk;

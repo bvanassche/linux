@@ -2839,6 +2839,7 @@ static bool free_frozen_page_commit(struct zone *zone,
 		unsigned int order, fpi_t fpi_flags)
 	__releases(&pcp->lock)
 	__cond_acquires(true, &pcp->lock)
+	__context_unsafe(/* drops and reacquires pcp->lock in a loop */)
 {
 	int high, batch;
 	int to_free, to_free_batched;

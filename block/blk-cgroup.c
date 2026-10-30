@@ -794,6 +794,7 @@ int blkg_conf_open_bdev(struct blkg_conf_ctx *ctx)
 	char *input = ctx->input;
 	unsigned int major, minor;
 	struct block_device *bdev;
+	struct request_queue *q;
 	int key_len;
 
 	if (WARN_ON_ONCE(ctx->bdev))
@@ -815,15 +816,17 @@ int blkg_conf_open_bdev(struct blkg_conf_ctx *ctx)
 		return -ENODEV;
 	}
 
-	mutex_lock(&bdev->bd_queue->rq_qos_mutex);
+	ctx->bdev = bdev;
+	q = ctx->bdev->bd_queue;
+	mutex_lock(&q->rq_qos_mutex);
 	if (!disk_live(bdev->bd_disk)) {
+		ctx->bdev = NULL;
 		blkdev_put_no_open(bdev);
-		mutex_unlock(&bdev->bd_queue->rq_qos_mutex);
+		mutex_unlock(&q->rq_qos_mutex);
 		return -ENODEV;
 	}
 
 	ctx->body = input;
-	ctx->bdev = bdev;
 	return 0;
 }
 EXPORT_SYMBOL_GPL(blkg_conf_open_bdev);

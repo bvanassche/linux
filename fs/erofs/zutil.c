@@ -37,17 +37,19 @@ void *z_erofs_get_gbuf(unsigned int requiredpages)
 	__cond_acquires(nonnull, &z_erofs_gbufpool[z_erofs_gbuf_id()].lock)
 {
 	struct z_erofs_gbuf *gbuf;
+	void *ptr;
 
 	migrate_disable();
 	gbuf = &z_erofs_gbufpool[z_erofs_gbuf_id()];
 	spin_lock(&gbuf->lock);
+	ptr = gbuf->ptr;
 	/* check if the buffer is too small */
-	if (requiredpages > gbuf->nrpages) {
+	if (requiredpages > gbuf->nrpages || !ptr) {
 		spin_unlock(&gbuf->lock);
 		migrate_enable();
 		return NULL;
 	}
-	return gbuf->ptr;
+	return ptr;
 }
 
 void z_erofs_put_gbuf(void *ptr)

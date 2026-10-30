@@ -161,6 +161,7 @@ static inline void assert_object_held_shared(const struct drm_i915_gem_object *o
 static inline int __i915_gem_object_lock(struct drm_i915_gem_object *obj,
 					 struct i915_gem_ww_ctx *ww,
 					 bool intr)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 

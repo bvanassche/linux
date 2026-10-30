@@ -323,7 +323,8 @@ EXPORT_SYMBOL(ib_umem_odp_release);
  */
 int ib_umem_odp_map_dma_and_lock(struct ib_umem_odp *umem_odp, u64 user_virt,
 				 u64 bcnt, u64 access_mask, bool fault)
-	__context_unsafe(/* __cond_acquires() does not support >= 0 */)
+	__cond_acquires_range(0, INT_MAX, &umem_odp->umem_mutex)
+	__context_unsafe(/* too complex for static analysis */)
 {
 	struct task_struct *owning_process  = NULL;
 	struct mm_struct *owning_mm = umem_odp->umem.owning_mm;

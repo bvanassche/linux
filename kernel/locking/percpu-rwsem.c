@@ -168,9 +168,12 @@ static void percpu_rwsem_wait(struct percpu_rw_semaphore *sem, bool reader,
 
 bool __sched __percpu_down_read(struct percpu_rw_semaphore *sem, bool try,
 				bool freeze)
+	__cond_acquires_shared(true, sem)
 {
-	if (__percpu_down_read_trylock(sem))
+	if (__percpu_down_read_trylock(sem)) {
+		__acquire_shared(sem);
 		return true;
+	}
 
 	if (try)
 		return false;
@@ -181,6 +184,7 @@ bool __sched __percpu_down_read(struct percpu_rw_semaphore *sem, bool try,
 	preempt_disable();
 	trace_contention_end(sem, 0);
 
+	__acquire_shared(sem);
 	return true;
 }
 EXPORT_SYMBOL_GPL(__percpu_down_read);

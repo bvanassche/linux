@@ -1507,6 +1507,7 @@ int
 drm_gem_lock_reservations(struct drm_gem_object **objs, int count,
 			  struct ww_acquire_ctx *acquire_ctx)
 	__cond_acquires(0, acquire_ctx)
+	__context_unsafe(/* dma_resv_lock_interruptible() inside loop */)
 {
 	int contended = -1;
 	int i, ret;

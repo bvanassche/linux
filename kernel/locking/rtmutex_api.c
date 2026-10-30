@@ -48,11 +48,12 @@ static __always_inline int __rt_mutex_lock_common(struct rt_mutex *lock,
 	might_sleep();
 	mutex_acquire_nest(&lock->dep_map, subclass, 0, nest_lock, _RET_IP_);
 	ret = __rt_mutex_lock(&lock->rtmutex, state);
-	if (ret)
+	if (ret) {
 		mutex_release(&lock->dep_map, _RET_IP_);
-	else
-		__acquire(lock);
-	return ret;
+		return ret;
+	}
+	__acquire(lock);
+	return 0;
 }
 
 void rt_mutex_base_init(struct rt_mutex_base *rtb)
@@ -165,11 +166,11 @@ int __sched rt_mutex_trylock(struct rt_mutex *lock)
 		return 0;
 
 	ret = __rt_mutex_trylock(&lock->rtmutex);
-	if (ret) {
-		__acquire(lock);
-		mutex_acquire(&lock->dep_map, 0, 1, _RET_IP_);
-	}
+	if (!ret)
+		return 0;
 
+	mutex_acquire(&lock->dep_map, 0, 1, _RET_IP_);
+	__acquire(lock);
 	return ret;
 }
 EXPORT_SYMBOL_GPL(rt_mutex_trylock);

@@ -851,6 +851,7 @@ static bool ttm_lru_walk_trylock(struct ttm_bo_lru_cursor *curs,
 
 static int ttm_lru_walk_ticketlock(struct ttm_bo_lru_cursor *curs,
 				   struct ttm_buffer_object *bo)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ttm_lru_walk_arg *arg = curs->arg;
 	int ret;

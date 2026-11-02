@@ -94,7 +94,8 @@ static void cfi_amdstd_destroy(struct mtd_info *);
 struct mtd_info *cfi_cmdset_0002(struct map_info *, int);
 static struct mtd_info *cfi_amdstd_setup (struct mtd_info *);
 
-static int get_chip(struct map_info *map, struct flchip *chip, unsigned long adr, int mode);
+static int get_chip(struct map_info *map, struct flchip *chip, unsigned long adr, int mode)
+	__must_hold(&chip->mutex);
 static void put_chip(struct map_info *map, struct flchip *chip, unsigned long adr);
 #include "fwh_lock.h"
 

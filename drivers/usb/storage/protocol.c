@@ -43,6 +43,7 @@
  ***********************************************************************/
 
 void usb_stor_pad12_command(struct scsi_cmnd *srb, struct us_data *us)
+	__must_hold(&us->dev_mutex)
 {
 	/*
 	 * Pad the SCSI command with zeros out to 12 bytes.  If the
@@ -59,6 +60,7 @@ void usb_stor_pad12_command(struct scsi_cmnd *srb, struct us_data *us)
 }
 
 void usb_stor_ufi_command(struct scsi_cmnd *srb, struct us_data *us)
+	__must_hold(&us->dev_mutex)
 {
 	/*
 	 * fix some commands -- this is a form of mode translation
@@ -103,6 +105,7 @@ void usb_stor_ufi_command(struct scsi_cmnd *srb, struct us_data *us)
 
 void usb_stor_transparent_scsi_command(struct scsi_cmnd *srb,
 				       struct us_data *us)
+	__must_hold(&us->dev_mutex)
 {
 	/* send the command to the transport layer */
 	usb_stor_invoke_transport(srb, us);

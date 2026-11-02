@@ -302,7 +302,8 @@ static bool platform_registered;
 
 static void return_hosed_msg(struct ssif_info *ssif_info,
 			     struct ipmi_smi_msg *msg);
-static void start_next_msg(struct ssif_info *ssif_info, unsigned long *flags);
+static void start_next_msg(struct ssif_info *ssif_info, unsigned long *flags)
+	__releases(&ssif_info->lock);
 static int start_send(struct ssif_info *ssif_info,
 		      unsigned char   *data,
 		      unsigned int    len);

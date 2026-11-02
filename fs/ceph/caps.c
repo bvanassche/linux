@@ -691,6 +691,7 @@ void ceph_add_cap(struct inode *inode,
 		  unsigned issued, unsigned wanted,
 		  unsigned seq, unsigned mseq, u64 realmino, int flags,
 		  struct ceph_cap **new_cap)
+	__context_unsafe(/* caller holds mdsc->snap_rwsem (read) */)
 {
 	struct ceph_mds_client *mdsc = ceph_inode_to_fs_client(inode)->mdsc;
 	struct ceph_client *cl = ceph_inode_to_client(inode);

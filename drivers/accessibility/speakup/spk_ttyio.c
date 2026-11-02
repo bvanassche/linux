@@ -155,6 +155,8 @@ static int spk_ttyio_initialise_ldisc(struct spk_synth *synth)
 	if (IS_ERR(tty))
 		return PTR_ERR(tty);
 
+	__acquire(&tty->legacy_mutex); /* by tty_kopen_exclusive() */
+
 	if (tty->ops->open)
 		ret = tty->ops->open(tty, NULL);
 	else

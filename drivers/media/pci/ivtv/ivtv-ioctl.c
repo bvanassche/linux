@@ -234,6 +234,8 @@ static int ivtv_video_command(struct ivtv *itv, struct ivtv_open_id *id,
 {
 	struct ivtv_stream *s = &itv->streams[IVTV_DEC_STREAM_TYPE_MPG];
 
+	lockdep_assume_ctx_held(&id->itv->serialize_lock);
+
 	if (!(itv->v4l2_cap & V4L2_CAP_VIDEO_OUTPUT))
 		return -EINVAL;
 
@@ -1612,6 +1614,7 @@ static int ivtv_try_decoder_cmd(struct file *file, void *fh, struct v4l2_decoder
 }
 
 static int ivtv_decoder_ioctls(struct file *filp, unsigned int cmd, void *arg)
+	__must_hold(&file2id(filp)->itv->serialize_lock)
 {
 	struct ivtv_open_id *id = file2id(filp);
 	struct ivtv *itv = id->itv;
@@ -1655,6 +1658,7 @@ static int ivtv_decoder_ioctls(struct file *filp, unsigned int cmd, void *arg)
 
 static long ivtv_default(struct file *file, void *fh, bool valid_prio,
 			 unsigned int cmd, void *arg)
+	__must_hold(&file2id(file)->itv->serialize_lock)
 {
 	struct ivtv *itv = file2id(file)->itv;
 

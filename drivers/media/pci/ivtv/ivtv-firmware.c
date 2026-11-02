@@ -265,6 +265,7 @@ void ivtv_init_mpeg_decoder(struct ivtv *itv)
 
 /* Try to restart the card & restore previous settings */
 static int ivtv_firmware_restart(struct ivtv *itv)
+	__context_unsafe(/* not all callers hold itv->serialize_lock */)
 {
 	int rc = 0;
 	v4l2_std_id std;

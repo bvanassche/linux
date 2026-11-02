@@ -20,7 +20,8 @@ __poll_t ivtv_v4l2_enc_poll(struct file *filp, poll_table * wait);
 __poll_t ivtv_v4l2_dec_poll(struct file *filp, poll_table * wait);
 int ivtv_start_capture(struct ivtv_open_id *id);
 void ivtv_stop_capture(struct ivtv_open_id *id, int gop_end);
-int ivtv_start_decoding(struct ivtv_open_id *id, int speed);
+int ivtv_start_decoding(struct ivtv_open_id *id, int speed)
+	__must_hold(&id->itv->serialize_lock);
 void ivtv_mute(struct ivtv *itv);
 void ivtv_unmute(struct ivtv *itv);
 

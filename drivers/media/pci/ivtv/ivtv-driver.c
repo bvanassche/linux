@@ -1322,7 +1322,7 @@ int ivtv_init_on_first_open(struct ivtv *itv)
 	if (itv->v4l2_cap & V4L2_CAP_VIDEO_OUTPUT) {
 		ivtv_clear_irq_mask(itv, IVTV_IRQ_MASK_INIT | IVTV_IRQ_DEC_VSYNC);
 		ivtv_set_osd_alpha(itv);
-		ivtv_s_std_dec(itv, itv->tuner_std);
+		context_unsafe(ivtv_s_std_dec(itv, itv->tuner_std));
 	} else {
 		ivtv_clear_irq_mask(itv, IVTV_IRQ_MASK_INIT);
 	}

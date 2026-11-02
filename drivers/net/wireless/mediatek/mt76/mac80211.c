@@ -1485,6 +1485,8 @@ mt76_check_sta(struct mt76_dev *dev, struct sk_buff *skb)
 	int signal;
 	bool ps;
 
+	lockdep_assume_in_rcu_read_lock();
+
 	hw = mt76_phy_hw(dev, status->phy_idx);
 	if (ieee80211_is_pspoll(hdr->frame_control) && !wcid &&
 	    !(status->flag & RX_FLAG_8023)) {

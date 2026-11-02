@@ -999,7 +999,8 @@ static inline bool rvt_rc_credit_avail(struct rvt_qp *qp, struct rvt_swqe *wqe)
 struct rvt_qp_iter *rvt_qp_iter_init(struct rvt_dev_info *rdi,
 				     u64 v,
 				     void (*cb)(struct rvt_qp *qp, u64 v));
-int rvt_qp_iter_next(struct rvt_qp_iter *iter);
+int rvt_qp_iter_next(struct rvt_qp_iter *iter)
+	__must_hold_shared(RCU);
 void rvt_qp_iter(struct rvt_dev_info *rdi,
 		 u64 v,
 		 void (*cb)(struct rvt_qp *qp, u64 v));

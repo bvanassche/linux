@@ -23,6 +23,7 @@ static snd_pcm_sframes_t io_playback_transfer(struct snd_pcm_plugin *plugin,
 				    const struct snd_pcm_plugin_channel *src_channels,
 				    struct snd_pcm_plugin_channel *dst_channels,
 				    snd_pcm_uframes_t frames)
+	__context_unsafe(/* TODO */)
 {
 	if (snd_BUG_ON(!plugin))
 		return -ENXIO;
@@ -49,6 +50,7 @@ static snd_pcm_sframes_t io_capture_transfer(struct snd_pcm_plugin *plugin,
 				   const struct snd_pcm_plugin_channel *src_channels,
 				   struct snd_pcm_plugin_channel *dst_channels,
 				   snd_pcm_uframes_t frames)
+	__context_unsafe(/* TODO */)
 {
 	if (snd_BUG_ON(!plugin))
 		return -ENXIO;

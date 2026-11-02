@@ -206,7 +206,7 @@ static int gfs2_write_jdata_batch(struct address_space *mapping,
 	nrblocks = size >> inode->i_blkbits;
 
 	ret = gfs2_trans_begin(sdp, nrblocks, nrblocks);
-	if (ret < 0)
+	if (ret)
 		return ret;
 
 	for (i = 0; i < nr_folios; i++) {

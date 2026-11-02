@@ -71,8 +71,10 @@ int nv04_fifo_chid_ctor(struct nvkm_fifo *, int);
 int nv04_fifo_runl_ctor(struct nvkm_fifo *);
 void nv04_fifo_init(struct nvkm_fifo *);
 irqreturn_t nv04_fifo_intr(struct nvkm_inth *);
-void nv04_fifo_pause(struct nvkm_fifo *, unsigned long *);
-void nv04_fifo_start(struct nvkm_fifo *, unsigned long *);
+void nv04_fifo_pause(struct nvkm_fifo *fifo, unsigned long *)
+	__acquires(fifo->lock);
+void nv04_fifo_start(struct nvkm_fifo *fifo, unsigned long *)
+	__releases(fifo->lock);
 extern const struct nvkm_runl_func nv04_runl;
 extern const struct nvkm_engn_func nv04_engn;
 extern const struct nvkm_cgrp_func nv04_cgrp;

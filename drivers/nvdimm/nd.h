@@ -488,7 +488,8 @@ enum nd_async_mode {
 	ND_ASYNC,
 };
 
-void wait_nvdimm_bus_probe_idle(struct device *dev);
+void wait_nvdimm_bus_probe_idle(struct device *dev)
+	__must_hold(&dev->mutex);
 void nd_device_register(struct device *dev);
 void nd_device_unregister(struct device *dev, enum nd_async_mode mode);
 void nd_device_notify(struct device *dev, enum nvdimm_event event);

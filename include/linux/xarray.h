@@ -563,8 +563,9 @@ void *__xa_erase(struct xarray *, unsigned long index);
 void *__xa_store(struct xarray *, unsigned long index, void *entry, gfp_t);
 void *__xa_cmpxchg(struct xarray *, unsigned long index, void *old,
 		void *entry, gfp_t);
-int __must_check __xa_insert(struct xarray *, unsigned long index,
-		void *entry, gfp_t);
+int __must_check __xa_insert(struct xarray *xa, unsigned long index,
+		void *entry, gfp_t)
+	__must_hold(&xa->xa_lock);
 int __must_check __xa_alloc(struct xarray *, u32 *id, void *entry,
 		struct xa_limit, gfp_t);
 int __must_check __xa_alloc_cyclic(struct xarray *, u32 *id, void *entry,

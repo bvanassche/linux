@@ -185,8 +185,10 @@ static inline void libeth_xdpsq_put(struct libeth_xdpsq_lock *lock,
 		__libeth_xdpsq_put(lock, dev);
 }
 
-void __libeth_xdpsq_lock(struct libeth_xdpsq_lock *lock);
-void __libeth_xdpsq_unlock(struct libeth_xdpsq_lock *lock);
+void __libeth_xdpsq_lock(struct libeth_xdpsq_lock *lock)
+	__acquires(&lock->lock);
+void __libeth_xdpsq_unlock(struct libeth_xdpsq_lock *lock)
+	__releases(&lock->lock);
 
 /**
  * libeth_xdpsq_lock - grab &libeth_xdpsq_lock if needed
@@ -196,6 +198,7 @@ void __libeth_xdpsq_unlock(struct libeth_xdpsq_lock *lock);
  * and the queue itself is marked as shareable.
  */
 static inline void libeth_xdpsq_lock(struct libeth_xdpsq_lock *lock)
+	__context_unsafe(/* conditional locking */)
 {
 	if (static_branch_unlikely(&libeth_xdpsq_share) && lock->share)
 		__libeth_xdpsq_lock(lock);
@@ -209,6 +212,7 @@ static inline void libeth_xdpsq_lock(struct libeth_xdpsq_lock *lock)
  * and the queue itself is marked as shareable.
  */
 static inline void libeth_xdpsq_unlock(struct libeth_xdpsq_lock *lock)
+	__context_unsafe(/* conditional locking */)
 {
 	if (static_branch_unlikely(&libeth_xdpsq_share) && lock->share)
 		__libeth_xdpsq_unlock(lock);

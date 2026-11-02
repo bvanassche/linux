@@ -192,6 +192,7 @@ static int gfs2_write_jdata_batch(struct address_space *mapping,
 				    struct writeback_control *wbc,
 				    struct folio_batch *fbatch,
 				    pgoff_t *done_index)
+	__context_unsafe(/* transaction spans functions / conditional locking */)
 {
 	struct inode *inode = mapping->host;
 	struct gfs2_sbd *sdp = GFS2_SB(inode);

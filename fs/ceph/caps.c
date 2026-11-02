@@ -701,6 +701,8 @@ void ceph_add_cap(struct inode *inode,
 	u32 gen;
 
 	lockdep_assert_held(&ci->i_ceph_lock);
+	/* The callers hold mdsc->snap_rwsem (read). */
+	lockdep_assert_held(&mdsc->snap_rwsem);
 
 	doutc(cl, "%p %llx.%llx mds%d cap %llx %s seq %d\n", inode,
 	      ceph_vinop(inode), session->s_mds, cap_id,

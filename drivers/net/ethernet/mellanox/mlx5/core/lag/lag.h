@@ -324,4 +324,12 @@ void mlx5_lag_unload_reps_from_locked(struct mlx5_lag *ldev, u32 filter)
 int mlx5_ldev_add_mdev(struct mlx5_lag *ldev, struct mlx5_core_dev *dev,
 		       u32 group_id);
 void mlx5_ldev_remove_mdev(struct mlx5_lag *ldev, struct mlx5_core_dev *dev);
+
+/* From mpesw.c; declared here because it refers to struct mlx5_lag. */
+#ifdef CONFIG_MLX5_ESWITCH
+void mlx5_lag_disable_mpesw(struct mlx5_lag *ldev)
+	__must_hold(&ldev->lock);
+#else
+static inline void mlx5_lag_disable_mpesw(struct mlx5_lag *ldev) {}
+#endif /* CONFIG_MLX5_ESWITCH */
 #endif /* __MLX5_LAG_H__ */

@@ -9731,8 +9731,7 @@ static __maybe_unused int pqi_suspend(struct device *dev)
 }
 
 static int pqi_resume_or_restore(struct device *dev)
-	__cond_releases(0, &TO_CTRL_INFO(dev)->lun_reset_mutex)
-	__cond_releases(0, &TO_CTRL_INFO(dev)->scan_mutex)
+	__context_unsafe(/* conditional locking */)
 {
 	int rc;
 	struct pci_dev *pci_dev;

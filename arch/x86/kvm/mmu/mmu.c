@@ -1485,6 +1485,7 @@ static void kvm_mmu_clear_dirty_pt_masked(struct kvm *kvm,
 void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
 				struct kvm_memory_slot *slot,
 				gfn_t gfn_offset, unsigned long mask)
+	__must_hold(&kvm->mmu_lock)
 {
 	/*
 	 * If the slot was assumed to be "initially all dirty", write-protect

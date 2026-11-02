@@ -1614,7 +1614,8 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext);
 void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
 					struct kvm_memory_slot *slot,
 					gfn_t gfn_offset,
-					unsigned long mask);
+					unsigned long mask)
+	__must_hold(&kvm->mmu_lock);
 void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot);
 
 #ifndef CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT

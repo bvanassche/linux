@@ -266,7 +266,9 @@ extern u32 omap2_pwrdm_get_mem_bank_stst_mask(u8 bank);
 extern struct powerdomain wkup_omap2_pwrdm;
 extern struct powerdomain gfx_omap2_pwrdm;
 
-extern void pwrdm_lock(struct powerdomain *pwrdm);
-extern void pwrdm_unlock(struct powerdomain *pwrdm);
+extern void pwrdm_lock(struct powerdomain *pwrdm)
+	__acquires(&pwrdm->_lock);
+extern void pwrdm_unlock(struct powerdomain *pwrdm)
+	__releases(&pwrdm->_lock);
 
 #endif

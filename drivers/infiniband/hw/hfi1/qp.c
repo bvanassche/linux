@@ -730,7 +730,7 @@ unsigned free_all_qps(struct rvt_dev_info *rdi)
 
 void flush_qp_waiters(struct rvt_qp *qp)
 {
-	lockdep_assert_held(&qp->s_lock);
+	lockdep_assume_ctx_held(&qp->s_lock);
 	flush_iowait(qp);
 	hfi1_tid_rdma_flush_wait(qp);
 }

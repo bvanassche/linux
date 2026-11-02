@@ -28,11 +28,13 @@ struct verbs_txreq {
 
 struct hfi1_ibdev;
 struct verbs_txreq *__get_txreq(struct hfi1_ibdev *dev,
-				struct rvt_qp *qp);
+				struct rvt_qp *qp)
+	__must_hold(&qp->s_lock);
 
 #define VERBS_TXREQ_GFP (GFP_ATOMIC | __GFP_NOWARN)
 static inline struct verbs_txreq *get_txreq(struct hfi1_ibdev *dev,
 					    struct rvt_qp *qp)
+	__must_hold(&qp->s_lock)
 {
 	struct verbs_txreq *tx;
 	struct hfi1_qp_priv *priv = qp->priv;

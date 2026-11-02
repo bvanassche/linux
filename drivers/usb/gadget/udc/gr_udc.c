@@ -271,7 +271,8 @@ static void gr_free_dma_desc_chain(struct gr_udc *dev, struct gr_request *req)
 	req->last_desc = NULL;
 }
 
-static void gr_ep0_setup(struct gr_udc *dev, struct gr_request *req);
+static void gr_ep0_setup(struct gr_udc *dev, struct gr_request *req)
+	__releases(&dev->lock);
 
 /*
  * Frees allocated resources and calls the appropriate completion function/setup

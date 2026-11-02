@@ -83,8 +83,10 @@ unsigned long mutex_get_owner(struct mutex *lock)
  * Returns: __mutex_owner(lock) on failure or NULL on success.
  */
 static inline struct task_struct *__mutex_trylock_common(struct mutex *lock, bool handoff)
+	__cond_acquires(NULL, lock)
 {
 	unsigned long owner, curr = (unsigned long)current;
+	struct task_struct *owner_task;
 
 	owner = atomic_long_read(&lock->owner);
 	for (;;) { /* must loop, can race against a flag */
@@ -109,19 +111,24 @@ static inline struct task_struct *__mutex_trylock_common(struct mutex *lock, boo
 		}
 
 		if (atomic_long_try_cmpxchg_acquire(&lock->owner, &owner, task | flags)) {
-			if (task == curr)
+			if (task == curr) {
+				__acquire(lock);
 				return NULL;
+			}
 			break;
 		}
 	}
 
-	return __owner_task(owner);
+	owner_task = __owner_task(owner);
+	BUG_ON(!owner_task);
+	return owner_task;
 }
 
 /*
  * Trylock or set HANDOFF
  */
 static inline bool __mutex_trylock_or_handoff(struct mutex *lock, bool handoff)
+	__cond_acquires(true, lock)
 {
 	return !__mutex_trylock_common(lock, handoff);
 }
@@ -130,6 +137,7 @@ static inline bool __mutex_trylock_or_handoff(struct mutex *lock, bool handoff)
  * Actual trylock that will work on any unlocked state.
  */
 static inline bool __mutex_trylock(struct mutex *lock)
+	__cond_acquires(true, lock)
 {
 	return !__mutex_trylock_common(lock, false);
 }
@@ -329,6 +337,7 @@ EXPORT_SYMBOL(mutex_lock);
  * Trylock variant that returns the owning task on failure.
  */
 static inline struct task_struct *__mutex_trylock_or_owner(struct mutex *lock)
+	__cond_acquires(NULL, lock)
 {
 	return __mutex_trylock_common(lock, false);
 }
@@ -473,6 +482,7 @@ static inline int mutex_can_spin_on_owner(struct mutex *lock)
 static __always_inline bool
 mutex_optimistic_spin(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,
 		      struct mutex_waiter *waiter)
+	__cond_acquires(true, lock)
 {
 	if (!waiter) {
 		/*
@@ -549,6 +559,7 @@ fail:
 static __always_inline bool
 mutex_optimistic_spin(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,
 		      struct mutex_waiter *waiter)
+	__cond_acquires(true, lock)
 {
 	return false;
 }
@@ -725,7 +736,7 @@ __mutex_lock_common(struct mutex *lock, unsigned int state, unsigned int subclas
 
 		schedule_preempt_disabled();
 
-		first = lock->first_waiter == &waiter;
+		first = context_unsafe(lock->first_waiter) == &waiter;
 
 		raw_spin_lock_irqsave(&lock->wait_lock, flags);
 		raw_spin_lock(&current->blocked_lock);

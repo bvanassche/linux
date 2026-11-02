@@ -1548,10 +1548,13 @@ int jbd2_journal_invalidate_folio(journal_t *, struct folio *,
 bool jbd2_journal_try_to_free_buffers(journal_t *journal, struct folio *folio);
 extern int	 jbd2_journal_stop(handle_t *);
 extern int	 jbd2_journal_flush(journal_t *journal, unsigned int flags);
-extern void	 jbd2_journal_lock_updates (journal_t *);
-extern void	 jbd2_journal_unlock_updates (journal_t *);
+extern void	 jbd2_journal_lock_updates (journal_t *journal)
+	__acquires(&journal->j_barrier);
+extern void	 jbd2_journal_unlock_updates (journal_t *journal)
+	__releases(&journal->j_barrier);
 
-void jbd2_journal_wait_updates(journal_t *);
+void jbd2_journal_wait_updates(journal_t *journal)
+	__must_hold(&journal->j_state_lock);
 
 extern journal_t * jbd2_journal_init_dev(struct block_device *bdev,
 				struct block_device *fs_dev,
@@ -1676,7 +1679,8 @@ int jbd2_complete_transaction(journal_t *journal, tid_t tid);
 int jbd2_log_do_checkpoint(journal_t *journal);
 int jbd2_trans_will_send_data_barrier(journal_t *journal, tid_t tid);
 
-void __jbd2_log_wait_for_space(journal_t *journal);
+void __jbd2_log_wait_for_space(journal_t *journal)
+	__must_hold(&journal->j_state_lock);
 extern void __jbd2_journal_drop_transaction(journal_t *, transaction_t *);
 extern int jbd2_cleanup_journal_tail(journal_t *);
 

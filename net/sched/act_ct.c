@@ -657,6 +657,7 @@ tcf_ct_flow_table_fill_tuple_ipv6(struct sk_buff *skb,
 static bool tcf_ct_flow_table_lookup(struct tcf_ct_params *p,
 				     struct sk_buff *skb,
 				     u8 family)
+	__context_unsafe(/* TODO */)
 {
 	struct nf_flowtable *nf_ft = &p->ct_ft->nf_ft;
 	struct flow_offload_tuple_rhash *tuplehash;

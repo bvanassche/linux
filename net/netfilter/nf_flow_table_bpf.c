@@ -35,6 +35,7 @@ __bpf_kfunc_start_defs();
 static struct flow_offload_tuple_rhash *
 bpf_xdp_flow_tuple_lookup(struct net_device *dev,
 			  struct flow_offload_tuple *tuple, __be16 proto)
+	__must_hold_shared(RCU)
 {
 	struct flow_offload_tuple_rhash *tuplehash;
 	struct nf_flowtable *nf_flow_table;
@@ -69,6 +70,9 @@ bpf_xdp_flow_lookup(struct xdp_md *ctx, struct bpf_fib_lookup *fib_tuple,
 	};
 	struct flow_offload_tuple_rhash *tuplehash;
 	__be16 proto;
+
+	/* XDP programs run with the RCU read lock held. */
+	lockdep_assert_in_rcu_read_lock();
 
 	if (opts_len != NF_BPF_FLOWTABLE_OPTS_SZ) {
 		opts->error = -EINVAL;

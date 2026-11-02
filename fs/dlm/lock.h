@@ -22,9 +22,12 @@ void free_inactive_rsb(struct dlm_rsb *r);
 void dlm_put_rsb(struct dlm_rsb *r);
 void dlm_hold_rsb(struct dlm_rsb *r);
 int dlm_put_lkb(struct dlm_lkb *lkb);
-int dlm_lock_recovery_try(struct dlm_ls *ls);
-void dlm_lock_recovery(struct dlm_ls *ls);
-void dlm_unlock_recovery(struct dlm_ls *ls);
+int dlm_lock_recovery_try(struct dlm_ls *ls)
+	__cond_acquires_shared(true, &ls->ls_in_recovery);
+void dlm_lock_recovery(struct dlm_ls *ls)
+	__acquires_shared(&ls->ls_in_recovery);
+void dlm_unlock_recovery(struct dlm_ls *ls)
+	__releases_shared(&ls->ls_in_recovery);
 void dlm_rsb_scan(struct timer_list *timer);
 void resume_scan_timer(struct dlm_ls *ls);
 

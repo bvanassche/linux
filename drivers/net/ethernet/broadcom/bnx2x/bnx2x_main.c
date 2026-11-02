@@ -4015,6 +4015,7 @@ static u16 bnx2x_update_dsb_idx(struct bnx2x *bp)
  */
 
 static void bnx2x_attn_int_asserted(struct bnx2x *bp, u32 asserted)
+	__context_unsafe(/* conditional locking */)
 {
 	int port = BP_PORT(bp);
 	u32 aeu_addr = port ? MISC_REG_AEU_MASK_ATTN_FUNC_1 :

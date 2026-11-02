@@ -1272,8 +1272,10 @@ void bnx2x_set_ctx_validation(struct bnx2x *bp, struct eth_context *cxt,
 
 void bnx2x_update_coalesce_sb_index(struct bnx2x *bp, u8 fw_sb_id,
 				    u8 sb_index, u8 disable, u16 usec);
-void bnx2x_acquire_phy_lock(struct bnx2x *bp);
-void bnx2x_release_phy_lock(struct bnx2x *bp);
+void bnx2x_acquire_phy_lock(struct bnx2x *bp)
+	__acquires(&bp->port.phy_mutex);
+void bnx2x_release_phy_lock(struct bnx2x *bp)
+	__releases(&bp->port.phy_mutex);
 
 /**
  * bnx2x_extract_max_cfg - extract MAX BW part from MF configuration.

@@ -520,11 +520,7 @@ static void cs35l56_spi_system_reset(struct cs35l56_base *cs35l56_base)
 	 * There must not be any other SPI bus activity while the amp is
 	 * soft-resetting.
 	 */
-	ret = spi_bus_lock(spi->controller);
-	if (ret) {
-		dev_warn(cs35l56_base->dev, "spi_bus_lock failed: %d\n", ret);
-		return;
-	}
+	spi_bus_lock(spi->controller);
 
 	cs35l56_spi_issue_bus_locked_reset(cs35l56_base, spi);
 	spi_bus_unlock(spi->controller);

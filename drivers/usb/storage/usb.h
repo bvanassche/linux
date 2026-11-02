@@ -181,7 +181,8 @@ extern int usb_stor_reset_resume(struct usb_interface *iface);
 #endif
 
 extern int usb_stor_pre_reset(struct usb_interface *iface);
-extern int usb_stor_post_reset(struct usb_interface *iface);
+extern int usb_stor_post_reset(struct usb_interface *iface)
+	__releases(&((struct us_data *)usb_get_intfdata(iface))->dev_mutex);
 
 extern int usb_stor_probe1(struct us_data **pus,
 		struct usb_interface *intf,

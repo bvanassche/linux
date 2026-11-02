@@ -129,10 +129,15 @@ static inline bool arch_validate_flags(unsigned long flags)
  * but this version is faster.
  * ("bit1" and "bit2" must be single bits)
  */
-#define _calc_vm_trans(x, bit1, bit2) \
-  ((!(bit1) || !(bit2)) ? 0 : \
-  ((bit1) <= (bit2) ? ((x) & (bit1)) * ((bit2) / (bit1)) \
-   : ((x) & (bit1)) / ((bit1) / (bit2))))
+static inline uint32_t _calc_vm_trans(uint32_t x, uint32_t bit1, uint32_t bit2)
+{
+	if (!(bit1) || !(bit2))
+		return 0;
+	else if ((bit1) <= (bit2))
+		return ((x) & (bit1)) * ((bit2) / (bit1));
+	else
+		return ((x) & (bit1)) / ((bit1) / (bit2));
+}
 
 /*
  * Combine the mmap "prot" argument into "vm_flags" used internally.

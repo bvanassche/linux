@@ -2259,6 +2259,7 @@ static void ntfs_shutdown(struct super_block *sb)
 }
 
 static int ntfs_sync_fs(struct super_block *sb, int wait)
+	__must_hold_shared(&sb->s_umount)
 {
 	struct ntfs_volume *vol = NTFS_SB(sb);
 	int ret, err = 0;

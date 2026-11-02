@@ -1255,7 +1255,7 @@ static inline void btrfs_remount_begin(struct btrfs_fs_info *fs_info,
 		wait_event(fs_info->transaction_wait,
 			   (atomic_read(&fs_info->defrag_running) == 0));
 		if (flags & SB_RDONLY)
-			sync_filesystem(fs_info->sb);
+			context_unsafe(sync_filesystem(fs_info->sb));
 	}
 }
 

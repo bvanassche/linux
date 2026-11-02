@@ -2116,7 +2116,7 @@ xfs_remount_ro(
 	int			error;
 
 	/* Flush all the dirty data to disk. */
-	error = sync_filesystem(mp->m_super);
+	error = context_unsafe(sync_filesystem(mp->m_super));
 	if (error)
 		return error;
 

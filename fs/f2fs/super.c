@@ -2718,7 +2718,8 @@ static int f2fs_disable_checkpoint(struct f2fs_sb_info *sbi)
 			get_nr_caches(sbi, F2FS_DIRTY_NODES),
 			get_nr_caches(sbi, F2FS_DIRTY_DATA));
 
-	ret = sync_filesystem(sbi->sb);
+	/* s_umount is held by the mount/remount code. */
+	ret = context_unsafe(sync_filesystem(sbi->sb));
 	if (ret || err) {
 		err = ret ? ret : err;
 		goto restore_flag;
@@ -2780,7 +2781,7 @@ static int f2fs_enable_checkpoint(struct f2fs_sb_info *sbi)
 		skipped_write = get_nr_caches(sbi, F2FS_SKIPPED_WRITE);
 		dirty_data = get_nr_caches(sbi, F2FS_DIRTY_DATA);
 
-		sync_inodes_sb(sbi->sb);
+		context_unsafe(sync_inodes_sb(sbi->sb)); /* s_umount held by mount/remount */
 		f2fs_io_schedule_timeout(DEFAULT_SCHEDULE_TIMEOUT);
 
 		f2fs_info(sbi, "sync_inode_sb done, dirty_data: %lld, %lld, "
@@ -3678,7 +3679,7 @@ void f2fs_quota_off_umount(struct super_block *sb)
 	 * This can cause NULL exception for node_inode in end_io, since
 	 * put_super already dropped it.
 	 */
-	sync_filesystem(sb);
+	context_unsafe(sync_filesystem(sb));
 }
 
 static void f2fs_truncate_quota_inode_pages(struct super_block *sb)
@@ -5640,7 +5641,7 @@ stop_gc_thread:
 	f2fs_stop_gc_thread(sbi);
 sync_free_meta:
 	/* safe to flush all the data */
-	sync_filesystem(sbi->sb);
+	context_unsafe(sync_filesystem(sbi->sb)); /* s_umount held by mount */
 	retry_cnt = 0;
 
 free_meta:

@@ -2650,7 +2650,8 @@ extern void __init vfs_caches_init(void);
 #define __putname(name)		kfree(name)
 
 void emergency_thaw_all(void);
-extern int sync_filesystem(struct super_block *);
+int sync_filesystem(struct super_block *sb)
+	__must_hold_shared(&sb->s_umount);
 extern const struct file_operations def_blk_fops;
 extern const struct file_operations def_chr_fops;
 

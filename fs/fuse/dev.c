@@ -214,7 +214,7 @@ EXPORT_SYMBOL_GPL(fuse_req_hash);
  * A new request is available, wake fiq->waitq
  */
 static void fuse_dev_wake_and_unlock(struct fuse_iqueue *fiq, bool sync)
-__releases(fiq->lock)
+__releases(&fiq->lock)
 {
 	if (sync)
 		wake_up_sync(&fiq->waitq);
@@ -1401,7 +1401,7 @@ static int request_pending(struct fuse_iqueue *fiq)
  * Called with fiq->lock held, releases it
  */
 static int fuse_read_interrupt(struct fuse_iqueue *fiq, struct fuse_copy_state *cs)
-__releases(fiq->lock)
+__releases(&fiq->lock)
 {
 	struct fuse_req *req = list_first_entry(&fiq->interrupts, struct fuse_req, intr_entry);
 	struct fuse_interrupt_in arg = {
@@ -1449,7 +1449,7 @@ static struct fuse_forget_link *fuse_dequeue_forget(struct fuse_iqueue *fiq,
 
 static int fuse_read_single_forget(struct fuse_iqueue *fiq,
 				   struct fuse_copy_state *cs)
-__releases(fiq->lock)
+__releases(&fiq->lock)
 {
 	int err;
 	struct fuse_forget_link *forget = fuse_dequeue_forget(fiq, 1, NULL);
@@ -1479,7 +1479,7 @@ __releases(fiq->lock)
 
 static int fuse_read_batch_forget(struct fuse_iqueue *fiq,
 				   struct fuse_copy_state *cs, size_t nbytes)
-__releases(fiq->lock)
+__releases(&fiq->lock)
 {
 	int err;
 	unsigned max_forgets;
@@ -1524,7 +1524,7 @@ __releases(fiq->lock)
 static int fuse_read_forget(struct fuse_chan *fch, struct fuse_iqueue *fiq,
 			    struct fuse_copy_state *cs,
 			    size_t nbytes)
-__releases(fiq->lock)
+__releases(&fiq->lock)
 {
 	if (fch->minor < 16 || fiq->forget_list_head.next->next == NULL)
 		return fuse_read_single_forget(fiq, cs);

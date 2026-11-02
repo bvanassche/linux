@@ -463,6 +463,7 @@ static void nf_flow_encap_pop(struct nf_flowtable_ctx *ctx,
 static struct flow_offload_tuple_rhash *
 nf_flow_offload_lookup(struct nf_flowtable_ctx *ctx,
 		       struct nf_flowtable *flow_table, struct sk_buff *skb)
+	__must_hold_shared(RCU)
 {
 	struct flow_offload_tuple tuple = {};
 
@@ -911,6 +912,9 @@ nf_flow_offload_ip_hook(void *priv, struct sk_buff *skb,
 	};
 	int ret;
 
+	/* Netfilter hooks are called with rcu_read_lock() held. */
+	lockdep_assume_in_rcu_read_lock();
+
 	if (!nf_flow_skb_encap_protocol(&ctx, skb))
 		return NF_ACCEPT;
 
@@ -1155,6 +1159,7 @@ static struct flow_offload_tuple_rhash *
 nf_flow_offload_ipv6_lookup(struct nf_flowtable_ctx *ctx,
 			    struct nf_flowtable *flow_table,
 			    struct sk_buff *skb)
+	__must_hold_shared(RCU)
 {
 	struct flow_offload_tuple tuple = {};
 
@@ -1239,6 +1244,9 @@ nf_flow_offload_ipv6_hook(void *priv, struct sk_buff *skb,
 		.in	= state->in,
 	};
 	int ret;
+
+	/* Netfilter hooks are called with rcu_read_lock() held. */
+	lockdep_assume_in_rcu_read_lock();
 
 	if (!nf_flow_skb_encap_protocol(&ctx, skb))
 		return NF_ACCEPT;

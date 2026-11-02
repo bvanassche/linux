@@ -320,7 +320,8 @@ static inline bool nf_flow_dst_check(struct flow_offload_tuple *tuple)
 }
 
 struct flow_offload_tuple_rhash *flow_offload_lookup(struct nf_flowtable *flow_table,
-						     struct flow_offload_tuple *tuple);
+						     struct flow_offload_tuple *tuple)
+	__must_hold_shared(RCU);
 void nf_flow_table_gc_run(struct nf_flowtable *flow_table);
 void nf_flow_table_gc_cleanup(struct nf_flowtable *flowtable,
 			      struct net_device *dev);

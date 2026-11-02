@@ -1645,7 +1645,7 @@ int tcp_v6_do_rcv(struct sock *sk, struct sk_buff *skb)
 		if (!nsk)
 			return 0;
 		if (nsk != sk) {
-			reason = tcp_child_process(sk, nsk, skb);
+			reason = context_unsafe(tcp_child_process(sk, nsk, skb));
 			sock_put(nsk);
 			if (reason)
 				goto reset;

@@ -93,7 +93,8 @@ static int ext4_get_tree(struct fs_context *fc);
 static int ext4_reconfigure(struct fs_context *fc);
 static void ext4_fc_free(struct fs_context *fc);
 static int ext4_init_fs_context(struct fs_context *fc);
-static void ext4_kill_sb(struct super_block *sb);
+static void ext4_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount);
 static const struct fs_parameter_spec ext4_param_specs[];
 
 /*

@@ -303,4 +303,5 @@ static inline void autofs_del_expiring(struct dentry *dentry)
 	}
 }
 
-void autofs_kill_sb(struct super_block *);
+void autofs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount);

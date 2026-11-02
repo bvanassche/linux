@@ -471,6 +471,10 @@ int kernfs_xattr_set(struct kernfs_node *kn, const char *name,
 const struct ns_common *kernfs_super_ns(struct super_block *sb);
 int kernfs_get_tree(struct fs_context *fc);
 void kernfs_free_fs_context(struct fs_context *fc);
+/*
+ * Releases sb->s_umount. Not annotated with __releases() because
+ * struct super_block is an incomplete type in this header.
+ */
 void kernfs_kill_sb(struct super_block *sb);
 
 void kernfs_init(void);

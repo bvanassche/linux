@@ -9060,7 +9060,8 @@ __perf_event_output(struct perf_event *event,
 		    int (*output_begin)(struct perf_output_handle *,
 					struct perf_sample_data *,
 					struct perf_event *,
-					unsigned int))
+					unsigned int)
+			__cond_acquires_shared(0, RCU))
 {
 	struct perf_output_handle handle;
 	struct perf_event_header header;

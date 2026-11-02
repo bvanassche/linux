@@ -377,6 +377,7 @@ mt76s_get_next_rx_entry(struct mt76_queue *q)
 
 static int
 mt76s_process_rx_queue(struct mt76_dev *dev, struct mt76_queue *q)
+	__must_hold_shared(RCU)
 {
 	int qid = q - &dev->q_rx[MT_RXQ_MAIN];
 	int nframes = 0;

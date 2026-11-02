@@ -96,7 +96,8 @@ bool kvm_tdp_mmu_write_protect_gfn(struct kvm *kvm,
 void kvm_tdp_mmu_try_split_huge_pages(struct kvm *kvm,
 				      const struct kvm_memory_slot *slot,
 				      gfn_t start, gfn_t end,
-				      int target_level, bool shared);
+				      int target_level, bool shared)
+	__must_hold_shared(&kvm->mmu_lock);
 
 static inline void kvm_tdp_mmu_walk_lockless_begin(void)
 	__acquires_shared(RCU)

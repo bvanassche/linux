@@ -215,6 +215,7 @@ static int espintcp_sendskb_locked(struct sock *sk, struct espintcp_msg *emsg,
 
 static int espintcp_sendskmsg_locked(struct sock *sk,
 				     struct espintcp_msg *emsg, int flags)
+	__must_hold(sk)
 {
 	struct msghdr msghdr = {
 		.msg_flags = flags | MSG_SPLICE_PAGES | MSG_MORE,
@@ -258,10 +259,12 @@ static int espintcp_push_msgs(struct sock *sk, int flags)
 		return -EAGAIN;
 	ctx->tx_running = 1;
 
-	if (emsg->skb)
+	if (emsg->skb) {
 		err = espintcp_sendskb_locked(sk, emsg, flags);
-	else
+	} else {
+		__assume_ctx_lock(sk);
 		err = espintcp_sendskmsg_locked(sk, emsg, flags);
+	}
 	if (err == -EAGAIN) {
 		ctx->tx_running = 0;
 		return flags & MSG_DONTWAIT ? -EAGAIN : 0;

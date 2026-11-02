@@ -2088,6 +2088,7 @@ static int cgroup_show_options(struct seq_file *seq, struct kernfs_root *kf_root
 }
 
 static int cgroup_reconfigure(struct fs_context *fc)
+	__must_hold(&fc->root->d_sb->s_umount)
 {
 	struct cgroup_fs_context *ctx = cgroup_fc2context(fc);
 
@@ -2380,6 +2381,7 @@ static int cgroup_init_fs_context(struct fs_context *fc)
 }
 
 static void cgroup_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct kernfs_root *kf_root = kernfs_root_from_sb(sb);
 	struct cgroup_root *root = cgroup_root_from_kf(kf_root);

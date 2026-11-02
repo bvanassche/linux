@@ -2010,10 +2010,12 @@ struct file_operations {
 #define FOP_IMMUTABLE		((__force fop_flags_t)(1 << 8))
 
 /* Wrap a directory iterator that needs exclusive inode access */
-int wrap_directory_iterator(struct file *, struct dir_context *,
-			    int (*) (struct file *, struct dir_context *));
+int wrap_directory_iterator(struct file *file, struct dir_context *,
+			    int (*) (struct file *, struct dir_context *))
+	__must_hold_shared(&file_inode(file)->i_rwsem);
 #define WRAP_DIR_ITER(x) \
 	static int shared_##x(struct file *file , struct dir_context *ctx) \
+		__must_hold_shared(&file_inode(file)->i_rwsem) \
 	{ return wrap_directory_iterator(file, ctx, x); }
 
 enum fs_update_time {
@@ -2648,7 +2650,8 @@ extern void __init vfs_caches_init(void);
 #define __putname(name)		kfree(name)
 
 void emergency_thaw_all(void);
-extern int sync_filesystem(struct super_block *);
+int sync_filesystem(struct super_block *sb)
+	__must_hold_shared(&sb->s_umount);
 extern const struct file_operations def_blk_fops;
 extern const struct file_operations def_chr_fops;
 
@@ -3294,7 +3297,8 @@ extern int vfs_readlink(struct dentry *, char __user *, int);
 extern struct file_system_type *get_filesystem(struct file_system_type *fs);
 extern void put_filesystem(struct file_system_type *fs);
 extern struct file_system_type *get_fs_type(const char *name);
-extern void drop_super(struct super_block *sb);
+extern void drop_super(struct super_block *sb)
+	__releases_shared(&sb->s_umount);
 extern void drop_super_exclusive(struct super_block *sb)
 	__releases(&sb->s_umount);
 extern void iterate_supers(void (*f)(struct super_block *, void *), void *arg);

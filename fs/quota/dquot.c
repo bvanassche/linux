@@ -2418,7 +2418,8 @@ int dquot_load_quota_sb(struct super_block *sb, int type, int format_id,
 		 * the quota file since if blocksize < pagesize, invalidation
 		 * of the cache could fail because of other unrelated dirty
 		 * data */
-		sync_filesystem(sb);
+		/* s_umount is held, see lockdep_assert_held_write() above. */
+		context_unsafe(sync_filesystem(sb));
 		invalidate_bdev(sb->s_bdev);
 	}
 

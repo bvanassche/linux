@@ -233,6 +233,7 @@ SYSCALL_DEFINE3(fstatfs64, unsigned int, fd, size_t, sz, struct statfs64 __user 
 }
 
 static int vfs_ustat(dev_t dev, struct kstatfs *sbuf)
+	__context_unsafe(/* user_get_super() acquires s_umount conditionally */)
 {
 	struct super_block *s = user_get_super(dev, false);
 	int err;

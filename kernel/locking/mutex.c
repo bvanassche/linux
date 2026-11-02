@@ -855,8 +855,13 @@ __ww_mutex_lock(struct mutex *lock, unsigned int state, unsigned int subclass,
  */
 int ww_mutex_trylock(struct ww_mutex *ww, struct ww_acquire_ctx *ww_ctx)
 {
-	if (!ww_ctx)
-		return mutex_trylock(&ww->base);
+	if (!ww_ctx) {
+		if (mutex_trylock(&ww->base)) {
+			__acquire(ww);
+			return true;
+		}
+		return false;
+	}
 
 	MUTEX_WARN_ON(ww->base.magic != &ww->base);
 
@@ -871,6 +876,7 @@ int ww_mutex_trylock(struct ww_mutex *ww, struct ww_acquire_ctx *ww_ctx)
 	if (__mutex_trylock(&ww->base)) {
 		ww_mutex_set_context_fastpath(ww, ww_ctx);
 		mutex_acquire_nest(&ww->base.dep_map, 0, 1, &ww_ctx->dep_map, _RET_IP_);
+		__acquire(ww);
 		return 1;
 	}
 
@@ -929,6 +935,7 @@ EXPORT_SYMBOL_GPL(mutex_lock_io_nested);
 static inline int
 ww_mutex_deadlock_injection(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
 	__cond_releases(nonzero, lock)
+	__cond_releases(nonzero, &lock->base)
 {
 #ifdef CONFIG_DEBUG_WW_MUTEX_SLOWPATH
 	unsigned tmp;
@@ -961,8 +968,11 @@ ww_mutex_lock(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
 	might_sleep();
 	ret =  __ww_mutex_lock(&lock->base, TASK_UNINTERRUPTIBLE,
 			       0, _RET_IP_, ctx);
-	if (!ret && ctx && ctx->acquired > 1)
-		return ww_mutex_deadlock_injection(lock, ctx);
+	if (!ret) {
+		__acquire(lock);
+		if (ctx && ctx->acquired > 1)
+			return ww_mutex_deadlock_injection(lock, ctx);
+	}
 
 	return ret;
 }
@@ -977,8 +987,11 @@ ww_mutex_lock_interruptible(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
 	ret = __ww_mutex_lock(&lock->base, TASK_INTERRUPTIBLE,
 			      0, _RET_IP_, ctx);
 
-	if (!ret && ctx && ctx->acquired > 1)
-		return ww_mutex_deadlock_injection(lock, ctx);
+	if (!ret) {
+		__acquire(lock);
+		if (ctx && ctx->acquired > 1)
+			return ww_mutex_deadlock_injection(lock, ctx);
+	}
 
 	return ret;
 }

@@ -8,6 +8,7 @@
 #include "fs_core.h"
 #include "steering/hws/fs_hws_pools.h"
 #include "steering/hws/mlx5hws.h"
+#include "steering/hws/context.h"
 #include "steering/hws/table.h"
 
 struct mlx5_ct_fs_hmfs_matcher {

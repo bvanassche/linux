@@ -121,9 +121,12 @@ hws_action_ste_table_create_stc(struct mlx5hws_context *ctx,
 	stc_attr.ste_table.ste_pool = action_tbl->pool;
 	stc_attr.ste_table.match_definer_id = ctx->caps->trivial_match_definer;
 
-	return mlx5hws_action_alloc_single_stc(ctx, &stc_attr,
-					       MLX5HWS_TABLE_TYPE_FDB,
-					       &action_tbl->stc);
+	/*
+	 * Callers of this function serialize STE pool operations with
+	 * pool->lock instead of ctx->ctrl_lock.
+	 */
+	return context_unsafe(mlx5hws_action_alloc_single_stc(ctx,
+			&stc_attr, MLX5HWS_TABLE_TYPE_FDB, &action_tbl->stc));
 }
 
 static struct mlx5hws_action_ste_table *
@@ -196,8 +199,12 @@ hws_action_ste_table_destroy(struct mlx5hws_action_ste_table *action_tbl)
 		    action_tbl->rtc_0_id, action_tbl->rtc_1_id,
 		    action_tbl->stc.offset);
 
-	mlx5hws_action_free_single_stc(ctx, MLX5HWS_TABLE_TYPE_FDB,
-				       &action_tbl->stc);
+	/*
+	 * Callers of this function serialize STE pool operations with
+	 * pool->lock instead of ctx->ctrl_lock.
+	 */
+	context_unsafe(mlx5hws_action_free_single_stc(ctx,
+			MLX5HWS_TABLE_TYPE_FDB, &action_tbl->stc));
 	hws_action_ste_table_destroy_rtcs(action_tbl);
 	mlx5hws_pool_destroy(action_tbl->pool);
 

@@ -48,10 +48,12 @@ u32 mlx5hws_table_get_res_fw_ft_type(enum mlx5hws_table_type tbl_type,
 
 int mlx5hws_table_create_default_ft(struct mlx5_core_dev *mdev,
 				    struct mlx5hws_table *tbl,
-				    u16 uid, u32 *ft_id);
+				    u16 uid, u32 *ft_id)
+	__must_hold(&tbl->ctx->ctrl_lock);
 
 void mlx5hws_table_destroy_default_ft(struct mlx5hws_table *tbl,
-				      u32 ft_id);
+				      u32 ft_id)
+	__must_hold(&tbl->ctx->ctrl_lock);
 
 int mlx5hws_table_connect_to_miss_table(struct mlx5hws_table *src_tbl,
 					struct mlx5hws_table *dst_tbl);

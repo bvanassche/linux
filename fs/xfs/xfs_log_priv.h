@@ -535,7 +535,9 @@ void	xfs_log_ticket_regrant(struct xlog *log, struct xlog_ticket *ticket);
 void xlog_state_switch_iclogs(struct xlog *log, struct xlog_in_core *iclog,
 		int eventual_size);
 int xlog_state_release_iclog(struct xlog *log, struct xlog_in_core *iclog,
-		struct xlog_ticket *ticket);
+		struct xlog_ticket *ticket)
+	__releases(&log->l_icloglock)
+	__acquires(&log->l_icloglock);
 
 /*
  * When we crack an atomic LSN, we sample it first so that the value will not
@@ -608,7 +610,7 @@ xlog_wait(
 }
 
 int xlog_wait_on_iclog(struct xlog *log, struct xlog_in_core *iclog)
-		__releases(log->l_icloglock);
+		__releases(&log->l_icloglock);
 
 /* Calculate the distance between two LSNs in bytes */
 static inline uint64_t

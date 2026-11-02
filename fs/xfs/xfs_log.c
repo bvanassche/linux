@@ -787,7 +787,7 @@ int
 xlog_wait_on_iclog(
 	struct xlog		*log,
 	struct xlog_in_core	*iclog)
-		__releases(log->l_icloglock)
+		__releases(&log->l_icloglock)
 {
 	trace_xlog_iclog_wait_on(iclog, _RET_IP_);
 	if (!xlog_is_shutdown(log) &&

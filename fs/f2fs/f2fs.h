@@ -2580,15 +2580,21 @@ static inline void f2fs_up_write(struct f2fs_rwsem *sem)
 #endif
 }
 
-void f2fs_down_read_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc);
+void f2fs_down_read_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc)
+	__acquires_shared(&sem->internal_rwsem);
 int f2fs_down_read_trylock_trace(struct f2fs_rwsem *sem,
-						struct f2fs_lock_context *lc);
-void f2fs_up_read_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc);
+						struct f2fs_lock_context *lc)
+	__cond_acquires_shared(true, &sem->internal_rwsem);
+void f2fs_up_read_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc)
+	__releases_shared(&sem->internal_rwsem);
 void f2fs_down_write_trace(struct f2fs_rwsem *sem,
-						struct f2fs_lock_context *lc);
+						struct f2fs_lock_context *lc)
+	__acquires(&sem->internal_rwsem);
 int f2fs_down_write_trylock_trace(struct f2fs_rwsem *sem,
-						struct f2fs_lock_context *lc);
-void f2fs_up_write_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc);
+						struct f2fs_lock_context *lc)
+	__cond_acquires(true, &sem->internal_rwsem);
+void f2fs_up_write_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc)
+	__releases(&sem->internal_rwsem);
 
 static inline void disable_nat_bits(struct f2fs_sb_info *sbi, bool lock)
 	__context_unsafe(/* conditional locking */)
@@ -4419,7 +4425,8 @@ DECLARE_IOMAP_ITER_NEXT(f2fs_iomap_next);
 int f2fs_start_gc_thread(struct f2fs_sb_info *sbi);
 void f2fs_stop_gc_thread(struct f2fs_sb_info *sbi);
 block_t f2fs_start_bidx_of_node(unsigned int node_ofs, struct inode *inode);
-int f2fs_gc(struct f2fs_sb_info *sbi, struct f2fs_gc_control *gc_control);
+int f2fs_gc(struct f2fs_sb_info *sbi, struct f2fs_gc_control *gc_control)
+	__releases(&sbi->gc_lock.internal_rwsem);
 void f2fs_build_gc_manager(struct f2fs_sb_info *sbi);
 int f2fs_gc_range(struct f2fs_sb_info *sbi,
 		unsigned int start_seg, unsigned int end_seg,

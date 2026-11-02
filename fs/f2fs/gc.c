@@ -1975,6 +1975,7 @@ next_block:
 }
 
 int f2fs_gc(struct f2fs_sb_info *sbi, struct f2fs_gc_control *gc_control)
+	__releases(&sbi->gc_lock.internal_rwsem)
 {
 	int gc_type = gc_control->init_gc_type;
 	unsigned int segno = gc_control->victim_segno;
@@ -2178,6 +2179,7 @@ void f2fs_build_gc_manager(struct f2fs_sb_info *sbi)
 int f2fs_gc_range(struct f2fs_sb_info *sbi,
 		unsigned int start_seg, unsigned int end_seg,
 		bool dry_run, unsigned int dry_run_sections, bool lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct f2fs_lock_context lc;
 	unsigned int segno;

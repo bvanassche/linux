@@ -267,6 +267,9 @@ static void mlxsw_sp_rx_sample_listener(struct sk_buff *skb, u16 local_port,
 	struct psample_metadata md = {};
 	int err;
 
+	/* Rx listeners are called with rcu_read_lock() held. */
+	lockdep_assume_in_rcu_read_lock();
+
 	err = __mlxsw_sp_rx_no_mark_listener(skb, local_port, trap_ctx);
 	if (err)
 		return;
@@ -303,6 +306,9 @@ static void mlxsw_sp_rx_sample_tx_listener(struct sk_buff *skb, u16 local_port,
 	struct mlxsw_sp_sample_params *params;
 	struct psample_metadata md = {};
 	int err;
+
+	/* Rx listeners are called with rcu_read_lock() held. */
+	lockdep_assume_in_rcu_read_lock();
 
 	/* Locally generated packets are not reported from the policy engine
 	 * trigger, so do not report them from the egress trigger as well.
@@ -354,6 +360,9 @@ static void mlxsw_sp_rx_sample_acl_listener(struct sk_buff *skb, u16 local_port,
 	struct mlxsw_sp_port *mlxsw_sp_port;
 	struct psample_metadata md = {};
 	int err;
+
+	/* Rx listeners are called with rcu_read_lock() held. */
+	lockdep_assume_in_rcu_read_lock();
 
 	err = __mlxsw_sp_rx_no_mark_listener(skb, local_port, trap_ctx);
 	if (err)

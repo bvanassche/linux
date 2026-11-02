@@ -221,7 +221,8 @@ static int btrfs_log_inode(struct btrfs_trans_handle *trans,
 static int link_to_fixup_dir(struct walk_control *wc, u64 objectid);
 static noinline int replay_dir_deletes(struct walk_control *wc,
 				       u64 dirid, bool del_all);
-static bool wait_log_commit(struct btrfs_root *root, int transid);
+static bool wait_log_commit(struct btrfs_root *root, int transid)
+	__must_hold(&root->log_mutex);
 
 /*
  * tree logging is a special write ahead log used to make sure that

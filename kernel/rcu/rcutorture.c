@@ -1690,7 +1690,7 @@ static void do_rtws_sync(struct torture_random_state *trsp, void (*sync)(void))
 	dopoll = cur_ops->get_gp_state && cur_ops->poll_gp_state && !(r & 0x300);
 	dopoll_full = cur_ops->get_gp_state_full && cur_ops->poll_gp_state_full && !(r & 0xc00);
 	if (dopoll || dopoll_full)
-		cpus_read_lock();
+		context_unsafe(cpus_read_lock());
 	if (dopoll)
 		cookie = cur_ops->get_gp_state();
 	if (dopoll_full)
@@ -1705,7 +1705,7 @@ static void do_rtws_sync(struct torture_random_state *trsp, void (*sync)(void))
 		  "%s: Cookie check 4 failed %pS() online %*pbl",
 		  __func__, sync, cpumask_pr_args(cpu_online_mask));
 	if (dopoll || dopoll_full)
-		cpus_read_unlock();
+		context_unsafe(cpus_read_unlock());
 }
 
 /*

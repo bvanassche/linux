@@ -46,11 +46,14 @@ void cec_monitor_pin_cnt_dec(struct cec_adapter *adap);
 int cec_adap_status(struct seq_file *file, void *priv);
 int cec_thread_func(void *_adap);
 int cec_adap_enable(struct cec_adapter *adap);
-void __cec_s_phys_addr(struct cec_adapter *adap, u16 phys_addr, bool block);
+void __cec_s_phys_addr(struct cec_adapter *adap, u16 phys_addr, bool block)
+	__must_hold(&adap->lock);
 int __cec_s_log_addrs(struct cec_adapter *adap,
-		      struct cec_log_addrs *log_addrs, bool block);
+		      struct cec_log_addrs *log_addrs, bool block)
+	__must_hold(&adap->lock);
 int cec_transmit_msg_fh(struct cec_adapter *adap, struct cec_msg *msg,
-			struct cec_fh *fh, bool block);
+			struct cec_fh *fh, bool block)
+	__must_hold(&adap->lock);
 void cec_queue_event_fh(struct cec_fh *fh,
 			const struct cec_event *new_ev, u64 ts);
 

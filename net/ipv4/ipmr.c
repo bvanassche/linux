@@ -107,7 +107,8 @@ static void ipmr_free_table(struct mr_table *mrt,
 
 static void ip_mr_forward(struct net *net, struct mr_table *mrt,
 			  struct net_device *dev, struct sk_buff *skb,
-			  struct mfc_cache *cache, int local);
+			  struct mfc_cache *cache, int local)
+	__must_hold_shared(RCU);
 static int ipmr_cache_report(const struct mr_table *mrt,
 			     struct sk_buff *pkt, vifi_t vifi, int assert);
 static void mroute_netlink_event(struct mr_table *mrt, struct mfc_cache *mfc,
@@ -983,6 +984,7 @@ static struct mfc_cache *ipmr_cache_find(struct mr_table *mrt,
 /* Look for a (*,G) entry */
 static struct mfc_cache *ipmr_cache_find_any(struct mr_table *mrt,
 					     __be32 mcastgrp, int vifi)
+	__must_hold_shared(RCU)
 {
 	struct mfc_cache_cmp_arg arg = {
 			.mfc_mcastgrp = mcastgrp,
@@ -998,6 +1000,7 @@ static struct mfc_cache *ipmr_cache_find_any(struct mr_table *mrt,
 static struct mfc_cache *ipmr_cache_find_parent(struct mr_table *mrt,
 						__be32 origin, __be32 mcastgrp,
 						int parent)
+	__must_hold_shared(RCU)
 {
 	struct mfc_cache_cmp_arg arg = {
 			.mfc_mcastgrp = mcastgrp,
@@ -2066,6 +2069,7 @@ static int ipmr_find_vif(const struct mr_table *mrt, struct net_device *dev)
 static void ip_mr_forward(struct net *net, struct mr_table *mrt,
 			  struct net_device *dev, struct sk_buff *skb,
 			  struct mfc_cache *c, int local)
+	__must_hold_shared(RCU)
 {
 	int true_vifi = ipmr_find_vif(mrt, dev);
 	int psend = -1;
@@ -2219,6 +2223,8 @@ int ip_mr_input(struct sk_buff *skb)
 	int local = skb_rtable(skb)->rt_flags & RTCF_LOCAL;
 	struct mr_table *mrt;
 	struct net_device *dev;
+
+	lockdep_assume_in_rcu_read_lock();
 
 	/* skb->dev passed in is the loX master dev for vrfs.
 	 * As there are no vifs associated with loopback devices,

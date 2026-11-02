@@ -870,7 +870,8 @@ struct dlm_lock_resource * __dlm_lookup_lockres_full(struct dlm_ctxt *dlm,
 struct dlm_lock_resource * __dlm_lookup_lockres(struct dlm_ctxt *dlm,
 						const char *name,
 						unsigned int len,
-						unsigned int hash);
+						unsigned int hash)
+	__must_hold(&dlm->spinlock);
 struct dlm_lock_resource * dlm_lookup_lockres(struct dlm_ctxt *dlm,
 					      const char *name,
 					      unsigned int len);
@@ -944,7 +945,8 @@ void __dlm_dirty_lockres(struct dlm_ctxt *dlm, struct dlm_lock_resource *res);
 void dlm_hb_node_down_cb(struct o2nm_node *node, int idx, void *data);
 void dlm_hb_node_up_cb(struct o2nm_node *node, int idx, void *data);
 
-int dlm_empty_lockres(struct dlm_ctxt *dlm, struct dlm_lock_resource *res);
+int dlm_empty_lockres(struct dlm_ctxt *dlm, struct dlm_lock_resource *res)
+	__must_hold(&dlm->spinlock);
 int dlm_finish_migration(struct dlm_ctxt *dlm,
 			 struct dlm_lock_resource *res,
 			 u8 old_master);
@@ -974,7 +976,8 @@ int dlm_reco_data_done_handler(struct o2net_msg *msg, u32 len, void *data,
 int dlm_begin_reco_handler(struct o2net_msg *msg, u32 len, void *data,
 			   void **ret_data);
 int dlm_finalize_reco_handler(struct o2net_msg *msg, u32 len, void *data,
-			      void **ret_data);
+			      void **ret_data)
+	__must_not_hold(&((struct dlm_ctxt *)data)->spinlock);
 int dlm_do_master_requery(struct dlm_ctxt *dlm, struct dlm_lock_resource *res,
 			  u8 nodenum, u8 *real_master);
 
@@ -997,10 +1000,12 @@ void dlm_move_lockres_to_recovery_list(struct dlm_ctxt *dlm,
 				       struct dlm_lock_resource *res);
 
 /* will exit holding res->spinlock, but may drop in function */
-void __dlm_wait_on_lockres_flags(struct dlm_lock_resource *res, int flags);
+void __dlm_wait_on_lockres_flags(struct dlm_lock_resource *res, int flags)
+	__must_hold(&res->spinlock);
 
 /* will exit holding res->spinlock, but may drop in function */
 static inline void __dlm_wait_on_lockres(struct dlm_lock_resource *res)
+	__must_hold(&res->spinlock)
 {
 	__dlm_wait_on_lockres_flags(res, (DLM_LOCK_RES_IN_PROGRESS|
 				    	  DLM_LOCK_RES_RECOVERING|
@@ -1025,7 +1030,8 @@ void dlm_hb_event_notify_attached(struct dlm_ctxt *dlm, int idx, int node_up);
 int dlm_drop_lockres_ref(struct dlm_ctxt *dlm,
 			 struct dlm_lock_resource *res);
 void dlm_clean_master_list(struct dlm_ctxt *dlm,
-			   u8 dead_node);
+			   u8 dead_node)
+	__must_hold(&dlm->spinlock);
 void dlm_force_free_mles(struct dlm_ctxt *dlm);
 int dlm_lock_basts_flushed(struct dlm_ctxt *dlm, struct dlm_lock *lock);
 int __dlm_lockres_has_locks(struct dlm_lock_resource *res);

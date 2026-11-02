@@ -89,8 +89,10 @@ static char *errbuf;
 
 static struct kmem_cache *uhci_up_cachep;	/* urb_priv */
 
-static void suspend_rh(struct uhci_hcd *uhci, enum uhci_rh_state new_state);
-static void wakeup_rh(struct uhci_hcd *uhci);
+static void suspend_rh(struct uhci_hcd *uhci, enum uhci_rh_state new_state)
+	__releases(&uhci->lock) __acquires(&uhci->lock);
+static void wakeup_rh(struct uhci_hcd *uhci)
+	__releases(&uhci->lock) __acquires(&uhci->lock);
 static void uhci_get_current_frame_number(struct uhci_hcd *uhci);
 
 /*
@@ -286,8 +288,8 @@ static int global_suspend_mode_is_broken(struct uhci_hcd *uhci)
 }
 
 static void suspend_rh(struct uhci_hcd *uhci, enum uhci_rh_state new_state)
-__releases(uhci->lock)
-__acquires(uhci->lock)
+__releases(&uhci->lock)
+__acquires(&uhci->lock)
 {
 	int auto_stop;
 	int int_enable, egsm_enable, wakeup_enable;
@@ -408,8 +410,8 @@ static void start_rh(struct uhci_hcd *uhci)
 }
 
 static void wakeup_rh(struct uhci_hcd *uhci)
-__releases(uhci->lock)
-__acquires(uhci->lock)
+__releases(&uhci->lock)
+__acquires(&uhci->lock)
 {
 	dev_dbg(&uhci_to_hcd(uhci)->self.root_hub->dev,
 			"%s%s\n", __func__,

@@ -51,7 +51,8 @@ static struct sctp_association *__sctp_rcv_lookup(struct net *net,
 				      const union sctp_addr *paddr,
 				      const union sctp_addr *laddr,
 				      struct sctp_transport **transportp,
-				      int dif, int sdif);
+				      int dif, int sdif)
+	__must_hold_shared(RCU);
 static struct sctp_endpoint *__sctp_rcv_lookup_endpoint(
 					struct net *net, struct sk_buff *skb,
 					const union sctp_addr *laddr,
@@ -62,7 +63,8 @@ static struct sctp_association *__sctp_lookup_association(
 					const union sctp_addr *local,
 					const union sctp_addr *peer,
 					struct sctp_transport **pt,
-					int dif, int sdif);
+					int dif, int sdif)
+	__must_hold_shared(RCU);
 
 static int sctp_add_backlog(struct sock *sk, struct sk_buff *skb);
 

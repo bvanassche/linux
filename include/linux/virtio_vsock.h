@@ -266,7 +266,8 @@ int virtio_transport_connect(struct vsock_sock *vsk);
 
 int virtio_transport_shutdown(struct vsock_sock *vsk, int mode);
 
-void virtio_transport_release(struct vsock_sock *vsk);
+void virtio_transport_release(struct vsock_sock *vsk)
+	__must_hold(&vsk->sk);
 
 ssize_t
 virtio_transport_stream_enqueue(struct vsock_sock *vsk,

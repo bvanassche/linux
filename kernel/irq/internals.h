@@ -129,7 +129,8 @@ static __always_inline void irq_desc_put_ref(struct irq_desc *desc) { }
 
 irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc);
 irqreturn_t handle_irq_event_percpu(struct irq_desc *desc);
-irqreturn_t handle_irq_event(struct irq_desc *desc);
+irqreturn_t handle_irq_event(struct irq_desc *desc)
+	__must_hold(&desc->lock);
 
 /* Resending of interrupts :*/
 int check_irq_resend(struct irq_desc *desc, bool inject);
@@ -193,7 +194,8 @@ static inline void chip_bus_sync_unlock(struct irq_desc *desc)
 
 struct irq_desc *__irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus,
 				     unsigned int check);
-void __irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags, bool bus);
+void __irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags, bool bus)
+	__releases(&desc->lock);
 
 __DEFINE_CLASS_IS_CONDITIONAL(irqdesc_lock, true);
 __DEFINE_UNLOCK_GUARD(irqdesc_lock, struct irq_desc,

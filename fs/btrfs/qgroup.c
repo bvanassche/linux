@@ -2371,6 +2371,7 @@ static int qgroup_trace_extent_swap(struct btrfs_trans_handle* trans,
 				    struct btrfs_path *dst_path,
 				    int dst_level, int root_level,
 				    bool trace_leaf)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_key key;
 	BTRFS_PATH_AUTO_FREE(src_path);
@@ -2490,6 +2491,7 @@ static int qgroup_trace_new_subtree_blocks(struct btrfs_trans_handle* trans,
 					   struct btrfs_path *dst_path,
 					   int cur_level, int root_level,
 					   u64 last_snapshot, bool trace_leaf)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = trans->fs_info;
 	struct extent_buffer *eb;
@@ -2652,6 +2654,7 @@ out:
 int btrfs_qgroup_trace_subtree(struct btrfs_trans_handle *trans,
 			       struct extent_buffer *root_eb,
 			       u64 root_gen, int root_level)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = trans->fs_info;
 	int ret = 0;

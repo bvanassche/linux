@@ -960,6 +960,7 @@ static void tree_mod_log_rewind(struct btrfs_fs_info *fs_info,
 struct extent_buffer *btrfs_tree_mod_log_rewind(struct btrfs_fs_info *fs_info,
 						struct extent_buffer *eb,
 						u64 time_seq)
+	__context_unsafe(/* conditional locking */)
 {
 	struct extent_buffer *eb_rewin;
 	struct tree_mod_elem *tm;
@@ -1017,6 +1018,7 @@ struct extent_buffer *btrfs_tree_mod_log_rewind(struct btrfs_fs_info *fs_info,
  * Returns NULL on error (with no locks held).
  */
 struct extent_buffer *btrfs_get_old_root(struct btrfs_root *root, u64 time_seq)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	struct tree_mod_elem *tm;

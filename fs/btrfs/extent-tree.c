@@ -5265,6 +5265,7 @@ static struct extent_buffer *
 btrfs_init_new_buffer(struct btrfs_trans_handle *trans, struct btrfs_root *root,
 		      u64 bytenr, int level, u64 owner,
 		      enum btrfs_lock_nesting nest)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	struct btrfs_eb_prealloc pa = { 0 };
@@ -5354,6 +5355,7 @@ struct extent_buffer *btrfs_alloc_tree_block(struct btrfs_trans_handle *trans,
 					     u64 empty_size,
 					     u64 reloc_src_root,
 					     enum btrfs_lock_nesting nest)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	struct btrfs_key ins;
@@ -5785,6 +5787,7 @@ static int check_next_block_uptodate(struct btrfs_trans_handle *trans,
 				     struct btrfs_path *path,
 				     struct walk_control *wc,
 				     struct extent_buffer *next)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_tree_parent_check check = { 0 };
 	u64 generation;
@@ -5923,6 +5926,7 @@ static noinline int do_walk_down(struct btrfs_trans_handle *trans,
 				 struct btrfs_root *root,
 				 struct btrfs_path *path,
 				 struct walk_control *wc)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	struct btrfs_eb_prealloc pa = { 0 };
@@ -6035,6 +6039,7 @@ static noinline int walk_up_proc(struct btrfs_trans_handle *trans,
 				 struct btrfs_root *root,
 				 struct btrfs_path *path,
 				 struct walk_control *wc)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	int ret = 0;
@@ -6265,6 +6270,7 @@ static noinline int walk_up_tree(struct btrfs_trans_handle *trans,
  * If called with for_reloc set, may exit early with -EAGAIN
  */
 int btrfs_drop_snapshot(struct btrfs_root *root, bool update_ref, bool for_reloc)
+	__context_unsafe(/* conditional locking */)
 {
 	const bool is_reloc_root = (btrfs_root_id(root) == BTRFS_TREE_RELOC_OBJECTID);
 	struct btrfs_fs_info *fs_info = root->fs_info;

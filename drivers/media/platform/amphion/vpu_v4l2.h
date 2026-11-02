@@ -8,8 +8,10 @@
 
 #include <linux/videodev2.h>
 
-void vpu_inst_lock(struct vpu_inst *inst);
-void vpu_inst_unlock(struct vpu_inst *inst);
+void vpu_inst_lock(struct vpu_inst *inst)
+	__acquires(&inst->lock);
+void vpu_inst_unlock(struct vpu_inst *inst)
+	__releases(&inst->lock);
 void vpu_set_buffer_state(struct vb2_v4l2_buffer *vbuf, unsigned int state);
 unsigned int vpu_get_buffer_state(struct vb2_v4l2_buffer *vbuf);
 void vpu_set_buffer_average_qp(struct vb2_v4l2_buffer *vbuf, u32 qp);

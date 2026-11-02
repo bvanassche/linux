@@ -747,6 +747,9 @@ static void nilfs_truncate_bmap(struct nilfs_inode_info *ii,
 	__u64 b;
 	int ret;
 
+	lockdep_assert_held(&((struct the_nilfs *)
+		ii->vfs_inode.i_sb->s_fs_info)->ns_segctor_sem);
+
 	if (!test_bit(NILFS_I_BMAP, &ii->i_state))
 		return;
 repeat:

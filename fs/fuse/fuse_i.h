@@ -1169,7 +1169,8 @@ void fuse_update_ctime(struct inode *inode);
 
 int fuse_update_attributes(struct inode *inode, struct file *file, u32 mask);
 
-void fuse_flush_writepages(struct inode *inode);
+void fuse_flush_writepages(struct inode *inode)
+	__must_hold(&get_fuse_inode(inode)->lock);
 
 void fuse_set_nowrite(struct inode *inode);
 void fuse_release_nowrite(struct inode *inode);

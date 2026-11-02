@@ -2073,6 +2073,7 @@ void fuse_set_nowrite(struct inode *inode)
  * writepages.
  */
 static void __fuse_release_nowrite(struct inode *inode)
+	__must_hold(&get_fuse_inode(inode)->lock)
 {
 	struct fuse_inode *fi = get_fuse_inode(inode);
 

@@ -14,8 +14,10 @@
 
 void dlm_recoverd_stop(struct dlm_ls *ls);
 int dlm_recoverd_start(struct dlm_ls *ls);
-void dlm_recoverd_suspend(struct dlm_ls *ls);
-void dlm_recoverd_resume(struct dlm_ls *ls);
+void dlm_recoverd_suspend(struct dlm_ls *ls)
+	__acquires(&ls->ls_recoverd_active);
+void dlm_recoverd_resume(struct dlm_ls *ls)
+	__releases(&ls->ls_recoverd_active);
 
 #endif				/* __RECOVERD_DOT_H__ */
 

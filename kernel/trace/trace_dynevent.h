@@ -95,9 +95,11 @@ static inline void dyn_event_remove(struct dyn_event *ev)
 	list_del_init(&ev->list);
 }
 
-void *dyn_event_seq_start(struct seq_file *m, loff_t *pos);
+void *dyn_event_seq_start(struct seq_file *m, loff_t *pos)
+	__acquires(&event_mutex);
 void *dyn_event_seq_next(struct seq_file *m, void *v, loff_t *pos);
-void dyn_event_seq_stop(struct seq_file *m, void *v);
+void dyn_event_seq_stop(struct seq_file *m, void *v)
+	__releases(&event_mutex);
 int dyn_events_release_all(struct dyn_event_operations *type);
 int dyn_event_release(const char *raw_command, struct dyn_event_operations *type);
 int dyn_event_create(const char *raw_command, struct dyn_event_operations *type);

@@ -441,6 +441,7 @@ struct ksmbd_session_rpc *ksmbd_session_rpc_get(struct ksmbd_work *work,
 		err = -EBADF;
 		goto err_put;
 	}
+	__release(&entry->lock);
 	return entry;
 
 err_put:
@@ -449,6 +450,7 @@ err_put:
 }
 
 void ksmbd_session_rpc_put(struct ksmbd_session_rpc *entry)
+	__releases(&entry->lock)
 {
 	mutex_unlock(&entry->lock);
 	ksmbd_session_rpc_free(entry);

@@ -13,6 +13,7 @@
 
 #include "../smb_common.h"
 #include "../ntlmssp.h"
+#include "../connection.h"
 
 #define CIFDS_SESSION_FLAG_SMB2		BIT(1)
 
@@ -135,7 +136,8 @@ struct ksmbd_session *ksmbd_session_lookup_all(struct ksmbd_conn *conn,
 struct ksmbd_session *ksmbd_session_lookup_all_states(struct ksmbd_conn *conn,
 						      unsigned long long id);
 void destroy_previous_session(struct ksmbd_conn *conn,
-			      struct ksmbd_user *user, u64 id);
+			      struct ksmbd_user *user, u64 id)
+	__must_hold(&conn->srv_mutex);
 struct preauth_session *ksmbd_preauth_session_alloc(struct ksmbd_conn *conn,
 						    u64 sess_id);
 void ksmbd_preauth_session_destroy(struct ksmbd_conn *conn);
@@ -151,7 +153,8 @@ void ksmbd_session_rpc_clear_list(struct ksmbd_session *sess);
 int ksmbd_session_rpc_method(struct ksmbd_session *sess, int id);
 struct ksmbd_session_rpc *ksmbd_session_rpc_get(struct ksmbd_work *work,
 					     int id);
-void ksmbd_session_rpc_put(struct ksmbd_session_rpc *entry);
+void ksmbd_session_rpc_put(struct ksmbd_session_rpc *entry)
+	__releases(&entry->lock);
 void ksmbd_user_session_get(struct ksmbd_session *sess);
 void ksmbd_user_session_put(struct ksmbd_session *sess);
 int create_proc_sessions(void);

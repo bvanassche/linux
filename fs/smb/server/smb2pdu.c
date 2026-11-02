@@ -9470,6 +9470,7 @@ static noinline int smb2_read_pipe(struct ksmbd_work *work)
 		err = PTR_ERR(rpc);
 		goto out;
 	}
+	__acquire(&rpc->lock);
 
 	length = le32_to_cpu(req->Length);
 	if (!length)
@@ -10139,6 +10140,7 @@ static noinline int smb2_write_pipe(struct ksmbd_work *work)
 		smb2_set_err_rsp(work);
 		return err;
 	}
+	__acquire(&rpc->lock);
 	rpc_resp = ksmbd_rpc_write(work->sess, rpc, data_buf, length);
 	ksmbd_session_rpc_put(rpc);
 	if (!rpc_resp) {
@@ -11639,6 +11641,7 @@ static int fsctl_pipe_transceive(struct ksmbd_work *work, u64 id,
 		smb2_set_err_rsp(work);
 		return 0;
 	}
+	__acquire(&rpc->lock);
 
 	if (rpc->pending) {
 		ksmbd_session_rpc_put(rpc);

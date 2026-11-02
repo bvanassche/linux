@@ -62,7 +62,8 @@ static pm_callback_t __rpm_get_callback(struct device *dev, size_t cb_offset)
 		__rpm_get_callback(dev, offsetof(struct dev_pm_ops, callback))
 
 static int rpm_resume(struct device *dev, int rpmflags);
-static int rpm_suspend(struct device *dev, int rpmflags);
+static int rpm_suspend(struct device *dev, int rpmflags)
+	__releases(&dev->power.lock);
 
 /**
  * update_pm_runtime_accounting - Update the time accounting of power states
@@ -489,6 +490,7 @@ static int rpm_callback(int (*cb)(struct device *), struct device *dev)
  */
 static int rpm_idle(struct device *dev, int rpmflags)
 	__must_hold(&dev->power.lock)
+	__context_unsafe(/* TODO */)
 {
 	int (*callback)(struct device *);
 	int retval;

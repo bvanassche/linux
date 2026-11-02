@@ -1307,9 +1307,11 @@ void *hns_roce_get_extend_sge(struct hns_roce_qp *hr_qp, unsigned int n);
 bool hns_roce_wq_overflow(struct hns_roce_wq *hr_wq, u32 nreq,
 			  struct ib_cq *ib_cq);
 void hns_roce_lock_cqs(struct hns_roce_cq *send_cq,
-		       struct hns_roce_cq *recv_cq);
+		       struct hns_roce_cq *recv_cq)
+	__acquires(&send_cq->lock);
 void hns_roce_unlock_cqs(struct hns_roce_cq *send_cq,
-			 struct hns_roce_cq *recv_cq);
+			 struct hns_roce_cq *recv_cq)
+	__releases(&send_cq->lock);
 void hns_roce_qp_remove(struct hns_roce_dev *hr_dev, struct hns_roce_qp *hr_qp);
 void hns_roce_qp_destroy(struct hns_roce_dev *hr_dev, struct hns_roce_qp *hr_qp,
 			 struct ib_udata *udata);

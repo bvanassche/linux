@@ -814,7 +814,8 @@ void fddi_isr(struct s_smc *smc)
 			outpd(ADDR(B5_XS_CSR),CSR_IRQ_CL_F) ;
 			outpd(ADDR(B5_XA_CSR),CSR_IRQ_CL_F) ;
 			mac_drv_clear_txd(smc) ;
-			llc_restart_tx(smc) ;
+			/* The caller holds smc->os.DriverLock. */
+			context_unsafe(llc_restart_tx(smc)) ;
 		}
 
 		/*

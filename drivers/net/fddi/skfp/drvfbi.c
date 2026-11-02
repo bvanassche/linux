@@ -217,8 +217,10 @@ again:
 		restart_tx = 1 ;
 	}
 
-	if (restart_tx)
-		llc_restart_tx(smc) ;
+	if (restart_tx) {
+		/* The caller holds smc->os.DriverLock. */
+		context_unsafe(llc_restart_tx(smc)) ;
+	}
 }
 
 /*

@@ -34,7 +34,8 @@
 
 static void jpeg_v1_0_set_dec_ring_funcs(struct amdgpu_device *adev);
 static void jpeg_v1_0_set_irq_funcs(struct amdgpu_device *adev);
-static void jpeg_v1_0_ring_begin_use(struct amdgpu_ring *ring);
+static void jpeg_v1_0_ring_begin_use(struct amdgpu_ring *ring)
+	__acquires(&ring->adev->vcn.inst[0].vcn1_jpeg1_workaround);
 static int jpeg_v1_dec_ring_parse_cs(struct amdgpu_cs_parser *parser,
 				     struct amdgpu_job *job,
 				     struct amdgpu_ib *ib);

@@ -875,6 +875,7 @@ static const struct nla_policy fib_rule_policy[FRA_MAX + 1] = {
 
 int fib_newrule(struct net *net, struct sk_buff *skb, struct nlmsghdr *nlh,
 		struct netlink_ext_ack *extack, bool rtnl_held)
+	__context_unsafe(/* conditional locking */)
 {
 	struct fib_rule *rule = NULL, *r, *last = NULL;
 	int err = -EINVAL, unresolved = 0;

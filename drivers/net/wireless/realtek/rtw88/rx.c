@@ -102,6 +102,7 @@ pkt_num:
 
 static void rtw_rx_addr_match_iter(void *data, u8 *mac,
 				   struct ieee80211_vif *vif)
+	__context_unsafe(/* TODO */)
 {
 	struct rtw_rx_addr_match_data *iter_data = data;
 	struct ieee80211_sta *sta;

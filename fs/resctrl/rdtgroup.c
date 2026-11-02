@@ -2713,6 +2713,7 @@ static void rdtgroup_kn_put(struct rdtgroup *rdtgrp, struct kernfs_node *kn)
 }
 
 struct rdtgroup *rdtgroup_kn_lock_live(struct kernfs_node *kn)
+	__acquires(&rdtgroup_mutex)
 {
 	struct rdtgroup *rdtgrp = kernfs_to_rdtgroup(kn);
 
@@ -2745,6 +2746,7 @@ struct rdtgroup *rdtgroup_kn_lock_live(struct kernfs_node *kn)
 }
 
 void rdtgroup_kn_unlock(struct kernfs_node *kn)
+	__releases(&rdtgroup_mutex)
 {
 	struct rdtgroup *rdtgrp = kernfs_to_rdtgroup(kn);
 
@@ -2785,6 +2787,7 @@ static bool is_active_resctrl_node(struct kernfs_node *kn)
 }
 
 bool info_kn_lock(struct kernfs_node *kn)
+	__cond_acquires(true, &rdtgroup_mutex)
 {
 	kernfs_break_active_protection(kn);
 	cpus_read_lock();
@@ -2805,6 +2808,7 @@ bool info_kn_lock(struct kernfs_node *kn)
 }
 
 void info_kn_unlock(struct kernfs_node *kn)
+	__releases(&rdtgroup_mutex)
 {
 	mutex_unlock(&rdtgroup_mutex);
 	cpus_read_unlock();

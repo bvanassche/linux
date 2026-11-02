@@ -314,6 +314,7 @@ static int w1_process_command_io(struct w1_master *dev,
 
 static int w1_process_command_addremove(struct w1_master *dev,
 	struct w1_netlink_cmd *cmd)
+	__must_hold(&dev->mutex)
 {
 	struct w1_slave *sl;
 	int err = 0;

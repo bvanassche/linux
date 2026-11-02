@@ -21,8 +21,10 @@ void xe_hw_engine_group_del_exec_queue(struct xe_hw_engine_group *group, struct 
 int xe_hw_engine_group_get_mode(struct xe_hw_engine_group *group,
 				enum xe_hw_engine_group_execution_mode new_mode,
 				enum xe_hw_engine_group_execution_mode *previous_mode,
-				struct xe_sync_entry *syncs, int num_syncs);
-void xe_hw_engine_group_put(struct xe_hw_engine_group *group);
+				struct xe_sync_entry *syncs, int num_syncs)
+	__cond_acquires_shared(0, &group->mode_sem);
+void xe_hw_engine_group_put(struct xe_hw_engine_group *group)
+	__releases_shared(&group->mode_sem);
 
 enum xe_hw_engine_group_execution_mode
 xe_hw_engine_group_find_exec_mode(struct xe_exec_queue *q);

@@ -164,8 +164,10 @@ void ocfs2_rename_unlock(struct ocfs2_super *osb);
 int ocfs2_nfs_sync_lock(struct ocfs2_super *osb, int ex, unsigned int *nofs_flag);
 void ocfs2_nfs_sync_unlock(struct ocfs2_super *osb, int ex,
 			   unsigned int nofs_flag);
-void ocfs2_trim_fs_lock_res_init(struct ocfs2_super *osb);
-void ocfs2_trim_fs_lock_res_uninit(struct ocfs2_super *osb);
+void ocfs2_trim_fs_lock_res_init(struct ocfs2_super *osb)
+	__acquires(&osb->obs_trim_fs_mutex);
+void ocfs2_trim_fs_lock_res_uninit(struct ocfs2_super *osb)
+	__releases(&osb->obs_trim_fs_mutex);
 int ocfs2_trim_fs_lock(struct ocfs2_super *osb,
 		       struct ocfs2_trim_fs_info *info, int trylock);
 void ocfs2_trim_fs_unlock(struct ocfs2_super *osb,

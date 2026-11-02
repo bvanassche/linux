@@ -6256,6 +6256,7 @@ static int btrfs_filldir(void *addr, int entries, struct dir_context *ctx)
 }
 
 static int btrfs_real_readdir(struct file *file, struct dir_context *ctx)
+	__context_unsafe(/* i_rwsem is conditionally upgraded to exclusive */)
 {
 	struct inode *inode = file_inode(file);
 	struct btrfs_root *root = BTRFS_I(inode)->root;

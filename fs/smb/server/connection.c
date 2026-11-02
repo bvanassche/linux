@@ -410,11 +410,13 @@ static void ksmbd_conn_cancel_async_requests(struct ksmbd_conn *conn)
 }
 
 void ksmbd_conn_lock(struct ksmbd_conn *conn)
+	__acquires(&conn->srv_mutex)
 {
 	mutex_lock(&conn->srv_mutex);
 }
 
 void ksmbd_conn_unlock(struct ksmbd_conn *conn)
+	__releases(&conn->srv_mutex)
 {
 	mutex_unlock(&conn->srv_mutex);
 }

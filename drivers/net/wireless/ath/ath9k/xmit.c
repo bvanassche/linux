@@ -728,6 +728,7 @@ static void ath_tx_process_buffer(struct ath_softc *sc, struct ath_txq *txq,
 				  struct ath_tx_status *ts, struct ath_buf *bf,
 				  struct list_head *bf_head)
 	__must_hold(&txq->axq_lock)
+	__must_hold_shared(RCU)
 {
 	struct ieee80211_hw *hw = sc->hw;
 	struct ieee80211_tx_info *info;
@@ -1875,6 +1876,7 @@ int ath_cabq_update(struct ath_softc *sc)
 static void ath_drain_txq_list(struct ath_softc *sc, struct ath_txq *txq,
 			       struct list_head *list)
 	__must_hold(&txq->axq_lock)
+	__must_hold_shared(RCU)
 {
 	struct ath_buf *bf, *lastbf;
 	struct list_head bf_head;
@@ -2622,6 +2624,7 @@ static void ath_tx_rc_status(struct ath_softc *sc, struct ath_buf *bf,
 }
 
 static void ath_tx_processq(struct ath_softc *sc, struct ath_txq *txq)
+	__must_hold_shared(RCU)
 {
 	struct ath_hw *ah = sc->sc_ah;
 	struct ath_common *common = ath9k_hw_common(ah);

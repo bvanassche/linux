@@ -60,6 +60,7 @@ static void set_slot_off(struct controller *ctrl)
  * Configures board.
  */
 static int board_added(struct controller *ctrl)
+	__must_hold_shared(&ctrl->reset_lock)
 {
 	int retval = 0;
 	struct pci_bus *parent = ctrl->pcie->port->subordinate;
@@ -110,6 +111,7 @@ err_exit:
  * @safe_removal: whether the board is safely removed (versus surprise removed)
  */
 static void remove_board(struct controller *ctrl, bool safe_removal)
+	__must_hold_shared(&ctrl->reset_lock)
 {
 	pciehp_unconfigure_device(ctrl, safe_removal);
 
@@ -135,8 +137,10 @@ static void remove_board(struct controller *ctrl, bool safe_removal)
 	pcie_reset_lbms(ctrl->pcie->port);
 }
 
-static int pciehp_enable_slot(struct controller *ctrl);
-static int pciehp_disable_slot(struct controller *ctrl, bool safe_removal);
+static int pciehp_enable_slot(struct controller *ctrl)
+	__must_hold_shared(&ctrl->reset_lock);
+static int pciehp_disable_slot(struct controller *ctrl, bool safe_removal)
+	__must_hold_shared(&ctrl->reset_lock);
 
 void pciehp_request(struct controller *ctrl, int action)
 {
@@ -215,6 +219,7 @@ void pciehp_handle_button_press(struct controller *ctrl)
 }
 
 void pciehp_handle_disable_request(struct controller *ctrl)
+	__must_hold_shared(&ctrl->reset_lock)
 {
 	mutex_lock(&ctrl->state_lock);
 	switch (ctrl->state) {
@@ -230,6 +235,7 @@ void pciehp_handle_disable_request(struct controller *ctrl)
 }
 
 void pciehp_handle_presence_or_link_change(struct controller *ctrl, u32 events)
+	__must_hold_shared(&ctrl->reset_lock)
 {
 	int present, link_active;
 
@@ -315,6 +321,7 @@ void pciehp_handle_presence_or_link_change(struct controller *ctrl, u32 events)
 }
 
 static int __pciehp_enable_slot(struct controller *ctrl)
+	__must_hold_shared(&ctrl->reset_lock)
 {
 	u8 getstatus = 0;
 
@@ -340,6 +347,7 @@ static int __pciehp_enable_slot(struct controller *ctrl)
 }
 
 static int pciehp_enable_slot(struct controller *ctrl)
+	__must_hold_shared(&ctrl->reset_lock)
 {
 	int ret;
 
@@ -359,6 +367,7 @@ static int pciehp_enable_slot(struct controller *ctrl)
 }
 
 static int __pciehp_disable_slot(struct controller *ctrl, bool safe_removal)
+	__must_hold_shared(&ctrl->reset_lock)
 {
 	u8 getstatus = 0;
 
@@ -376,6 +385,7 @@ static int __pciehp_disable_slot(struct controller *ctrl, bool safe_removal)
 }
 
 static int pciehp_disable_slot(struct controller *ctrl, bool safe_removal)
+	__must_hold_shared(&ctrl->reset_lock)
 {
 	int ret;
 

@@ -253,8 +253,8 @@ static bool bitmap_enabled(void *data, bool flush)
  */
 static int md_bitmap_checkpage(struct bitmap_counts *bitmap,
 			       unsigned long page, int create, int no_hijack)
-__releases(bitmap->lock)
-__acquires(bitmap->lock)
+__releases(&bitmap->lock)
+__acquires(&bitmap->lock)
 {
 	unsigned char *mappage;
 
@@ -1479,7 +1479,8 @@ static void md_bitmap_set_pending(struct bitmap_counts *bitmap, sector_t offset)
 
 static bitmap_counter_t *md_bitmap_get_counter(struct bitmap_counts *bitmap,
 					       sector_t offset, sector_t *blocks,
-					       int create);
+					       int create)
+	__releases(&bitmap->lock) __acquires(&bitmap->lock);
 
 static void mddev_set_timeout(struct mddev *mddev, unsigned long timeout,
 			      bool force)
@@ -1627,8 +1628,8 @@ static void bitmap_daemon_work(struct mddev *mddev)
 static bitmap_counter_t *md_bitmap_get_counter(struct bitmap_counts *bitmap,
 					       sector_t offset, sector_t *blocks,
 					       int create)
-__releases(bitmap->lock)
-__acquires(bitmap->lock)
+__releases(&bitmap->lock)
+__acquires(&bitmap->lock)
 {
 	/* If 'create', we might release the lock and reclaim it.
 	 * The lock must have been taken with interrupts enabled.

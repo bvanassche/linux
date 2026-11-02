@@ -354,6 +354,7 @@ static bool enqueue_read(struct page_cache *cache, struct uds_request *request,
 
 static void enqueue_page_read(struct volume *volume, struct uds_request *request,
 			      u32 physical_page)
+	__must_hold(&volume->read_threads_mutex)
 {
 	/* Mark the page as queued, so that chapter invalidation knows to cancel a read. */
 	while (!enqueue_read(&volume->page_cache, request, physical_page)) {
@@ -400,6 +401,7 @@ static struct queued_read *reserve_read_queue_entry(struct page_cache *cache)
 }
 
 static inline struct queued_read *wait_to_reserve_read_queue_entry(struct volume *volume)
+	__must_hold(&volume->read_threads_mutex)
 {
 	struct queued_read *queue_entry = NULL;
 

@@ -347,6 +347,7 @@ static inline void uds_broadcast_cond(struct cond_var *cv)
 	wake_up_all(&cv->wait_queue);
 }
 
-void uds_wait_cond(struct cond_var *cv, struct mutex *mutex);
+void uds_wait_cond(struct cond_var *cv, struct mutex *mutex)
+	__must_hold(mutex);
 
 #endif /* INDEXER_H */

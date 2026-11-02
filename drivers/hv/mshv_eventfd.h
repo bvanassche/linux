@@ -65,6 +65,7 @@ struct mshv_ioeventfd {
 };
 
 int mshv_set_unset_ioeventfd(struct mshv_partition *pt,
-			     struct mshv_user_ioeventfd *args);
+			     struct mshv_user_ioeventfd *args)
+	__must_hold(&pt->pt_mutex);
 
 #endif /* __LINUX_MSHV_EVENTFD_H */

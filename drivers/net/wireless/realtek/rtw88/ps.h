@@ -15,7 +15,8 @@
 #define LEAVE_LPS_TRY_CNT	5
 #define LEAVE_LPS_TIMEOUT	msecs_to_jiffies(100)
 
-int rtw_enter_ips(struct rtw_dev *rtwdev);
+int rtw_enter_ips(struct rtw_dev *rtwdev)
+	__must_hold(&rtwdev->mutex);
 int rtw_leave_ips(struct rtw_dev *rtwdev);
 
 void rtw_power_mode_change(struct rtw_dev *rtwdev, bool enter);

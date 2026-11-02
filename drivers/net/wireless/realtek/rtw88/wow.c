@@ -616,6 +616,7 @@ static int rtw_wow_leave_ps(struct rtw_dev *rtwdev)
 }
 
 static int rtw_wow_restore_ps(struct rtw_dev *rtwdev)
+	__must_hold(&rtwdev->mutex)
 {
 	int ret = 0;
 
@@ -848,6 +849,7 @@ static void rtw_wow_clear_wakeups(struct rtw_dev *rtwdev)
 }
 
 int rtw_wow_suspend(struct rtw_dev *rtwdev, struct cfg80211_wowlan *wowlan)
+	__must_hold(&rtwdev->mutex)
 {
 	int ret = 0;
 
@@ -879,6 +881,7 @@ out:
 }
 
 int rtw_wow_resume(struct rtw_dev *rtwdev)
+	__must_hold(&rtwdev->mutex)
 {
 	int ret;
 

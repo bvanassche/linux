@@ -801,6 +801,8 @@ static int ptmx_open(struct inode *inode, struct file *filp)
 	if (IS_ERR(tty))
 		goto out;
 
+	__acquire(&tty->legacy_mutex); /* by tty_init_dev() */
+
 	/*
 	 * From here on out, the tty is "live", and the index and
 	 * fsi will be killed/put by the tty_release()

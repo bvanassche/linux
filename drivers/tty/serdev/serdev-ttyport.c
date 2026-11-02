@@ -102,6 +102,7 @@ static int ttyport_open(struct serdev_controller *ctrl)
 	tty = tty_init_dev(serport->tty_drv, serport->tty_idx);
 	if (IS_ERR(tty))
 		return PTR_ERR(tty);
+	__acquire(&tty->legacy_mutex); /* by tty_init_dev() */
 	serport->tty = tty;
 
 	if (!tty->ops->open || !tty->ops->close) {
@@ -113,7 +114,7 @@ static int ttyport_open(struct serdev_controller *ctrl)
 	if (ret)
 		goto err_close;
 
-	tty_unlock(serport->tty);
+	tty_unlock(tty);
 
 	/* Bring the UART into a known 8 bits no parity hw fc state */
 	ktermios = tty->termios;

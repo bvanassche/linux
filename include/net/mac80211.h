@@ -6775,7 +6775,8 @@ struct ieee80211_sta *ieee80211_find_sta(struct ieee80211_vif *vif,
  */
 struct ieee80211_sta *ieee80211_find_sta_by_ifaddr(struct ieee80211_hw *hw,
 					       const u8 *addr,
-					       const u8 *localaddr);
+					       const u8 *localaddr)
+	__must_hold_shared(RCU);
 
 /**
  * ieee80211_find_sta_by_link_addrs - find STA by link addresses
@@ -6793,7 +6794,8 @@ struct ieee80211_sta *
 ieee80211_find_sta_by_link_addrs(struct ieee80211_hw *hw,
 				 const u8 *addr,
 				 const u8 *localaddr,
-				 unsigned int *link_id);
+				 unsigned int *link_id)
+	__must_hold_shared(RCU);
 
 /**
  * ieee80211_sta_block_awake - block station from waking up

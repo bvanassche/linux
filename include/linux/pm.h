@@ -906,6 +906,8 @@ struct dev_pm_domain {
  */
 
 #ifdef CONFIG_PM_SLEEP
+context_lock_struct(dpm_list_ctx);
+
 extern void device_pm_lock(void);
 extern void dpm_resume_start(pm_message_t state);
 extern void dpm_resume_end(pm_message_t state);

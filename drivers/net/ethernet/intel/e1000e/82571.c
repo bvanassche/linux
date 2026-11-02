@@ -33,8 +33,12 @@ static s32 e1000_led_on_82574(struct e1000_hw *hw);
 static void e1000_put_hw_semaphore_82571(struct e1000_hw *hw);
 static void e1000_power_down_phy_copper_82571(struct e1000_hw *hw);
 static void e1000_put_hw_semaphore_82573(struct e1000_hw *hw);
-static s32 e1000_get_hw_semaphore_82574(struct e1000_hw *hw);
-static void e1000_put_hw_semaphore_82574(struct e1000_hw *hw);
+static DEFINE_MUTEX(swflag_mutex);
+
+static s32 e1000_get_hw_semaphore_82574(struct e1000_hw *hw)
+	__cond_acquires(0, &swflag_mutex);
+static void e1000_put_hw_semaphore_82574(struct e1000_hw *hw)
+	__releases(&swflag_mutex);
 static s32 e1000_set_d0_lplu_state_82574(struct e1000_hw *hw, bool active);
 static s32 e1000_set_d3_lplu_state_82574(struct e1000_hw *hw, bool active);
 
@@ -548,8 +552,6 @@ static void e1000_put_hw_semaphore_82573(struct e1000_hw *hw)
 	extcnf_ctrl &= ~E1000_EXTCNF_CTRL_MDIO_SW_OWNERSHIP;
 	ew32(EXTCNF_CTRL, extcnf_ctrl);
 }
-
-static DEFINE_MUTEX(swflag_mutex);
 
 /**
  *  e1000_get_hw_semaphore_82574 - Acquire hardware semaphore

@@ -106,7 +106,8 @@ static int qs_check_atapi_dma(struct ata_queued_cmd *qc);
 static void qs_freeze(struct ata_port *ap);
 static void qs_thaw(struct ata_port *ap);
 static int qs_prereset(struct ata_link *link, unsigned long deadline);
-static void qs_error_handler(struct ata_port *ap);
+static void qs_error_handler(struct ata_port *ap)
+	__must_hold(&ap->host->eh_mutex);
 
 static const struct scsi_host_template qs_ata_sht = {
 	ATA_BASE_SHT(DRV_NAME),

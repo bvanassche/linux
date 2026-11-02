@@ -643,7 +643,8 @@ static int mv_pmp_hardreset(struct ata_link *link, unsigned int *class,
 				unsigned long deadline);
 static int  mv_softreset(struct ata_link *link, unsigned int *class,
 				unsigned long deadline);
-static void mv_pmp_error_handler(struct ata_port *ap);
+static void mv_pmp_error_handler(struct ata_port *ap)
+	__must_hold(&ap->host->eh_mutex);
 static void mv_process_crpb_entries(struct ata_port *ap,
 					struct mv_port_priv *pp);
 

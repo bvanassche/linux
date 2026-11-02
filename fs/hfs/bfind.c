@@ -13,7 +13,7 @@
 #include "btree.h"
 
 int hfs_find_init(struct hfs_btree *tree, struct hfs_find_data *fd)
-	__cond_acquires(0, &tree->tree_lock)
+	__cond_acquires(0, &fd->tree->tree_lock)
 {
 	void *ptr;
 
@@ -31,13 +31,13 @@ int hfs_find_init(struct hfs_btree *tree, struct hfs_find_data *fd)
 		tree->cnid, __builtin_return_address(0));
 	switch (tree->cnid) {
 	case HFS_CAT_CNID:
-		mutex_lock_nested(&tree->tree_lock, CATALOG_BTREE_MUTEX);
+		mutex_lock_nested(&fd->tree->tree_lock, CATALOG_BTREE_MUTEX);
 		break;
 	case HFS_EXT_CNID:
-		mutex_lock_nested(&tree->tree_lock, EXTENTS_BTREE_MUTEX);
+		mutex_lock_nested(&fd->tree->tree_lock, EXTENTS_BTREE_MUTEX);
 		break;
 	case HFS_ATTR_CNID:
-		mutex_lock_nested(&tree->tree_lock, ATTR_BTREE_MUTEX);
+		mutex_lock_nested(&fd->tree->tree_lock, ATTR_BTREE_MUTEX);
 		break;
 	default:
 		return -EINVAL;

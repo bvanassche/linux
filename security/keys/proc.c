@@ -13,9 +13,11 @@
 #include <asm/errno.h>
 #include "internal.h"
 
-static void *proc_keys_start(struct seq_file *p, loff_t *_pos);
+static void *proc_keys_start(struct seq_file *p, loff_t *_pos)
+	__acquires(&key_serial_lock);
 static void *proc_keys_next(struct seq_file *p, void *v, loff_t *_pos);
-static void proc_keys_stop(struct seq_file *p, void *v);
+static void proc_keys_stop(struct seq_file *p, void *v)
+	__releases(&key_serial_lock);
 static int proc_keys_show(struct seq_file *m, void *v);
 
 static const struct seq_operations proc_keys_ops = {
@@ -25,9 +27,11 @@ static const struct seq_operations proc_keys_ops = {
 	.show	= proc_keys_show,
 };
 
-static void *proc_key_users_start(struct seq_file *p, loff_t *_pos);
+static void *proc_key_users_start(struct seq_file *p, loff_t *_pos)
+	__acquires(&key_user_lock);
 static void *proc_key_users_next(struct seq_file *p, void *v, loff_t *_pos);
-static void proc_key_users_stop(struct seq_file *p, void *v);
+static void proc_key_users_stop(struct seq_file *p, void *v)
+	__releases(&key_user_lock);
 static int proc_key_users_show(struct seq_file *m, void *v);
 
 static const struct seq_operations proc_key_users_ops = {
@@ -110,7 +114,7 @@ static struct key *find_ge_key(struct seq_file *p, key_serial_t id)
 }
 
 static void *proc_keys_start(struct seq_file *p, loff_t *_pos)
-	__acquires(key_serial_lock)
+	__acquires(&key_serial_lock)
 {
 	key_serial_t pos = *_pos;
 	struct key *key;
@@ -145,7 +149,7 @@ static void *proc_keys_next(struct seq_file *p, void *v, loff_t *_pos)
 }
 
 static void proc_keys_stop(struct seq_file *p, void *v)
-	__releases(key_serial_lock)
+	__releases(&key_serial_lock)
 {
 	spin_unlock(&key_serial_lock);
 }
@@ -272,7 +276,7 @@ static struct rb_node *key_user_first(struct user_namespace *user_ns, struct rb_
 }
 
 static void *proc_key_users_start(struct seq_file *p, loff_t *_pos)
-	__acquires(key_user_lock)
+	__acquires(&key_user_lock)
 {
 	struct rb_node *_p;
 	loff_t pos = *_pos;
@@ -295,7 +299,7 @@ static void *proc_key_users_next(struct seq_file *p, void *v, loff_t *_pos)
 }
 
 static void proc_key_users_stop(struct seq_file *p, void *v)
-	__releases(key_user_lock)
+	__releases(&key_user_lock)
 {
 	spin_unlock(&key_user_lock);
 }

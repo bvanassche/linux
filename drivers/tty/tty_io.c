@@ -1410,6 +1410,7 @@ struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx)
 		goto err_release_tty;
 	tty_ldisc_unlock(tty);
 	/* Return the tty locked so that it cannot vanish under the caller */
+	__release(&tty->legacy_mutex); /* acquire on return value */
 	return tty;
 
 err_free_tty:
@@ -1861,8 +1862,9 @@ static struct tty_struct *tty_open_current_tty(dev_t device, struct file *filp)
 	retval = tty_reopen(tty);
 	if (retval < 0) {
 		tty_unlock(tty);
-		tty = ERR_PTR(retval);
+		return ERR_PTR(retval);
 	}
+	__release(&tty->legacy_mutex); /* acquire on return value */
 	return tty;
 }
 
@@ -2035,7 +2037,7 @@ static struct tty_struct *tty_open_by_driver(dev_t device,
 		mutex_unlock(&tty_mutex);
 		retval = tty_lock_interruptible(tty);
 		tty_kref_put(tty);  /* drop kref from tty_driver_lookup_tty() */
-		if (retval) {
+		if (retval < 0) {
 			if (retval == -EINTR)
 				retval = -ERESTARTSYS;
 			tty = ERR_PTR(retval);
@@ -2045,7 +2047,9 @@ static struct tty_struct *tty_open_by_driver(dev_t device,
 		if (retval < 0) {
 			tty_unlock(tty);
 			tty = ERR_PTR(retval);
+			goto out;
 		}
+		__release(&tty->legacy_mutex); /* acquire on return value */
 	} else { /* Returns with the tty_lock held for now */
 		tty = tty_init_dev(driver, index);
 		mutex_unlock(&tty_mutex);
@@ -2104,6 +2108,8 @@ retry_open:
 		schedule();
 		goto retry_open;
 	}
+
+	__acquire(&tty->legacy_mutex); /* by tty_open_current_tty() */
 
 	tty_add_file(tty, filp);
 

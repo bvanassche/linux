@@ -260,9 +260,11 @@ int sunrpc_cache_notify(struct cache_detail *cd, struct cache_head *h,
 			u32 cache_type);
 
 /* Must store cache_detail in seq_file->private if using next three functions */
-extern void *cache_seq_start_rcu(struct seq_file *file, loff_t *pos);
+extern void *cache_seq_start_rcu(struct seq_file *file, loff_t *pos)
+	__acquires_shared(RCU);
 extern void *cache_seq_next_rcu(struct seq_file *file, void *p, loff_t *pos);
-extern void cache_seq_stop_rcu(struct seq_file *file, void *p);
+extern void cache_seq_stop_rcu(struct seq_file *file, void *p)
+	__releases_shared(RCU);
 
 extern void qword_add(char **bpp, int *lp, char *str);
 extern void qword_addhex(char **bpp, int *lp, char *buf, int blen);

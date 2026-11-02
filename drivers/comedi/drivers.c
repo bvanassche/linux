@@ -197,6 +197,7 @@ static void comedi_device_detach_cleanup(struct comedi_device *dev)
 }
 
 void comedi_device_detach_locked(struct comedi_device *dev)
+	__must_hold(&dev->mutex)
 {
 	lockdep_assert_held_write(&dev->attach_lock);
 	lockdep_assert_held(&dev->mutex);
@@ -209,6 +210,7 @@ void comedi_device_detach_locked(struct comedi_device *dev)
 }
 
 void comedi_device_detach(struct comedi_device *dev)
+	__must_hold(&dev->mutex)
 {
 	lockdep_assert_held(&dev->mutex);
 	down_write(&dev->attach_lock);
@@ -1045,6 +1047,7 @@ void comedi_legacy_detach(struct comedi_device *dev)
 EXPORT_SYMBOL_GPL(comedi_legacy_detach);
 
 int comedi_device_attach(struct comedi_device *dev, struct comedi_devconfig *it)
+	__must_hold(&dev->mutex)
 {
 	struct comedi_driver *driv;
 	int ret;

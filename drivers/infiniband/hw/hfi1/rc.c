@@ -1975,7 +1975,7 @@ int do_rc_ack(struct rvt_qp *qp, u32 aeth, u32 psn, int opcode,
 	int diff;
 	struct rvt_dev_info *rdi;
 
-	lockdep_assert_held(&qp->s_lock);
+	lockdep_assume_ctx_held(&qp->s_lock);
 	/*
 	 * Note that NAKs implicitly ACK outstanding SEND and RDMA write
 	 * requests and implicitly NAK RDMA read and atomic requests issued

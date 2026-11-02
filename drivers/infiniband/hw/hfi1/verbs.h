@@ -411,11 +411,14 @@ void hfi1_do_send(struct rvt_qp *qp, bool in_thread);
 
 void hfi1_send_rc_ack(struct hfi1_packet *packet, bool is_fecn);
 
-int hfi1_make_rc_req(struct rvt_qp *qp, struct hfi1_pkt_state *ps);
+int hfi1_make_rc_req(struct rvt_qp *qp, struct hfi1_pkt_state *ps)
+	__must_hold(&qp->s_lock);
 
-int hfi1_make_uc_req(struct rvt_qp *qp, struct hfi1_pkt_state *ps);
+int hfi1_make_uc_req(struct rvt_qp *qp, struct hfi1_pkt_state *ps)
+	__must_hold(&qp->s_lock);
 
-int hfi1_make_ud_req(struct rvt_qp *qp, struct hfi1_pkt_state *ps);
+int hfi1_make_ud_req(struct rvt_qp *qp, struct hfi1_pkt_state *ps)
+	__must_hold(&qp->s_lock);
 
 int hfi1_register_ib_device(struct hfi1_devdata *);
 

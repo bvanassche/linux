@@ -50,7 +50,8 @@ static inline void release_rdma_sge_mr(struct rvt_ack_entry *e)
 }
 
 struct rvt_ack_entry *find_prev_entry(struct rvt_qp *qp, u32 psn, u8 *prev,
-				      u8 *prev_ack, bool *scheduled);
+				      u8 *prev_ack, bool *scheduled)
+	__must_hold(&qp->s_lock);
 int do_rc_ack(struct rvt_qp *qp, u32 aeth, u32 psn, int opcode, u64 val,
 	      struct hfi1_ctxtdata *rcd);
 struct rvt_swqe *do_rc_completion(struct rvt_qp *qp, struct rvt_swqe *wqe,

@@ -549,6 +549,7 @@ static int process_leaf(struct btrfs_root *root,
 static int walk_down_tree(struct btrfs_root *root, struct btrfs_path *path,
 			  int level, u64 *bytenr, u64 *num_bytes,
 			  int *tree_block_level)
+	__context_unsafe(/* conditional locking */)
 {
 	struct extent_buffer *eb;
 	int ret = 0;

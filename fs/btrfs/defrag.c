@@ -348,6 +348,7 @@ static int btrfs_realloc_node(struct btrfs_trans_handle *trans,
 			      struct extent_buffer *parent,
 			      int start_slot, u64 *last_ret,
 			      struct btrfs_key *progress)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	const u32 blocksize = fs_info->nodesize;
@@ -440,6 +441,7 @@ static int btrfs_realloc_node(struct btrfs_trans_handle *trans,
 
 static int btrfs_defrag_leaves(struct btrfs_trans_handle *trans,
 			       struct btrfs_root *root)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_path *path = NULL;
 	struct btrfs_key key;

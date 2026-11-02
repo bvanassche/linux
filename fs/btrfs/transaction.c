@@ -1378,6 +1378,7 @@ static int update_cowonly_root(struct btrfs_trans_handle *trans,
  * to clean up the delayed refs.
  */
 static noinline int commit_cowonly_roots(struct btrfs_trans_handle *trans)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = trans->fs_info;
 	struct list_head *dirty_bgs = &trans->transaction->dirty_bgs;
@@ -1684,6 +1685,7 @@ static int qgroup_account_snapshot(struct btrfs_trans_handle *trans,
  */
 static noinline int create_pending_snapshot(struct btrfs_trans_handle *trans,
 				   struct btrfs_pending_snapshot *pending)
+	__context_unsafe(/* conditional locking */)
 {
 
 	struct btrfs_fs_info *fs_info = trans->fs_info;

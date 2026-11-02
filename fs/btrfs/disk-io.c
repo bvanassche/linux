@@ -825,6 +825,7 @@ struct btrfs_root *btrfs_extent_root(struct btrfs_fs_info *fs_info, u64 bytenr)
 
 struct btrfs_root *btrfs_create_tree(struct btrfs_trans_handle *trans,
 				     u64 objectid)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = trans->fs_info;
 	struct extent_buffer *leaf;
@@ -907,6 +908,7 @@ static struct btrfs_root *alloc_log_tree(struct btrfs_fs_info *fs_info)
 
 int btrfs_alloc_log_tree_node(struct btrfs_trans_handle *trans,
 			      struct btrfs_root *root)
+	__context_unsafe(/* conditional locking */)
 {
 	struct extent_buffer *leaf;
 

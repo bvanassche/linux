@@ -565,6 +565,7 @@ static unsigned int create_subvol_num_items(const struct btrfs_qgroup_inherit *i
 static noinline int create_subvol(const struct mnt_idmap *idmap,
 				  struct inode *dir, struct dentry *dentry,
 				  struct btrfs_qgroup_inherit *inherit)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = inode_to_fs_info(dir);
 	struct btrfs_trans_handle *trans;

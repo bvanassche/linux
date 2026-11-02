@@ -312,8 +312,10 @@ static inline u32 __to_ib_port_num(u16 port_id)
 	return (u32)port_id + 1;
 }
 
-unsigned long bnxt_re_lock_cqs(struct bnxt_re_qp *qp);
-void bnxt_re_unlock_cqs(struct bnxt_re_qp *qp, unsigned long flags);
+unsigned long bnxt_re_lock_cqs(struct bnxt_re_qp *qp)
+	__acquires(&qp->scq->cq_lock);
+void bnxt_re_unlock_cqs(struct bnxt_re_qp *qp, unsigned long flags)
+	__releases(&qp->scq->cq_lock);
 struct bnxt_re_user_mmap_entry*
 bnxt_re_mmap_entry_insert(struct bnxt_re_ucontext *uctx, u64 mem_offset,
 			  enum bnxt_re_mmap_flag mmap_flag, u64 *offset);

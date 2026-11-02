@@ -1146,6 +1146,7 @@ static int read_partial_msg_data_bounce(struct ceph_connection *con)
  * read (part of) a message.
  */
 static int read_partial_message(struct ceph_connection *con)
+	__must_hold(&con->mutex)
 {
 	struct ceph_msg *m = con->in_msg;
 	int size;

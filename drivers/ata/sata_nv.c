@@ -311,14 +311,16 @@ static int nv_adma_port_resume(struct ata_port *ap);
 #endif
 static void nv_adma_freeze(struct ata_port *ap);
 static void nv_adma_thaw(struct ata_port *ap);
-static void nv_adma_error_handler(struct ata_port *ap);
+static void nv_adma_error_handler(struct ata_port *ap)
+	__must_hold(&ap->host->eh_mutex);
 static void nv_adma_host_stop(struct ata_host *host);
 static void nv_adma_post_internal_cmd(struct ata_queued_cmd *qc);
 static void nv_adma_tf_read(struct ata_port *ap, struct ata_taskfile *tf);
 
 static void nv_mcp55_thaw(struct ata_port *ap);
 static void nv_mcp55_freeze(struct ata_port *ap);
-static void nv_swncq_error_handler(struct ata_port *ap);
+static void nv_swncq_error_handler(struct ata_port *ap)
+	__must_hold(&ap->host->eh_mutex);
 static int nv_swncq_sdev_configure(struct scsi_device *sdev,
 				   struct queue_limits *lim);
 static int nv_swncq_port_start(struct ata_port *ap);

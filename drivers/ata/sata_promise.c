@@ -154,7 +154,8 @@ static int pdc_pata_softreset(struct ata_link *link, unsigned int *class,
 			      unsigned long deadline);
 static int pdc_sata_hardreset(struct ata_link *link, unsigned int *class,
 			      unsigned long deadline);
-static void pdc_error_handler(struct ata_port *ap);
+static void pdc_error_handler(struct ata_port *ap)
+	__must_hold(&ap->host->eh_mutex);
 static void pdc_post_internal_cmd(struct ata_queued_cmd *qc);
 static int pdc_pata_cable_detect(struct ata_port *ap);
 

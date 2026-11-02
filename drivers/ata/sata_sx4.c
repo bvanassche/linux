@@ -201,7 +201,8 @@ struct pdc_host_priv {
 
 
 static int pdc_sata_init_one(struct pci_dev *pdev, const struct pci_device_id *ent);
-static void pdc_error_handler(struct ata_port *ap);
+static void pdc_error_handler(struct ata_port *ap)
+	__must_hold(&ap->host->eh_mutex);
 static void pdc_freeze(struct ata_port *ap);
 static void pdc_thaw(struct ata_port *ap);
 static int pdc_port_start(struct ata_port *ap);

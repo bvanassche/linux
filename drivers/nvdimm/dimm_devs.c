@@ -391,6 +391,7 @@ static ssize_t security_store(struct device *dev,
 	 * in any region.
 	 */
 	guard(device)(dev);
+	lockdep_assume_ctx_held(&dev->mutex);
 	guard(nvdimm_bus)(dev);
 	wait_nvdimm_bus_probe_idle(dev);
 	return nvdimm_security_store(dev, buf, len);

@@ -7,10 +7,13 @@
 #ifndef _LINUX_DPLL_GEN_H
 #define _LINUX_DPLL_GEN_H
 
+#include <linux/mutex.h>
 #include <net/netlink.h>
 #include <net/genetlink.h>
 
 #include <uapi/linux/dpll.h>
+
+extern struct mutex dpll_lock;
 
 /* Common nested types */
 extern const struct nla_policy dpll_pin_parent_device_nl_policy[DPLL_A_PIN_OPERSTATE + 1];
@@ -18,20 +21,26 @@ extern const struct nla_policy dpll_pin_parent_pin_nl_policy[DPLL_A_PIN_STATE + 
 extern const struct nla_policy dpll_reference_sync_nl_policy[DPLL_A_PIN_STATE + 1];
 
 int dpll_lock_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
-		   struct genl_info *info);
+		   struct genl_info *info)
+	__acquires(&dpll_lock);
 int dpll_pre_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
-		  struct genl_info *info);
+		  struct genl_info *info)
+	__cond_acquires(0, &dpll_lock);
 int dpll_pin_pre_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
-		      struct genl_info *info);
+		      struct genl_info *info)
+	__cond_acquires(0, &dpll_lock);
 void
 dpll_unlock_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
-		 struct genl_info *info);
+		 struct genl_info *info)
+	__releases(&dpll_lock);
 void
 dpll_post_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
-	       struct genl_info *info);
+	       struct genl_info *info)
+	__releases(&dpll_lock);
 void
 dpll_pin_post_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
-		   struct genl_info *info);
+		   struct genl_info *info)
+	__releases(&dpll_lock);
 
 int dpll_nl_device_id_get_doit(struct sk_buff *skb, struct genl_info *info);
 int dpll_nl_device_get_doit(struct sk_buff *skb, struct genl_info *info);

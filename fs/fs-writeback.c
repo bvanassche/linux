@@ -1671,7 +1671,7 @@ void inode_wait_for_writeback(struct inode *inode)
  * so once i_lock is dropped, inode can go away.
  */
 static void inode_sleep_on_writeback(struct inode *inode)
-	__releases(inode->i_lock)
+	__releases(&inode->i_lock)
 {
 	struct wait_bit_queue_entry wqe;
 	struct wait_queue_head *wq_head;
@@ -2971,6 +2971,7 @@ static void wait_sb_inodes(struct super_block *sb)
 
 static void __writeback_inodes_sb_nr(struct super_block *sb, unsigned long nr,
 				     enum wb_reason reason, bool skip_if_busy)
+	__must_hold_shared(&sb->s_umount)
 {
 	struct backing_dev_info *bdi = sb->s_bdi;
 	DEFINE_WB_COMPLETION(done, bdi);
@@ -3004,6 +3005,7 @@ static void __writeback_inodes_sb_nr(struct super_block *sb, unsigned long nr,
 void writeback_inodes_sb_nr(struct super_block *sb,
 			    unsigned long nr,
 			    enum wb_reason reason)
+	__must_hold_shared(&sb->s_umount)
 {
 	__writeback_inodes_sb_nr(sb, nr, reason, false);
 }
@@ -3019,6 +3021,7 @@ EXPORT_SYMBOL(writeback_inodes_sb_nr);
  * for IO completion of submitted IO.
  */
 void writeback_inodes_sb(struct super_block *sb, enum wb_reason reason)
+	__must_hold_shared(&sb->s_umount)
 {
 	writeback_inodes_sb_nr(sb, get_nr_dirty_pages(), reason);
 }

@@ -13,7 +13,7 @@
 #include "hfsplus_fs.h"
 
 int hfs_find_init(struct hfs_btree *tree, struct hfs_find_data *fd)
-	__cond_acquires(0, &tree->tree_lock)
+	__cond_acquires(0, &fd->tree->tree_lock)
 {
 	void *ptr;
 
@@ -27,7 +27,7 @@ int hfs_find_init(struct hfs_btree *tree, struct hfs_find_data *fd)
 	fd->key = ptr + tree->max_key_len + 2;
 	hfs_dbg("cnid %d, caller %ps\n",
 		tree->cnid, __builtin_return_address(0));
-	mutex_lock_nested(&tree->tree_lock,
+	mutex_lock_nested(&fd->tree->tree_lock,
 			hfsplus_btree_lock_class(tree));
 	return 0;
 }

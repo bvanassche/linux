@@ -397,8 +397,10 @@ int hfs_brec_insert(struct hfs_find_data *fd, void *entry, u32 entry_len);
 int hfs_brec_remove(struct hfs_find_data *fd);
 
 /* bfind.c */
-int hfs_find_init(struct hfs_btree *tree, struct hfs_find_data *fd);
-void hfs_find_exit(struct hfs_find_data *fd);
+int hfs_find_init(struct hfs_btree *tree, struct hfs_find_data *fd)
+	__cond_acquires(0, &fd->tree->tree_lock);
+void hfs_find_exit(struct hfs_find_data *fd)
+	__releases(&fd->tree->tree_lock);
 int hfs_find_1st_rec_by_cnid(struct hfs_bnode *bnode, struct hfs_find_data *fd,
 			     int *begin, int *end, int *cur_rec);
 int hfs_find_rec_by_key(struct hfs_bnode *bnode, struct hfs_find_data *fd,

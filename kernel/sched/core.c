@@ -4918,7 +4918,7 @@ int sched_fork(u64 clone_flags, struct task_struct *p)
 	if (dl_prio(p->prio))
 		return -EAGAIN;
 
-	scx_pre_fork(p);
+	context_unsafe(scx_pre_fork(p));
 
 	if (rt_prio(p->prio)) {
 		p->sched_class = &rt_sched_class;
@@ -4972,12 +4972,14 @@ int sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs)
 		p->sched_class->task_fork(p);
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 
-	return scx_fork(p, kargs);
+	/* sched_fork() acquired scx_fork_rwsem. */
+	return context_unsafe(scx_fork(p, kargs));
 }
 
 void sched_cancel_fork(struct task_struct *p)
 {
-	scx_cancel_fork(p);
+	/* Releases scx_fork_rwsem, acquired by sched_fork(). */
+	context_unsafe(scx_cancel_fork(p));
 }
 
 static void sched_mm_cid_fork(struct task_struct *t);
@@ -4986,7 +4988,8 @@ void sched_post_fork(struct task_struct *p)
 {
 	sched_mm_cid_fork(p);
 	uclamp_post_fork(p);
-	scx_post_fork(p);
+	/* Releases scx_fork_rwsem, acquired by sched_fork(). */
+	context_unsafe(scx_post_fork(p));
 }
 
 u64 to_ratio(u64 period, u64 runtime)

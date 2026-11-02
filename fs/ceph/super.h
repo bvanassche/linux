@@ -1105,15 +1105,8 @@ static inline int default_congestion_kb(void)
 /* super.c */
 extern int ceph_force_reconnect(struct super_block *sb);
 /* snap.c */
-struct ceph_snap_realm *ceph_lookup_snap_realm(struct ceph_mds_client *mdsc,
-					       u64 ino);
-extern void ceph_get_snap_realm(struct ceph_mds_client *mdsc,
-				struct ceph_snap_realm *realm);
 extern void ceph_put_snap_realm(struct ceph_mds_client *mdsc,
 				struct ceph_snap_realm *realm);
-extern int ceph_update_snap_trace(struct ceph_mds_client *m,
-				  void *p, void *e, bool deletion,
-				  struct ceph_snap_realm **realm_ret);
 void ceph_change_snap_realm(struct inode *inode, struct ceph_snap_realm *realm);
 extern void ceph_handle_snap(struct ceph_mds_client *mdsc,
 			     struct ceph_mds_session *session,

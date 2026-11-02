@@ -732,5 +732,16 @@ extern int ceph_wait_on_conflict_unlink(struct dentry *dentry);
 extern u64 ceph_get_deleg_ino(struct ceph_mds_session *session);
 extern int ceph_restore_deleg_ino(struct ceph_mds_session *session, u64 ino);
 
+/* snap.c */
+struct ceph_snap_realm *ceph_lookup_snap_realm(struct ceph_mds_client *mdsc,
+					       u64 ino)
+	__must_hold_shared(&mdsc->snap_rwsem);
+void ceph_get_snap_realm(struct ceph_mds_client *mdsc,
+			 struct ceph_snap_realm *realm)
+	__must_hold_shared(&mdsc->snap_rwsem);
+int ceph_update_snap_trace(struct ceph_mds_client *mdsc, void *p, void *e,
+			   bool deletion, struct ceph_snap_realm **realm_ret)
+	__must_hold(&mdsc->snap_rwsem);
+
 extern bool enable_unsafe_idmap;
 #endif

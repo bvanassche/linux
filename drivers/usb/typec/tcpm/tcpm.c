@@ -3399,7 +3399,8 @@ static inline enum tcpm_state ready_state(struct tcpm_port *port)
 
 static int tcpm_pd_send_control(struct tcpm_port *port,
 				enum pd_ctrl_msg_type type,
-				enum tcpm_transmit_type tx_sop_type);
+				enum tcpm_transmit_type tx_sop_type)
+	__must_hold(&port->lock);
 
 static void tcpm_handle_alert(struct tcpm_port *port, const __le32 *payload,
 			      int cnt)

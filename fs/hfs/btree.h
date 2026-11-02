@@ -142,8 +142,10 @@ extern int hfs_brec_insert(struct hfs_find_data *fd, void *entry, u32 entry_len)
 extern int hfs_brec_remove(struct hfs_find_data *fd);
 
 /* bfind.c */
-extern int hfs_find_init(struct hfs_btree *tree, struct hfs_find_data *fd);
-extern void hfs_find_exit(struct hfs_find_data *fd);
+extern int hfs_find_init(struct hfs_btree *tree, struct hfs_find_data *fd)
+	__cond_acquires(0, &fd->tree->tree_lock);
+extern void hfs_find_exit(struct hfs_find_data *fd)
+	__releases(&fd->tree->tree_lock);
 extern int __hfs_brec_find(struct hfs_bnode *bnode, struct hfs_find_data *fd);
 extern int hfs_brec_find(struct hfs_find_data *fd);
 extern int hfs_brec_read(struct hfs_find_data *fd, void *rec, u32 rec_len);

@@ -148,9 +148,11 @@ static inline int snd_pcm_plug_slave_format(int format, const struct snd_mask *f
 
 snd_pcm_sframes_t snd_pcm_oss_write3(struct snd_pcm_substream *substream,
 				     const char *ptr, snd_pcm_uframes_t size,
-				     int in_kernel);
+				     int in_kernel)
+	__must_hold(&substream->runtime->oss.params_lock);
 snd_pcm_sframes_t snd_pcm_oss_read3(struct snd_pcm_substream *substream,
-				    char *ptr, snd_pcm_uframes_t size, int in_kernel);
+				    char *ptr, snd_pcm_uframes_t size, int in_kernel)
+	__must_hold(&substream->runtime->oss.params_lock);
 snd_pcm_sframes_t snd_pcm_oss_writev3(struct snd_pcm_substream *substream,
 				      void **bufs, snd_pcm_uframes_t frames);
 snd_pcm_sframes_t snd_pcm_oss_readv3(struct snd_pcm_substream *substream,

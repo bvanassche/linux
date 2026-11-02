@@ -28,6 +28,7 @@ static snd_pcm_sframes_t io_playback_transfer(struct snd_pcm_plugin *plugin,
 		return -ENXIO;
 	if (snd_BUG_ON(!src_channels))
 		return -ENXIO;
+	lockdep_assume_ctx_held(&plugin->plug->runtime->oss.params_lock);
 	if (plugin->access == SNDRV_PCM_ACCESS_RW_INTERLEAVED) {
 		return pcm_write(plugin->plug, src_channels->area.addr, frames);
 	} else {
@@ -54,6 +55,7 @@ static snd_pcm_sframes_t io_capture_transfer(struct snd_pcm_plugin *plugin,
 		return -ENXIO;
 	if (snd_BUG_ON(!dst_channels))
 		return -ENXIO;
+	lockdep_assume_ctx_held(&plugin->plug->runtime->oss.params_lock);
 	if (plugin->access == SNDRV_PCM_ACCESS_RW_INTERLEAVED) {
 		return pcm_read(plugin->plug, dst_channels->area.addr, frames);
 	} else {

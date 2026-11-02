@@ -483,8 +483,8 @@ static bool inode_notify_dead(struct inode *inode)
  * d_iput() operation if defined.
  */
 static void dentry_unlink_inode(struct dentry * dentry)
-	__releases(dentry->d_lock)
-	__releases(dentry->d_inode->i_lock)
+	__releases(&dentry->d_lock)
+	__releases(&dentry->d_inode->i_lock)
 {
 	struct inode *inode = dentry->d_inode;
 	bool notify_dead;

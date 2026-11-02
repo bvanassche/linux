@@ -100,10 +100,12 @@ static inline bool percpu_down_read_trylock(struct percpu_rw_semaphore *sem)
 	/*
 	 * Same as in percpu_down_read().
 	 */
-	if (likely(rcu_sync_is_idle(&sem->rss)))
+	if (likely(rcu_sync_is_idle(&sem->rss))) {
 		this_cpu_inc(*sem->read_count);
-	else
+		__acquire_shared(sem);
+	} else {
 		ret = __percpu_down_read(sem, true, false); /* Unconditional memory barrier */
+	}
 	preempt_enable();
 	/*
 	 * The barrier() from preempt_enable() prevents the compiler from
@@ -114,7 +116,6 @@ static inline bool percpu_down_read_trylock(struct percpu_rw_semaphore *sem)
 		return false;
 
 	rwsem_acquire_read(&sem->dep_map, 0, 1, _RET_IP_);
-	__acquire_shared(sem);
 
 	return true;
 }

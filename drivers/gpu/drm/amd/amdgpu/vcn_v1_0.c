@@ -91,7 +91,8 @@ static int vcn_v1_0_pause_dpg_mode(struct amdgpu_vcn_inst *vinst,
 				   struct dpg_pause_state *new_state);
 
 static void vcn_v1_0_idle_work_handler(struct work_struct *work);
-static void vcn_v1_0_ring_begin_use(struct amdgpu_ring *ring);
+static void vcn_v1_0_ring_begin_use(struct amdgpu_ring *ring)
+	__acquires(&ring->adev->vcn.inst[0].vcn1_jpeg1_workaround);
 
 /**
  * vcn_v1_0_early_init - set function pointers and load microcode

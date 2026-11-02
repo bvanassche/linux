@@ -10,13 +10,15 @@ struct io_timeout_data {
 
 __cold void io_flush_timeouts(struct io_ring_ctx *ctx);
 struct io_cancel_data;
-int io_timeout_cancel(struct io_ring_ctx *ctx, struct io_cancel_data *cd);
+int io_timeout_cancel(struct io_ring_ctx *ctx, struct io_cancel_data *cd)
+	__must_hold(&ctx->completion_lock);
 __cold unsigned int io_timeouts_armed(struct io_ring_ctx *ctx,
 				      struct io_uring_task *tctx);
 __cold bool io_kill_timeouts(struct io_ring_ctx *ctx, struct io_uring_task *tctx,
 			     bool cancel_all);
 void io_queue_linked_timeout(struct io_kiocb *req);
-void io_disarm_next(struct io_kiocb *req);
+void io_disarm_next(struct io_kiocb *req)
+	__must_hold(&req->ctx->completion_lock);
 
 int io_timeout_prep(struct io_kiocb *req, const struct io_uring_sqe *sqe);
 int io_link_timeout_prep(struct io_kiocb *req, const struct io_uring_sqe *sqe);

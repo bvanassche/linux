@@ -148,7 +148,8 @@ int iopt_table_enforce_dev_resv_regions(struct io_pagetable *iopt,
 int iopt_set_allow_iova(struct io_pagetable *iopt,
 			struct rb_root_cached *allowed_iova);
 int iopt_reserve_iova(struct io_pagetable *iopt, unsigned long start,
-		      unsigned long last, void *owner);
+		      unsigned long last, void *owner)
+	__must_hold(&iopt->iova_rwsem);
 void iopt_remove_reserved_iova(struct io_pagetable *iopt, void *owner);
 int iopt_cut_iova(struct io_pagetable *iopt, unsigned long *iovas,
 		  size_t num_iovas);

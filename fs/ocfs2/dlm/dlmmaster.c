@@ -3300,6 +3300,7 @@ static int dlm_add_migration_mle(struct dlm_ctxt *dlm,
 static struct dlm_lock_resource *dlm_reset_mleres_owner(struct dlm_ctxt *dlm,
 					struct dlm_master_list_entry *mle)
 	__cond_releases(nonnull, &dlm->master_lock)
+	__must_hold(&dlm->spinlock)
 {
 	struct dlm_lock_resource *res;
 
@@ -3371,6 +3372,7 @@ static void dlm_clean_block_mle(struct dlm_ctxt *dlm,
 }
 
 void dlm_clean_master_list(struct dlm_ctxt *dlm, u8 dead_node)
+	__must_hold(&dlm->spinlock)
 {
 	struct dlm_master_list_entry *mle;
 	struct dlm_lock_resource *res;

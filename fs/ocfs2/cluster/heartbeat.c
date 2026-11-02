@@ -147,7 +147,8 @@ static unsigned int o2hb_dependent_users;
  * In global heartbeat mode, we pin/unpin all o2hb regions. This solution
  * works for both file system and userdlm domains.
  */
-static int o2hb_region_pin(const char *region_uuid, bool from_callback);
+static int o2hb_region_pin(const char *region_uuid, bool from_callback)
+	__must_hold(&o2hb_live_lock);
 static void o2hb_region_unpin(const char *region_uuid);
 
 /* Only sets a new threshold if there are no active regions.

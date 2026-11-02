@@ -528,6 +528,7 @@ EXPORT_SYMBOL(tty_port_lower_dtr_rts);
  */
 int tty_port_block_til_ready(struct tty_port *port,
 				struct tty_struct *tty, struct file *filp)
+	__context_unsafe(/* TODO */)
 {
 	int do_clocal = 0, retval;
 	DEFINE_WAIT(wait);

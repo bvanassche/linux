@@ -762,6 +762,7 @@ static const struct tty_operations pty_unix98_ops = {
  */
 
 static int ptmx_open(struct inode *inode, struct file *filp)
+	__context_unsafe(/* TODO */)
 {
 	struct pts_fs_info *fsi;
 	struct tty_struct *tty;

@@ -503,9 +503,12 @@ long vt_compat_ioctl(struct tty_struct *tty, unsigned int cmd,
 
 /* tty_mutex.c */
 /* functions for preparation of BKL removal */
-void tty_lock(struct tty_struct *tty);
-int  tty_lock_interruptible(struct tty_struct *tty);
-void tty_unlock(struct tty_struct *tty);
+void tty_lock(struct tty_struct *tty)
+	__acquires(&tty->legacy_mutex);
+int  tty_lock_interruptible(struct tty_struct *tty)
+	__cond_acquires(0, &tty->legacy_mutex);
+void tty_unlock(struct tty_struct *tty)
+	__releases(&tty->legacy_mutex);
 void tty_lock_slave(struct tty_struct *tty);
 void tty_unlock_slave(struct tty_struct *tty);
 void tty_set_lock_subclass(struct tty_struct *tty);

@@ -1359,6 +1359,7 @@ static int tty_reopen(struct tty_struct *tty)
  * Return: new tty structure
  */
 struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx)
+	__context_unsafe(/* TODO */)
 {
 	struct tty_struct *tty;
 	int retval;
@@ -1842,6 +1843,7 @@ int tty_release(struct inode *inode, struct file *filp)
  * will not work then. It expects inodes to be from devpts FS.
  */
 static struct tty_struct *tty_open_current_tty(dev_t device, struct file *filp)
+	__context_unsafe(/* TODO */)
 {
 	struct tty_struct *tty;
 	int retval;
@@ -2005,6 +2007,7 @@ EXPORT_SYMBOL_GPL(tty_kopen_shared);
  */
 static struct tty_struct *tty_open_by_driver(dev_t device,
 					     struct file *filp)
+	__context_unsafe(/* TODO */)
 {
 	struct tty_struct *tty;
 	struct tty_driver *driver = NULL;
@@ -2079,6 +2082,7 @@ out:
  * Note: the tty_unlock/lock cases without a ref are only safe due to %tty_mutex
  */
 static int tty_open(struct inode *inode, struct file *filp)
+	__context_unsafe(/* TODO */)
 {
 	struct tty_struct *tty;
 	int noctty, retval;

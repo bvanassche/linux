@@ -1680,6 +1680,7 @@ static void rcu_torture_write_types(void)
  * grace-period optimizations must be accounted for.
  */
 static void do_rtws_sync(struct torture_random_state *trsp, void (*sync)(void))
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned long cookie;
 	struct rcu_gp_seq cookie_full;

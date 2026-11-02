@@ -643,6 +643,7 @@ static void disable_formac(struct s_smc *smc)
 
 
 static void mac_ring_up(struct s_smc *smc, int up)
+	__must_hold(&smc->os.DriverLock)
 {
 	if (up) {
 		formac_rcv_restart(smc) ;	/* enable receive function */
@@ -670,6 +671,7 @@ static void mac_ring_up(struct s_smc *smc, int up)
  * 		ring status indication bits
  */
 void mac2_irq(struct s_smc *smc, u_short code_s2u, u_short code_s2l)
+	__must_hold(&smc->os.DriverLock)
 {
 	u_short	change_s2l ;
 	u_short	change_s2u ;

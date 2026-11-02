@@ -25,6 +25,7 @@ static int sysconfig_spi_cmd_transfer(struct sysconfig_priv *priv,
 }
 
 static int sysconfig_spi_bitstream_burst_init(struct sysconfig_priv *priv)
+	__context_unsafe(/* SPI bus remains locked until burst_complete */)
 {
 	const u8 lsc_bitstream_burst[] = SYSCONFIG_LSC_BITSTREAM_BURST;
 	struct spi_device *spi = to_spi_device(priv->dev);
@@ -78,6 +79,7 @@ static int sysconfig_spi_bitstream_burst_write(struct sysconfig_priv *priv,
 }
 
 static int sysconfig_spi_bitstream_burst_complete(struct sysconfig_priv *priv)
+	__context_unsafe(/* SPI bus remains locked until burst_complete */)
 {
 	struct spi_device *spi = to_spi_device(priv->dev);
 

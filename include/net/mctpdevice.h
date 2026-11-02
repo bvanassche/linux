@@ -52,7 +52,9 @@ void mctp_unregister_netdev(struct net_device *dev);
 void mctp_dev_hold(struct mctp_dev *mdev);
 void mctp_dev_put(struct mctp_dev *mdev);
 
-void mctp_dev_set_key(struct mctp_dev *dev, struct mctp_sk_key *key);
-void mctp_dev_release_key(struct mctp_dev *dev, struct mctp_sk_key *key);
+void mctp_dev_set_key(struct mctp_dev *dev, struct mctp_sk_key *key)
+	__must_hold(&key->lock);
+void mctp_dev_release_key(struct mctp_dev *dev, struct mctp_sk_key *key)
+	__must_hold(&key->lock);
 
 #endif /* __NET_MCTPDEVICE_H */

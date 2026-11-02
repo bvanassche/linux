@@ -7,6 +7,7 @@
 #define __LINUX_KERNFS_H
 
 #include <linux/err.h>
+#include <linux/fs/super_types.h>
 #include <linux/list.h>
 #include <linux/mutex.h>
 #include <linux/idr.h>
@@ -471,7 +472,8 @@ int kernfs_xattr_set(struct kernfs_node *kn, const char *name,
 const struct ns_common *kernfs_super_ns(struct super_block *sb);
 int kernfs_get_tree(struct fs_context *fc);
 void kernfs_free_fs_context(struct fs_context *fc);
-void kernfs_kill_sb(struct super_block *sb);
+void kernfs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount);
 
 void kernfs_init(void);
 

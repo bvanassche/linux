@@ -334,7 +334,8 @@ extern const struct fs_parameter_spec orangefs_fs_param_spec[];
 
 int orangefs_init_fs_context(struct fs_context *fc);
 
-void orangefs_kill_sb(struct super_block *sb);
+void orangefs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount);
 int orangefs_remount(struct orangefs_sb_info_s *);
 
 int fsid_key_table_initialize(void);

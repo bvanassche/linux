@@ -197,7 +197,8 @@ xfrm_policy_inexact_lookup(struct net *net, u8 type, u16 family, u8 dir,
 
 static struct xfrm_pol_inexact_bin *
 xfrm_policy_inexact_lookup_rcu(struct net *net,
-			       u8 type, u16 family, u8 dir, u32 if_id);
+			       u8 type, u16 family, u8 dir, u32 if_id)
+	__must_hold_shared(RCU);
 static struct xfrm_policy *
 xfrm_policy_insert_list(struct hlist_head *chain, struct xfrm_policy *policy,
 			bool excl);

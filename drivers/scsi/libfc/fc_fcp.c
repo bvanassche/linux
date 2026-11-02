@@ -83,10 +83,12 @@ static void fc_tm_done(struct fc_seq *, struct fc_frame *, void *);
 static void fc_fcp_error(struct fc_fcp_pkt *, struct fc_frame *);
 static void fc_fcp_recovery(struct fc_fcp_pkt *, u8 code);
 static void fc_fcp_timeout(struct timer_list *);
-static void fc_fcp_rec(struct fc_fcp_pkt *);
+static void fc_fcp_rec(struct fc_fcp_pkt *fsp)
+	__must_hold(&fsp->scsi_pkt_lock);
 static void fc_fcp_rec_error(struct fc_fcp_pkt *, struct fc_frame *);
 static void fc_fcp_rec_resp(struct fc_seq *, struct fc_frame *, void *);
-static void fc_io_compl(struct fc_fcp_pkt *);
+static void fc_io_compl(struct fc_fcp_pkt *fsp)
+	__must_hold(&fsp->scsi_pkt_lock);
 
 static void fc_fcp_srr(struct fc_fcp_pkt *, enum fc_rctl, u32);
 static void fc_fcp_srr_resp(struct fc_seq *, struct fc_frame *, void *);
@@ -986,6 +988,7 @@ err:
  * held, and the host lock must not be held.
  */
 static void fc_fcp_complete_locked(struct fc_fcp_pkt *fsp)
+	__must_hold(&fsp->scsi_pkt_lock)
 {
 	struct fc_lport *lport = fsp->lp;
 	struct fc_seq *seq;

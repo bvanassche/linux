@@ -783,7 +783,7 @@ __xfs_ail_assign_tail_lsn(
 void
 xfs_ail_update_finish(
 	struct xfs_ail		*ailp,
-	xfs_lsn_t		old_lsn) __releases(ailp->ail_lock)
+	xfs_lsn_t		old_lsn) __releases(&ailp->ail_lock)
 {
 	struct xlog		*log = ailp->ail_log;
 
@@ -830,7 +830,7 @@ xfs_trans_ail_update_bulk(
 	struct xfs_ail_cursor	*cur,
 	struct xfs_log_item	**log_items,
 	int			nr_items,
-	xfs_lsn_t		lsn) __releases(ailp->ail_lock)
+	xfs_lsn_t		lsn) __releases(&ailp->ail_lock)
 {
 	struct xfs_log_item	*mlip;
 	xfs_lsn_t		tail_lsn = 0;

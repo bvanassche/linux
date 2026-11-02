@@ -481,6 +481,7 @@ static int gfs2_write_inode(struct inode *inode, struct writeback_control *wbc)
  */
 
 static void gfs2_dirty_inode(struct inode *inode, int flags)
+	__context_unsafe(/* transaction spans functions / conditional locking */)
 {
 	struct gfs2_glock *gl = gfs2_inode_glock(inode);
 	struct gfs2_inode *ip = GFS2_I(inode);

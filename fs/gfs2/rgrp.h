@@ -91,7 +91,9 @@ static inline int rgrp_contains_block(struct gfs2_rgrpd *rgd, u64 block)
 
 void check_and_update_goal(struct gfs2_inode *ip);
 
-void rgrp_lock_local(struct gfs2_rgrpd *rgd);
-void rgrp_unlock_local(struct gfs2_rgrpd *rgd);
+void rgrp_lock_local(struct gfs2_rgrpd *rgd)
+	__acquires(&rgd->rd_mutex);
+void rgrp_unlock_local(struct gfs2_rgrpd *rgd)
+	__releases(&rgd->rd_mutex);
 
 #endif /* __RGRP_DOT_H__ */

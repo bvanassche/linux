@@ -179,6 +179,7 @@ static inline void mvs_int_sata(struct mvs_info *mvi)
 }
 
 static inline void mvs_int_full(struct mvs_info *mvi)
+	__must_hold(&mvi->lock)
 {
 	void __iomem *regs = mvi->regs;
 	u32 tmp, stat;

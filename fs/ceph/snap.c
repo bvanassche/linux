@@ -185,7 +185,8 @@ struct ceph_snap_realm *ceph_lookup_snap_realm(struct ceph_mds_client *mdsc,
 }
 
 static void __put_snap_realm(struct ceph_mds_client *mdsc,
-			     struct ceph_snap_realm *realm);
+			     struct ceph_snap_realm *realm)
+	__must_hold(&mdsc->snap_rwsem);
 
 /*
  * called with snap_rwsem (write)

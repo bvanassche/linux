@@ -136,8 +136,10 @@ const struct mei_cfg *mei_me_get_cfg(kernel_ulong_t idx);
 struct mei_device *mei_me_dev_init(struct device *parent,
 				   const struct mei_cfg *cfg, bool slow_fw);
 
-int mei_me_pg_enter_sync(struct mei_device *dev);
-int mei_me_pg_exit_sync(struct mei_device *dev);
+int mei_me_pg_enter_sync(struct mei_device *dev)
+	__must_hold(&dev->device_lock);
+int mei_me_pg_exit_sync(struct mei_device *dev)
+	__must_hold(&dev->device_lock);
 
 irqreturn_t mei_me_irq_quick_handler(int irq, void *dev_id);
 irqreturn_t mei_me_irq_thread_handler(int irq, void *dev_id);

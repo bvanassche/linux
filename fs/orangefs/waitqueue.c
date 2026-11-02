@@ -20,9 +20,9 @@
 static int wait_for_matching_downcall(struct orangefs_kernel_op_s *op,
 		long timeout,
 		int flags)
-			__acquires(op->lock);
+			__acquires(&op->lock);
 static void orangefs_clean_up_interrupted_operation(struct orangefs_kernel_op_s *op)
-	__releases(op->lock);
+	__releases(&op->lock);
 
 /*
  * What we do in this function is to walk the list of operations that are
@@ -249,7 +249,7 @@ bool orangefs_cancel_op_in_progress(struct orangefs_kernel_op_s *op)
  */
 static void
 	orangefs_clean_up_interrupted_operation(struct orangefs_kernel_op_s *op)
-		__releases(op->lock)
+		__releases(&op->lock)
 {
 	/*
 	 * handle interrupted cases depending on what state we were in when
@@ -319,7 +319,7 @@ static void
 static int wait_for_matching_downcall(struct orangefs_kernel_op_s *op,
 		long timeout,
 		int flags)
-			__acquires(op->lock)
+			__acquires(&op->lock)
 {
 	long n;
 	int writeback = flags & ORANGEFS_OP_WRITEBACK,

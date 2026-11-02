@@ -225,13 +225,15 @@ static inline void trdma_clean_swqe(struct rvt_qp *qp, struct rvt_swqe *wqe)
 	__trdma_clean_swqe(qp, wqe);
 }
 
-void hfi1_kern_read_tid_flow_free(struct rvt_qp *qp);
+void hfi1_kern_read_tid_flow_free(struct rvt_qp *qp)
+	__must_hold(&qp->s_lock);
 
 int hfi1_qp_priv_init(struct rvt_dev_info *rdi, struct rvt_qp *qp,
 		      struct ib_qp_init_attr *init_attr);
 void hfi1_qp_priv_tid_free(struct rvt_dev_info *rdi, struct rvt_qp *qp);
 
-void hfi1_tid_rdma_flush_wait(struct rvt_qp *qp);
+void hfi1_tid_rdma_flush_wait(struct rvt_qp *qp)
+	__must_hold(&qp->s_lock);
 
 int hfi1_kern_setup_hw_flow(struct hfi1_ctxtdata *rcd, struct rvt_qp *qp);
 void hfi1_kern_clear_hw_flow(struct hfi1_ctxtdata *rcd, struct rvt_qp *qp);
@@ -246,7 +248,8 @@ u32 hfi1_build_tid_rdma_read_packet(struct rvt_swqe *wqe,
 				    u32 *bth1, u32 *bth2, u32 *len);
 u32 hfi1_build_tid_rdma_read_req(struct rvt_qp *qp, struct rvt_swqe *wqe,
 				 struct ib_other_headers *ohdr, u32 *bth1,
-				 u32 *bth2, u32 *len);
+				 u32 *bth2, u32 *len)
+	__must_hold(&qp->s_lock);
 void hfi1_rc_rcv_tid_rdma_read_req(struct hfi1_packet *packet);
 u32 hfi1_build_tid_rdma_read_resp(struct rvt_qp *qp, struct rvt_ack_entry *e,
 				  struct ib_other_headers *ohdr, u32 *bth0,
@@ -308,7 +311,8 @@ u32 hfi1_build_tid_rdma_resync(struct rvt_qp *qp, struct rvt_swqe *wqe,
 void hfi1_rc_rcv_tid_rdma_resync(struct hfi1_packet *packet);
 
 struct hfi1_pkt_state;
-int hfi1_make_tid_rdma_pkt(struct rvt_qp *qp, struct hfi1_pkt_state *ps);
+int hfi1_make_tid_rdma_pkt(struct rvt_qp *qp, struct hfi1_pkt_state *ps)
+	__must_hold(&qp->s_lock);
 
 void _hfi1_do_tid_send(struct work_struct *work);
 

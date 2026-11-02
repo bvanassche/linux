@@ -1892,6 +1892,7 @@ static int mptcp_disconnect(struct sock *sk, int flags);
 
 static int mptcp_sendmsg_fastopen(struct sock *sk, struct msghdr *msg,
 				  size_t len, int *copied_syn)
+	__must_hold(sk)
 {
 	unsigned int saved_flags = msg->msg_flags;
 	struct mptcp_sock *msk = mptcp_sk(sk);
@@ -1924,6 +1925,7 @@ static int mptcp_sendmsg_fastopen(struct sock *sk, struct msghdr *msg,
 
 	/* do the blocking bits of inet_stream_connect outside the ssk socket lock */
 	if (ret == -EINPROGRESS && !(msg->msg_flags & MSG_DONTWAIT)) {
+		__assume_ctx_lock(sk->sk_socket->sk);
 		ret = __inet_stream_connect(sk->sk_socket, msg->msg_name,
 					    msg->msg_namelen, msg->msg_flags, 1);
 

@@ -2840,6 +2840,7 @@ static int process_control(struct ceph_connection *con, void *p, void *end)
  */
 static int process_message_header(struct ceph_connection *con,
 				  void *p, void *end)
+	__must_hold(&con->mutex)
 {
 	struct ceph_frame_desc *desc = &con->v2.in_desc;
 	struct ceph_msg_header2 *hdr2;
@@ -2888,6 +2889,7 @@ bad:
 }
 
 static int process_message(struct ceph_connection *con)
+	__must_hold(&con->mutex)
 {
 	ceph_con_process_message(con);
 
@@ -3034,6 +3036,7 @@ static int handle_control_remainder(struct ceph_connection *con)
 }
 
 static int handle_epilogue(struct ceph_connection *con)
+	__must_hold(&con->mutex)
 {
 	u32 front_crc, middle_crc, data_crc;
 	int ret;

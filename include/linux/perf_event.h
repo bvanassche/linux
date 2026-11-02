@@ -1898,17 +1898,21 @@ extern void perf_report_aux_output_id(struct perf_event *event, u64 hw_id);
 
 extern int perf_output_begin(struct perf_output_handle *handle,
 			     struct perf_sample_data *data,
-			     struct perf_event *event, unsigned int size);
+			     struct perf_event *event, unsigned int size)
+	__cond_acquires_shared(0, RCU);
 extern int perf_output_begin_forward(struct perf_output_handle *handle,
 				     struct perf_sample_data *data,
 				     struct perf_event *event,
-				     unsigned int size);
+				     unsigned int size)
+	__cond_acquires_shared(0, RCU);
 extern int perf_output_begin_backward(struct perf_output_handle *handle,
 				      struct perf_sample_data *data,
 				      struct perf_event *event,
-				      unsigned int size);
+				      unsigned int size)
+	__cond_acquires_shared(0, RCU);
 
-extern void perf_output_end(struct perf_output_handle *handle);
+extern void perf_output_end(struct perf_output_handle *handle)
+	__releases_shared(RCU);
 extern unsigned int perf_output_copy(struct perf_output_handle *handle,
 				     const void *buf, unsigned int len);
 extern unsigned int perf_output_skip(struct perf_output_handle *handle,

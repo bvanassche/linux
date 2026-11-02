@@ -273,6 +273,7 @@ out:
 int perf_output_begin_forward(struct perf_output_handle *handle,
 			      struct perf_sample_data *data,
 			      struct perf_event *event, unsigned int size)
+	__cond_acquires_shared(0, RCU)
 {
 	return __perf_output_begin(handle, data, event, size, false);
 }
@@ -280,6 +281,7 @@ int perf_output_begin_forward(struct perf_output_handle *handle,
 int perf_output_begin_backward(struct perf_output_handle *handle,
 			       struct perf_sample_data *data,
 			       struct perf_event *event, unsigned int size)
+	__cond_acquires_shared(0, RCU)
 {
 	return __perf_output_begin(handle, data, event, size, true);
 }
@@ -287,6 +289,7 @@ int perf_output_begin_backward(struct perf_output_handle *handle,
 int perf_output_begin(struct perf_output_handle *handle,
 		      struct perf_sample_data *data,
 		      struct perf_event *event, unsigned int size)
+	__cond_acquires_shared(0, RCU)
 {
 
 	return __perf_output_begin(handle, data, event, size,

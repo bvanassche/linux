@@ -897,7 +897,8 @@ struct sta_info *sta_info_get_bss(struct ieee80211_sub_if_data *sdata,
 
 /* user must hold wiphy mutex or be in RCU critical section */
 struct sta_info *sta_info_get_by_addrs(struct ieee80211_local *local,
-				       const u8 *sta_addr, const u8 *vif_addr);
+				       const u8 *sta_addr, const u8 *vif_addr)
+	__must_hold_shared(RCU);
 
 #define for_each_sta_info(local, _addr, _sta, _tmp)			\
 	rhl_for_each_entry_rcu(_sta, _tmp,				\

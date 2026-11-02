@@ -743,6 +743,7 @@ void nilfs_update_inode(struct inode *inode, struct buffer_head *ibh, int flags)
 
 static void nilfs_truncate_bmap(struct nilfs_inode_info *ii,
 				unsigned long from)
+	__context_unsafe(/* called inside a transaction that holds ns_segctor_sem */)
 {
 	__u64 b;
 	int ret;

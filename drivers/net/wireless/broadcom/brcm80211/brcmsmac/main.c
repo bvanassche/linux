@@ -2592,6 +2592,7 @@ bool brcms_c_isr(struct brcms_c_info *wlc)
 }
 
 void brcms_c_suspend_mac_and_wait(struct brcms_c_info *wlc)
+	__context_unsafe(/* TODO */)
 {
 	struct brcms_hardware *wlc_hw = wlc->hw;
 	struct bcma_device *core = wlc_hw->d11core;
@@ -4141,6 +4142,7 @@ bool brcms_c_check_radio_disabled(struct brcms_c_info *wlc)
 
 /* periodical query hw radio button while driver is "down" */
 static void brcms_c_radio_timer(void *arg)
+	__context_unsafe(/* TODO */)
 {
 	struct brcms_c_info *wlc = (struct brcms_c_info *) arg;
 
@@ -4176,6 +4178,7 @@ static void brcms_b_watchdog(struct brcms_c_info *wlc)
 
 /* common watchdog code */
 static void brcms_c_watchdog(struct brcms_c_info *wlc)
+	__context_unsafe(/* TODO */)
 {
 	brcms_dbg_info(wlc->hw->d11core, "wl%d\n", wlc->pub->unit);
 
@@ -7671,6 +7674,7 @@ brcms_b_recv(struct brcms_hardware *wlc_hw, uint fifo, bool bound)
  *   Param 'bounded' indicates if applicable loops should be bounded.
  */
 bool brcms_c_dpc(struct brcms_c_info *wlc, bool bounded)
+	__context_unsafe(/* TODO */)
 {
 	u32 macintstatus;
 	struct brcms_hardware *wlc_hw = wlc->hw;

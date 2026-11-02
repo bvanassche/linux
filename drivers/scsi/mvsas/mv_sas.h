@@ -438,16 +438,21 @@ void mvs_port_deformed(struct asd_sas_phy *sas_phy);
 int mvs_dev_found(struct domain_device *dev);
 void mvs_dev_gone(struct domain_device *dev);
 int mvs_lu_reset(struct domain_device *dev, u8 *lun);
-int mvs_slot_complete(struct mvs_info *mvi, u32 rx_desc, u32 flags);
+int mvs_slot_complete(struct mvs_info *mvi, u32 rx_desc, u32 flags)
+	__must_hold(&mvi->lock);
 int mvs_I_T_nexus_reset(struct domain_device *dev);
 int mvs_query_task(struct sas_task *task);
 void mvs_release_task(struct mvs_info *mvi,
-			struct domain_device *dev);
+			struct domain_device *dev)
+	__must_hold(&mvi->lock);
 void mvs_do_release_task(struct mvs_info *mvi, int phy_no,
-			struct domain_device *dev);
-void mvs_int_port(struct mvs_info *mvi, int phy_no, u32 events);
+			struct domain_device *dev)
+	__must_hold(&mvi->lock);
+void mvs_int_port(struct mvs_info *mvi, int phy_no, u32 events)
+	__must_hold(&mvi->lock);
 void mvs_update_phyinfo(struct mvs_info *mvi, int i, int get_st);
-int mvs_int_rx(struct mvs_info *mvi, bool self_clear);
+int mvs_int_rx(struct mvs_info *mvi, bool self_clear)
+	__must_hold(&mvi->lock);
 struct mvs_device *mvs_find_dev_by_reg_set(struct mvs_info *mvi, u8 reg_set);
 int mvs_gpio_write(struct sas_ha_struct *, u8 reg_type, u8 reg_index,
 			u8 reg_count, u8 *write_data);

@@ -93,9 +93,11 @@ extern struct key_type *key_type_lookup(const char *type);
 extern void key_type_put(struct key_type *ktype);
 
 extern int __key_link_lock(struct key *keyring,
-			   const struct keyring_index_key *index_key);
+			   const struct keyring_index_key *index_key)
+	__cond_acquires(0, &keyring->sem);
 extern int __key_move_lock(struct key *l_keyring, struct key *u_keyring,
-			   const struct keyring_index_key *index_key);
+			   const struct keyring_index_key *index_key)
+	__cond_acquires(0, &l_keyring->sem);
 extern int __key_link_begin(struct key *keyring,
 			    const struct keyring_index_key *index_key,
 			    struct assoc_array_edit **_edit);
@@ -104,7 +106,8 @@ extern void __key_link(struct key *keyring, struct key *key,
 		       struct assoc_array_edit **_edit);
 extern void __key_link_end(struct key *keyring,
 			   const struct keyring_index_key *index_key,
-			   struct assoc_array_edit *edit);
+			   struct assoc_array_edit *edit)
+	__releases(&keyring->sem);
 
 extern key_ref_t find_key_to_update(key_ref_t keyring_ref,
 				    const struct keyring_index_key *index_key);

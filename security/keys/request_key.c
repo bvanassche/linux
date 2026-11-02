@@ -371,6 +371,7 @@ static int construct_alloc_key(struct keyring_search_context *ctx,
 			       unsigned long flags,
 			       struct key_user *user,
 			       struct key **_key)
+	__context_unsafe(/* TODO */)
 {
 	struct assoc_array_edit *edit = NULL;
 	struct key *key;

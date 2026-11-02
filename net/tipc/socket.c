@@ -154,10 +154,13 @@ static int tipc_sk_leave(struct tipc_sock *tsk);
 static struct tipc_sock *tipc_sk_lookup(struct net *net, u32 portid);
 static int tipc_sk_insert(struct tipc_sock *tsk);
 static void tipc_sk_remove(struct tipc_sock *tsk);
-static int __tipc_sendstream(struct socket *sock, struct msghdr *m, size_t dsz);
-static int __tipc_sendmsg(struct socket *sock, struct msghdr *m, size_t dsz);
+static int __tipc_sendstream(struct socket *sock, struct msghdr *m, size_t dsz)
+	__must_hold(sock->sk);
+static int __tipc_sendmsg(struct socket *sock, struct msghdr *m, size_t dsz)
+	__must_hold(sock->sk);
 static void tipc_sk_push_backlog(struct tipc_sock *tsk, bool nagle_ack);
-static int tipc_wait_for_connect(struct socket *sock, long *timeo_p);
+static int tipc_wait_for_connect(struct socket *sock, long *timeo_p)
+	__must_hold(sock->sk);
 
 static const struct proto_ops packet_ops;
 static const struct proto_ops stream_ops;

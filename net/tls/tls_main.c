@@ -171,6 +171,7 @@ int tls_push_sg(struct sock *sk,
 		struct scatterlist *sg,
 		u16 first_offset,
 		int flags)
+	__must_hold(sk)
 {
 	struct bio_vec bvec;
 	struct msghdr msg = {
@@ -266,6 +267,7 @@ int tls_process_cmsg(struct sock *sk, struct msghdr *msg,
 
 int tls_push_partial_record(struct sock *sk, struct tls_context *ctx,
 			    int flags)
+	__context_unsafe(/* TODO */)
 {
 	struct scatterlist *sg;
 	u16 offset;

@@ -2216,6 +2216,7 @@ static void __move_netdevice_notifier_net(struct net *src_net,
 }
 
 static void rtnl_net_dev_lock(struct net_device *dev)
+	__acquires(&dev_net(dev)->rtnl_mutex)
 {
 	bool again;
 
@@ -2238,12 +2239,17 @@ static void rtnl_net_dev_lock(struct net_device *dev)
 			rtnl_net_unlock(net);
 			net_passive_dec(net);
 			again = true;
+			continue;
 		}
 #endif
+		__release(&net->rtnl_mutex);
 	} while (again);
+
+	__acquire(&dev_net(dev)->rtnl_mutex);
 }
 
 static void rtnl_net_dev_unlock(struct net_device *dev)
+	__releases(&dev_net(dev)->rtnl_mutex)
 {
 	struct net *net = dev_net(dev);
 

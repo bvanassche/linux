@@ -910,7 +910,8 @@ int fib_newrule(struct net *net, struct sk_buff *skb, struct nlmsghdr *nlh,
 
 	if (!rtnl_held && ops->need_rtnl && ops->need_rtnl(net)) {
 		unlock_rtnl = true;
-		rtnl_net_lock(net);
+		context_unsafe(rtnl_net_lock(net));
+		__release(&net->rtnl_mutex);
 	}
 	mutex_lock(&ops->lock);
 
@@ -982,8 +983,10 @@ int fib_newrule(struct net *net, struct sk_buff *skb, struct nlmsghdr *nlh,
 	fib_rule_get(rule);
 
 	mutex_unlock(&ops->lock);
-	if (unlock_rtnl)
+	if (unlock_rtnl) {
+		__acquire(&net->rtnl_mutex);
 		rtnl_net_unlock(net);
+	}
 
 	notify_rule_change(RTM_NEWRULE, rule, ops, nlh, NETLINK_CB(skb).portid);
 	fib_rule_put(rule);
@@ -993,8 +996,10 @@ int fib_newrule(struct net *net, struct sk_buff *skb, struct nlmsghdr *nlh,
 
 errout_free:
 	mutex_unlock(&ops->lock);
-	if (unlock_rtnl)
+	if (unlock_rtnl) {
+		__acquire(&net->rtnl_mutex);
 		rtnl_net_unlock(net);
+	}
 	kfree(rule);
 errout:
 	rules_ops_put(ops);

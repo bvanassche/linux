@@ -98,12 +98,18 @@ static inline bool lockdep_rtnl_is_held(void)
 	rcu_replace_pointer(rp, p, lockdep_rtnl_is_held())
 
 #ifdef CONFIG_DEBUG_NET_SMALL_RTNL
-void __rtnl_net_lock(struct net *net);
-void __rtnl_net_unlock(struct net *net);
-void rtnl_net_lock(struct net *net);
-void rtnl_net_unlock(struct net *net);
-int rtnl_net_trylock(struct net *net);
-int rtnl_net_lock_killable(struct net *net);
+void __rtnl_net_lock(struct net *net)
+	__acquires(&net->rtnl_mutex);
+void __rtnl_net_unlock(struct net *net)
+	__releases(&net->rtnl_mutex);
+void rtnl_net_lock(struct net *net)
+	__acquires(&net->rtnl_mutex);
+void rtnl_net_unlock(struct net *net)
+	__releases(&net->rtnl_mutex);
+int rtnl_net_trylock(struct net *net)
+	__cond_acquires(true, &net->rtnl_mutex);
+int rtnl_net_lock_killable(struct net *net)
+	__cond_acquires(0, &net->rtnl_mutex);
 int rtnl_net_lock_cmp_fn(const struct lockdep_map *a, const struct lockdep_map *b);
 
 bool rtnl_net_is_locked(struct net *net);

@@ -1499,6 +1499,7 @@ static int arp_seq_show(struct seq_file *seq, void *v)
 }
 
 static void *arp_seq_start(struct seq_file *seq, loff_t *pos)
+	__acquires(&arp_table(seq_file_net(seq))->lock)
 {
 	struct neigh_table *tbl = arp_table(seq_file_net(seq));
 

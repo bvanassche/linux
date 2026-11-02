@@ -1286,16 +1286,16 @@ void ocelot_unlock_inj_grp(struct ocelot *ocelot, int grp)
 EXPORT_SYMBOL_GPL(ocelot_unlock_inj_grp);
 
 void ocelot_lock_xtr_grp(struct ocelot *ocelot, int grp)
-			 __acquires(&ocelot->inj_lock)
+			 __acquires(&ocelot->xtr_lock)
 {
-	spin_lock(&ocelot->inj_lock);
+	spin_lock(&ocelot->xtr_lock);
 }
 EXPORT_SYMBOL_GPL(ocelot_lock_xtr_grp);
 
 void ocelot_unlock_xtr_grp(struct ocelot *ocelot, int grp)
-			   __releases(&ocelot->inj_lock)
+			   __releases(&ocelot->xtr_lock)
 {
-	spin_unlock(&ocelot->inj_lock);
+	spin_unlock(&ocelot->xtr_lock);
 }
 EXPORT_SYMBOL_GPL(ocelot_unlock_xtr_grp);
 

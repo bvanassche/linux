@@ -18,6 +18,7 @@
 #include <linux/refcount.h>
 #include <linux/ref_tracker.h>
 #include "ctree.h"
+#include "btrfs_inode.h"
 
 struct btrfs_disk_key;
 struct btrfs_fs_info;
@@ -169,7 +170,9 @@ bool btrfs_readdir_get_delayed_items(struct btrfs_inode *inode,
 				     struct list_head *del_list);
 void btrfs_readdir_put_delayed_items(struct btrfs_inode *inode,
 				     struct list_head *ins_list,
-				     struct list_head *del_list);
+				     struct list_head *del_list)
+	__releases(&inode->vfs_inode.i_rwsem)
+	__acquires_shared(&inode->vfs_inode.i_rwsem);
 bool btrfs_should_delete_dir_index(const struct list_head *del_list, u64 index);
 bool btrfs_readdir_delayed_dir_index(struct dir_context *ctx,
 				     const struct list_head *ins_list);

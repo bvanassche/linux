@@ -7,6 +7,7 @@
  *
  */
 
+#include <linux/minmax.h>
 #include <linux/module.h>
 #include <linux/pci.h>
 #include <linux/sysfb.h>
@@ -46,6 +47,7 @@ bool video_is_primary_device(struct device *dev)
 #ifdef CONFIG_SCREEN_INFO
 	numres = screen_info_resources(si, res, ARRAY_SIZE(res));
 	if (numres > 0) {
+		numres = min_t(ssize_t, numres, ARRAY_SIZE(res));
 		for (i = 0; i < numres; ++i) {
 			if (!(res[i].flags & IORESOURCE_MEM))
 				continue;

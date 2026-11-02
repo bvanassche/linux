@@ -183,11 +183,14 @@ int create_hyp_stack(phys_addr_t phys_addr, unsigned long *haddr);
 void __init free_hyp_pgds(void);
 
 void kvm_stage2_unmap_range(struct kvm *kvm, struct kvm_s2_mmu *mmu,
-			    phys_addr_t start, u64 size, bool may_block);
+			    phys_addr_t start, u64 size, bool may_block)
+	__must_hold(&kvm->mmu_lock);
 void kvm_stage2_flush_range(struct kvm *kvm, struct kvm_s2_mmu *mmu,
-			    phys_addr_t addr, phys_addr_t end);
+			    phys_addr_t addr, phys_addr_t end)
+	__must_hold(&kvm->mmu_lock);
 void kvm_stage2_wp_range(struct kvm *kvm, struct kvm_s2_mmu *mmu,
-			 phys_addr_t addr, phys_addr_t end);
+			 phys_addr_t addr, phys_addr_t end)
+	__must_hold(&kvm->mmu_lock);
 
 void stage2_unmap_vm(struct kvm *kvm);
 int kvm_init_stage2_mmu(struct kvm *kvm, struct kvm_s2_mmu *mmu, unsigned long type);

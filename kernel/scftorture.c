@@ -343,6 +343,7 @@ static void scf_handler_1(void *scfc_in)
 
 // Randomly do an smp_call_function*() invocation.
 static void scftorture_invoke_one(struct scf_statistics *scfp, struct torture_random_state *trsp)
+	__context_unsafe(/* conditional locking */)
 {
 	bool allocfail = false;
 	uintptr_t cpu;

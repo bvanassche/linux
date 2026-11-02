@@ -526,24 +526,32 @@ int key_instantiate_and_link(struct key *key,
 			goto error;
 
 		ret = __key_link_begin(keyring, &key->index_key, &edit);
-		if (ret < 0)
-			goto error_link_end;
+		if (ret < 0) {
+			__key_link_end(keyring, &key->index_key, edit);
+			goto error;
+		}
 
 		if (keyring->restrict_link && keyring->restrict_link->check) {
 			struct key_restriction *keyres = keyring->restrict_link;
 
 			ret = keyres->check(keyring, key->type, &prep.payload,
 					    keyres->key);
-			if (ret < 0)
-				goto error_link_end;
+			if (ret < 0) {
+				__key_link_end(keyring, &key->index_key, edit);
+				goto error;
+			}
 		}
+		__release(&keyring->sem);
+		__release(&keyring_serialise_link_lock);
 	}
 
 	ret = __key_instantiate_and_link(key, &prep, keyring, authkey, &edit);
 
-error_link_end:
-	if (keyring)
+	if (keyring) {
+		__acquire(&keyring->sem);
+		__acquire(&keyring_serialise_link_lock);
 		__key_link_end(keyring, &key->index_key, edit);
+	}
 
 error:
 	if (key->type->preparse)
@@ -591,7 +599,7 @@ int key_reject_and_link(struct key *key,
 
 	if (keyring) {
 		link_ret = __key_link_lock(keyring, &key->index_key);
-		if (link_ret == 0) {
+		if (link_ret >= 0) {
 			/*
 			 * Check the restriction under the keyring semaphore.
 			 * keyring_restrict() installs it while holding the
@@ -603,8 +611,12 @@ int key_reject_and_link(struct key *key,
 				return -EPERM;
 			}
 			link_ret = __key_link_begin(keyring, &key->index_key, &edit);
-			if (link_ret < 0)
+			if (link_ret < 0) {
 				__key_link_end(keyring, &key->index_key, edit);
+			} else {
+				__release(&keyring->sem);
+				__release(&keyring_serialise_link_lock);
+			}
 		}
 	}
 
@@ -634,8 +646,11 @@ int key_reject_and_link(struct key *key,
 
 	mutex_unlock(&key_construction_mutex);
 
-	if (keyring && link_ret == 0)
+	if (keyring && link_ret == 0) {
+		__acquire(&keyring->sem);
+		__acquire(&keyring_serialise_link_lock);
 		__key_link_end(keyring, &key->index_key, edit);
+	}
 
 	/* wake up anyone waiting for a key to be constructed */
 	if (awaken)

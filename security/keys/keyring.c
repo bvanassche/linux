@@ -101,7 +101,7 @@ EXPORT_SYMBOL(key_type_keyring);
  * Semaphore to serialise link/link calls to prevent two link calls in parallel
  * introducing a cycle.
  */
-static DEFINE_MUTEX(keyring_serialise_link_lock);
+DEFINE_MUTEX(keyring_serialise_link_lock);
 
 /*
  * Publish the name of a keyring so that it can be found by name (if it has

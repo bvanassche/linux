@@ -92,7 +92,8 @@ extern const struct dentry_operations configfs_dentry_ops;
 
 extern int configfs_symlink(const struct mnt_idmap *idmap,
 			    struct inode *dir, struct dentry *dentry,
-			    const char *symname);
+			    const char *symname)
+	__must_hold(&dir->i_rwsem);
 extern int configfs_unlink(struct inode *dir, struct dentry *dentry);
 
 int configfs_create_link(struct configfs_dirent *target, struct dentry *parent,

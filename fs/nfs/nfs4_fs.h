@@ -29,6 +29,8 @@
 #include <linux/seqlock.h>
 #include <linux/filelock.h>
 
+#include "netns.h"
+
 struct idmap;
 
 enum nfs4_client_state {
@@ -290,9 +292,9 @@ int nfs_atomic_open(struct inode *, struct dentry *, struct file *,
 extern struct file_system_type nfs4_fs_type;
 
 /* nfs4client.c */
-struct nfs_net;
 int nfs4_match_client(struct nfs_client *pos, struct nfs_client *new,
-		      struct nfs_client **prev, struct nfs_net *nn);
+		      struct nfs_client **prev, struct nfs_net *nn)
+	__must_hold(&nn->nfs_client_lock);
 
 /* nfs4namespace.c */
 struct rpc_clnt *nfs4_negotiate_security(struct rpc_clnt *, struct inode *,

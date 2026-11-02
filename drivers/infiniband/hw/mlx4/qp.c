@@ -50,9 +50,11 @@
 #include <rdma/mlx4-abi.h>
 
 static void mlx4_ib_lock_cqs(struct mlx4_ib_cq *send_cq,
-			     struct mlx4_ib_cq *recv_cq);
+			     struct mlx4_ib_cq *recv_cq)
+	__acquires(&send_cq->lock) __acquires(&recv_cq->lock);
 static void mlx4_ib_unlock_cqs(struct mlx4_ib_cq *send_cq,
-			       struct mlx4_ib_cq *recv_cq);
+			       struct mlx4_ib_cq *recv_cq)
+	__releases(&send_cq->lock) __releases(&recv_cq->lock);
 static int _mlx4_ib_modify_wq(struct ib_wq *ibwq, enum ib_wq_state new_state,
 			      struct ib_udata *udata);
 

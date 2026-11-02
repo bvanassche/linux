@@ -2051,9 +2051,12 @@ void pci_cfg_access_lock(struct pci_dev *dev);
 bool pci_cfg_access_trylock(struct pci_dev *dev);
 void pci_cfg_access_unlock(struct pci_dev *dev);
 
-void pci_dev_lock(struct pci_dev *dev);
-int pci_dev_trylock(struct pci_dev *dev);
-void pci_dev_unlock(struct pci_dev *dev);
+void pci_dev_lock(struct pci_dev *dev)
+	__acquires(&dev->dev.mutex);
+int pci_dev_trylock(struct pci_dev *dev)
+	__cond_acquires(true, &dev->dev.mutex);
+void pci_dev_unlock(struct pci_dev *dev)
+	__releases(&dev->dev.mutex);
 DEFINE_GUARD(pci_dev, struct pci_dev *, pci_dev_lock(_T), pci_dev_unlock(_T))
 
 /*

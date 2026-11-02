@@ -503,6 +503,7 @@ int key_instantiate_and_link(struct key *key,
 			     size_t datalen,
 			     struct key *keyring,
 			     struct key *authkey)
+	__context_unsafe(/* conditional locking */)
 {
 	struct key_preparsed_payload prep;
 	struct assoc_array_edit *edit = NULL;
@@ -579,6 +580,7 @@ int key_reject_and_link(struct key *key,
 			unsigned error,
 			struct key *keyring,
 			struct key *authkey)
+	__context_unsafe(/* conditional locking */)
 {
 	struct assoc_array_edit *edit = NULL;
 	int ret, awaken, link_ret = 0;

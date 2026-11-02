@@ -569,8 +569,10 @@ void qede_reload(struct qede_dev *edev,
 		 struct qede_reload_args *args, bool is_locked);
 int qede_change_mtu(struct net_device *dev, int new_mtu);
 void qede_fill_by_demand_stats(struct qede_dev *edev);
-void __qede_lock(struct qede_dev *edev);
-void __qede_unlock(struct qede_dev *edev);
+void __qede_lock(struct qede_dev *edev)
+	__acquires(&edev->qede_lock);
+void __qede_unlock(struct qede_dev *edev)
+	__releases(&edev->qede_lock);
 bool qede_has_rx_work(struct qede_rx_queue *rxq);
 int qede_txq_has_work(struct qede_tx_queue *txq);
 void qede_recycle_rx_bd_ring(struct qede_rx_queue *rxq, u8 count);

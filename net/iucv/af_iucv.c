@@ -90,7 +90,7 @@ do {									\
 static struct sock *iucv_accept_dequeue(struct sock *parent,
 					struct socket *newsock);
 static void iucv_sock_kill(struct sock *sk);
-static void __iucv_sock_close(struct sock *sk);
+static void __iucv_sock_close(struct sock *sk) __must_hold(sk);
 
 static void afiucv_hs_callback_txnotify(struct sock *sk, enum iucv_tx_notify);
 
@@ -401,6 +401,7 @@ static int iucv_send_ctrl(struct sock *sk, u8 flags)
  * @sk: network socket
  */
 static void __iucv_sock_close(struct sock *sk)
+	__must_hold(sk)
 {
 	struct iucv_sock *iucv = iucv_sk(sk);
 	unsigned long timeo;

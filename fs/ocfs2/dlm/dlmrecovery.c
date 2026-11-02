@@ -35,7 +35,8 @@
 #define MLOG_MASK_PREFIX (ML_DLM|ML_DLM_RECOVERY)
 #include "../cluster/masklog.h"
 
-static void dlm_do_local_recovery_cleanup(struct dlm_ctxt *dlm, u8 dead_node);
+static void dlm_do_local_recovery_cleanup(struct dlm_ctxt *dlm, u8 dead_node)
+	__must_hold(&dlm->spinlock);
 
 static int dlm_recovery_thread(void *data);
 static int dlm_do_recovery(struct dlm_ctxt *dlm);
@@ -2325,6 +2326,7 @@ static void dlm_free_dead_locks(struct dlm_ctxt *dlm,
 }
 
 static void dlm_do_local_recovery_cleanup(struct dlm_ctxt *dlm, u8 dead_node)
+	__must_hold(&dlm->spinlock)
 {
 	struct dlm_lock_resource *res;
 	int i;
@@ -2425,6 +2427,7 @@ static void dlm_do_local_recovery_cleanup(struct dlm_ctxt *dlm, u8 dead_node)
 }
 
 static void __dlm_hb_node_down(struct dlm_ctxt *dlm, int idx)
+	__must_hold(&dlm->spinlock)
 {
 	assert_spin_locked(&dlm->spinlock);
 

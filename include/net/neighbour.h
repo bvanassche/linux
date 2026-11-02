@@ -415,10 +415,14 @@ struct neigh_seq_state {
 #define NEIGH_SEQ_IS_PNEIGH	0x00000002
 #define NEIGH_SEQ_SKIP_NOARP	0x00000004
 };
-void *neigh_seq_start(struct seq_file *, loff_t *, struct neigh_table *,
-		      unsigned int);
+void *neigh_seq_start(struct seq_file *seq, loff_t *pos,
+		      struct neigh_table *tbl, unsigned int neigh_seq_flags)
+	__acquires(&tbl->lock)
+	__acquires_shared(RCU);
 void *neigh_seq_next(struct seq_file *, void *, loff_t *);
-void neigh_seq_stop(struct seq_file *, void *);
+void neigh_seq_stop(struct seq_file *seq, void *v)
+	__releases(&((struct neigh_seq_state *)seq->private)->tbl->lock)
+	__releases_shared(RCU);
 
 int neigh_proc_dointvec(const struct ctl_table *ctl, int write,
 			void *buffer, size_t *lenp, loff_t *ppos);

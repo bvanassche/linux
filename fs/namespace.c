@@ -87,8 +87,10 @@ static HLIST_HEAD(unmounted);	/* protected by namespace_sem */
 static LIST_HEAD(ex_mountpoints); /* protected by namespace_sem */
 static struct mnt_namespace *emptied_ns; /* protected by namespace_sem */
 
-static inline void namespace_lock(void);
-static void namespace_unlock(void);
+static inline void namespace_lock(void)
+	__acquires(&namespace_sem);
+static void namespace_unlock(void)
+	__releases(&namespace_sem);
 DEFINE_LOCK_GUARD_0(namespace_excl, namespace_lock(), namespace_unlock())
 DEFINE_LOCK_GUARD_0(namespace_shared, down_read(&namespace_sem),
 				      up_read(&namespace_sem))

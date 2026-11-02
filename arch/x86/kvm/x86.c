@@ -10041,6 +10041,7 @@ out:
  */
 void __user * __x86_set_memory_region(struct kvm *kvm, int id, gpa_t gpa,
 				      u32 size)
+	__must_hold(&kvm->slots_lock)
 {
 	int i, r;
 	unsigned long hva, old_npages;

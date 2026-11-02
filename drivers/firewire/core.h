@@ -251,8 +251,10 @@ static inline void fw_node_set_device(struct fw_node *node, struct fw_device *de
 }
 
 void fw_core_handle_bus_reset(struct fw_card *card, int node_id,
-	int generation, int self_id_count, u32 *self_ids, bool bm_abdicate);
-void fw_destroy_nodes(struct fw_card *card);
+	int generation, int self_id_count, u32 *self_ids, bool bm_abdicate)
+	__must_not_hold(&card->topology_map.lock);
+void fw_destroy_nodes(struct fw_card *card)
+	__must_hold(&card->lock);
 
 /*
  * Check whether new_generation is the immediate successor of old_generation.
@@ -289,7 +291,8 @@ static inline bool tcode_is_link_internal(unsigned int tcode)
 #define FW_MAX_PHYSICAL_RANGE		(1ULL << 32)
 
 void fw_core_handle_request(struct fw_card *card, struct fw_packet *request);
-void fw_core_handle_response(struct fw_card *card, struct fw_packet *packet);
+void fw_core_handle_response(struct fw_card *card, struct fw_packet *packet)
+	__must_not_hold(&card->transactions.lock);
 int fw_get_response_length(struct fw_request *request);
 void fw_fill_response(struct fw_packet *response, u32 *request_header,
 		      int rcode, void *payload, size_t length);
@@ -297,7 +300,8 @@ void fw_fill_response(struct fw_packet *response, u32 *request_header,
 void fw_request_get(struct fw_request *request);
 void fw_request_put(struct fw_request *request);
 
-void fw_cancel_pending_transactions(struct fw_card *card);
+void fw_cancel_pending_transactions(struct fw_card *card)
+	__must_hold(&card->transactions.lock);
 
 // Convert the value of IEEE 1394 CYCLE_TIME register to the format of timeStamp field in
 // descriptors of 1394 OHCI.

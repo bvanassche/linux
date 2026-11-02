@@ -203,7 +203,8 @@ static void start_split_transaction_timeout(struct fw_transaction *t, unsigned i
 	mod_timer(&t->split_timeout_timer, jiffies + delta);
 }
 
-static u32 compute_split_timeout_timestamp(struct fw_card *card, u32 request_timestamp);
+static u32 compute_split_timeout_timestamp(struct fw_card *card, u32 request_timestamp)
+	__must_hold(&card->split_timeout.lock);
 
 static void transmit_complete_callback(struct fw_packet *packet,
 				       struct fw_card *card, int status)

@@ -391,7 +391,8 @@ int vgic_v5_map_resources(struct kvm *kvm);
 void vgic_v5_set_ppi_ops(struct kvm_vcpu *vcpu, u32 vintid);
 void vgic_v5_set_spi_ops(struct vgic_irq *irq);
 bool vgic_v5_spi_queue_irq_unlock(struct kvm *kvm, struct vgic_irq *irq,
-				  unsigned long flags);
+				  unsigned long flags)
+	__releases(&irq->irq_lock);
 void vgic_v5_set_irq_pend(struct kvm_vcpu *vcpu, struct vgic_irq *irq);
 bool vgic_v5_has_pending_ppi(struct kvm_vcpu *vcpu);
 void vgic_v5_flush_ppi_state(struct kvm_vcpu *vcpu);

@@ -19,6 +19,7 @@ static u8 hws_matcher_rules_to_tbl_depth(u8 log_num_of_rules)
 }
 
 static void hws_matcher_destroy_end_ft(struct mlx5hws_matcher *matcher)
+	__must_hold(&matcher->tbl->ctx->ctrl_lock)
 {
 	mlx5hws_table_destroy_default_ft(matcher->tbl, matcher->end_ft_id);
 }
@@ -79,6 +80,7 @@ static int hws_matcher_connect_end_ft_isolated(struct mlx5hws_matcher *matcher)
 }
 
 static int hws_matcher_create_end_ft_isolated(struct mlx5hws_matcher *matcher)
+	__must_hold(&matcher->tbl->ctx->ctrl_lock)
 {
 	struct mlx5hws_table *tbl = matcher->tbl;
 	int ret;
@@ -106,6 +108,7 @@ destroy_default_ft:
 }
 
 static int hws_matcher_create_end_ft(struct mlx5hws_matcher *matcher)
+	__must_hold(&matcher->tbl->ctx->ctrl_lock)
 {
 	struct mlx5hws_table *tbl = matcher->tbl;
 	int ret;
@@ -846,6 +849,7 @@ hws_matcher_process_attr(struct mlx5hws_cmd_query_caps *caps,
 }
 
 static int hws_matcher_create_and_connect(struct mlx5hws_matcher *matcher)
+	__must_hold(&matcher->tbl->ctx->ctrl_lock)
 {
 	int ret;
 
@@ -886,6 +890,7 @@ unbind_mt:
 }
 
 static void hws_matcher_destroy_and_disconnect(struct mlx5hws_matcher *matcher)
+	__must_hold(&matcher->tbl->ctx->ctrl_lock)
 {
 	hws_matcher_disconnect(matcher);
 	hws_matcher_destroy_rtc(matcher);
@@ -895,6 +900,7 @@ static void hws_matcher_destroy_and_disconnect(struct mlx5hws_matcher *matcher)
 
 static int
 hws_matcher_create_col_matcher(struct mlx5hws_matcher *matcher)
+	__must_hold(&matcher->tbl->ctx->ctrl_lock)
 {
 	struct mlx5hws_context *ctx = matcher->tbl->ctx;
 	union mlx5hws_matcher_size *size_rx, *size_tx;
@@ -945,6 +951,7 @@ hws_matcher_create_col_matcher(struct mlx5hws_matcher *matcher)
 	if (ret)
 		goto free_col_matcher;
 
+	lockdep_assume_ctx_held(&col_matcher->tbl->ctx->ctrl_lock);
 	ret = hws_matcher_create_and_connect(col_matcher);
 	if (ret)
 		goto free_col_matcher;
@@ -961,12 +968,14 @@ free_col_matcher:
 
 static void
 hws_matcher_destroy_col_matcher(struct mlx5hws_matcher *matcher)
+	__must_hold(&matcher->tbl->ctx->ctrl_lock)
 {
 	if (matcher->attr.mode != MLX5HWS_MATCHER_RESOURCE_MODE_RULE ||
 	    matcher->attr.insert_mode == MLX5HWS_MATCHER_INSERT_BY_INDEX)
 		return;
 
 	if (matcher->col_matcher) {
+		lockdep_assume_ctx_held(&matcher->col_matcher->tbl->ctx->ctrl_lock);
 		hws_matcher_destroy_and_disconnect(matcher->col_matcher);
 		kfree(matcher->col_matcher);
 	}

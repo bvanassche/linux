@@ -221,8 +221,10 @@ bool cgroup_ssid_enabled(int ssid);
 struct cgroup_root *cgroup_root_from_kf(struct kernfs_root *kf_root);
 struct cgroup *task_cgroup_from_root(struct task_struct *task,
 				     struct cgroup_root *root);
-struct cgroup *cgroup_kn_lock_live(struct kernfs_node *kn, bool drain_offline);
-void cgroup_kn_unlock(struct kernfs_node *kn);
+struct cgroup *cgroup_kn_lock_live(struct kernfs_node *kn, bool drain_offline)
+	__cond_acquires_err_ptr(&cgroup_mutex);
+void cgroup_kn_unlock(struct kernfs_node *kn)
+	__releases(&cgroup_mutex);
 int cgroup_path_ns_locked(struct cgroup *cgrp, char *buf, size_t buflen,
 			  struct cgroup_namespace *ns);
 
@@ -289,6 +291,7 @@ void cgroup1_release_agent(struct work_struct *work);
 void cgroup1_check_for_release(struct cgroup *cgrp);
 int cgroup1_parse_param(struct fs_context *fc, struct fs_parameter *param);
 int cgroup1_get_tree(struct fs_context *fc);
-int cgroup1_reconfigure(struct fs_context *ctx);
+int cgroup1_reconfigure(struct fs_context *ctx)
+	__must_hold(&ctx->root->d_sb->s_umount);
 
 #endif /* __CGROUP_INTERNAL_H */

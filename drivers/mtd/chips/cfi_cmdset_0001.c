@@ -96,9 +96,11 @@ static int cfi_intelext_point (struct mtd_info *mtd, loff_t from, size_t len,
 		     size_t *retlen, void **virt, resource_size_t *phys);
 static int cfi_intelext_unpoint(struct mtd_info *mtd, loff_t from, size_t len);
 
-static int chip_ready (struct map_info *map, struct flchip *chip, unsigned long adr, int mode);
+static int chip_ready (struct map_info *map, struct flchip *chip, unsigned long adr, int mode)
+	__must_hold(&chip->mutex);
 static int get_chip(struct map_info *map, struct flchip *chip, unsigned long adr, int mode);
-static void put_chip(struct map_info *map, struct flchip *chip, unsigned long adr);
+static void put_chip(struct map_info *map, struct flchip *chip, unsigned long adr)
+	__must_hold(&chip->mutex);
 #include "fwh_lock.h"
 
 

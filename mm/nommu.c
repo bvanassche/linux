@@ -655,6 +655,8 @@ int expand_stack_locked(struct vm_area_struct *vma, unsigned long addr)
 }
 
 struct vm_area_struct *expand_stack(struct mm_struct *mm, unsigned long addr)
+	__releases_shared(&mm->mmap_lock)
+	__cond_acquires_shared(nonnull, &mm->mmap_lock)
 {
 	mmap_read_unlock(mm);
 	return NULL;

@@ -1267,6 +1267,7 @@ int amdxdna_drm_create_bo_ioctl(struct drm_device *dev, void *data, struct drm_f
 		abo = amdxdna_drm_create_dev_bo(dev, args, filp);
 		if (!IS_ERR(abo)) {
 			mutex_lock(&xdna->dev_lock);
+			lockdep_assume_ctx_held(&client->xdna->dev_lock);
 			ret = amdxdna_update_heap(client, NULL);
 			mutex_unlock(&xdna->dev_lock);
 			if (ret)

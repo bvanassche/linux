@@ -284,6 +284,7 @@ static int aie2_xrs_set_dft_dpm_level(struct drm_device *ddev, u32 dpm_level)
 	if (ndev->pw_mode != POWER_MODE_DEFAULT || ndev->dpm_level == dpm_level)
 		return 0;
 
+	lockdep_assume_ctx_held(&ndev->aie.xdna->dev_lock);
 	return aie2_pm_set_dpm(ndev, dpm_level);
 }
 
@@ -316,6 +317,7 @@ static void aie2_hw_stop(struct amdxdna_dev *xdna)
 	ndev->mbox = NULL;
 	aie_psp_stop(ndev->aie.psp_hdl);
 	aie2_smu_fini(ndev);
+	lockdep_assume_ctx_held(&ndev->aie.xdna->dev_lock);
 	aie2_error_async_events_free(ndev);
 	pci_disable_device(pdev);
 
@@ -457,8 +459,10 @@ static int aie2_hw_suspend(struct amdxdna_dev *xdna)
 {
 	struct amdxdna_client *client;
 
-	list_for_each_entry(client, &xdna->client_list, node)
+	list_for_each_entry(client, &xdna->client_list, node) {
+		lockdep_assume_ctx_held(&client->xdna->dev_lock);
 		aie2_hwctx_suspend(client);
+	}
 
 	aie2_hw_stop(xdna);
 
@@ -1134,6 +1138,7 @@ static int aie2_get_array(struct amdxdna_client *client,
 		ret = aie2_query_ctx_status_array(client, args);
 		break;
 	case DRM_AMDXDNA_HW_LAST_ASYNC_ERR:
+		lockdep_assume_ctx_held(&xdna->dev_handle->aie.xdna->dev_lock);
 		ret = aie2_get_array_async_error(xdna->dev_handle, args);
 		break;
 	case DRM_AMDXDNA_BO_USAGE:
@@ -1154,6 +1159,7 @@ dev_exit:
 
 static int aie2_set_power_mode(struct amdxdna_client *client,
 			       struct amdxdna_drm_set_state *args)
+	__must_hold(&client->xdna->dev_lock)
 {
 	struct amdxdna_drm_set_power_mode power_state;
 	enum amdxdna_power_mode_type power_mode;
@@ -1174,6 +1180,7 @@ static int aie2_set_power_mode(struct amdxdna_client *client,
 		return -EINVAL;
 	}
 
+	lockdep_assume_ctx_held(&xdna->dev_handle->aie.xdna->dev_lock);
 	return aie2_pm_set_mode(xdna->dev_handle, power_mode);
 }
 

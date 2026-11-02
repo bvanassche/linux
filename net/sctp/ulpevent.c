@@ -1059,6 +1059,7 @@ static void __sctp_ulpevent_read_nxtinfo(const struct sctp_ulpevent *event,
 void sctp_ulpevent_read_nxtinfo(const struct sctp_ulpevent *event,
 				struct msghdr *msghdr,
 				struct sock *sk)
+	__must_hold(sk)
 {
 	struct sk_buff *skb;
 	int err;

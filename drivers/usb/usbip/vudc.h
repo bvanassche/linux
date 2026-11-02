@@ -142,7 +142,8 @@ static inline struct vudc *ep_to_vudc(struct vep *ep)
 
 /* vudc_sysfs.c */
 
-int get_gadget_descs(struct vudc *udc);
+int get_gadget_descs(struct vudc *udc)
+	__must_hold(&udc->lock);
 
 /* vudc_tx.c */
 

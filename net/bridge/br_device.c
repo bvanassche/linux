@@ -385,6 +385,7 @@ static int br_del_slave(struct net_device *dev, struct net_device *slave_dev)
 
 static int br_fill_forward_path(struct net_device_path_ctx *ctx,
 				struct net_device_path *path)
+	__context_unsafe(/* TODO */)
 {
 	struct net_bridge_fdb_entry *f;
 	struct net_bridge_port *dst;

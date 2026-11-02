@@ -1005,14 +1005,16 @@ void br_fdb_cleanup_by_dst(struct net_bridge *br,
 			   struct net_bridge_dst dst, u16 vid, int do_all);
 struct net_bridge_fdb_entry *br_fdb_find_rcu(struct net_bridge *br,
 					     const unsigned char *addr,
-					     __u16 vid);
+					     __u16 vid)
+	__must_hold_shared(RCU);
 int br_fdb_fillbuf(struct net_bridge *br, void *buf, unsigned long count,
 		   unsigned long off);
 int br_fdb_add_local(struct net_bridge *br, struct net_bridge_port *source,
 		     const unsigned char *addr, u16 vid);
 void br_fdb_update(struct net_bridge *br, struct net_bridge_port *source,
 		   struct net_bridge_vlan *vlan, const unsigned char *addr,
-		   unsigned long flags);
+		   unsigned long flags)
+	__must_hold_shared(RCU);
 
 int br_fdb_delete(struct ndmsg *ndm, struct nlattr *tb[],
 		  struct net_device *dev, const unsigned char *addr, u16 vid,
@@ -1112,7 +1114,8 @@ int br_multicast_rcv(struct net_bridge_mcast **brmctx,
 		     struct sk_buff *skb, u16 vid);
 struct net_bridge_mdb_entry *
 br_mdb_entry_skb_get(struct net_bridge_mcast *brmctx, struct sk_buff *skb,
-		     u16 vid);
+		     u16 vid)
+	__must_hold_shared(RCU);
 int br_multicast_add_port(struct net_bridge_port *port);
 void br_multicast_del_port(struct net_bridge_port *port);
 void br_multicast_enable_port(struct net_bridge_port *port);
@@ -2520,9 +2523,11 @@ static inline void br_switchdev_init(struct net_bridge *br)
 /* br_arp_nd_proxy.c */
 void br_recalculate_neigh_suppress_enabled(struct net_bridge *br);
 void br_do_proxy_suppress_arp(struct sk_buff *skb, struct net_bridge *br,
-			      u16 vid, struct net_bridge_port *p);
+			      u16 vid, struct net_bridge_port *p)
+	__must_hold_shared(RCU);
 void br_do_suppress_nd(struct sk_buff *skb, struct net_bridge *br,
-		       u16 vid, struct net_bridge_port *p, struct nd_msg *msg);
+		       u16 vid, struct net_bridge_port *p, struct nd_msg *msg)
+	__must_hold_shared(RCU);
 struct nd_msg *br_is_nd_neigh_msg(struct sk_buff *skb);
 bool br_is_neigh_suppress_enabled(const struct net_bridge_port *p,
 				  const struct net_bridge_vlan *v);

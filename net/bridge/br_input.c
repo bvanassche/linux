@@ -74,6 +74,7 @@ static int br_pass_frame_up(struct sk_buff *skb, bool promisc)
 
 /* note: already called with rcu_read_lock */
 int br_handle_frame_finish(struct net *net, struct sock *sk, struct sk_buff *skb)
+	__context_unsafe(/* TODO */)
 {
 	enum skb_drop_reason reason = SKB_DROP_REASON_NOT_SPECIFIED;
 	struct net_bridge_port *p = br_port_get_rcu(skb->dev);
@@ -245,6 +246,7 @@ drop:
 EXPORT_SYMBOL_GPL(br_handle_frame_finish);
 
 static void __br_handle_local_finish(struct sk_buff *skb)
+	__must_hold_shared(RCU)
 {
 	struct net_bridge_port *p = br_port_get_rcu(skb->dev);
 	struct net_bridge_vlan *vlan;
@@ -260,6 +262,7 @@ static void __br_handle_local_finish(struct sk_buff *skb)
 /* note: already called with rcu_read_lock */
 static int br_handle_local_finish(struct net *net, struct sock *sk, struct sk_buff *skb)
 {
+	lockdep_assume_in_rcu_read_lock();
 	__br_handle_local_finish(skb);
 
 	/* return 1 to signal the okfn() was called so it's ok to use the skb */
@@ -352,6 +355,9 @@ static rx_handler_result_t br_handle_frame(struct sk_buff **pskb)
 	struct net_bridge_port *p;
 	struct sk_buff *skb = *pskb;
 	const unsigned char *dest = eth_hdr(skb)->h_dest;
+
+	/* rx_handlers are called with rcu_read_lock() held. */
+	lockdep_assume_in_rcu_read_lock();
 
 	if (unlikely(skb->pkt_type == PACKET_LOOPBACK))
 		return RX_HANDLER_PASS;

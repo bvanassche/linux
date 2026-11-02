@@ -90,7 +90,8 @@ static void ip6mr_free_table(struct mr_table *mrt,
 
 static void ip6_mr_forward(struct net *net, struct mr_table *mrt,
 			   struct net_device *dev, struct sk_buff *skb,
-			   struct mfc6_cache *cache);
+			   struct mfc6_cache *cache)
+	__must_hold_shared(RCU);
 static int ip6mr_cache_report(const struct mr_table *mrt, struct sk_buff *pkt,
 			      mifi_t mifi, int assert);
 static void mr6_netlink_event(struct mr_table *mrt, struct mfc6_cache *mfc,
@@ -992,6 +993,7 @@ static int mif6_add(struct net *net, struct mr_table *mrt,
 static struct mfc6_cache *ip6mr_cache_find(struct mr_table *mrt,
 					   const struct in6_addr *origin,
 					   const struct in6_addr *mcastgrp)
+	__must_hold_shared(RCU)
 {
 	struct mfc6_cache_cmp_arg arg = {
 		.mf6c_origin = *origin,
@@ -1005,6 +1007,7 @@ static struct mfc6_cache *ip6mr_cache_find(struct mr_table *mrt,
 static struct mfc6_cache *ip6mr_cache_find_any(struct mr_table *mrt,
 					       struct in6_addr *mcastgrp,
 					       mifi_t mifi)
+	__must_hold_shared(RCU)
 {
 	struct mfc6_cache_cmp_arg arg = {
 		.mf6c_origin = in6addr_any,
@@ -1022,6 +1025,7 @@ ip6mr_cache_find_parent(struct mr_table *mrt,
 			const struct in6_addr *origin,
 			const struct in6_addr *mcastgrp,
 			int parent)
+	__must_hold_shared(RCU)
 {
 	struct mfc6_cache_cmp_arg arg = {
 		.mf6c_origin = *origin,
@@ -2217,6 +2221,7 @@ static int ip6mr_find_vif(struct mr_table *mrt, struct net_device *dev)
 static void ip6_mr_forward(struct net *net, struct mr_table *mrt,
 			   struct net_device *dev, struct sk_buff *skb,
 			   struct mfc6_cache *c)
+	__must_hold_shared(RCU)
 {
 	int psend = -1;
 	int vif, ct;
@@ -2371,14 +2376,17 @@ dont_forward:
 int ip6_mr_input(struct sk_buff *skb)
 {
 	struct net_device *dev = skb->dev;
-	struct net *net = dev_net_rcu(dev);
 	struct mfc6_cache *cache;
 	struct mr_table *mrt;
 	struct flowi6 fl6 = {
 		.flowi6_iif	= dev->ifindex,
 		.flowi6_mark	= skb->mark,
 	};
+	struct net *net;
 	int err;
+
+	lockdep_assume_in_rcu_read_lock();
+	net = dev_net_rcu(dev);
 
 	/* skb->dev passed in is the master dev for vrfs.
 	 * Get the proper interface that does have a vif associated with it.

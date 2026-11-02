@@ -290,9 +290,12 @@ mr_table_alloc(struct net *net, u32 id,
  * castings they simply return void.
  */
 void *mr_mfc_find_parent(struct mr_table *mrt,
-			 void *hasharg, int parent);
-void *mr_mfc_find_any_parent(struct mr_table *mrt, int vifi);
-void *mr_mfc_find_any(struct mr_table *mrt, int vifi, void *hasharg);
+			 void *hasharg, int parent)
+	__must_hold_shared(RCU);
+void *mr_mfc_find_any_parent(struct mr_table *mrt, int vifi)
+	__must_hold_shared(RCU);
+void *mr_mfc_find_any(struct mr_table *mrt, int vifi, void *hasharg)
+	__must_hold_shared(RCU);
 
 int mr_fill_mroute(struct mr_table *mrt, struct sk_buff *skb,
 		   struct mr_mfc *c, struct rtmsg *rtm);
@@ -379,6 +382,7 @@ static inline int mr_dump(struct net *net, struct notifier_block *nb,
 #endif
 
 static inline void *mr_mfc_find(struct mr_table *mrt, void *hasharg)
+	__must_hold_shared(RCU)
 {
 	return mr_mfc_find_parent(mrt, hasharg, -1);
 }

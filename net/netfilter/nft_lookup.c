@@ -27,6 +27,7 @@ struct nft_lookup {
 static const struct nft_set_ext *
 __nft_set_do_lookup(const struct net *net, const struct nft_set *set,
 		    const u32 *key)
+	__must_hold_shared(RCU)
 {
 #ifdef CONFIG_MITIGATION_RETPOLINE
 	if (set->ops == &nft_set_hash_fast_type.ops)
@@ -69,6 +70,7 @@ static bool nft_lookup_should_retry(const struct net *net, unsigned int seq)
 const struct nft_set_ext *
 nft_set_do_lookup(const struct net *net, const struct nft_set *set,
 		  const u32 *key)
+	__must_hold_shared(RCU)
 {
 	const struct nft_set_ext *ext;
 	unsigned int base_seq;
@@ -102,6 +104,7 @@ void nft_lookup_eval(const struct nft_expr *expr,
 	const struct nft_set_ext *ext;
 	bool found;
 
+	lockdep_assume_in_rcu_read_lock();
 	ext = nft_set_do_lookup(net, set, &regs->data[priv->sreg]);
 	if (!ext)
 		ext = nft_set_catchall_lookup(net, set);

@@ -79,7 +79,8 @@ void print_tuple(struct seq_file *s, const struct nf_conntrack_tuple *tuple,
 #define CONNTRACK_LOCKS 1024
 
 extern spinlock_t nf_conntrack_locks[CONNTRACK_LOCKS];
-void nf_conntrack_lock(spinlock_t *lock);
+void nf_conntrack_lock(spinlock_t *lock)
+	__acquires(lock);
 
 extern spinlock_t nf_conntrack_expect_lock;
 

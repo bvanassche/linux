@@ -471,6 +471,7 @@ static int __cifs_reconnect(struct TCP_Server_Info *server,
 #ifdef CONFIG_CIFS_DFS_UPCALL
 static int __reconnect_target_locked(struct TCP_Server_Info *server,
 				     const char *target)
+	__must_hold(&server->_srv_mutex)
 {
 	int rc;
 	char *hostname;
@@ -506,6 +507,7 @@ static int __reconnect_target_locked(struct TCP_Server_Info *server,
 static int reconnect_target_locked(struct TCP_Server_Info *server,
 				   struct dfs_cache_tgt_list *tl,
 				   struct dfs_cache_tgt_iterator **target_hint)
+	__must_hold(&server->_srv_mutex)
 {
 	struct dfs_cache_tgt_iterator *tit;
 	int rc;

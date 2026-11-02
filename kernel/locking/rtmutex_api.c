@@ -50,6 +50,8 @@ static __always_inline int __rt_mutex_lock_common(struct rt_mutex *lock,
 	ret = __rt_mutex_lock(&lock->rtmutex, state);
 	if (ret)
 		mutex_release(&lock->dep_map, _RET_IP_);
+	else
+		__acquire(lock);
 	return ret;
 }
 
@@ -163,8 +165,10 @@ int __sched rt_mutex_trylock(struct rt_mutex *lock)
 		return 0;
 
 	ret = __rt_mutex_trylock(&lock->rtmutex);
-	if (ret)
+	if (ret) {
+		__acquire(lock);
 		mutex_acquire(&lock->dep_map, 0, 1, _RET_IP_);
+	}
 
 	return ret;
 }

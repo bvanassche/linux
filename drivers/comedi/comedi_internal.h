@@ -48,7 +48,8 @@ unsigned int _comedi_buf_read_free(struct comedi_subdevice *s,
 void _comedi_inc_scan_progress(struct comedi_subdevice *s,
 			       unsigned int num_bytes);
 void _comedi_event(struct comedi_device *dev, struct comedi_subdevice *s);
-void comedi_device_cancel_all(struct comedi_device *dev);
+void comedi_device_cancel_all(struct comedi_device *dev)
+	__must_hold(&dev->mutex);
 bool comedi_can_auto_free_spriv(struct comedi_subdevice *s);
 
 extern unsigned int comedi_default_buf_size_kb;
@@ -62,10 +63,13 @@ extern struct mutex comedi_drivers_list_lock;
 int insn_inval(struct comedi_device *dev, struct comedi_subdevice *s,
 	       struct comedi_insn *insn, unsigned int *data);
 
-void comedi_device_detach_locked(struct comedi_device *dev);
-void comedi_device_detach(struct comedi_device *dev);
+void comedi_device_detach_locked(struct comedi_device *dev)
+	__must_hold(&dev->mutex);
+void comedi_device_detach(struct comedi_device *dev)
+	__must_hold(&dev->mutex);
 int comedi_device_attach(struct comedi_device *dev,
-			 struct comedi_devconfig *it);
+			 struct comedi_devconfig *it)
+	__must_hold(&dev->mutex);
 
 #ifdef CONFIG_PROC_FS
 

@@ -72,6 +72,7 @@ static enum fpga_mgr_states efinix_spi_state(struct fpga_manager *mgr)
 static int efinix_spi_write_init(struct fpga_manager *mgr,
 				 struct fpga_image_info *info,
 				 const char *buf, size_t count)
+	__context_unsafe(/* SPI bus remains locked across fpga_manager_ops callbacks */)
 {
 	struct efinix_spi_conf *conf = mgr->priv;
 	struct spi_transfer assert_cs = {
@@ -108,6 +109,7 @@ static int efinix_spi_write_init(struct fpga_manager *mgr,
 
 static int efinix_spi_write(struct fpga_manager *mgr, const char *buf,
 			    size_t count)
+	__context_unsafe(/* SPI bus remains locked across fpga_manager_ops callbacks */)
 {
 	struct spi_transfer write_xfer = {
 		.tx_buf = buf,
@@ -130,6 +132,7 @@ static int efinix_spi_write(struct fpga_manager *mgr, const char *buf,
 
 static int efinix_spi_write_complete(struct fpga_manager *mgr,
 				     struct fpga_image_info *info)
+	__context_unsafe(/* SPI bus remains locked across fpga_manager_ops callbacks */)
 {
 	unsigned long timeout =
 		jiffies + usecs_to_jiffies(info->config_complete_timeout_us);

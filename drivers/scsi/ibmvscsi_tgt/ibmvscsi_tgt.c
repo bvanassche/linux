@@ -51,9 +51,11 @@ static DEFINE_SPINLOCK(ibmvscsis_dev_lock);
 static LIST_HEAD(ibmvscsis_dev_list);
 
 static long ibmvscsis_parse_command(struct scsi_info *vscsi,
-				    struct viosrp_crq *crq);
+				    struct viosrp_crq *crq)
+	__must_hold(&vscsi->intr_lock);
 
-static void ibmvscsis_adapter_idle(struct scsi_info *vscsi);
+static void ibmvscsis_adapter_idle(struct scsi_info *vscsi)
+	__must_hold(&vscsi->intr_lock);
 
 static void ibmvscsis_determine_resid(struct se_cmd *se_cmd,
 				      struct srp_rsp *rsp)

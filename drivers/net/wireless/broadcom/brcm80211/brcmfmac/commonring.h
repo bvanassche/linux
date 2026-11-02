@@ -40,8 +40,10 @@ void brcmf_commonring_register_cb(struct brcmf_commonring *commonring,
 				  int (*cr_write_wptr)(void *ctx), void *ctx);
 void brcmf_commonring_config(struct brcmf_commonring *commonring, u16 depth,
 			     u16 item_len, void *buf_addr);
-void brcmf_commonring_lock(struct brcmf_commonring *commonring);
-void brcmf_commonring_unlock(struct brcmf_commonring *commonring);
+void brcmf_commonring_lock(struct brcmf_commonring *commonring)
+	__acquires(&commonring->lock);
+void brcmf_commonring_unlock(struct brcmf_commonring *commonring)
+	__releases(&commonring->lock);
 bool brcmf_commonring_write_available(struct brcmf_commonring *commonring);
 void *brcmf_commonring_reserve_for_write(struct brcmf_commonring *commonring);
 void *

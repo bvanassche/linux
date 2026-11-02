@@ -481,8 +481,10 @@ extern bool pm_save_wakeup_count(unsigned int count);
 extern void pm_wakep_autosleep_enabled(bool set);
 extern void pm_print_active_wakeup_sources(void);
 
-extern unsigned int lock_system_sleep(void);
-extern void unlock_system_sleep(unsigned int);
+extern unsigned int lock_system_sleep(void)
+	__acquires(&system_transition_mutex);
+extern void unlock_system_sleep(unsigned int flags)
+	__releases(&system_transition_mutex);
 
 extern bool pm_sleep_transition_in_progress(void);
 bool pm_hibernate_is_recovering(void);
@@ -515,8 +517,17 @@ static inline void pm_system_wakeup(void) {}
 static inline void pm_wakeup_clear(bool reset) {}
 static inline void pm_system_irq_wakeup(unsigned int irq_number) {}
 
-static inline unsigned int lock_system_sleep(void) { return 0; }
-static inline void unlock_system_sleep(unsigned int flags) {}
+static inline unsigned int lock_system_sleep(void)
+	__acquires(&system_transition_mutex)
+{
+	__acquire(&system_transition_mutex);
+	return 0;
+}
+static inline void unlock_system_sleep(unsigned int flags)
+	__releases(&system_transition_mutex)
+{
+	__release(&system_transition_mutex);
+}
 
 static inline bool pm_sleep_transition_in_progress(void) { return false; }
 static inline bool pm_hibernate_is_recovering(void) { return false; }

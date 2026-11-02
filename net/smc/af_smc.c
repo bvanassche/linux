@@ -291,6 +291,8 @@ static int __smc_release(struct sock *sk)
 	struct smc_sock *smc = smc_sk(sk);
 	int rc = 0;
 
+	__assume_ctx_lock(&smc->sk);
+
 	if (!smc->use_fallback) {
 		rc = smc_close_active(smc);
 		smc_sock_set_flag(sk, SOCK_DEAD);
@@ -331,6 +333,8 @@ static int _smc_release(struct socket *sock, struct sock *sk, int old_state)
 {
 	struct smc_sock *smc = smc_sk(sk);
 	int rc;
+
+	__assume_ctx_lock(&smc->sk);
 
 	if (old_state == SMC_INIT && sk->sk_state == SMC_ACTIVE &&
 	    !smc->use_fallback)
@@ -2988,6 +2992,7 @@ int smc_shutdown(struct socket *sock, int how)
 		return rc;
 
 	lock_sock(sk);
+	__assume_ctx_lock(&smc->sk);
 
 	if (sock->state == SS_CONNECTING) {
 		if (sk->sk_state == SMC_ACTIVE)

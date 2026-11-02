@@ -1891,6 +1891,7 @@ int wil_up(struct wil6210_priv *wil)
 }
 
 int __wil_down(struct wil6210_priv *wil)
+	__must_hold(&wil->mutex)
 {
 	int rc;
 	WARN_ON(!mutex_is_locked(&wil->mutex));

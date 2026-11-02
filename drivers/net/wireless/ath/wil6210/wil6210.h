@@ -1198,8 +1198,10 @@ void wil_memcpy_fromio_32(void *dst, const volatile void __iomem *src,
 			  size_t count);
 void wil_memcpy_toio_32(volatile void __iomem *dst, const void *src,
 			size_t count);
-int wil_mem_access_lock(struct wil6210_priv *wil);
-void wil_mem_access_unlock(struct wil6210_priv *wil);
+int wil_mem_access_lock(struct wil6210_priv *wil)
+	__cond_acquires_shared(0, &wil->mem_lock);
+void wil_mem_access_unlock(struct wil6210_priv *wil)
+	__releases_shared(&wil->mem_lock);
 
 struct wil6210_vif *
 wil_vif_alloc(struct wil6210_priv *wil, const char *name,
@@ -1225,7 +1227,7 @@ bool wil_is_recovery_blocked(struct wil6210_priv *wil);
 int wil_up(struct wil6210_priv *wil);
 int __wil_up(struct wil6210_priv *wil);
 int wil_down(struct wil6210_priv *wil);
-int __wil_down(struct wil6210_priv *wil);
+int __wil_down(struct wil6210_priv *wil) __must_hold(&wil->mutex);
 void wil_refresh_fw_capabilities(struct wil6210_priv *wil);
 void wil_mbox_ring_le2cpus(struct wil6210_mbox_ring *r);
 int wil_find_cid(struct wil6210_priv *wil, u8 mid, const u8 *mac);
@@ -1306,7 +1308,8 @@ u8 wil_p2p_stop_discovery(struct wil6210_vif *vif);
 int wil_p2p_cancel_listen(struct wil6210_vif *vif, u64 cookie);
 void wil_p2p_listen_expired(struct work_struct *work);
 void wil_p2p_search_expired(struct work_struct *work);
-void wil_p2p_stop_radio_operations(struct wil6210_priv *wil);
+void wil_p2p_stop_radio_operations(struct wil6210_priv *wil)
+	__must_hold(&wil->mutex);
 void wil_p2p_delayed_listen_work(struct work_struct *work);
 
 /* WMI for P2P */

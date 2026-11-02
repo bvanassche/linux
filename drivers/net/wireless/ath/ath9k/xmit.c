@@ -728,6 +728,7 @@ static void ath_tx_process_buffer(struct ath_softc *sc, struct ath_txq *txq,
 				  struct ath_tx_status *ts, struct ath_buf *bf,
 				  struct list_head *bf_head)
 	__must_hold(&txq->axq_lock)
+	__context_unsafe(/* TODO */)
 {
 	struct ieee80211_hw *hw = sc->hw;
 	struct ieee80211_tx_info *info;

@@ -55,7 +55,8 @@ void napi_busy_loop(unsigned int napi_id,
 
 void napi_busy_loop_rcu(unsigned int napi_id,
 			bool (*loop_end)(void *, unsigned long),
-			void *loop_end_arg, bool prefer_busy_poll, u16 budget);
+			void *loop_end_arg, bool prefer_busy_poll, u16 budget)
+	__must_hold_shared(RCU);
 
 void napi_suspend_irqs(unsigned int napi_id);
 void napi_resume_irqs(unsigned int napi_id);

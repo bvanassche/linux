@@ -165,8 +165,10 @@ void pciehp_request(struct controller *ctrl, int action);
 void pciehp_handle_button_press(struct controller *ctrl);
 void pciehp_handle_disable_request(struct controller *ctrl);
 void pciehp_handle_presence_or_link_change(struct controller *ctrl, u32 events);
-int pciehp_configure_device(struct controller *ctrl);
-void pciehp_unconfigure_device(struct controller *ctrl, bool presence);
+int pciehp_configure_device(struct controller *ctrl)
+	__must_hold_shared(&ctrl->reset_lock);
+void pciehp_unconfigure_device(struct controller *ctrl, bool presence)
+	__must_hold_shared(&ctrl->reset_lock);
 void pciehp_queue_pushbutton_work(struct work_struct *work);
 struct controller *pcie_init(struct pcie_device *dev);
 int pcie_init_notification(struct controller *ctrl);

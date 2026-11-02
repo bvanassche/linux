@@ -60,6 +60,7 @@ static void set_slot_off(struct controller *ctrl)
  * Configures board.
  */
 static int board_added(struct controller *ctrl)
+	__context_unsafe(/* TODO */)
 {
 	int retval = 0;
 	struct pci_bus *parent = ctrl->pcie->port->subordinate;
@@ -110,6 +111,7 @@ err_exit:
  * @safe_removal: whether the board is safely removed (versus surprise removed)
  */
 static void remove_board(struct controller *ctrl, bool safe_removal)
+	__context_unsafe(/* TODO */)
 {
 	pciehp_unconfigure_device(ctrl, safe_removal);
 

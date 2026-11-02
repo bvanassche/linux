@@ -484,7 +484,8 @@ u32 fw_request_get_timestamp(const struct fw_request *request);
 void __fw_send_request(struct fw_card *card, struct fw_transaction *t, int tcode,
 		int destination_id, int generation, int speed, unsigned long long offset,
 		void *payload, size_t length, union fw_transaction_callback callback,
-		bool with_tstamp, void *callback_data);
+		bool with_tstamp, void *callback_data)
+	__must_not_hold(&card->transactions.lock);
 
 /**
  * fw_send_request() - submit a request packet for transmission to generate callback for response
@@ -556,7 +557,8 @@ static inline void fw_send_request_with_tstamp(struct fw_card *card, struct fw_t
 }
 
 int fw_cancel_transaction(struct fw_card *card,
-			  struct fw_transaction *transaction);
+			  struct fw_transaction *transaction)
+	__must_not_hold(&card->transactions.lock);
 int fw_run_transaction(struct fw_card *card, int tcode, int destination_id,
 		       int generation, int speed, unsigned long long offset,
 		       void *payload, size_t length);

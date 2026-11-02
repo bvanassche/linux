@@ -75,7 +75,8 @@ out:
 }
 
 static struct io_kiocb *__io_disarm_linked_timeout(struct io_kiocb *req,
-						   struct io_kiocb *link);
+						   struct io_kiocb *link)
+	__must_hold(&req->ctx->completion_lock);
 
 static inline bool io_is_timeout_noseq(struct io_kiocb *req)
 {

@@ -197,5 +197,6 @@ int hfi1_user_sdma_free_queues(struct hfi1_filedata *fd,
 			       struct hfi1_ctxtdata *uctxt);
 int hfi1_user_sdma_process_request(struct hfi1_filedata *fd,
 				   struct iovec *iovec, unsigned long dim,
-				   unsigned long *count);
+				   unsigned long *count)
+	__must_hold_shared(&fd->pq_srcu);
 #endif /* _HFI1_USER_SDMA_H */

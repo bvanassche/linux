@@ -242,8 +242,12 @@ static inline ssize_t tpm_ret_to_err(ssize_t ret)
 #if defined(CONFIG_TCG_TPM) || defined(CONFIG_TCG_TPM_MODULE)
 
 extern int tpm_is_tpm2(struct tpm_chip *chip);
-extern __must_check int tpm_try_get_ops(struct tpm_chip *chip);
-extern void tpm_put_ops(struct tpm_chip *chip);
+extern __must_check int tpm_try_get_ops(struct tpm_chip *chip)
+	__cond_acquires_shared(0, &chip->ops_sem)
+	__cond_acquires(0, &chip->tpm_mutex);
+extern void tpm_put_ops(struct tpm_chip *chip)
+	__releases(&chip->tpm_mutex)
+	__releases_shared(&chip->ops_sem);
 extern ssize_t tpm_transmit_cmd(struct tpm_chip *chip, struct tpm_buf *buf,
 				size_t min_rsp_body_length, const char *desc);
 extern int tpm_pcr_read(struct tpm_chip *chip, u32 pcr_idx,

@@ -57,7 +57,8 @@ struct mei_device *mei_txe_dev_init(struct pci_dev *pdev);
 irqreturn_t mei_txe_irq_quick_handler(int irq, void *dev_id);
 irqreturn_t mei_txe_irq_thread_handler(int irq, void *dev_id);
 
-int mei_txe_aliveness_set_sync(struct mei_device *dev, u32 req);
+int mei_txe_aliveness_set_sync(struct mei_device *dev, u32 req)
+	__must_hold(&dev->device_lock);
 
 
 #endif /* _MEI_HW_TXE_H_ */

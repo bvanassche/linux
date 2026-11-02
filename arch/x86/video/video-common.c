@@ -7,6 +7,7 @@
  *
  */
 
+#include <linux/minmax.h>
 #include <linux/module.h>
 #include <linux/pci.h>
 #include <linux/sysfb.h>

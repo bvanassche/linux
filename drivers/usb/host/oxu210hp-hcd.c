@@ -643,7 +643,8 @@ module_param(ignore_oc, bool, S_IRUGO);
 MODULE_PARM_DESC(ignore_oc, "ignore bogus hardware overcurrent indications");
 
 
-static void ehci_work(struct oxu_hcd *oxu);
+static void ehci_work(struct oxu_hcd *oxu)
+	__must_hold(&oxu->lock);
 static int oxu_hub_control(struct usb_hcd *hcd,
 				u16 typeReq, u16 wValue, u16 wIndex,
 				char *buf, u16 wLength);
@@ -1367,8 +1368,10 @@ static void ehci_urb_done(struct oxu_hcd *oxu, struct urb *urb)
 	spin_lock(&oxu->lock);
 }
 
-static void start_unlink_async(struct oxu_hcd *oxu, struct ehci_qh *qh);
-static void unlink_async(struct oxu_hcd *oxu, struct ehci_qh *qh);
+static void start_unlink_async(struct oxu_hcd *oxu, struct ehci_qh *qh)
+	__must_hold(&oxu->lock);
+static void unlink_async(struct oxu_hcd *oxu, struct ehci_qh *qh)
+	__must_hold(&oxu->lock);
 
 static void intr_deschedule(struct oxu_hcd *oxu, struct ehci_qh *qh);
 static int qh_schedule(struct oxu_hcd *oxu, struct ehci_qh *qh);

@@ -82,7 +82,8 @@ static void vt6420_bmdma_start(struct ata_queued_cmd *qc);
 static int vt6421_pata_cable_detect(struct ata_port *ap);
 static void vt6421_set_pio_mode(struct ata_port *ap, struct ata_device *adev);
 static void vt6421_set_dma_mode(struct ata_port *ap, struct ata_device *adev);
-static void vt6421_error_handler(struct ata_port *ap);
+static void vt6421_error_handler(struct ata_port *ap)
+	__must_hold(&ap->host->eh_mutex);
 
 static const struct pci_device_id svia_pci_tbl[] = {
 	{

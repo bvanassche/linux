@@ -339,7 +339,8 @@ static int sil24_hardreset(struct ata_link *link, unsigned int *class,
 			   unsigned long deadline);
 static int sil24_pmp_hardreset(struct ata_link *link, unsigned int *class,
 			       unsigned long deadline);
-static void sil24_error_handler(struct ata_port *ap);
+static void sil24_error_handler(struct ata_port *ap)
+	__must_hold(&ap->host->eh_mutex);
 static void sil24_post_internal_cmd(struct ata_queued_cmd *qc);
 static int sil24_port_start(struct ata_port *ap);
 static int sil24_init_one(struct pci_dev *pdev, const struct pci_device_id *ent);

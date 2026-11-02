@@ -6508,6 +6508,7 @@ static int addrconf_sysctl_disable(const struct ctl_table *ctl, int write,
 
 static int addrconf_sysctl_proxy_ndp(const struct ctl_table *ctl, int write,
 		void *buffer, size_t *lenp, loff_t *ppos)
+	__context_unsafe(/* TODO */)
 {
 	struct net *net = ctl->extra2;
 	int *valp = ctl->data;

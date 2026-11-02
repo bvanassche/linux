@@ -2216,6 +2216,8 @@ static void __move_netdevice_notifier_net(struct net *src_net,
 }
 
 static void rtnl_net_dev_lock(struct net_device *dev)
+	__acquires(&dev_net(dev)->rtnl_mutex)
+	__context_unsafe(/* TODO */)
 {
 	bool again;
 
@@ -2244,6 +2246,7 @@ static void rtnl_net_dev_lock(struct net_device *dev)
 }
 
 static void rtnl_net_dev_unlock(struct net_device *dev)
+	__releases(&dev_net(dev)->rtnl_mutex)
 {
 	struct net *net = dev_net(dev);
 
@@ -2254,6 +2257,7 @@ static void rtnl_net_dev_unlock(struct net_device *dev)
 int register_netdevice_notifier_dev_net(struct net_device *dev,
 					struct notifier_block *nb,
 					struct netdev_net_notifier *nn)
+	__context_unsafe(/* TODO */)
 {
 	int err;
 

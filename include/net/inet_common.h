@@ -25,7 +25,8 @@ int inet_release(struct socket *sock);
 int inet_stream_connect(struct socket *sock, struct sockaddr_unsized *uaddr,
 			int addr_len, int flags);
 int __inet_stream_connect(struct socket *sock, struct sockaddr_unsized *uaddr,
-			  int addr_len, int flags, bool defer_connect);
+			  int addr_len, int flags, bool defer_connect)
+	__must_hold(sock->sk);
 int inet_dgram_connect(struct socket *sock, struct sockaddr_unsized *uaddr,
 		       int addr_len, int flags);
 int inet_accept(struct socket *sock, struct socket *newsock,

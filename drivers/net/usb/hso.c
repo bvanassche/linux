@@ -303,7 +303,8 @@ static void hso_free_interface(struct usb_interface *intf);
 static int hso_start_serial_device(struct hso_device *hso_dev, gfp_t flags);
 static int hso_stop_serial_device(struct hso_device *hso_dev);
 static int hso_start_net_device(struct hso_device *hso_dev);
-static void hso_free_shared_int(struct hso_shared_int *shared_int);
+static void hso_free_shared_int(struct hso_shared_int *shared_int)
+	__releases(&shared_int->shared_int_lock);
 static int hso_stop_net_device(struct hso_device *hso_dev);
 static void hso_serial_ref_free(struct kref *ref);
 static void hso_std_serial_read_bulk_callback(struct urb *urb);

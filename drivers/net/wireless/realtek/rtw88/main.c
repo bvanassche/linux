@@ -639,6 +639,7 @@ void rtw_fw_recovery(struct rtw_dev *rtwdev)
 EXPORT_SYMBOL(rtw_fw_recovery);
 
 static void __fw_recovery_work(struct rtw_dev *rtwdev)
+	__must_hold(&rtwdev->mutex)
 {
 	int ret = 0;
 

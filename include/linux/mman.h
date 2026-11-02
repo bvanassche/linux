@@ -124,15 +124,21 @@ static inline bool arch_validate_flags(unsigned long flags)
 #endif
 
 /*
- * Optimisation macro.  It is equivalent to:
+ * Optimisation helper.  It is equivalent to:
  *      (x & bit1) ? bit2 : 0
  * but this version is faster.
  * ("bit1" and "bit2" must be single bits)
  */
-#define _calc_vm_trans(x, bit1, bit2) \
-  ((!(bit1) || !(bit2)) ? 0 : \
-  ((bit1) <= (bit2) ? ((x) & (bit1)) * ((bit2) / (bit1)) \
-   : ((x) & (bit1)) / ((bit1) / (bit2))))
+static inline unsigned long _calc_vm_trans(unsigned long x, unsigned long bit1,
+					   unsigned long bit2)
+{
+	if (!bit1 || !bit2)
+		return 0;
+	else if (bit1 <= bit2)
+		return (x & bit1) * (bit2 / bit1);
+	else
+		return (x & bit1) / (bit1 / bit2);
+}
 
 /*
  * Combine the mmap "prot" argument into "vm_flags" used internally.

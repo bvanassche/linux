@@ -210,7 +210,7 @@ nv04_engn = {
 
 void
 nv04_fifo_pause(struct nvkm_fifo *fifo, unsigned long *pflags)
-__acquires(fifo->lock)
+__acquires(&fifo->lock)
 {
 	struct nvkm_device *device = fifo->engine.subdev.device;
 	unsigned long flags;
@@ -245,7 +245,7 @@ __acquires(fifo->lock)
 
 void
 nv04_fifo_start(struct nvkm_fifo *fifo, unsigned long *pflags)
-__releases(fifo->lock)
+__releases(&fifo->lock)
 {
 	struct nvkm_device *device = fifo->engine.subdev.device;
 	unsigned long flags = *pflags;

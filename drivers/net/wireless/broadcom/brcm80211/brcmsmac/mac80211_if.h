@@ -94,10 +94,12 @@ void brcms_intrson(struct brcms_info *wl);
 u32 brcms_intrsoff(struct brcms_info *wl);
 void brcms_intrsrestore(struct brcms_info *wl, u32 macintmask);
 int brcms_up(struct brcms_info *wl);
-void brcms_down(struct brcms_info *wl);
+void brcms_down(struct brcms_info *wl)
+	__must_hold(&wl->lock);
 void brcms_txflowcontrol(struct brcms_info *wl, struct brcms_if *wlif,
 			 bool state, int prio);
-bool brcms_rfkill_set_hw_state(struct brcms_info *wl);
+bool brcms_rfkill_set_hw_state(struct brcms_info *wl)
+	__must_hold(&wl->lock);
 
 /* timer functions */
 struct brcms_timer *brcms_init_timer(struct brcms_info *wl,

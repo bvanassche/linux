@@ -68,10 +68,13 @@ static int sysfs_init_fs_context(struct fs_context *fc)
 }
 
 static void sysfs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct ns_common *ns = (struct ns_common *)kernfs_super_ns(sb);
 
 	kernfs_kill_sb(sb);
+	/* kernfs_kill_sb() has released sb->s_umount. */
+	__release(&sb->s_umount);
 	kobj_ns_drop(KOBJ_NS_TYPE_NET, ns);
 }
 

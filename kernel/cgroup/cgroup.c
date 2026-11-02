@@ -2381,6 +2381,7 @@ static int cgroup_init_fs_context(struct fs_context *fc)
 }
 
 static void cgroup_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct kernfs_root *kf_root = kernfs_root_from_sb(sb);
 	struct cgroup_root *root = cgroup_root_from_kf(kf_root);
@@ -2396,6 +2397,8 @@ static void cgroup_kill_sb(struct super_block *sb)
 		percpu_ref_kill(&root->cgrp.self.refcnt);
 	cgroup_put(&root->cgrp);
 	kernfs_kill_sb(sb);
+	/* kernfs_kill_sb() has released sb->s_umount. */
+	__release(&sb->s_umount);
 }
 
 struct file_system_type cgroup_fs_type = {

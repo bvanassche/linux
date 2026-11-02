@@ -504,6 +504,7 @@ static int rootfs_init_fs_context(struct fs_context *fc)
 }
 
 static void rootfs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	if (IS_ENABLED(CONFIG_TMPFS) && is_tmpfs)
 		kill_anon_super(sb);

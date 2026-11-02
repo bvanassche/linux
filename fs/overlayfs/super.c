@@ -1646,6 +1646,7 @@ out_err:
 }
 
 static void ovl_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct ovl_fs *ofs = OVL_FS(sb);
 

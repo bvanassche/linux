@@ -1684,6 +1684,7 @@ void cgroup_kn_unlock(struct kernfs_node *kn)
  * including self-removal.
  */
 struct cgroup *cgroup_kn_lock_live(struct kernfs_node *kn, bool drain_offline)
+	__cond_acquires_err_ptr(&cgroup_mutex)
 	__context_unsafe(/* returns with a lock held that depends on the return value */)
 {
 	struct cgroup *cgrp;

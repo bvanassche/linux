@@ -1477,6 +1477,7 @@ mt76_airtime_check(struct mt76_dev *dev, struct sk_buff *skb)
 
 static void
 mt76_check_sta(struct mt76_dev *dev, struct sk_buff *skb)
+	__context_unsafe(/* TODO */)
 {
 	struct mt76_rx_status *status = (struct mt76_rx_status *)skb->cb;
 	struct ieee80211_hdr *hdr = mt76_skb_get_hdr(skb);

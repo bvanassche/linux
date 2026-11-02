@@ -791,6 +791,7 @@ struct drop_sta_iter {
 
 static void
 __mt7915_drop_sta(void *ptr, u8 *mac, struct ieee80211_vif *vif)
+	__context_unsafe(/* called under the wiphy lock instead of RCU */)
 {
 	struct drop_sta_iter *data = ptr;
 	struct ieee80211_sta *sta;

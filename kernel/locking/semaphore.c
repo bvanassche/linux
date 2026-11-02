@@ -37,10 +37,14 @@
 #include <linux/hung_task.h>
 
 static noinline void __down(struct semaphore *sem);
-static noinline int __down_interruptible(struct semaphore *sem);
-static noinline int __down_killable(struct semaphore *sem);
-static noinline int __down_timeout(struct semaphore *sem, long timeout);
-static noinline void __up(struct semaphore *sem, struct wake_q_head *wake_q);
+static noinline int __down_interruptible(struct semaphore *sem)
+	__must_hold(&sem->lock);
+static noinline int __down_killable(struct semaphore *sem)
+	__must_hold(&sem->lock);
+static noinline int __down_timeout(struct semaphore *sem, long timeout)
+	__must_hold(&sem->lock);
+static noinline void __up(struct semaphore *sem, struct wake_q_head *wake_q)
+	__must_hold(&sem->lock);
 
 #ifdef CONFIG_DETECT_HUNG_TASK_BLOCKER
 static inline void hung_task_sem_set_holder(struct semaphore *sem)

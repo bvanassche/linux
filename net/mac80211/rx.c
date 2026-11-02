@@ -2889,6 +2889,8 @@ ieee80211_rx_mesh_fast_forward(struct ieee80211_sub_if_data *sdata,
 	struct ethhdr eth;
 	u8 tid;
 
+	lockdep_assume_in_rcu_read_lock();
+
 	mesh_hdr = (struct ieee80211s_hdr *)(skb->data + sizeof(eth));
 	if ((mesh_hdr->flags & MESH_FLAGS_AE) == MESH_FLAGS_AE_A5_A6)
 		ether_addr_copy(key.addr, mesh_hdr->eaddr1);

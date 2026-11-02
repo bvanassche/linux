@@ -1173,6 +1173,7 @@ int mesh_nexthop_resolve(struct ieee80211_sub_if_data *sdata,
 		return 0;
 
 	/* no nexthop found, start resolving */
+	lockdep_assume_in_rcu_read_lock();
 	mpath = mesh_path_lookup(sdata, target_addr);
 	if (!mpath) {
 		mpath = mesh_path_add(sdata, target_addr);
@@ -1269,6 +1270,7 @@ int mesh_nexthop_lookup(struct ieee80211_sub_if_data *sdata,
 	    !mesh_nexthop_lookup_nolearn(sdata, skb))
 		return 0;
 
+	lockdep_assume_in_rcu_read_lock();
 	mpath = mesh_path_lookup(sdata, target_addr);
 	if (!mpath || !(mpath->flags & MESH_PATH_ACTIVE))
 		return -ENOENT;

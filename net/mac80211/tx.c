@@ -2775,6 +2775,7 @@ static int ieee80211_ap_tx_addr_get(struct ieee80211_sub_if_data *sdata,
 static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
 					   struct sk_buff *skb,
 					   struct sta_info *sta)
+	__must_hold_shared(RCU)
 {
 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
 	struct ieee80211_local *local = sdata->local;

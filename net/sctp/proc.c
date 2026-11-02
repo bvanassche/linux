@@ -201,6 +201,7 @@ struct sctp_ht_iter {
 };
 
 static void *sctp_transport_seq_start(struct seq_file *seq, loff_t *pos)
+	__acquires_shared(RCU)
 {
 	struct sctp_ht_iter *iter = seq->private;
 
@@ -210,6 +211,7 @@ static void *sctp_transport_seq_start(struct seq_file *seq, loff_t *pos)
 }
 
 static void sctp_transport_seq_stop(struct seq_file *seq, void *v)
+	__releases_shared(RCU)
 {
 	struct sctp_ht_iter *iter = seq->private;
 

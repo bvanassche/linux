@@ -97,11 +97,14 @@ void sctp_sock_rfree(struct sk_buff *skb);
 
 extern struct percpu_counter sctp_sockets_allocated;
 int sctp_asconf_mgmt(struct sctp_sock *, struct sctp_sockaddr_entry *);
-struct sk_buff *sctp_skb_recv_datagram(struct sock *, int, int *);
+struct sk_buff *sctp_skb_recv_datagram(struct sock *sk, int, int *)
+	__must_hold(sk);
 
 typedef int (*sctp_callback_t)(struct sctp_endpoint *, struct sctp_transport *, void *);
-void sctp_transport_walk_start(struct rhashtable_iter *iter);
-void sctp_transport_walk_stop(struct rhashtable_iter *iter);
+void sctp_transport_walk_start(struct rhashtable_iter *iter)
+	__acquires_shared(RCU);
+void sctp_transport_walk_stop(struct rhashtable_iter *iter)
+	__releases_shared(RCU);
 struct sctp_transport *sctp_transport_get_next(struct net *net,
 			struct rhashtable_iter *iter);
 struct sctp_transport *sctp_transport_get_idx(struct net *net,
@@ -157,10 +160,12 @@ struct sctp_transport *sctp_addrs_lookup_transport(
 				struct net *net,
 				const union sctp_addr *laddr,
 				const union sctp_addr *paddr,
-				int dif, int sdif);
+				int dif, int sdif)
+	__must_hold_shared(RCU);
 struct sctp_transport *sctp_epaddr_lookup_transport(
 				const struct sctp_endpoint *ep,
-				const union sctp_addr *paddr);
+				const union sctp_addr *paddr)
+	__must_hold_shared(RCU);
 bool sctp_sk_bound_dev_eq(struct net *net, int bound_dev_if, int dif, int sdif);
 
 /*

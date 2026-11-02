@@ -511,6 +511,7 @@ static void cs35l56_spi_issue_bus_locked_reset(struct cs35l56_base *cs35l56_base
 }
 
 static void cs35l56_spi_system_reset(struct cs35l56_base *cs35l56_base)
+	__context_unsafe(/* spi_bus_lock() never fails but its result is checked */)
 {
 	struct spi_device *spi = to_spi_device(cs35l56_base->dev);
 	unsigned int val;

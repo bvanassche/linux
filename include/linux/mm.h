@@ -3433,7 +3433,8 @@ int generic_error_remove_folio(struct address_space *mapping,
 		struct folio *folio);
 
 struct vm_area_struct *lock_mm_and_find_vma(struct mm_struct *mm,
-		unsigned long address, struct pt_regs *regs);
+		unsigned long address, struct pt_regs *regs)
+	__cond_acquires_shared(nonnull, &mm->mmap_lock);
 
 #ifdef CONFIG_MMU
 extern vm_fault_t handle_mm_fault(struct vm_area_struct *vma,
@@ -4381,7 +4382,8 @@ void anon_rmap_tree_verify(struct anon_vma_chain *avc);
 extern int __vm_enough_memory(const struct mm_struct *mm, long pages, int cap_sys_admin);
 extern void exit_mmap(struct mm_struct *);
 bool mmap_read_lock_maybe_expand(struct mm_struct *mm, struct vm_area_struct *vma,
-				 unsigned long addr, bool write);
+				 unsigned long addr, bool write)
+	__cond_acquires_shared(true, &mm->mmap_lock);
 
 static inline int check_data_rlimit(unsigned long rlim,
 				    unsigned long new,
@@ -4493,7 +4495,8 @@ extern vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf);
 extern unsigned long stack_guard_gap;
 /* Generic expand stack which grows the stack according to GROWS{UP,DOWN} */
 int expand_stack_locked(struct vm_area_struct *vma, unsigned long address);
-struct vm_area_struct *expand_stack(struct mm_struct * mm, unsigned long addr);
+struct vm_area_struct *expand_stack(struct mm_struct * mm, unsigned long addr)
+	__releases_shared(&mm->mmap_lock);
 
 /* Look up the first VMA which satisfies  addr < vm_end,  NULL if none. */
 extern struct vm_area_struct * find_vma(struct mm_struct * mm, unsigned long addr);

@@ -71,6 +71,7 @@ static const struct us_unusual_dev cypress_unusual_dev_list[] = {
  * datasheet from cypress.com.
  */
 static void cypress_atacb_passthrough(struct scsi_cmnd *srb, struct us_data *us)
+	__must_hold(&us->dev_mutex)
 {
 	unsigned char save_cmnd[MAX_COMMAND_SIZE];
 

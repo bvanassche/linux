@@ -25,10 +25,13 @@
 #define _PROTOCOL_H_
 
 /* Protocol handling routines */
-extern void usb_stor_pad12_command(struct scsi_cmnd*, struct us_data*);
-extern void usb_stor_ufi_command(struct scsi_cmnd*, struct us_data*);
-extern void usb_stor_transparent_scsi_command(struct scsi_cmnd*,
-		struct us_data*);
+extern void usb_stor_pad12_command(struct scsi_cmnd *srb, struct us_data *us)
+	__must_hold(&us->dev_mutex);
+extern void usb_stor_ufi_command(struct scsi_cmnd *srb, struct us_data *us)
+	__must_hold(&us->dev_mutex);
+extern void usb_stor_transparent_scsi_command(struct scsi_cmnd *srb,
+		struct us_data *us)
+	__must_hold(&us->dev_mutex);
 
 /* struct scsi_cmnd transfer buffer access utilities */
 enum xfer_buf_dir	{TO_XFER_BUF, FROM_XFER_BUF};

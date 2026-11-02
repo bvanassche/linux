@@ -561,6 +561,7 @@ int hfsplus_setxattr(struct inode *inode, const char *name,
 
 static ssize_t hfsplus_getxattr_finder_info(struct inode *inode,
 						void *value, size_t size)
+	__context_unsafe(/* conditional locking */)
 {
 	ssize_t res = 0;
 	struct hfs_find_data fd;

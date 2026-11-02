@@ -1010,8 +1010,10 @@ mlx5_esw_lag_demux_fg_create(struct mlx5_eswitch *esw,
 struct mlx5_flow_handle *
 mlx5_esw_lag_demux_rule_create(struct mlx5_eswitch *esw, u16 vport_num,
 			       struct mlx5_flow_table *lag_ft);
-void mlx5_esw_reps_block(struct mlx5_eswitch *esw);
-void mlx5_esw_reps_unblock(struct mlx5_eswitch *esw);
+void mlx5_esw_reps_block(struct mlx5_eswitch *esw)
+	__acquires(&esw->offloads.reps_lock);
+void mlx5_esw_reps_unblock(struct mlx5_eswitch *esw)
+	__releases(&esw->offloads.reps_lock);
 #else  /* CONFIG_MLX5_ESWITCH */
 /* eswitch API stubs */
 static inline int  mlx5_eswitch_init(struct mlx5_core_dev *dev) { return 0; }

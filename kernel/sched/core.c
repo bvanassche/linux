@@ -5208,7 +5208,8 @@ static void do_balance_callbacks(struct rq *rq, struct balance_callback *head)
 	}
 }
 
-static void balance_push(struct rq *rq);
+static void balance_push(struct rq *rq)
+	__must_hold(__rq_lockp(rq));
 
 /*
  * balance_push_callback is a right abuse of the callback interface and plays

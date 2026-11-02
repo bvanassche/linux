@@ -447,6 +447,7 @@ static const struct iio_info ads1018_iio_info = {
 };
 
 static void ads1018_set_trigger_enable(struct ads1018 *ads1018)
+	__acquires(&ads1018->spi->controller->bus_lock_mutex)
 {
 	spi_bus_lock(ads1018->spi->controller);
 	ads1018_spi_read_exclusive(ads1018, NULL, true);
@@ -454,6 +455,7 @@ static void ads1018_set_trigger_enable(struct ads1018 *ads1018)
 }
 
 static void ads1018_set_trigger_disable(struct ads1018 *ads1018)
+	__releases(&ads1018->spi->controller->bus_lock_mutex)
 {
 	disable_irq(ads1018->drdy_irq);
 	ads1018_spi_read_exclusive(ads1018, NULL, false);
@@ -461,6 +463,7 @@ static void ads1018_set_trigger_disable(struct ads1018 *ads1018)
 }
 
 static int ads1018_set_trigger_state(struct iio_trigger *trig, bool state)
+	__context_unsafe(/* locks or unlocks SPI bus depending on state */)
 {
 	struct ads1018 *ads1018 = iio_trigger_get_drvdata(trig);
 

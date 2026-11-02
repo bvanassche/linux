@@ -6574,6 +6574,7 @@ static int ext4_sync_fs(struct super_block *sb, int wait)
  * modifications.
  */
 static int ext4_freeze(struct super_block *sb)
+	__context_unsafe(/* conditional locking */)
 {
 	int error = 0;
 	journal_t *journal = EXT4_SB(sb)->s_journal;

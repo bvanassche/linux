@@ -109,10 +109,15 @@ struct client_debug_mask {
 
 static void orangefs_kernel_debug_init(void);
 
+/* Used to protect data in ORANGEFS_KMOD_DEBUG_HELP_FILE */
+static DEFINE_MUTEX(orangefs_help_file_lock);
+
 static int orangefs_debug_help_open(struct inode *, struct file *);
-static void *help_start(struct seq_file *, loff_t *);
+static void *help_start(struct seq_file *, loff_t *)
+	__acquires(&orangefs_help_file_lock);
 static void *help_next(struct seq_file *, void *, loff_t *);
-static void help_stop(struct seq_file *, void *);
+static void help_stop(struct seq_file *, void *)
+	__releases(&orangefs_help_file_lock);
 static int help_show(struct seq_file *, void *);
 
 static int orangefs_debug_open(struct inode *, struct file *);
@@ -185,9 +190,6 @@ static struct client_debug_mask client_debug_mask;
  * ORANGEFS_KMOD_DEBUG_FILE.
  */
 static DEFINE_MUTEX(orangefs_debug_lock);
-
-/* Used to protect data in ORANGEFS_KMOD_DEBUG_HELP_FILE */
-static DEFINE_MUTEX(orangefs_help_file_lock);
 
 /*
  * initialize kmod debug operations, create orangefs debugfs dir and

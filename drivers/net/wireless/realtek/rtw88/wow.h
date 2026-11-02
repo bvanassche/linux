@@ -52,7 +52,9 @@ static inline bool rtw_wow_no_link(struct rtw_dev *rtwdev)
 	return (rtwvif->net_type == RTW_NET_NO_LINK);
 }
 
-int rtw_wow_suspend(struct rtw_dev *rtwdev, struct cfg80211_wowlan *wowlan);
-int rtw_wow_resume(struct rtw_dev *rtwdev);
+int rtw_wow_suspend(struct rtw_dev *rtwdev, struct cfg80211_wowlan *wowlan)
+	__must_hold(&rtwdev->mutex);
+int rtw_wow_resume(struct rtw_dev *rtwdev)
+	__must_hold(&rtwdev->mutex);
 
 #endif

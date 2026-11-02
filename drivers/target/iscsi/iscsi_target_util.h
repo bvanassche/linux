@@ -12,7 +12,8 @@ struct iscsit_conn;
 struct iscsi_conn_recovery;
 struct iscsit_session;
 
-extern int iscsit_add_r2t_to_list(struct iscsit_cmd *, u32, u32, int, u32);
+extern int iscsit_add_r2t_to_list(struct iscsit_cmd *cmd, u32, u32, int, u32)
+	__must_hold(&cmd->r2t_lock);
 extern struct iscsi_r2t *iscsit_get_r2t_for_eos(struct iscsit_cmd *, u32, u32);
 extern struct iscsi_r2t *iscsit_get_r2t_from_list(struct iscsit_cmd *);
 extern void iscsit_free_r2t(struct iscsi_r2t *, struct iscsit_cmd *);

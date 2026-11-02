@@ -130,6 +130,7 @@ Keywords
                  __acquires
                  __cond_acquires
                  __cond_acquires_range
+                 __cond_acquires_err_ptr
                  __releases
                  __must_hold_shared
                  __acquires_shared

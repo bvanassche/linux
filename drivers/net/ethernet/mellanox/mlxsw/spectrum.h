@@ -622,7 +622,8 @@ int mlxsw_sp_hdroom_configure(struct mlxsw_sp_port *mlxsw_sp_port,
 			      const struct mlxsw_sp_hdroom *hdroom);
 struct mlxsw_sp_sample_params *
 mlxsw_sp_sample_trigger_params_lookup(struct mlxsw_sp *mlxsw_sp,
-				      const struct mlxsw_sp_sample_trigger *trigger);
+				      const struct mlxsw_sp_sample_trigger *trigger)
+	__must_hold_shared(RCU);
 int
 mlxsw_sp_sample_trigger_params_set(struct mlxsw_sp *mlxsw_sp,
 				   const struct mlxsw_sp_sample_trigger *trigger,

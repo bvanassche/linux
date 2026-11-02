@@ -23,7 +23,8 @@ int atm_dev_ioctl(unsigned int cmd, void __user *buf, int __user *sioc_len,
 #include <linux/proc_fs.h>
 
 void *atm_dev_seq_start(struct seq_file *seq, loff_t *pos);
-void atm_dev_seq_stop(struct seq_file *seq, void *v);
+void atm_dev_seq_stop(struct seq_file *seq, void *v)
+	__releases(&atm_dev_mutex);
 void *atm_dev_seq_next(struct seq_file *seq, void *v, loff_t *pos);
 
 

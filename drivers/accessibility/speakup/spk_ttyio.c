@@ -141,6 +141,7 @@ static inline void get_termios(struct tty_struct *tty,
 }
 
 static int spk_ttyio_initialise_ldisc(struct spk_synth *synth)
+	__context_unsafe(/* TODO */)
 {
 	int ret = 0;
 	struct tty_struct *tty;

@@ -96,7 +96,8 @@ extern const struct nft_set_type nft_set_pipapo_avx2_type;
 #ifdef CONFIG_MITIGATION_RETPOLINE
 const struct nft_set_ext *
 nft_rhash_lookup(const struct net *net, const struct nft_set *set,
-		 const u32 *key);
+		 const u32 *key)
+	__must_hold_shared(RCU);
 const struct nft_set_ext *
 nft_rbtree_lookup(const struct net *net, const struct nft_set *set,
 		  const u32 *key);
@@ -113,7 +114,8 @@ nft_hash_lookup(const struct net *net, const struct nft_set *set,
 
 const struct nft_set_ext *
 nft_set_do_lookup(const struct net *net, const struct nft_set *set,
-		  const u32 *key);
+		  const u32 *key)
+	__must_hold_shared(RCU);
 
 /* called from nft_pipapo_avx2.c */
 const struct nft_set_ext *

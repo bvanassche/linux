@@ -401,6 +401,7 @@ static int iucv_send_ctrl(struct sock *sk, u8 flags)
  * @sk: network socket
  */
 static void __iucv_sock_close(struct sock *sk)
+	__must_hold(sk)
 {
 	struct iucv_sock *iucv = iucv_sk(sk);
 	unsigned long timeo;

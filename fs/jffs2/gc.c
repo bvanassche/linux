@@ -36,7 +36,8 @@ static int jffs2_garbage_collect_hole(struct jffs2_sb_info *c, struct jffs2_eras
 				      uint32_t start, uint32_t end);
 static int jffs2_garbage_collect_dnode(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb,
 				       struct jffs2_inode_info *f, struct jffs2_full_dnode *fn,
-				       uint32_t start, uint32_t end);
+				       uint32_t start, uint32_t end)
+	__must_hold(&f->sem);
 static int jffs2_garbage_collect_live(struct jffs2_sb_info *c,  struct jffs2_eraseblock *jeb,
 			       struct jffs2_raw_node_ref *raw, struct jffs2_inode_info *f);
 

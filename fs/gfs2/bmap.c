@@ -966,6 +966,7 @@ hole_found:
 
 static struct folio *
 gfs2_iomap_get_folio(struct iomap_iter *iter, loff_t pos, unsigned len)
+	__context_unsafe(/* transaction spans functions / conditional locking */)
 {
 	struct inode *inode = iter->inode;
 	struct gfs2_inode *ip = GFS2_I(inode);
@@ -991,6 +992,7 @@ gfs2_iomap_get_folio(struct iomap_iter *iter, loff_t pos, unsigned len)
 
 static void gfs2_iomap_put_folio(struct inode *inode, loff_t pos,
 				 unsigned copied, struct folio *folio)
+	__context_unsafe(/* transaction spans functions / conditional locking */)
 {
 	struct gfs2_trans *tr = current->journal_info;
 	struct gfs2_glock *gl = gfs2_inode_glock(inode);
@@ -1356,6 +1358,7 @@ int gfs2_clear_beyond_eof(struct inode *inode, loff_t end)
  */
 
 static int gfs2_journaled_truncate(struct inode *inode, u64 oldsize, u64 newsize)
+	__context_unsafe(/* transaction spans functions / conditional locking */)
 {
 	struct gfs2_sbd *sdp = GFS2_SB(inode);
 	u64 max_chunk = GFS2_JTRUNC_REVOKES * sdp->sd_vfs->s_blocksize;
@@ -1391,6 +1394,7 @@ static int gfs2_journaled_truncate(struct inode *inode, u64 oldsize, u64 newsize
 }
 
 static int trunc_start(struct inode *inode, u64 newsize)
+	__context_unsafe(/* transaction spans functions / conditional locking */)
 {
 	struct gfs2_glock *gl = gfs2_inode_glock(inode);
 	struct gfs2_inode *ip = GFS2_I(inode);
@@ -2413,6 +2417,7 @@ static int stuffed_zero_range(struct inode *inode, loff_t offset, loff_t length)
 
 static int gfs2_journaled_truncate_range(struct inode *inode, loff_t offset,
 					 loff_t length)
+	__context_unsafe(/* transaction spans functions / conditional locking */)
 {
 	struct gfs2_sbd *sdp = GFS2_SB(inode);
 	loff_t max_chunk = GFS2_JTRUNC_REVOKES * sdp->sd_vfs->s_blocksize;
@@ -2448,6 +2453,7 @@ static int gfs2_journaled_truncate_range(struct inode *inode, loff_t offset,
 }
 
 int __gfs2_punch_hole(struct file *file, loff_t offset, loff_t length)
+	__context_unsafe(/* transaction spans functions / conditional locking */)
 {
 	struct inode *inode = file_inode(file);
 	struct gfs2_inode *ip = GFS2_I(inode);

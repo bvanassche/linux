@@ -36,11 +36,14 @@ static inline unsigned int gfs2_rg_blocks(const struct gfs2_inode *ip, unsigned 
 
 int __gfs2_trans_begin(struct gfs2_trans *tr, struct gfs2_sbd *sdp,
 		       unsigned int blocks, unsigned int revokes,
-		       unsigned long ip);
+		       unsigned long ip)
+	__cond_acquires_shared(0, &sdp->sd_log_flush_lock);
 int gfs2_trans_begin(struct gfs2_sbd *sdp, unsigned int blocks,
-		     unsigned int revokes);
+		     unsigned int revokes)
+	__cond_acquires_shared(0, &sdp->sd_log_flush_lock);
 
-void gfs2_trans_end(struct gfs2_sbd *sdp);
+void gfs2_trans_end(struct gfs2_sbd *sdp)
+	__releases_shared(&sdp->sd_log_flush_lock);
 void gfs2_trans_add_data(struct gfs2_glock *gl, struct buffer_head *bh);
 void gfs2_trans_add_databufs(struct gfs2_glock *gl, struct folio *folio,
 			     size_t from, size_t len);

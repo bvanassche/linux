@@ -32,8 +32,10 @@ int ivpu_pm_resume_cb(struct device *dev);
 int ivpu_pm_runtime_suspend_cb(struct device *dev);
 int ivpu_pm_runtime_resume_cb(struct device *dev);
 
-void ivpu_pm_reset_prepare_cb(struct pci_dev *pdev);
-void ivpu_pm_reset_done_cb(struct pci_dev *pdev);
+void ivpu_pm_reset_prepare_cb(struct pci_dev *pdev)
+	__acquires(&((struct ivpu_device *)pci_get_drvdata(pdev))->pm->reset_lock);
+void ivpu_pm_reset_done_cb(struct pci_dev *pdev)
+	__releases(&((struct ivpu_device *)pci_get_drvdata(pdev))->pm->reset_lock);
 
 int __must_check ivpu_rpm_get(struct ivpu_device *vdev);
 void ivpu_rpm_put(struct ivpu_device *vdev);

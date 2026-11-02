@@ -390,6 +390,8 @@ static int br_fill_forward_path(struct net_device_path_ctx *ctx,
 	struct net_bridge_port *dst;
 	struct net_bridge *br;
 
+	lockdep_assume_in_rcu_read_lock();
+
 	if (netif_is_bridge_port(ctx->dev))
 		return -1;
 

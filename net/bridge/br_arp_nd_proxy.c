@@ -141,6 +141,7 @@ static bool br_is_local_ip(struct net_device *dev, __be32 ip)
 
 void br_do_proxy_suppress_arp(struct sk_buff *skb, struct net_bridge *br,
 			      u16 vid, struct net_bridge_port *p)
+	__must_hold_shared(RCU)
 {
 	struct net_device *dev = br->dev;
 	struct net_device *vlandev = dev;
@@ -431,6 +432,7 @@ static bool br_is_local_ip6(struct net_device *dev, struct in6_addr *addr)
 
 void br_do_suppress_nd(struct sk_buff *skb, struct net_bridge *br,
 		       u16 vid, struct net_bridge_port *p, struct nd_msg *msg)
+	__must_hold_shared(RCU)
 {
 	struct net_device *dev = br->dev;
 	struct net_device *vlandev = NULL;

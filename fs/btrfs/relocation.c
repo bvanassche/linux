@@ -716,7 +716,7 @@ static struct btrfs_root *create_reloc_root(struct btrfs_trans_handle *trans,
 		btrfs_set_root_drop_level(root_item, 0);
 	}
 
-	btrfs_tree_unlock(eb);
+	context_unsafe(btrfs_tree_unlock(eb));
 	free_extent_buffer(eb);
 
 	ret = btrfs_insert_root(trans, fs_info->tree_root,
@@ -1087,6 +1087,7 @@ int replace_path(struct btrfs_trans_handle *trans, struct reloc_control *rc,
 		 struct btrfs_root *dest, struct btrfs_root *src,
 		 struct btrfs_path *path, struct btrfs_key *next_key,
 		 int lowest_level, int max_level)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = dest->fs_info;
 	struct extent_buffer *eb;
@@ -1613,6 +1614,7 @@ static int clean_dirty_subvols(struct reloc_control *rc)
  */
 static noinline_for_stack int merge_reloc_root(struct reloc_control *rc,
 					       struct btrfs_root *root)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = rc->extent_root->fs_info;
 	struct btrfs_key key;
@@ -2317,6 +2319,7 @@ static int do_relocation(struct btrfs_trans_handle *trans,
 			 struct btrfs_backref_node *node,
 			 struct btrfs_key *key,
 			 struct btrfs_path *path, int lowest)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_backref_node *upper;
 	struct btrfs_backref_edge *edge;

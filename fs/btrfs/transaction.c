@@ -1394,7 +1394,7 @@ static noinline int commit_cowonly_roots(struct btrfs_trans_handle *trans)
 	eb = btrfs_lock_root_node(fs_info->tree_root);
 	ret = btrfs_cow_block(trans, fs_info->tree_root, eb, NULL,
 			      0, &eb, BTRFS_NESTING_COW);
-	btrfs_tree_unlock(eb);
+	context_unsafe(btrfs_tree_unlock(eb));
 	free_extent_buffer(eb);
 
 	if (ret)
@@ -1836,7 +1836,7 @@ static noinline int create_pending_snapshot(struct btrfs_trans_handle *trans,
 
 	root_eb = btrfs_lock_root_node(root);
 	ret = btrfs_copy_root(trans, root, root_eb, &tmp, objectid);
-	btrfs_tree_unlock(root_eb);
+	context_unsafe(btrfs_tree_unlock(root_eb));
 	free_extent_buffer(root_eb);
 	if (unlikely(ret)) {
 		btrfs_abort_transaction(trans, ret);
@@ -1852,7 +1852,7 @@ static noinline int create_pending_snapshot(struct btrfs_trans_handle *trans,
 	key.type = BTRFS_ROOT_ITEM_KEY;
 	key.offset = trans->transid;
 	ret = btrfs_insert_root(trans, tree_root, &key, new_root_item);
-	btrfs_tree_unlock(tmp);
+	context_unsafe(btrfs_tree_unlock(tmp));
 	free_extent_buffer(tmp);
 	if (unlikely(ret)) {
 		btrfs_abort_transaction(trans, ret);

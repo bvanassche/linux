@@ -876,7 +876,7 @@ struct btrfs_root *btrfs_create_tree(struct btrfs_trans_handle *trans,
 		export_guid(root->root_item.uuid, &guid_null);
 	btrfs_set_root_drop_level(&root->root_item, 0);
 
-	btrfs_tree_unlock(leaf);
+	context_unsafe(btrfs_tree_unlock(leaf));
 
 	ret = btrfs_insert_root(trans, tree_root, &root->root_key, &root->root_item);
 	if (ret)
@@ -928,7 +928,7 @@ int btrfs_alloc_log_tree_node(struct btrfs_trans_handle *trans,
 	root->node = leaf;
 
 	btrfs_mark_buffer_dirty(trans, root->node);
-	btrfs_tree_unlock(root->node);
+	context_unsafe(btrfs_tree_unlock(root->node));
 
 	return 0;
 }

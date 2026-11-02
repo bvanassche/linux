@@ -834,6 +834,7 @@ out:
  */
 static int add_missing_keys(struct btrfs_fs_info *fs_info,
 			    struct preftrees *preftrees, bool lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct prelim_ref *ref;
 	struct extent_buffer *eb;
@@ -1371,6 +1372,7 @@ static void store_backref_shared_cache(struct btrfs_backref_share_check_ctx *ctx
  */
 static int find_parent_nodes(struct btrfs_backref_walk_ctx *ctx,
 			     struct share_check *sc)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_root *root = btrfs_extent_root(ctx->fs_info, ctx->bytenr);
 	struct btrfs_key key;
@@ -2124,6 +2126,7 @@ char *btrfs_ref_to_path(struct btrfs_root *fs_root, struct btrfs_path *path,
 			u32 name_len, unsigned long name_off,
 			struct extent_buffer *eb_in, u64 parent,
 			char *dest, u32 size)
+	__context_unsafe(/* conditional locking */)
 {
 	int slot;
 	u64 next_inum;
@@ -3088,6 +3091,7 @@ void btrfs_backref_free_edge(struct btrfs_backref_cache *cache,
 }
 
 void btrfs_backref_unlock_node_buffer(struct btrfs_backref_node *node)
+	__context_unsafe(/* conditional locking */)
 {
 	if (node->locked) {
 		btrfs_tree_unlock(node->eb);

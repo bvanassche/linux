@@ -244,6 +244,7 @@ int btrfs_copy_root(struct btrfs_trans_handle *trans,
 		      struct btrfs_root *root,
 		      struct extent_buffer *buf,
 		      struct extent_buffer **cow_ret, u64 new_root_objectid)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	struct extent_buffer *cow;
@@ -469,6 +470,7 @@ int btrfs_force_cow_block(struct btrfs_trans_handle *trans,
 			  struct extent_buffer **cow_ret,
 			  u64 search_start, u64 empty_size,
 			  enum btrfs_lock_nesting nest)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	struct btrfs_disk_key disk_key;
@@ -859,6 +861,7 @@ struct extent_buffer *btrfs_read_node_slot(struct extent_buffer *parent,
 static int promote_child_to_root(struct btrfs_trans_handle *trans,
 				 struct btrfs_root *root, struct btrfs_path *path,
 				 int level, struct extent_buffer *parent)
+	__context_unsafe(/* conditional locking */)
 {
 	struct extent_buffer *child;
 	int ret;
@@ -916,6 +919,7 @@ static int promote_child_to_root(struct btrfs_trans_handle *trans,
 static noinline int balance_level(struct btrfs_trans_handle *trans,
 			 struct btrfs_root *root,
 			 struct btrfs_path *path, int level)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	struct extent_buffer *right = NULL;
@@ -1141,6 +1145,7 @@ out:
 static noinline int push_nodes_for_insert(struct btrfs_trans_handle *trans,
 					  struct btrfs_root *root,
 					  struct btrfs_path *path, int level)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	struct extent_buffer *right = NULL;
@@ -1463,6 +1468,7 @@ read_block_for_search(struct btrfs_root *root, struct btrfs_path *p,
 		      struct btrfs_eb_prealloc *pa,
 		      struct extent_buffer **eb_ret, int slot,
 		      const struct btrfs_key *key)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	struct btrfs_tree_parent_check check = { 0 };
@@ -1696,6 +1702,7 @@ int btrfs_find_item(struct btrfs_root *fs_root, struct btrfs_path *path,
 static struct extent_buffer *btrfs_search_slot_get_root(struct btrfs_root *root,
 							struct btrfs_path *p,
 							int write_lock_level)
+	__context_unsafe(/* conditional locking */)
 {
 	struct extent_buffer *b;
 	int root_lock = 0;
@@ -2262,6 +2269,7 @@ ALLOW_ERROR_INJECTION(btrfs_search_slot, ERRNO);
  */
 int btrfs_search_old_slot(struct btrfs_root *root, const struct btrfs_key *key,
 			  struct btrfs_path *p, u64 time_seq)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	struct extent_buffer *b;
@@ -2868,6 +2876,7 @@ static int balance_node_right(struct btrfs_trans_handle *trans,
 static noinline int insert_new_root(struct btrfs_trans_handle *trans,
 			   struct btrfs_root *root,
 			   struct btrfs_path *path, int level)
+	__context_unsafe(/* conditional locking */)
 {
 	u64 lower_gen;
 	struct extent_buffer *lower;
@@ -2995,6 +3004,7 @@ static int insert_ptr(struct btrfs_trans_handle *trans,
 static noinline int split_node(struct btrfs_trans_handle *trans,
 			       struct btrfs_root *root,
 			       struct btrfs_path *path, int level)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	struct extent_buffer *c;
@@ -3133,6 +3143,7 @@ static noinline int __push_leaf_right(struct btrfs_trans_handle *trans,
 				      struct extent_buffer *right,
 				      int free_space, u32 left_nritems,
 				      u32 min_slot)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = right->fs_info;
 	struct extent_buffer *left = path->nodes[0];
@@ -3265,6 +3276,7 @@ static int push_leaf_right(struct btrfs_trans_handle *trans, struct btrfs_root
 			   *root, struct btrfs_path *path,
 			   int min_data_size, int data_size,
 			   bool empty, u32 min_slot)
+	__context_unsafe(/* conditional locking */)
 {
 	struct extent_buffer *left = path->nodes[0];
 	struct extent_buffer *right;
@@ -3344,6 +3356,7 @@ static noinline int __push_leaf_left(struct btrfs_trans_handle *trans,
 				     bool empty, struct extent_buffer *left,
 				     int free_space, u32 right_nritems,
 				     u32 max_slot)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = left->fs_info;
 	struct btrfs_disk_key disk_key;
@@ -3481,6 +3494,7 @@ out:
 static int push_leaf_left(struct btrfs_trans_handle *trans, struct btrfs_root
 			  *root, struct btrfs_path *path, int min_data_size,
 			  int data_size, int empty, u32 max_slot)
+	__context_unsafe(/* conditional locking */)
 {
 	struct extent_buffer *right = path->nodes[0];
 	struct extent_buffer *left;
@@ -3545,6 +3559,7 @@ static noinline int copy_for_split(struct btrfs_trans_handle *trans,
 				   struct extent_buffer *l,
 				   struct extent_buffer *right,
 				   int slot, int mid, int nritems)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = trans->fs_info;
 	int data_copy_size;
@@ -3672,6 +3687,7 @@ static noinline int split_leaf(struct btrfs_trans_handle *trans,
 			       const struct btrfs_key *ins_key,
 			       struct btrfs_path *path, int data_size,
 			       bool extend)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_disk_key disk_key;
 	struct extent_buffer *l;
@@ -4621,6 +4637,7 @@ int btrfs_del_items(struct btrfs_trans_handle *trans, struct btrfs_root *root,
 int btrfs_search_forward(struct btrfs_root *root, struct btrfs_key *min_key,
 			 struct btrfs_path *path,
 			 u64 min_trans)
+	__context_unsafe(/* conditional locking */)
 {
 	struct extent_buffer *cur;
 	int slot;

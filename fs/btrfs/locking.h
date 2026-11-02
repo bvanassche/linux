@@ -172,24 +172,31 @@ enum btrfs_lockdep_trans_states {
 static_assert(BTRFS_NESTING_MAX <= MAX_LOCKDEP_SUBCLASSES,
 	      "too many lock subclasses defined");
 
-void btrfs_tree_lock_nested(struct extent_buffer *eb, enum btrfs_lock_nesting nest);
+void btrfs_tree_lock_nested(struct extent_buffer *eb, enum btrfs_lock_nesting nest)
+	__acquires(&eb->lock);
 
 static inline void btrfs_tree_lock(struct extent_buffer *eb)
+	__acquires(&eb->lock)
 {
 	btrfs_tree_lock_nested(eb, BTRFS_NESTING_NORMAL);
 }
 
-void btrfs_tree_unlock(struct extent_buffer *eb);
+void btrfs_tree_unlock(struct extent_buffer *eb)
+	__releases(&eb->lock);
 
-void btrfs_tree_read_lock_nested(struct extent_buffer *eb, enum btrfs_lock_nesting nest);
+void btrfs_tree_read_lock_nested(struct extent_buffer *eb, enum btrfs_lock_nesting nest)
+	__acquires_shared(&eb->lock);
 
 static inline void btrfs_tree_read_lock(struct extent_buffer *eb)
+	__acquires_shared(&eb->lock)
 {
 	btrfs_tree_read_lock_nested(eb, BTRFS_NESTING_NORMAL);
 }
 
-void btrfs_tree_read_unlock(struct extent_buffer *eb);
-bool btrfs_try_tree_read_lock(struct extent_buffer *eb);
+void btrfs_tree_read_unlock(struct extent_buffer *eb)
+	__releases_shared(&eb->lock);
+bool btrfs_try_tree_read_lock(struct extent_buffer *eb)
+	__cond_acquires_shared(true, &eb->lock);
 struct extent_buffer *btrfs_lock_root_node(struct btrfs_root *root);
 struct extent_buffer *btrfs_read_lock_root_node(struct btrfs_root *root);
 struct extent_buffer *btrfs_try_read_lock_root_node(struct btrfs_root *root);
@@ -211,6 +218,7 @@ static inline void btrfs_assert_tree_read_locked(struct extent_buffer *eb) { }
 void btrfs_unlock_up_safe(struct btrfs_path *path, int level);
 
 static inline void btrfs_tree_unlock_rw(struct extent_buffer *eb, int rw)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (rw == BTRFS_WRITE_LOCK)
 		btrfs_tree_unlock(eb);

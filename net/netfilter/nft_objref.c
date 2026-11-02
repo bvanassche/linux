@@ -141,6 +141,7 @@ void nft_objref_map_eval(const struct nft_expr *expr,
 	const struct nft_set_ext *ext;
 	struct nft_object *obj;
 
+	lockdep_assume_in_rcu_read_lock();
 	ext = nft_set_do_lookup(net, set, &regs->data[priv->sreg]);
 	if (!ext) {
 		ext = nft_set_catchall_lookup(net, set);

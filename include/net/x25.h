@@ -251,7 +251,8 @@ static __inline__ void x25_neigh_put(struct x25_neigh *nb)
 }
 
 /* x25_out.c */
-int x25_output(struct sock *, struct sk_buff *);
+int x25_output(struct sock *sk, struct sk_buff *)
+	__must_hold(sk);
 void x25_kick(struct sock *);
 void x25_enquiry_response(struct sock *);
 

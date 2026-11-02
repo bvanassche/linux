@@ -6294,6 +6294,9 @@ static void rtl8xxxu_rx_update_rssi_iter(void *data, u8 *mac,
 	struct ieee80211_rx_status *rx_status = iter_data->rx_status;
 	u8 *bssid = iter_data->bssid;
 
+	/* Called via ieee80211_iterate_active_interfaces_atomic(). */
+	lockdep_assume_in_rcu_read_lock();
+
 	if (!ether_addr_equal(vif->bss_conf.bssid, bssid))
 		return;
 

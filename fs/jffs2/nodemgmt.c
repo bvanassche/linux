@@ -51,7 +51,8 @@ static int jffs2_rp_can_write(struct jffs2_sb_info *c)
 }
 
 static int jffs2_do_reserve_space(struct jffs2_sb_info *c,  uint32_t minsize,
-				  uint32_t *len, uint32_t sumsize);
+				  uint32_t *len, uint32_t sumsize)
+	__must_hold(&c->erase_completion_lock);
 
 /**
  *	jffs2_reserve_space - request physical space to write nodes to flash

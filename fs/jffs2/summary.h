@@ -180,7 +180,8 @@ void jffs2_sum_reset_collected(struct jffs2_summary *s);
 void jffs2_sum_move_collected(struct jffs2_sb_info *c, struct jffs2_summary *s);
 int jffs2_sum_add_kvec(struct jffs2_sb_info *c, const struct kvec *invecs,
 			unsigned long count,  uint32_t to);
-int jffs2_sum_write_sumnode(struct jffs2_sb_info *c);
+int jffs2_sum_write_sumnode(struct jffs2_sb_info *c)
+	__must_hold(&c->erase_completion_lock);
 int jffs2_sum_add_padding_mem(struct jffs2_summary *s, uint32_t size);
 int jffs2_sum_add_inode_mem(struct jffs2_summary *s, struct jffs2_raw_inode *ri, uint32_t ofs);
 int jffs2_sum_add_dirent_mem(struct jffs2_summary *s, struct jffs2_raw_dirent *rd, uint32_t ofs);

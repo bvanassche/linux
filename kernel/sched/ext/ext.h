@@ -8,12 +8,19 @@
  */
 #ifdef CONFIG_SCHED_CLASS_EXT
 
+struct percpu_rw_semaphore;
+extern struct percpu_rw_semaphore scx_fork_rwsem;
+
 void scx_tick(struct rq *rq);
 void init_scx_entity(struct sched_ext_entity *scx);
-void scx_pre_fork(struct task_struct *p);
-int scx_fork(struct task_struct *p, struct kernel_clone_args *kargs);
-void scx_post_fork(struct task_struct *p);
-void scx_cancel_fork(struct task_struct *p);
+void scx_pre_fork(struct task_struct *p)
+	__acquires_shared(&scx_fork_rwsem);
+int scx_fork(struct task_struct *p, struct kernel_clone_args *kargs)
+	__must_hold_shared(&scx_fork_rwsem);
+void scx_post_fork(struct task_struct *p)
+	__releases_shared(&scx_fork_rwsem);
+void scx_cancel_fork(struct task_struct *p)
+	__releases_shared(&scx_fork_rwsem);
 bool scx_can_stop_tick(struct rq *rq);
 void scx_rq_activate(struct rq *rq);
 void scx_rq_deactivate(struct rq *rq);

@@ -598,7 +598,8 @@ static void __get_guid(struct ipmi_smi *intf);
 static void __ipmi_bmc_unregister(struct ipmi_smi *intf);
 static int __ipmi_bmc_register(struct ipmi_smi *intf,
 			       struct ipmi_device_id *id,
-			       bool guid_set, guid_t *guid, int intf_num);
+			       bool guid_set, guid_t *guid, int intf_num)
+	__must_hold(&intf->bmc_reg_mutex);
 static int __scan_channels(struct ipmi_smi *intf,
 				struct ipmi_device_id *id, bool rescan);
 

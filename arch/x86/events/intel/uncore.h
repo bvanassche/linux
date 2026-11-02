@@ -242,7 +242,10 @@ struct pci2phy_map {
 	int pbus_to_dieid[256];
 };
 
-struct pci2phy_map *__find_pci2phy_map(int segment);
+extern raw_spinlock_t pci2phy_map_lock;
+
+struct pci2phy_map *__find_pci2phy_map(int segment)
+	__must_hold(&pci2phy_map_lock);
 int uncore_pcibus_to_dieid(struct pci_bus *bus);
 int uncore_die_to_segment(int die);
 int uncore_device_to_die(struct pci_dev *dev);
@@ -636,7 +639,6 @@ extern struct intel_uncore_type **uncore_pci_uncores;
 extern struct intel_uncore_type **uncore_mmio_uncores;
 extern struct pci_driver *uncore_pci_driver;
 extern struct pci_driver *uncore_pci_sub_driver;
-extern raw_spinlock_t pci2phy_map_lock;
 extern struct list_head pci2phy_map_head;
 extern struct pci_extra_dev *uncore_extra_pci_dev;
 extern struct event_constraint uncore_constraint_empty;

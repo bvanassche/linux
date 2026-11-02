@@ -89,8 +89,10 @@ static char *errbuf;
 
 static struct kmem_cache *uhci_up_cachep;	/* urb_priv */
 
-static void suspend_rh(struct uhci_hcd *uhci, enum uhci_rh_state new_state);
-static void wakeup_rh(struct uhci_hcd *uhci);
+static void suspend_rh(struct uhci_hcd *uhci, enum uhci_rh_state new_state)
+	__releases(uhci->lock);
+static void wakeup_rh(struct uhci_hcd *uhci)
+	__releases(uhci->lock);
 static void uhci_get_current_frame_number(struct uhci_hcd *uhci);
 
 /*

@@ -184,6 +184,7 @@ static void uhci_check_ports(struct uhci_hcd *uhci)
 }
 
 static int uhci_hub_status_data(struct usb_hcd *hcd, char *buf)
+	__context_unsafe(/* TODO */)
 {
 	struct uhci_hcd *uhci = hcd_to_uhci(hcd);
 	unsigned long flags;

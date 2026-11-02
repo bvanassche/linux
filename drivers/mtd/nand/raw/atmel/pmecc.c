@@ -763,7 +763,7 @@ void atmel_pmecc_reset(struct atmel_pmecc *pmecc)
 EXPORT_SYMBOL_GPL(atmel_pmecc_reset);
 
 int atmel_pmecc_enable(struct atmel_pmecc_user *user, int op)
-	__cond_acquires(0, &user->pmecc->lock)
+	__context_unsafe(/* struct atmel_pmecc_user is opaque to callers */)
 {
 	struct atmel_pmecc *pmecc = user->pmecc;
 	u32 cfg;
@@ -794,7 +794,7 @@ int atmel_pmecc_enable(struct atmel_pmecc_user *user, int op)
 EXPORT_SYMBOL_GPL(atmel_pmecc_enable);
 
 void atmel_pmecc_disable(struct atmel_pmecc_user *user)
-	__releases(&user->pmecc->lock)
+	__context_unsafe(/* struct atmel_pmecc_user is opaque to callers */)
 {
 	atmel_pmecc_reset(user->pmecc);
 	mutex_unlock(&user->pmecc->lock);

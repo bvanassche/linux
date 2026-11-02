@@ -164,7 +164,8 @@ struct iopt_area_contig_iter {
 struct iopt_area *iopt_area_contig_init(struct iopt_area_contig_iter *iter,
 					struct io_pagetable *iopt,
 					unsigned long iova,
-					unsigned long last_iova);
+					unsigned long last_iova)
+	__must_hold_shared(&iopt->iova_rwsem);
 struct iopt_area *iopt_area_contig_next(struct iopt_area_contig_iter *iter);
 
 static inline bool iopt_area_contig_done(struct iopt_area_contig_iter *iter)

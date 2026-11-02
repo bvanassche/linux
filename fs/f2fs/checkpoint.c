@@ -207,11 +207,13 @@ void f2fs_up_write_trace(struct f2fs_rwsem *sem, struct f2fs_lock_context *lc)
 }
 
 void f2fs_lock_op(struct f2fs_sb_info *sbi, struct f2fs_lock_context *lc)
+	__acquires_shared(&sbi->cp_rwsem.internal_rwsem)
 {
 	f2fs_down_read_trace(&sbi->cp_rwsem, lc);
 }
 
 int f2fs_trylock_op(struct f2fs_sb_info *sbi, struct f2fs_lock_context *lc)
+	__cond_acquires_shared(true, &sbi->cp_rwsem.internal_rwsem)
 {
 	if (time_to_inject(sbi, FAULT_LOCK_OP))
 		return 0;
@@ -220,6 +222,7 @@ int f2fs_trylock_op(struct f2fs_sb_info *sbi, struct f2fs_lock_context *lc)
 }
 
 void f2fs_unlock_op(struct f2fs_sb_info *sbi, struct f2fs_lock_context *lc)
+	__releases_shared(&sbi->cp_rwsem.internal_rwsem)
 {
 	f2fs_up_read_trace(&sbi->cp_rwsem, lc);
 }

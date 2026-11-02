@@ -29,8 +29,10 @@ static int lpddr_point(struct mtd_info *mtd, loff_t adr, size_t len,
 			size_t *retlen, void **mtdbuf, resource_size_t *phys);
 static int lpddr_unpoint(struct mtd_info *mtd, loff_t adr, size_t len);
 static int get_chip(struct map_info *map, struct flchip *chip, int mode);
-static int chip_ready(struct map_info *map, struct flchip *chip, int mode);
-static void put_chip(struct map_info *map, struct flchip *chip);
+static int chip_ready(struct map_info *map, struct flchip *chip, int mode)
+	__must_hold(&chip->mutex);
+static void put_chip(struct map_info *map, struct flchip *chip)
+	__must_hold(&chip->mutex);
 
 struct mtd_info *lpddr_cmdset(struct map_info *map)
 {

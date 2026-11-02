@@ -486,7 +486,8 @@ int rdt_pseudo_lock_init(void);
 
 void rdt_pseudo_lock_release(void);
 
-int rdtgroup_pseudo_lock_create(struct rdtgroup *rdtgrp);
+int rdtgroup_pseudo_lock_create(struct rdtgroup *rdtgrp)
+	__must_hold(&rdtgroup_mutex);
 
 void rdtgroup_pseudo_lock_remove(struct rdtgroup *rdtgrp);
 
@@ -514,6 +515,7 @@ static inline bool rdtgroup_pseudo_locked_in_hierarchy(struct rdt_ctrl_domain *d
 static inline int rdt_pseudo_lock_init(void) { return 0; }
 static inline void rdt_pseudo_lock_release(void) { }
 static inline int rdtgroup_pseudo_lock_create(struct rdtgroup *rdtgrp)
+	__must_hold(&rdtgroup_mutex)
 {
 	return -EOPNOTSUPP;
 }

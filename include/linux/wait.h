@@ -774,7 +774,8 @@ do {										\
 })
 
 extern int do_wait_intr(wait_queue_head_t *, wait_queue_entry_t *);
-extern int do_wait_intr_irq(wait_queue_head_t *, wait_queue_entry_t *);
+extern int do_wait_intr_irq(wait_queue_head_t *wq, wait_queue_entry_t *)
+	__must_hold(&wq->lock);
 
 #define __wait_event_interruptible_locked(wq, condition, exclusive, fn)		\
 ({										\

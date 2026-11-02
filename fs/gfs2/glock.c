@@ -61,7 +61,9 @@ struct gfs2_glock_iter {
 typedef void (*glock_examiner) (struct gfs2_glock * gl);
 
 static void do_xmote(struct gfs2_glock *gl, struct gfs2_holder *gh,
-		     unsigned int target, bool may_cancel);
+		     unsigned int target, bool may_cancel)
+	__releases(&gl->gl_lockref.lock)
+	__acquires(&gl->gl_lockref.lock);
 static void request_demote(struct gfs2_glock *gl, unsigned int state,
 			   unsigned long delay, bool remote);
 

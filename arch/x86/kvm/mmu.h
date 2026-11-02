@@ -126,7 +126,8 @@ void kvm_mmu_slot_try_split_huge_pages(struct kvm *kvm,
 void kvm_mmu_try_split_huge_pages(struct kvm *kvm,
 				  const struct kvm_memory_slot *memslot,
 				  u64 start, u64 end,
-				  int target_level);
+				  int target_level)
+	__must_hold(&kvm->mmu_lock);
 void kvm_mmu_recover_huge_pages(struct kvm *kvm,
 				const struct kvm_memory_slot *memslot);
 void kvm_mmu_slot_leaf_clear_dirty(struct kvm *kvm,

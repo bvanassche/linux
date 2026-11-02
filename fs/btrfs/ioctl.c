@@ -674,7 +674,7 @@ static noinline int create_subvol(const struct mnt_idmap *idmap,
 	btrfs_set_root_ctransid(root_item, trans->transid);
 	btrfs_set_root_otransid(root_item, trans->transid);
 
-	btrfs_tree_unlock(leaf);
+	context_unsafe(btrfs_tree_unlock(leaf));
 
 	btrfs_set_root_dirid(root_item, BTRFS_FIRST_FREE_OBJECTID);
 

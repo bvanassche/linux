@@ -285,7 +285,8 @@ extern void audit_put_watch(struct audit_watch *watch);
 extern void audit_get_watch(struct audit_watch *watch);
 extern int audit_to_watch(struct audit_krule *krule, char *path, int len,
 			  u32 op);
-extern int audit_add_watch(struct audit_krule *krule, struct list_head **list);
+extern int audit_add_watch(struct audit_krule *krule, struct list_head **list)
+	__must_hold(&audit_filter_mutex);
 extern void audit_remove_watch_rule(struct audit_krule *krule);
 extern char *audit_watch_path(struct audit_watch *watch);
 extern int audit_watch_compare(struct audit_watch *watch, u64 ino, dev_t dev);
@@ -308,7 +309,8 @@ extern void audit_put_chunk(struct audit_chunk *chunk);
 extern bool audit_tree_match(struct audit_chunk *chunk,
 			     struct audit_tree *tree);
 extern int audit_make_tree(struct audit_krule *rule, char *pathname, u32 op);
-extern int audit_add_tree_rule(struct audit_krule *rule);
+extern int audit_add_tree_rule(struct audit_krule *rule)
+	__must_hold(&audit_filter_mutex);
 extern int audit_remove_tree_rule(struct audit_krule *rule);
 extern void audit_trim_trees(void);
 extern int audit_tag_tree(char *old, char *new);

@@ -7,6 +7,8 @@
 #ifndef _MEI_HBM_H_
 #define _MEI_HBM_H_
 
+#include "mei_dev.h"
+
 struct mei_device;
 struct mei_msg_hdr;
 struct mei_cl;

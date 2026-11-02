@@ -936,6 +936,7 @@ static void free_overlay_changeset(struct overlay_changeset *ovcs)
 
 static int of_overlay_apply(struct overlay_changeset *ovcs,
 			    const struct device_node *base)
+	__must_hold(&of_mutex)
 {
 	int ret = 0, ret_revert, ret_tmp;
 

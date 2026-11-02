@@ -343,6 +343,7 @@ static ssize_t set_cookie_show(struct device *dev,
 	 * data we need to wait for probing to settle.
 	 */
 	guard(device)(dev);
+	lockdep_assume_ctx_held(&dev->mutex);
 	guard(nvdimm_bus)(dev);
 	wait_nvdimm_bus_probe_idle(dev);
 	if (nd_region->ndr_mappings) {
@@ -414,6 +415,7 @@ static ssize_t available_size_show(struct device *dev,
 	 * problem to not race itself.
 	 */
 	guard(device)(dev);
+	lockdep_assume_ctx_held(&dev->mutex);
 	guard(nvdimm_bus)(dev);
 	wait_nvdimm_bus_probe_idle(dev);
 
@@ -427,6 +429,7 @@ static ssize_t max_available_extent_show(struct device *dev,
 	struct nd_region *nd_region = to_nd_region(dev);
 
 	guard(device)(dev);
+	lockdep_assume_ctx_held(&dev->mutex);
 	guard(nvdimm_bus)(dev);
 	wait_nvdimm_bus_probe_idle(dev);
 

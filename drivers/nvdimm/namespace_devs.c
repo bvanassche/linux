@@ -265,6 +265,7 @@ static ssize_t alt_name_store(struct device *dev,
 	ssize_t rc;
 
 	guard(device)(dev);
+	lockdep_assume_ctx_held(&dev->mutex);
 	guard(nvdimm_bus)(dev);
 	wait_nvdimm_bus_probe_idle(dev);
 	rc = __alt_name_store(dev, buf, len);
@@ -848,6 +849,7 @@ static ssize_t size_store(struct device *dev,
 		return rc;
 
 	guard(device)(dev);
+	lockdep_assume_ctx_held(&dev->mutex);
 	guard(nvdimm_bus)(dev);
 	wait_nvdimm_bus_probe_idle(dev);
 	rc = __size_store(dev, val);
@@ -1035,6 +1037,7 @@ static ssize_t uuid_store(struct device *dev,
 		return -ENXIO;
 
 	guard(device)(dev);
+	lockdep_assume_ctx_held(&dev->mutex);
 	guard(nvdimm_bus)(dev);
 	wait_nvdimm_bus_probe_idle(dev);
 	if (to_ndns(dev)->claim)
@@ -1276,6 +1279,7 @@ static ssize_t holder_class_store(struct device *dev,
 	int rc;
 
 	guard(device)(dev);
+	lockdep_assume_ctx_held(&dev->mutex);
 	guard(nvdimm_bus)(dev);
 	wait_nvdimm_bus_probe_idle(dev);
 	rc = __holder_class_store(dev, buf);

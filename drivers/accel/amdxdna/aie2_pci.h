@@ -12,6 +12,7 @@
 
 #include "aie.h"
 #include "aie2_msg_priv.h"
+#include "amdxdna_ctx.h"
 #include "amdxdna_mailbox.h"
 
 /* Firmware determines device memory base address and size */
@@ -240,15 +241,19 @@ extern const struct aie2_hw_ops npu4_hw_ops;
 
 /* aie2_pm.c */
 int aie2_pm_init(struct amdxdna_dev_hdl *ndev);
-int aie2_pm_set_mode(struct amdxdna_dev_hdl *ndev, enum amdxdna_power_mode_type target);
-int aie2_pm_set_dpm(struct amdxdna_dev_hdl *ndev, u32 dpm_level);
+int aie2_pm_set_mode(struct amdxdna_dev_hdl *ndev, enum amdxdna_power_mode_type target)
+	__must_hold(&ndev->aie.xdna->dev_lock);
+int aie2_pm_set_dpm(struct amdxdna_dev_hdl *ndev, u32 dpm_level)
+	__must_hold(&ndev->aie.xdna->dev_lock);
 
 /* aie2_error.c */
 int aie2_error_async_events_alloc(struct amdxdna_dev_hdl *ndev, u32 num_events);
-void aie2_error_async_events_free(struct amdxdna_dev_hdl *ndev);
+void aie2_error_async_events_free(struct amdxdna_dev_hdl *ndev)
+	__must_hold(&ndev->aie.xdna->dev_lock);
 int aie2_error_async_msg_thread(void *data);
 int aie2_get_array_async_error(struct amdxdna_dev_hdl *ndev,
-			       struct amdxdna_drm_get_array *args);
+			       struct amdxdna_drm_get_array *args)
+	__must_hold(&ndev->aie.xdna->dev_lock);
 
 /* aie2_message.c */
 void aie2_msg_init(struct amdxdna_dev_hdl *ndev);
@@ -294,13 +299,18 @@ int aie2_config_debug_bo(struct amdxdna_hwctx *hwctx, struct amdxdna_sched_job *
 int aie2_update_prop_time_quota(struct amdxdna_dev_hdl *ndev, u32 us);
 
 /* aie2_hwctx.c */
-int aie2_hwctx_init(struct amdxdna_hwctx *hwctx);
-void aie2_hwctx_fini(struct amdxdna_hwctx *hwctx);
+int aie2_hwctx_init(struct amdxdna_hwctx *hwctx)
+	__must_hold(&hwctx->client->xdna->dev_lock);
+void aie2_hwctx_fini(struct amdxdna_hwctx *hwctx)
+	__must_hold(&hwctx->client->xdna->dev_lock);
 int aie2_hwctx_sched_init(struct amdxdna_dev_hdl *ndev);
 void aie2_hwctx_sched_fini(struct amdxdna_dev_hdl *ndev);
-int aie2_hwctx_config(struct amdxdna_hwctx *hwctx, u32 type, u64 value, void *buf, u32 size);
-int aie2_hwctx_sync_debug_bo(struct amdxdna_hwctx *hwctx, u32 debug_bo_hdl);
-void aie2_hwctx_suspend(struct amdxdna_client *client);
+int aie2_hwctx_config(struct amdxdna_hwctx *hwctx, u32 type, u64 value, void *buf, u32 size)
+	__must_hold(&hwctx->client->xdna->dev_lock);
+int aie2_hwctx_sync_debug_bo(struct amdxdna_hwctx *hwctx, u32 debug_bo_hdl)
+	__must_hold(&hwctx->client->xdna->dev_lock);
+void aie2_hwctx_suspend(struct amdxdna_client *client)
+	__must_hold(&client->xdna->dev_lock);
 int aie2_hwctx_resume(struct amdxdna_client *client);
 int aie2_cmd_submit(struct amdxdna_hwctx *hwctx, struct amdxdna_sched_job *job, u64 *seq);
 void aie2_hmm_invalidate(struct amdxdna_gem_obj *abo, unsigned long cur_seq);

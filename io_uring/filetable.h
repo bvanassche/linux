@@ -11,7 +11,8 @@ void io_free_file_tables(struct io_ring_ctx *ctx, struct io_file_table *table);
 int io_fixed_fd_install(struct io_kiocb *req, unsigned int issue_flags,
 			struct file *file, unsigned int file_slot);
 int __io_fixed_fd_install(struct io_ring_ctx *ctx, struct file *file,
-				unsigned int file_slot);
+				unsigned int file_slot)
+	__must_hold(&ctx->uring_lock);
 int io_fixed_fd_remove(struct io_ring_ctx *ctx, unsigned int offset);
 
 int io_register_file_alloc_range(struct io_ring_ctx *ctx,

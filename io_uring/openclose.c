@@ -342,6 +342,7 @@ int io_pipe_prep(struct io_kiocb *req, const struct io_uring_sqe *sqe)
 
 static int io_pipe_fixed(struct io_kiocb *req, struct file **files,
 			 unsigned int issue_flags)
+	__context_unsafe(/* TODO */)
 {
 	struct io_pipe *p = io_kiocb_to_cmd(req, struct io_pipe);
 	struct io_ring_ctx *ctx = req->ctx;

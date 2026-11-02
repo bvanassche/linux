@@ -1320,6 +1320,7 @@ static int io_uring_hybrid_poll(struct io_kiocb *req,
 }
 
 int io_do_iopoll(struct io_ring_ctx *ctx, bool force_nonspin)
+	__context_unsafe(/* TODO */)
 {
 	unsigned int poll_flags = 0;
 	DEFINE_IO_COMP_BATCH(iob);

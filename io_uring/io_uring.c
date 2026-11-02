@@ -934,6 +934,7 @@ void io_add_aux_cqe(struct io_ring_ctx *ctx, u64 user_data, s32 res, u32 cflags)
  * Should only be used from a task_work including IO_URING_F_MULTISHOT.
  */
 bool io_req_post_cqe(struct io_kiocb *req, s32 res, u32 cflags)
+	__context_unsafe(/* TODO */)
 {
 	struct io_ring_ctx *ctx = req->ctx;
 	bool posted;

@@ -346,6 +346,7 @@ static int io_poll_check_events(struct io_kiocb *req, io_tw_token_t tw)
 }
 
 void io_poll_task_func(struct io_tw_req tw_req, io_tw_token_t tw)
+	__context_unsafe(/* TODO */)
 {
 	struct io_kiocb *req = tw_req.req;
 	int ret;

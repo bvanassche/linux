@@ -174,7 +174,8 @@ static inline bool io_should_wake(struct io_wait_queue *iowq)
 int io_prepare_config(struct io_ctx_config *config);
 
 bool io_cqe_cache_refill(struct io_ring_ctx *ctx, bool overflow, bool cqe32);
-void io_req_defer_failed(struct io_kiocb *req, s32 res);
+void io_req_defer_failed(struct io_kiocb *req, s32 res)
+	__must_hold(&req->ctx->uring_lock);
 bool io_post_aux_cqe(struct io_ring_ctx *ctx, u64 user_data, s32 res, u32 cflags);
 void io_add_aux_cqe(struct io_ring_ctx *ctx, u64 user_data, s32 res, u32 cflags);
 bool io_req_post_cqe(struct io_kiocb *req, s32 res, u32 cflags);
@@ -199,10 +200,12 @@ int io_ring_add_registered_file(struct io_uring_task *tctx, struct file *file,
 void io_queue_iowq(struct io_kiocb *req);
 
 int io_poll_issue(struct io_kiocb *req, io_tw_token_t tw);
-int io_submit_sqes(struct io_ring_ctx *ctx, unsigned int nr);
+int io_submit_sqes(struct io_ring_ctx *ctx, unsigned int nr)
+	__must_hold(&ctx->uring_lock);
 int io_do_iopoll(struct io_ring_ctx *ctx, bool force_nonspin);
 __cold void io_iopoll_try_reap_events(struct io_ring_ctx *ctx);
-void __io_submit_flush_completions(struct io_ring_ctx *ctx);
+void __io_submit_flush_completions(struct io_ring_ctx *ctx)
+	__must_hold(&ctx->uring_lock);
 
 bool io_wq_put_work(struct io_wq_work *work, struct io_wq_work **linked);
 void io_wq_free_work(struct io_wq_work *work);
@@ -211,7 +214,8 @@ void io_wq_submit_work(struct io_wq_work *work);
 void io_free_req(struct io_kiocb *req);
 void io_queue_next(struct io_kiocb *req);
 void io_task_refs_refill(struct io_uring_task *tctx);
-bool __io_alloc_req_refill(struct io_ring_ctx *ctx);
+bool __io_alloc_req_refill(struct io_ring_ctx *ctx)
+	__must_hold(&ctx->uring_lock);
 
 void io_activate_pollwq(struct io_ring_ctx *ctx);
 void io_restriction_clone(struct io_restriction *dst, struct io_restriction *src);
@@ -248,6 +252,7 @@ static inline bool io_is_compat(struct io_ring_ctx *ctx)
 }
 
 static inline void io_submit_flush_completions(struct io_ring_ctx *ctx)
+	__context_unsafe(/* TODO */)
 {
 	if (!wq_list_empty(&ctx->submit_state.compl_reqs) ||
 	    ctx->submit_state.cq_flush)
@@ -545,6 +550,7 @@ static inline struct io_kiocb *io_extract_req(struct io_ring_ctx *ctx)
 }
 
 static inline bool io_alloc_req(struct io_ring_ctx *ctx, struct io_kiocb **req)
+	__context_unsafe(/* TODO */)
 {
 	if (unlikely(io_req_cache_empty(ctx))) {
 		if (!__io_alloc_req_refill(ctx))

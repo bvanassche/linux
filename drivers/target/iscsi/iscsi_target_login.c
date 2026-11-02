@@ -130,6 +130,7 @@ int iscsi_check_for_session_reinstatement(struct iscsit_conn *conn)
 			atomic_set(&sess_p->session_close, 1);
 			spin_unlock(&sess_p->conn_lock);
 			iscsit_inc_session_usage_count(sess_p);
+			lockdep_assume_ctx_held(&sess_p->tpg->tpg_se_tpg.session_lock);
 			iscsit_stop_time2retain_timer(sess_p);
 			sess = sess_p;
 			break;
@@ -465,6 +466,7 @@ static int iscsi_login_non_zero_tsih_s2(
 		if (!memcmp(sess_p->isid, pdu->isid, 6) &&
 		     (sess_p->tsih == be16_to_cpu(pdu->tsih))) {
 			iscsit_inc_session_usage_count(sess_p);
+			lockdep_assume_ctx_held(&sess_p->tpg->tpg_se_tpg.session_lock);
 			iscsit_stop_time2retain_timer(sess_p);
 			sess = sess_p;
 			break;

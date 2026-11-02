@@ -267,8 +267,10 @@ void ssam_irq_free(struct ssam_controller *ctrl);
 int ssam_irq_arm_for_wakeup(struct ssam_controller *ctrl);
 void ssam_irq_disarm_wakeup(struct ssam_controller *ctrl);
 
-void ssam_controller_lock(struct ssam_controller *c);
-void ssam_controller_unlock(struct ssam_controller *c);
+void ssam_controller_lock(struct ssam_controller *c)
+	__acquires(&c->lock);
+void ssam_controller_unlock(struct ssam_controller *c)
+	__releases(&c->lock);
 
 int ssam_get_firmware_version(struct ssam_controller *ctrl, u32 *version);
 int ssam_ctrl_notif_display_off(struct ssam_controller *ctrl);

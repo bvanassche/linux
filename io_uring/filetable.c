@@ -116,7 +116,6 @@ int io_fixed_fd_install(struct io_kiocb *req, unsigned int issue_flags,
 	int ret;
 
 	io_ring_submit_lock(ctx, issue_flags);
-	lockdep_assume_ctx_held(&ctx->uring_lock);
 	ret = __io_fixed_fd_install(ctx, file, file_slot);
 	io_ring_submit_unlock(ctx, issue_flags);
 

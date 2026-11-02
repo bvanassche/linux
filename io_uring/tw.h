@@ -31,7 +31,8 @@ int io_run_local_work(struct io_ring_ctx *ctx, int min_events, int max_events);
 int io_run_task_work_sig(struct io_ring_ctx *ctx);
 
 __cold void io_cancel_local_task_work(struct io_ring_ctx *ctx);
-int io_run_local_work_locked(struct io_ring_ctx *ctx, int min_events);
+int io_run_local_work_locked(struct io_ring_ctx *ctx, int min_events)
+	__must_hold(&ctx->uring_lock);
 
 void io_req_local_work_add(struct io_kiocb *req, unsigned flags);
 void io_req_normal_work_add(struct io_kiocb *req);
@@ -98,10 +99,14 @@ static inline bool io_task_work_pending(struct io_ring_ctx *ctx)
 	return task_work_pending(current) || io_local_work_pending(ctx);
 }
 
-static inline void io_tw_lock(struct io_ring_ctx *ctx, io_tw_token_t tw)
+static inline void __io_tw_lock(struct io_ring_ctx *ctx, io_tw_token_t tw)
 {
-	lockdep_assert_held(&ctx->uring_lock);
 }
+#define io_tw_lock(ctx, tw)					\
+	do {							\
+		__io_tw_lock(ctx, tw);				\
+		lockdep_assume_ctx_held(&(ctx)->uring_lock);	\
+	} while (0)
 
 static inline bool io_allowed_defer_tw_run(struct io_ring_ctx *ctx)
 {

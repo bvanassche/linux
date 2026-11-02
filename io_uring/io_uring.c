@@ -546,7 +546,7 @@ static inline void __io_cq_lock(struct io_ring_ctx *ctx)
 }
 
 static inline void io_cq_lock(struct io_ring_ctx *ctx)
-	__acquires(ctx->completion_lock)
+	__acquires(&ctx->completion_lock)
 {
 	spin_lock(&ctx->completion_lock);
 }
@@ -566,7 +566,7 @@ static inline void __io_cq_unlock_post(struct io_ring_ctx *ctx)
 }
 
 static void io_cq_unlock_post(struct io_ring_ctx *ctx)
-	__releases(ctx->completion_lock)
+	__releases(&ctx->completion_lock)
 {
 	io_commit_cqring(ctx);
 	spin_unlock(&ctx->completion_lock);
@@ -938,6 +938,9 @@ bool io_req_post_cqe(struct io_kiocb *req, s32 res, u32 cflags)
 	struct io_ring_ctx *ctx = req->ctx;
 	bool posted;
 
+	lockdep_assert(!io_wq_current_is_worker());
+	lockdep_assume_ctx_held(&ctx->uring_lock);
+
 	/*
 	 * If multishot has already posted deferred completions, ensure that
 	 * those are flushed first before posting this one. If not, CQEs
@@ -945,9 +948,6 @@ bool io_req_post_cqe(struct io_kiocb *req, s32 res, u32 cflags)
 	 */
 	if (!wq_list_empty(&ctx->submit_state.compl_reqs))
 		__io_submit_flush_completions(ctx);
-
-	lockdep_assert(!io_wq_current_is_worker());
-	lockdep_assert_held(&ctx->uring_lock);
 
 	if (!(ctx->int_flags & IO_RING_F_LOCKLESS_CQ)) {
 		spin_lock(&ctx->completion_lock);
@@ -1127,7 +1127,6 @@ static inline struct io_kiocb *io_req_find_next(struct io_kiocb *req)
 }
 
 static void io_req_task_cancel(struct io_tw_req tw_req, io_tw_token_t tw)
-	__context_unsafe(/* io_tw_lock() locks conditionally */)
 {
 	struct io_kiocb *req = tw_req.req;
 
@@ -1136,12 +1135,10 @@ static void io_req_task_cancel(struct io_tw_req tw_req, io_tw_token_t tw)
 }
 
 void io_req_task_submit(struct io_tw_req tw_req, io_tw_token_t tw)
-	__context_unsafe(/* io_tw_lock() locks conditionally */)
 {
 	struct io_kiocb *req = tw_req.req;
-	struct io_ring_ctx *ctx = req->ctx;
 
-	io_tw_lock(ctx, tw);
+	io_tw_lock(req->ctx, tw);
 	if (unlikely(tw.cancel))
 		io_req_defer_failed(req, -EFAULT);
 	else if (req->flags & REQ_F_FORCE_ASYNC)
@@ -1408,10 +1405,10 @@ static int io_iopoll_check(struct io_ring_ctx *ctx, unsigned int min_events)
 }
 
 void io_req_task_complete(struct io_tw_req tw_req, io_tw_token_t tw)
-	__context_unsafe(/* caller holds uring_lock */)
 {
 	struct io_kiocb *req = tw_req.req;
 
+	io_tw_lock(req->ctx, tw);
 	if (io_req_complete_ready(req))
 		io_req_complete_defer(req);
 }
@@ -2010,7 +2007,7 @@ static int io_init_req(struct io_ring_ctx *ctx, struct io_kiocb *req,
 
 static __cold int io_submit_fail_init(const struct io_uring_sqe *sqe,
 				      struct io_kiocb *req, int ret)
-	__context_unsafe(/* caller holds uring_lock */)
+	__must_hold(&req->ctx->uring_lock)
 {
 	struct io_ring_ctx *ctx = req->ctx;
 	struct io_submit_link *link = &ctx->submit_state.link;
@@ -2033,6 +2030,7 @@ static __cold int io_submit_fail_init(const struct io_uring_sqe *sqe,
 			link->last->link = req;
 			link->head = NULL;
 			req = head;
+			__assume_ctx_lock(&req->ctx->uring_lock);
 		}
 		io_queue_sqe_fallback(req);
 		return ret;
@@ -2049,12 +2047,12 @@ static __cold int io_submit_fail_init(const struct io_uring_sqe *sqe,
 static inline int io_submit_sqe(struct io_ring_ctx *ctx, struct io_kiocb *req,
 			 const struct io_uring_sqe *sqe, unsigned int *left)
 	__must_hold(&ctx->uring_lock)
-	__context_unsafe(/* req->ctx is an alias of ctx */)
 {
 	struct io_submit_link *link = &ctx->submit_state.link;
 	int ret;
 
 	ret = io_init_req(ctx, req, sqe, left);
+	__assume_ctx_lock(&req->ctx->uring_lock);
 	if (unlikely(ret))
 		return io_submit_fail_init(sqe, req, ret);
 
@@ -2083,6 +2081,7 @@ static inline int io_submit_sqe(struct io_ring_ctx *ctx, struct io_kiocb *req,
 			return 0;
 		/* last request of the link, flush it */
 		req = link->head;
+		__assume_ctx_lock(&req->ctx->uring_lock);
 		link->head = NULL;
 		if (req->flags & (REQ_F_FORCE_ASYNC | REQ_F_FAIL))
 			goto fallback;
@@ -2107,12 +2106,14 @@ fallback:
  * Batched submission is done, ensure local IO is flushed out.
  */
 static void io_submit_state_end(struct io_ring_ctx *ctx)
-	__context_unsafe(/* caller holds uring_lock */)
+	__must_hold(&ctx->uring_lock)
 {
 	struct io_submit_state *state = &ctx->submit_state;
 
-	if (unlikely(state->link.head))
+	if (unlikely(state->link.head)) {
+		__assume_ctx_lock(&state->link.head->ctx->uring_lock);
 		io_queue_sqe_fallback(state->link.head);
+	}
 	/* flush only after queuing links as they can generate completions */
 	io_submit_flush_completions(ctx);
 	if (state->plug_started)

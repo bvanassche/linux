@@ -21,7 +21,8 @@ int io_async_cancel(struct io_kiocb *req, unsigned int issue_flags);
 int io_try_cancel(struct io_uring_task *tctx, struct io_cancel_data *cd,
 		  unsigned int issue_flags);
 
-int io_sync_cancel(struct io_ring_ctx *ctx, void __user *arg);
+int io_sync_cancel(struct io_ring_ctx *ctx, void __user *arg)
+	__must_hold(&ctx->uring_lock);
 bool io_cancel_req_match(struct io_kiocb *req, struct io_cancel_data *cd);
 bool io_match_task_safe(struct io_kiocb *head, struct io_uring_task *tctx,
 			bool cancel_all);

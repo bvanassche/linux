@@ -163,6 +163,7 @@ static bool io_napi_busy_loop_should_end(void *data,
 static bool static_tracking_do_busy_loop(struct io_ring_ctx *ctx,
 					 bool (*loop_end)(void *, unsigned long),
 					 void *loop_end_arg)
+	__must_hold_shared(RCU)
 {
 	struct io_napi_entry *e;
 
@@ -176,6 +177,7 @@ static bool
 dynamic_tracking_do_busy_loop(struct io_ring_ctx *ctx,
 			      bool (*loop_end)(void *, unsigned long),
 			      void *loop_end_arg)
+	__must_hold_shared(RCU)
 {
 	struct io_napi_entry *e;
 	bool is_stale = false;
@@ -195,6 +197,7 @@ static inline bool
 __io_napi_do_busy_loop(struct io_ring_ctx *ctx,
 		       bool (*loop_end)(void *, unsigned long),
 		       void *loop_end_arg)
+	__must_hold_shared(RCU)
 {
 	switch (READ_ONCE(ctx->napi_track_mode)) {
 	case IO_URING_NAPI_TRACKING_STATIC:

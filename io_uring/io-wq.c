@@ -500,7 +500,7 @@ static void __io_worker_busy(struct io_wq_acct *acct, struct io_worker *worker)
  * No work, worker going to sleep. Move to freelist.
  */
 static void __io_worker_idle(struct io_wq_acct *acct, struct io_worker *worker)
-	__must_hold(acct->workers_lock)
+	__must_hold(&acct->workers_lock)
 {
 	if (!test_bit(IO_WORKER_F_FREE, &worker->flags)) {
 		set_bit(IO_WORKER_F_FREE, &worker->flags);
@@ -528,7 +528,7 @@ static bool io_wait_on_hash(struct io_wq *wq, unsigned int hash)
 static struct io_wq_work *io_get_next_work(struct io_wq_acct *acct,
 					   struct io_wq *wq,
 					   bool *need_wake)
-	__must_hold(acct->lock)
+	__must_hold(&acct->lock)
 {
 	struct io_wq_work_node *node, *prev;
 	struct io_wq_work *work, *tail;

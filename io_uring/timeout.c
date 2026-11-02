@@ -163,7 +163,6 @@ static void io_kill_timeout(struct io_kiocb *req, struct list_head *list)
 }
 
 __cold void io_flush_timeouts(struct io_ring_ctx *ctx)
-	__context_unsafe(/* lock is accessed through an alias */)
 {
 	struct io_timeout *timeout, *tmp;
 	LIST_HEAD(list);
@@ -199,6 +198,7 @@ __cold void io_flush_timeouts(struct io_ring_ctx *ctx)
 		if (events_got < events_needed)
 			break;
 
+		__assume_ctx_lock(&req->ctx->timeout_lock);
 		io_kill_timeout(req, &list);
 	}
 	ctx->cq_last_tm_flush = seq;
@@ -812,7 +812,6 @@ __cold unsigned int io_timeouts_armed(struct io_ring_ctx *ctx,
 /* Returns true if we found and killed one or more timeouts */
 __cold bool io_kill_timeouts(struct io_ring_ctx *ctx, struct io_uring_task *tctx,
 			     bool cancel_all)
-	__context_unsafe(/* lock is accessed through an alias */)
 {
 	struct io_timeout *timeout, *tmp;
 	LIST_HEAD(list);
@@ -826,6 +825,7 @@ __cold bool io_kill_timeouts(struct io_ring_ctx *ctx, struct io_uring_task *tctx
 	list_for_each_entry_safe(timeout, tmp, &ctx->timeout_list, list) {
 		struct io_kiocb *req = cmd_to_io_kiocb(timeout);
 
+		__assume_ctx_lock(&req->ctx->timeout_lock);
 		if (io_match_task(req, tctx, cancel_all))
 			io_kill_timeout(req, &list);
 	}

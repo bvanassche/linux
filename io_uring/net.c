@@ -1400,6 +1400,7 @@ void io_send_zc_cleanup(struct io_kiocb *req)
 				IORING_SEND_VECTORIZED)
 
 int io_send_zc_prep(struct io_kiocb *req, const struct io_uring_sqe *sqe)
+	__must_hold(&req->ctx->uring_lock)
 {
 	struct io_sr_msg *zc = io_kiocb_to_cmd(req, struct io_sr_msg);
 	struct io_ring_ctx *ctx = req->ctx;

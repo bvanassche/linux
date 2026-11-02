@@ -345,6 +345,7 @@ static int __io_run_local_work_loop(struct io_ring_ctx *ctx,
 
 static int __io_run_local_work(struct io_ring_ctx *ctx, io_tw_token_t tw,
 			       int min_events, int max_events)
+	__must_hold(&ctx->uring_lock)
 {
 	unsigned int loops = 0;
 	int ret = 0;
@@ -378,6 +379,7 @@ again:
 }
 
 int io_run_local_work_locked(struct io_ring_ctx *ctx, int min_events)
+	__must_hold(&ctx->uring_lock)
 {
 	struct io_tw_state ts = {};
 

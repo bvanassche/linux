@@ -379,7 +379,8 @@ static DEFINE_PER_CPU(struct balance_callback, rt_push_head);
 static DEFINE_PER_CPU(struct balance_callback, rt_pull_head);
 
 static void push_rt_tasks(struct rq *);
-static void pull_rt_task(struct rq *);
+static void pull_rt_task(struct rq *this_rq)
+	__must_hold(rq_lockp(this_rq));
 
 static inline void rt_queue_push_tasks(struct rq *rq)
 {
@@ -1599,6 +1600,7 @@ static void check_preempt_equal_prio(struct rq *rq, struct task_struct *p)
 }
 
 static int balance_rt(struct rq *rq, struct rq_flags *rf)
+	__must_hold(__rq_lockp(rq))
 {
 	/*
 	 * Note, rq->donor may change during rq lock drops,

@@ -1597,7 +1597,7 @@ static inline pmd_t pmd_swp_clear_uffd(pmd_t pmd)
 
 static inline u16 pte_flags_pkey(unsigned long pte_flags)
 {
-#ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
+#ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYSS
 	/* ifdef to avoid doing 59-bit shift on 32-bit values */
 	return (pte_flags & _PAGE_PKEY_MASK) >> _PAGE_BIT_PKEY_BIT0;
 #else

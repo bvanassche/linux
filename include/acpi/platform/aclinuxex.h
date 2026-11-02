@@ -97,6 +97,12 @@ static inline acpi_thread_id acpi_os_get_thread_id(void)
 		lock ? AE_OK : AE_NO_MEMORY; \
 	})
 
+acpi_cpu_flags acpi_os_acquire_lock(acpi_spinlock handle)
+	__acquires(handle);
+
+void acpi_os_release_lock(acpi_spinlock handle, acpi_cpu_flags flags)
+	__releases(handle);
+
 static inline acpi_cpu_flags acpi_os_acquire_raw_lock(acpi_raw_spinlock lockp)
 	__acquires(lockp)
 {

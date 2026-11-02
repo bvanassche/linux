@@ -53,12 +53,12 @@ static inline struct musb_qh *first_qh(struct list_head *q)
 
 #if IS_ENABLED(CONFIG_USB_MUSB_HOST) || IS_ENABLED(CONFIG_USB_MUSB_DUAL_ROLE)
 extern struct musb *hcd_to_musb(struct usb_hcd *);
-extern irqreturn_t musb_h_ep0_irq(struct musb *);
+extern irqreturn_t musb_h_ep0_irq(struct musb *musb);
 extern int musb_host_alloc(struct musb *);
 extern int musb_host_setup(struct musb *, int);
-extern void musb_host_cleanup(struct musb *);
-extern void musb_host_tx(struct musb *, u8);
-extern void musb_host_rx(struct musb *, u8);
+extern void musb_host_cleanup(struct musb *musb);
+extern void musb_host_tx(struct musb *musb, u8);
+extern void musb_host_rx(struct musb *musb, u8);
 extern void musb_root_disconnect(struct musb *musb);
 extern void musb_host_free(struct musb *);
 extern void musb_host_resume_root_hub(struct musb *musb);

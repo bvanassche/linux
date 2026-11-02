@@ -237,14 +237,14 @@ int rtnl_net_trylock(struct net *net)
 EXPORT_SYMBOL(rtnl_net_trylock);
 
 int rtnl_net_lock_killable(struct net *net)
-	__cond_acquires(0, &net->rtnl_mutex)
+	__cond_acquires_range(0, INT_MAX, &net->rtnl_mutex)
 {
 	int ret = rtnl_lock_killable();
 
-	if (!ret)
-		__rtnl_net_lock(net);
-
-	return ret;
+	if (ret < 0)
+		return ret;
+	__rtnl_net_lock(net);
+	return 0;
 }
 
 static int rtnl_net_cmp_locks(const struct net *net_a, const struct net *net_b)

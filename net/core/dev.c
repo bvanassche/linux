@@ -2217,6 +2217,7 @@ static void __move_netdevice_notifier_net(struct net *src_net,
 }
 
 static void rtnl_net_dev_lock(struct net_device *dev)
+	__context_unsafe(/* acquires the RTNL of a netns that may change */)
 {
 	bool again;
 
@@ -2245,6 +2246,7 @@ static void rtnl_net_dev_lock(struct net_device *dev)
 }
 
 static void rtnl_net_dev_unlock(struct net_device *dev)
+	__context_unsafe(/* see also rtnl_net_dev_lock() */)
 {
 	struct net *net = dev_net(dev);
 

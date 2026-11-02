@@ -657,6 +657,7 @@ tcf_ct_flow_table_fill_tuple_ipv6(struct sk_buff *skb,
 static bool tcf_ct_flow_table_lookup(struct tcf_ct_params *p,
 				     struct sk_buff *skb,
 				     u8 family)
+	__must_hold_shared(RCU)
 {
 	struct nf_flowtable *nf_ft = &p->ct_ft->nf_ft;
 	struct flow_offload_tuple_rhash *tuplehash;
@@ -1060,6 +1061,7 @@ TC_INDIRECT_SCOPE int tcf_ct_act(struct sk_buff *skb, const struct tc_action *a,
 	}
 
 	if (!cached) {
+		lockdep_assume_in_rcu_read_lock();
 		if (tcf_ct_flow_table_lookup(p, skb, family)) {
 			skip_add = true;
 			goto do_nat;

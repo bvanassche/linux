@@ -25,6 +25,7 @@ static int rtw_ips_pwr_up(struct rtw_dev *rtwdev)
 }
 
 int rtw_enter_ips(struct rtw_dev *rtwdev)
+	__must_hold(&rtwdev->mutex)
 {
 	if (!test_bit(RTW_FLAG_POWERON, rtwdev->flags))
 		return 0;

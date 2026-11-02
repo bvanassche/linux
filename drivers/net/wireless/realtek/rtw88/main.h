@@ -2263,7 +2263,8 @@ void rtw_core_scan_complete(struct rtw_dev *rtwdev, struct ieee80211_vif *vif,
 			    bool hw_scan);
 int rtw_core_start(struct rtw_dev *rtwdev);
 void rtw_power_off(struct rtw_dev *rtwdev);
-void rtw_core_stop(struct rtw_dev *rtwdev);
+void rtw_core_stop(struct rtw_dev *rtwdev)
+	__must_hold(&rtwdev->mutex);
 int rtw_chip_info_setup(struct rtw_dev *rtwdev);
 int rtw_core_init(struct rtw_dev *rtwdev);
 void rtw_core_deinit(struct rtw_dev *rtwdev);

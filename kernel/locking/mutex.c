@@ -1112,10 +1112,12 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
  * mutex_lock_interruptible() and mutex_trylock().
  */
 static noinline int __sched
-__mutex_lock_killable_slowpath(struct mutex *lock);
+__mutex_lock_killable_slowpath(struct mutex *lock)
+	__cond_acquires(0, lock);
 
 static noinline int __sched
-__mutex_lock_interruptible_slowpath(struct mutex *lock);
+__mutex_lock_interruptible_slowpath(struct mutex *lock)
+	__cond_acquires(0, lock);
 
 /**
  * mutex_lock_interruptible() - Acquire the mutex, interruptible by signals.

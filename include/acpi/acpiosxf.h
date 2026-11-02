@@ -90,11 +90,13 @@ void acpi_os_delete_lock(acpi_spinlock handle);
 #endif
 
 #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_acquire_lock
-acpi_cpu_flags acpi_os_acquire_lock(acpi_spinlock handle);
+acpi_cpu_flags acpi_os_acquire_lock(acpi_spinlock handle)
+	__acquires(handle);
 #endif
 
 #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_release_lock
-void acpi_os_release_lock(acpi_spinlock handle, acpi_cpu_flags flags);
+void acpi_os_release_lock(acpi_spinlock handle, acpi_cpu_flags flags)
+	__releases(handle);
 #endif
 
 /*

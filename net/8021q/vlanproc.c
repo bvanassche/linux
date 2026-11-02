@@ -34,9 +34,11 @@
 
 /* Methods for preparing data for reading proc entries */
 static int vlan_seq_show(struct seq_file *seq, void *v);
-static void *vlan_seq_start(struct seq_file *seq, loff_t *pos);
+static void *vlan_seq_start(struct seq_file *seq, loff_t *pos)
+	__acquires_shared(RCU);
 static void *vlan_seq_next(struct seq_file *seq, void *v, loff_t *pos);
-static void vlan_seq_stop(struct seq_file *seq, void *);
+static void vlan_seq_stop(struct seq_file *seq, void *)
+	__releases_shared(RCU);
 static int vlandev_seq_show(struct seq_file *seq, void *v);
 
 /*

@@ -15,7 +15,8 @@
 
 
 static int write_control_reg(struct echoaudio *chip, u32 value, char force);
-static int set_input_clock(struct echoaudio *chip, u16 clock);
+static int set_input_clock(struct echoaudio *chip, u16 clock)
+	__must_hold(&chip->lock);
 static int set_professional_spdif(struct echoaudio *chip, char prof);
 static int set_digital_mode(struct echoaudio *chip, u8 mode);
 static int load_asic_generic(struct echoaudio *chip, u32 cmd, short asic);

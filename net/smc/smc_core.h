@@ -615,7 +615,8 @@ void smcr_lgr_set_type_asym(struct smc_link_group *lgr,
 int smcr_link_reg_buf(struct smc_link *link, struct smc_buf_desc *rmb_desc);
 struct smc_link *smc_switch_conns(struct smc_link_group *lgr,
 				  struct smc_link *from_lnk, bool is_dev_err);
-void smcr_link_down_cond(struct smc_link *lnk);
+void smcr_link_down_cond(struct smc_link *lnk)
+	__must_hold(&lnk->lgr->llc_conf_mutex);
 void smcr_link_down_cond_sched(struct smc_link *lnk);
 int smc_nl_get_sys_info(struct sk_buff *skb, struct netlink_callback *cb);
 int smcr_nl_get_lgr(struct sk_buff *skb, struct netlink_callback *cb);

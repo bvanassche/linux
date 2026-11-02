@@ -1311,6 +1311,7 @@ out:
 }
 
 static void smc_llc_delete_asym_link(struct smc_link_group *lgr)
+	__must_hold(&lgr->llc_conf_mutex)
 {
 	struct smc_link *lnk_new = NULL, *lnk_asym;
 	struct smc_llc_qentry *qentry;
@@ -1325,6 +1326,7 @@ static void smc_llc_delete_asym_link(struct smc_link_group *lgr)
 	smc_wr_tx_wait_no_pending_sends(lnk_asym);
 	if (!lnk_new)
 		goto out_free;
+	lockdep_assume_ctx_held(&lnk_new->lgr->llc_conf_mutex);
 	/* change flow type from ADD_LINK into DEL_LINK */
 	lgr->llc_flow_lcl.type = SMC_LLC_FLOW_DEL_LINK;
 	rc = smc_llc_send_delete_link(lnk_new, lnk_asym->link_id, SMC_LLC_REQ,

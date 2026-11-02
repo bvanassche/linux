@@ -789,6 +789,7 @@ EXPORT_SYMBOL_GPL(blkg_conf_init);
  * Returns: -errno on error.
  */
 int blkg_conf_open_bdev(struct blkg_conf_ctx *ctx)
+	__context_unsafe(/* conditional locking */)
 {
 	char *input = ctx->input;
 	unsigned int major, minor;

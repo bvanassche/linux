@@ -669,6 +669,7 @@ out_power:
 EXPORT_SYMBOL_GPL(vfio_pci_core_enable);
 
 void vfio_pci_core_disable(struct vfio_pci_core_device *vdev)
+	__context_unsafe(/* conditional locking on bridge */)
 {
 	struct pci_dev *bridge;
 	struct pci_dev *pdev = vdev->pdev;

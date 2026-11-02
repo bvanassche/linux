@@ -1150,7 +1150,8 @@ void iwl_trans_pcie_op_mode_leave(struct iwl_trans *trans);
 int iwl_trans_pcie_read_mem(struct iwl_trans *trans, u32 addr,
 			    void *buf, int dwords);
 int iwl_trans_pcie_read_mem_no_grab(struct iwl_trans *trans, u32 addr,
-				    void *buf, u32 dwords);
+				    void *buf, u32 dwords)
+	__must_hold(&IWL_TRANS_GET_PCIE_TRANS(trans)->reg_lock);
 int iwl_trans_pcie_sw_reset(struct iwl_trans *trans, bool retake_ownership);
 void iwl_trans_pcie_fw_reset_handshake(struct iwl_trans *trans);
 struct iwl_trans_dump_data *
@@ -1168,7 +1169,8 @@ int iwl_trans_pcie_read_config32(struct iwl_trans *trans, u32 ofs,
 				 u32 *val);
 bool iwl_trans_pcie_grab_nic_access(struct iwl_trans *trans)
 	__cond_acquires(true, trans);
-void iwl_trans_pcie_resched_with_nic_access(struct iwl_trans *trans);
+void iwl_trans_pcie_resched_with_nic_access(struct iwl_trans *trans)
+	__must_hold(&IWL_TRANS_GET_PCIE_TRANS(trans)->reg_lock);
 void iwl_trans_pcie_release_nic_access(struct iwl_trans *trans)
 	__releases(trans);
 void iwl_pcie_alloc_fw_monitor(struct iwl_trans *trans, u8 max_power);

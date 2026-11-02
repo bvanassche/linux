@@ -1475,6 +1475,7 @@ mt76_airtime_check(struct mt76_dev *dev, struct sk_buff *skb)
 
 static void
 mt76_check_sta(struct mt76_dev *dev, struct sk_buff *skb)
+	__must_hold_shared(RCU)
 {
 	struct mt76_rx_status *status = (struct mt76_rx_status *)skb->cb;
 	struct ieee80211_hdr *hdr = mt76_skb_get_hdr(skb);
@@ -1585,6 +1586,7 @@ void mt76_rx_complete(struct mt76_dev *dev, struct sk_buff_head *frames,
 
 void mt76_rx_poll_complete(struct mt76_dev *dev, enum mt76_rxq_id q,
 			   struct napi_struct *napi)
+	__must_hold_shared(RCU)
 {
 	struct sk_buff_head frames;
 	struct sk_buff *skb;

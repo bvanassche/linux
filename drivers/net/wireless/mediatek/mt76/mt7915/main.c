@@ -799,7 +799,9 @@ __mt7915_drop_sta(void *ptr, u8 *mac, struct ieee80211_vif *vif)
 	if (vif == data->vif || vif->type != NL80211_IFTYPE_AP)
 		return;
 
-	sta = ieee80211_find_sta_by_ifaddr(data->hw, data->sta_addr, mac);
+	/* Called under the wiphy lock instead of the RCU read lock. */
+	sta = context_unsafe(ieee80211_find_sta_by_ifaddr(data->hw,
+							  data->sta_addr, mac));
 	if (!sta)
 		return;
 

@@ -1053,6 +1053,7 @@ void tcp_free_fastopen_req(struct tcp_sock *tp)
 
 int tcp_sendmsg_fastopen(struct sock *sk, struct msghdr *msg, int *copied,
 			 size_t size, struct ubuf_info *uarg)
+	__must_hold(sk)
 {
 	struct tcp_sock *tp = tcp_sk(sk);
 	struct inet_sock *inet = inet_sk(sk);
@@ -1085,6 +1086,7 @@ int tcp_sendmsg_fastopen(struct sock *sk, struct msghdr *msg, int *copied,
 		}
 	}
 	flags = (msg->msg_flags & MSG_DONTWAIT) ? O_NONBLOCK : 0;
+	__assume_ctx_lock(sk->sk_socket->sk);
 	err = __inet_stream_connect(sk->sk_socket, (struct sockaddr_unsized *)uaddr,
 				    msg->msg_namelen, flags, 1);
 	/* fastopen_req could already be freed in __inet_stream_connect

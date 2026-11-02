@@ -87,11 +87,14 @@ static struct ctl_table_root sysctl_table_root = {
 
 static DEFINE_SPINLOCK(sysctl_lock);
 
-static void drop_sysctl_table(struct ctl_table_header *header);
+static void drop_sysctl_table(struct ctl_table_header *header)
+	__must_hold(&sysctl_lock);
 static int sysctl_follow_link(struct ctl_table_header **phead,
 	const struct ctl_table **pentry);
-static int insert_links(struct ctl_table_header *head);
-static void put_links(struct ctl_table_header *header);
+static int insert_links(struct ctl_table_header *head)
+	__must_hold(&sysctl_lock);
+static void put_links(struct ctl_table_header *header)
+	__must_hold(&sysctl_lock);
 
 static void sysctl_print_dir(struct ctl_dir *dir)
 {
@@ -226,6 +229,7 @@ static void erase_header(struct ctl_table_header *head)
 }
 
 static int insert_header(struct ctl_dir *dir, struct ctl_table_header *header)
+	__must_hold(&sysctl_lock)
 {
 	const struct ctl_table *entry;
 	struct ctl_table_header *dir_h = &dir->header;
@@ -1473,6 +1477,7 @@ void __init __register_sysctl_init(const char *path, const struct ctl_table *tab
 }
 
 static void put_links(struct ctl_table_header *header)
+	__must_hold(&sysctl_lock)
 {
 	struct ctl_table_set *root_set = &sysctl_table_root.default_set;
 	struct ctl_table_root *root = header->root;

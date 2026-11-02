@@ -58,6 +58,7 @@ out_rc:
 }
 
 static void tpm_dev_async_work(struct work_struct *work)
+	__context_unsafe(/* TODO */)
 {
 	struct file_priv *priv =
 			container_of(work, struct file_priv, async_work);
@@ -172,6 +173,7 @@ out:
 
 ssize_t tpm_common_write(struct file *file, const char __user *buf,
 			 size_t size, loff_t *off)
+	__context_unsafe(/* TODO */)
 {
 	struct file_priv *priv = file->private_data;
 	int ret = 0;

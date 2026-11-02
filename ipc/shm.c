@@ -101,7 +101,8 @@ static const struct vm_operations_struct shm_vm_ops;
 static int newseg(struct ipc_namespace *, struct ipc_params *);
 static void shm_open(struct vm_area_struct *vma);
 static void shm_close(struct vm_area_struct *vma);
-static void shm_destroy(struct ipc_namespace *ns, struct shmid_kernel *shp);
+static void shm_destroy(struct ipc_namespace *ns, struct shmid_kernel *shp)
+	__releases(&shp->shm_perm.lock);
 #ifdef CONFIG_PROC_FS
 static int sysvipc_shm_proc_show(struct seq_file *s, void *it);
 #endif

@@ -2962,8 +2962,9 @@ static void transport_write_pending_qf(struct se_cmd *cmd)
 }
 
 static bool
-__transport_wait_for_tasks(struct se_cmd *, bool, bool *, bool *,
-			   unsigned long *flags);
+__transport_wait_for_tasks(struct se_cmd *cmd, bool, bool *, bool *, unsigned long *flags)
+	__releases(&cmd->t_state_lock)
+	__acquires(&cmd->t_state_lock);
 
 static void target_wait_free_cmd(struct se_cmd *cmd, bool *aborted, bool *tas)
 {

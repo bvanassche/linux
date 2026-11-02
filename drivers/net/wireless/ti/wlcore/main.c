@@ -48,8 +48,10 @@ static int no_recovery     = -1;
 
 static void __wl1271_op_remove_interface(struct wl1271 *wl,
 					 struct ieee80211_vif *vif,
-					 bool reset_tx_queues);
-static void wlcore_op_stop_locked(struct wl1271 *wl);
+					 bool reset_tx_queues)
+	__must_hold(&wl->mutex);
+static void wlcore_op_stop_locked(struct wl1271 *wl)
+	__must_hold(&wl->mutex);
 static void wl1271_free_ap_keys(struct wl1271 *wl, struct wl12xx_vif *wlvif);
 
 static int wl12xx_set_authorized(struct wl1271 *wl, struct wl12xx_vif *wlvif)

@@ -55,7 +55,8 @@ struct w1_master *w1_search_master_id(u32 id);
  * has just been registered, to 0 when it has been unregistered.
  */
 void w1_reconnect_slaves(struct w1_family *f, int attach);
-int w1_attach_slave_device(struct w1_master *dev, struct w1_reg_num *rn);
+int w1_attach_slave_device(struct w1_master *dev, struct w1_reg_num *rn)
+	__must_hold(&dev->mutex);
 /* 0 success, otherwise EBUSY */
 int w1_slave_detach(struct w1_slave *sl);
 
@@ -73,7 +74,8 @@ extern struct list_head w1_masters;
 extern struct mutex w1_mlock;
 extern spinlock_t w1_flock;
 
-int w1_process_callbacks(struct w1_master *dev);
+int w1_process_callbacks(struct w1_master *dev)
+	__must_hold(&dev->list_mutex);
 int w1_process(void *data);
 
 #endif /* __W1_H */

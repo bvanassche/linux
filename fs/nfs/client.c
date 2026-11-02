@@ -1330,9 +1330,11 @@ void nfs_clients_exit(struct net *net)
 }
 
 #ifdef CONFIG_PROC_FS
-static void *nfs_server_list_start(struct seq_file *p, loff_t *pos);
+static void *nfs_server_list_start(struct seq_file *p, loff_t *pos)
+	__acquires(&((struct nfs_net *)net_generic(seq_file_net(p), nfs_net_id))->nfs_client_lock);
 static void *nfs_server_list_next(struct seq_file *p, void *v, loff_t *pos);
-static void nfs_server_list_stop(struct seq_file *p, void *v);
+static void nfs_server_list_stop(struct seq_file *p, void *v)
+	__releases(&((struct nfs_net *)net_generic(seq_file_net(p), nfs_net_id))->nfs_client_lock);
 static int nfs_server_list_show(struct seq_file *m, void *v);
 
 static const struct seq_operations nfs_server_list_ops = {
@@ -1342,9 +1344,11 @@ static const struct seq_operations nfs_server_list_ops = {
 	.show	= nfs_server_list_show,
 };
 
-static void *nfs_volume_list_start(struct seq_file *p, loff_t *pos);
+static void *nfs_volume_list_start(struct seq_file *p, loff_t *pos)
+	__acquires(&((struct nfs_net *)net_generic(seq_file_net(p), nfs_net_id))->nfs_client_lock);
 static void *nfs_volume_list_next(struct seq_file *p, void *v, loff_t *pos);
-static void nfs_volume_list_stop(struct seq_file *p, void *v);
+static void nfs_volume_list_stop(struct seq_file *p, void *v)
+	__releases(&((struct nfs_net *)net_generic(seq_file_net(p), nfs_net_id))->nfs_client_lock);
 static int nfs_volume_list_show(struct seq_file *m, void *v);
 
 static const struct seq_operations nfs_volume_list_ops = {

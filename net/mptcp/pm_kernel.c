@@ -298,6 +298,7 @@ static u8 mptcp_endp_get_local_id(struct mptcp_sock *msk,
 
 /* Set mpc_endpoint_id, and send MP_PRIO for ID0 if needed */
 static void mptcp_mpc_endpoint_setup(struct mptcp_sock *msk)
+	__context_unsafe(/* TODO */)
 {
 	struct mptcp_subflow_context *subflow;
 	struct mptcp_pm_addr_entry *entry;

@@ -840,10 +840,12 @@ void mptcp_close_ssk(struct sock *sk, struct sock *ssk,
 		     struct mptcp_subflow_context *subflow);
 void __mptcp_subflow_send_ack(struct sock *ssk);
 void mptcp_subflow_reset(struct sock *ssk);
-void mptcp_subflow_queue_clean(struct sock *sk, struct sock *ssk);
+void mptcp_subflow_queue_clean(struct sock *sk, struct sock *ssk)
+	__must_hold(ssk);
 void mptcp_sock_graft(struct sock *sk, struct socket *parent);
 struct sock *__mptcp_nmpc_sk(struct mptcp_sock *msk);
-bool __mptcp_close(struct sock *sk, long timeout);
+bool __mptcp_close(struct sock *sk, long timeout)
+	__must_hold(sk);
 void mptcp_cancel_work(struct sock *sk);
 void __mptcp_unaccepted_force_close(struct sock *sk);
 void mptcp_set_state(struct sock *sk, int state);
@@ -1140,11 +1142,14 @@ void mptcp_pm_add_addr_echoed(struct mptcp_sock *msk,
 			      const struct mptcp_addr_info *addr);
 void mptcp_pm_send_ack(struct mptcp_sock *msk,
 		       struct mptcp_subflow_context *subflow,
-		       bool prio, bool backup);
-void mptcp_pm_addr_send_ack(struct mptcp_sock *msk);
+		       bool prio, bool backup)
+	__must_hold(&msk->pm.lock);
+void mptcp_pm_addr_send_ack(struct mptcp_sock *msk)
+	__must_hold(&msk->pm.lock);
 void mptcp_pm_nl_rm_addr(struct mptcp_sock *msk, u8 rm_id);
 void mptcp_pm_rm_subflow(struct mptcp_sock *msk,
-			 const struct mptcp_rm_list *rm_list);
+			 const struct mptcp_rm_list *rm_list)
+	__must_hold(&msk->pm.lock);
 void mptcp_pm_rm_addr_received(struct mptcp_sock *msk,
 			       const struct mptcp_rm_list *rm_list);
 void mptcp_pm_mp_prio_received(struct sock *sk, u8 bkup);
@@ -1261,7 +1266,8 @@ void __init mptcp_pm_kernel_register(void);
 void __init mptcp_pm_userspace_register(void);
 void __init mptcp_pm_nl_init(void);
 void mptcp_pm_worker(struct mptcp_sock *msk);
-void __mptcp_pm_kernel_worker(struct mptcp_sock *msk);
+void __mptcp_pm_kernel_worker(struct mptcp_sock *msk)
+	__must_hold(&msk->pm.lock);
 u8 mptcp_pm_get_endp_signal_max(const struct mptcp_sock *msk);
 u8 mptcp_pm_get_endp_subflow_max(const struct mptcp_sock *msk);
 u8 mptcp_pm_get_endp_laminar_max(const struct mptcp_sock *msk);

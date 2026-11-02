@@ -354,6 +354,9 @@ static inline void _context_unsafe_alias(void **p) { }
 #define __cond_acquires_range(first, last, ...) \
 	__try_acquires_ctx_lock_range(first, last, __VA_ARGS__)
 
+#define __cond_acquires_err_ptr(...)					\
+	__cond_acquires_range(0, (unsigned long)-MAX_ERRNO - 1, __VA_ARGS__)
+
 /**
  * __releases() - function attribute, function releases a context lock exclusively
  *

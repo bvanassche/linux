@@ -191,8 +191,10 @@ extern const struct ethtool_ops ef4_ethtool_ops;
 
 /* Reset handling */
 int ef4_reset(struct ef4_nic *efx, enum reset_type method);
-void ef4_reset_down(struct ef4_nic *efx, enum reset_type method);
-int ef4_reset_up(struct ef4_nic *efx, enum reset_type method, bool ok);
+void ef4_reset_down(struct ef4_nic *efx, enum reset_type method)
+	__acquires(&efx->mac_lock);
+int ef4_reset_up(struct ef4_nic *efx, enum reset_type method, bool ok)
+	__releases(&efx->mac_lock);
 int ef4_try_recovery(struct ef4_nic *efx);
 
 /* Global */

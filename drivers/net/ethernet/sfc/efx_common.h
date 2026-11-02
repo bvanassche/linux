@@ -49,9 +49,15 @@ int __efx_reconfigure_port(struct efx_nic *efx);
 	} while (0)
 
 int efx_try_recovery(struct efx_nic *efx);
-void efx_reset_down(struct efx_nic *efx, enum reset_type method);
+void efx_reset_down(struct efx_nic *efx, enum reset_type method)
+	__acquires(&efx->mac_lock)
+	__acquires(&efx->filter_sem)
+	__acquires(&efx->net_dev->ethtool->rss_lock);
 void efx_watchdog(struct net_device *net_dev, unsigned int txqueue);
-int efx_reset_up(struct efx_nic *efx, enum reset_type method, bool ok);
+int efx_reset_up(struct efx_nic *efx, enum reset_type method, bool ok)
+	__releases(&efx->net_dev->ethtool->rss_lock)
+	__releases(&efx->filter_sem)
+	__releases(&efx->mac_lock);
 int efx_reset(struct efx_nic *efx, enum reset_type method);
 void efx_schedule_reset(struct efx_nic *efx, enum reset_type type);
 

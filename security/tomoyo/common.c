@@ -258,7 +258,8 @@ static void tomoyo_set_string(struct tomoyo_io_buffer *head, const char *string)
 }
 
 static void tomoyo_io_printf(struct tomoyo_io_buffer *head, const char *fmt,
-			     ...) __printf(2, 3);
+			     ...) __printf(2, 3)
+	__must_hold(&head->io_sem);
 
 /**
  * tomoyo_io_printf - printf() to "struct tomoyo_io_buffer" structure.

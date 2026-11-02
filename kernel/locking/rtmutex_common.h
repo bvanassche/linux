@@ -105,7 +105,8 @@ extern int __rt_mutex_futex_trylock(struct rt_mutex_base *lock)
 
 extern void rt_mutex_futex_unlock(struct rt_mutex_base *lock);
 extern bool __rt_mutex_futex_unlock(struct rt_mutex_base *lock,
-				struct rt_wake_q_head *wqh);
+				struct rt_wake_q_head *wqh)
+	__must_hold(&lock->wait_lock);
 
 extern void rt_mutex_postunlock(struct rt_wake_q_head *wqh);
 

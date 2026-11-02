@@ -716,6 +716,7 @@ static void mvs_94xx_non_spec_ncq_error(struct mvs_info *mvi)
 	u8 i;
 	struct mvs_device *device;
 
+	lockdep_assume_ctx_held(&mvi->lock);
 	err_0 = mr32(MVS_NON_NCQ_ERR_0);
 	err_1 = mr32(MVS_NON_NCQ_ERR_1);
 

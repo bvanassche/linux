@@ -140,7 +140,8 @@ struct tls_context *tls_ctx_create(struct sock *sk);
 void tls_ctx_free(struct sock *sk, struct tls_context *ctx);
 void update_sk_prot(struct sock *sk, struct tls_context *ctx);
 
-int wait_on_pending_writer(struct sock *sk, long *timeo);
+int wait_on_pending_writer(struct sock *sk, long *timeo)
+	__must_hold(sk);
 void tls_err_abort(struct sock *sk, int err);
 void tls_strp_abort_strp(struct tls_strparser *strp, int err);
 
@@ -167,7 +168,8 @@ ssize_t tls_sw_splice_read(struct socket *sock, loff_t *ppos,
 			   struct pipe_inode_info *pipe,
 			   size_t len, unsigned int flags);
 int tls_sw_read_sock(struct sock *sk, read_descriptor_t *desc,
-		     sk_read_actor_t read_actor);
+		     sk_read_actor_t read_actor)
+	__must_hold(sk);
 
 int tls_device_sendmsg(struct sock *sk, struct msghdr *msg, size_t size);
 void tls_device_splice_eof(struct socket *sock);

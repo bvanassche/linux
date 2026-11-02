@@ -364,7 +364,8 @@ struct ublk_params_header {
 };
 
 static void ublk_io_release(void *priv);
-static void ublk_stop_dev_unlocked(struct ublk_device *ub);
+static void ublk_stop_dev_unlocked(struct ublk_device *ub)
+	__must_hold(&ub->mutex);
 static bool ublk_try_buf_match(struct ublk_device *ub, struct request *rq,
 				  u32 *buf_idx, u32 *buf_off);
 static void ublk_buf_cleanup(struct ublk_device *ub);

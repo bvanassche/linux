@@ -26,8 +26,17 @@ static const char *o2nm_fence_method_desc[O2NM_FENCE_METHODS] = {
 	"panic",	/* O2NM_FENCE_PANIC */
 };
 
-static inline void o2nm_lock_subsystem(void);
-static inline void o2nm_unlock_subsystem(void);
+struct o2nm_cluster_group {
+	struct configfs_subsystem cs_subsys;
+	/* some stuff? */
+};
+
+static struct o2nm_cluster_group o2nm_cluster_group;
+
+static inline void o2nm_lock_subsystem(void)
+	__acquires(&o2nm_cluster_group.cs_subsys.su_mutex);
+static inline void o2nm_unlock_subsystem(void)
+	__releases(&o2nm_cluster_group.cs_subsys.su_mutex);
 
 struct o2nm_node *o2nm_get_node_by_num(u8 node_num)
 {
@@ -677,11 +686,6 @@ static const struct config_item_type o2nm_cluster_type = {
 };
 
 /* cluster set */
-
-struct o2nm_cluster_group {
-	struct configfs_subsystem cs_subsys;
-	/* some stuff? */
-};
 
 #if 0
 static struct o2nm_cluster_group *to_o2nm_cluster_group(struct config_group *group)

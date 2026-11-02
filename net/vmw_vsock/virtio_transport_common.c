@@ -1421,6 +1421,7 @@ static void virtio_transport_close_timeout(struct work_struct *work)
 
 /* User context, vsk->sk is locked */
 static bool virtio_transport_close(struct vsock_sock *vsk)
+	__must_hold(&vsk->sk)
 {
 	struct sock *sk = &vsk->sk;
 
@@ -1453,6 +1454,7 @@ static bool virtio_transport_close(struct vsock_sock *vsk)
 }
 
 void virtio_transport_release(struct vsock_sock *vsk)
+	__must_hold(&vsk->sk)
 {
 	struct sock *sk = &vsk->sk;
 	bool remove_sock = true;

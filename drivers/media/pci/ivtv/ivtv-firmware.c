@@ -298,7 +298,7 @@ static int ivtv_firmware_restart(struct ivtv *itv)
 		/* Restore decoder video standard */
 		std = itv->std_out;
 		itv->std_out = 0;
-		ivtv_s_std_dec(itv, std);
+		context_unsafe(ivtv_s_std_dec(itv, std));
 
 		/* Restore framebuffer if active */
 		if (itv->ivtvfb_restore)

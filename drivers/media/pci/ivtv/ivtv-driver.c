@@ -1313,6 +1313,7 @@ int ivtv_init_on_first_open(struct ivtv *itv)
 		write_reg_sync(0x03, IVTV_REG_DMACONTROL);
 
 	ivtv_s_std_enc(itv, itv->tuner_std);
+	lockdep_assert_held(&itv->serialize_lock);
 
 	/* Default interrupts enabled. For the PVR350 this includes the
 	   decoder VSYNC interrupt, which is always on. It is not only used

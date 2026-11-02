@@ -499,7 +499,8 @@ int intel_gvt_create_vgpu(struct intel_vgpu *vgpu,
 void intel_gvt_destroy_vgpu(struct intel_vgpu *vgpu);
 void intel_gvt_release_vgpu(struct intel_vgpu *vgpu);
 void intel_gvt_reset_vgpu_locked(struct intel_vgpu *vgpu, bool dmlr,
-				 intel_engine_mask_t engine_mask);
+				 intel_engine_mask_t engine_mask)
+	__must_hold(&vgpu->vgpu_lock);
 void intel_gvt_reset_vgpu(struct intel_vgpu *vgpu);
 void intel_gvt_activate_vgpu(struct intel_vgpu *vgpu);
 void intel_gvt_deactivate_vgpu(struct intel_vgpu *vgpu);

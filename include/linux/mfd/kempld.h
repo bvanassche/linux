@@ -115,8 +115,10 @@ struct kempld_platform_data {
 	int (*register_cells)		(struct kempld_device_data *);
 };
 
-extern void kempld_get_mutex(struct kempld_device_data *pld);
-extern void kempld_release_mutex(struct kempld_device_data *pld);
+extern void kempld_get_mutex(struct kempld_device_data *pld)
+	__acquires(&pld->lock);
+extern void kempld_release_mutex(struct kempld_device_data *pld)
+	__releases(&pld->lock);
 extern u8 kempld_read8(struct kempld_device_data *pld, u8 index);
 extern void kempld_write8(struct kempld_device_data *pld, u8 index, u8 data);
 extern u16 kempld_read16(struct kempld_device_data *pld, u8 index);

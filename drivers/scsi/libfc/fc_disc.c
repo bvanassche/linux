@@ -39,10 +39,12 @@
 
 static void fc_disc_gpn_ft_req(struct fc_disc *disc) __must_hold(&disc->disc_mutex);
 static void fc_disc_gpn_ft_resp(struct fc_seq *, struct fc_frame *, void *);
-static void fc_disc_done(struct fc_disc *, enum fc_disc_event);
+static void fc_disc_done(struct fc_disc *disc, enum fc_disc_event)
+	__must_hold(&disc->disc_mutex);
 static void fc_disc_timeout(struct work_struct *);
 static int fc_disc_single(struct fc_lport *, struct fc_disc_port *);
-static void fc_disc_restart(struct fc_disc *);
+static void fc_disc_restart(struct fc_disc *disc)
+	__must_hold(&disc->disc_mutex);
 
 /**
  * fc_disc_stop_rports() - Delete all the remote ports associated with the lport

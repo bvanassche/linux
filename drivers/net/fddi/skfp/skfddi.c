@@ -122,7 +122,8 @@ unsigned long dma_master(struct s_smc *smc, void *virt, int len, int flag);
 void dma_complete(struct s_smc *smc, volatile union s_fp_descr *descr,
 		  int flag);
 void mac_drv_tx_complete(struct s_smc *smc, volatile struct s_smt_fp_txd *txd);
-void llc_restart_tx(struct s_smc *smc);
+void llc_restart_tx(struct s_smc *smc)
+	__must_hold(&smc->os.DriverLock);
 void mac_drv_rx_complete(struct s_smc *smc, volatile struct s_smt_fp_rxd *rxd,
 			 int frag_count, int len);
 void mac_drv_requeue_rxd(struct s_smc *smc, volatile struct s_smt_fp_rxd *rxd,
@@ -141,7 +142,8 @@ extern void hwm_tx_frag(struct s_smc *smc, char far * virt, u_long phys,
 			int len, int frame_status);
 extern int hwm_tx_init(struct s_smc *smc, u_char fc, int frag_count,
 		       int frame_len, int frame_status);
-extern void fddi_isr(struct s_smc *smc);
+extern void fddi_isr(struct s_smc *smc)
+	__must_hold(&smc->os.DriverLock);
 extern void hwm_rx_frag(struct s_smc *smc, char far * virt, u_long phys,
 			int len, int frame_status);
 extern void mac_drv_rx_mode(struct s_smc *smc, int mode);
@@ -606,11 +608,7 @@ static int skfp_close(struct net_device *dev)
 static irqreturn_t skfp_interrupt(int irq, void *dev_id)
 {
 	struct net_device *dev = dev_id;
-	struct s_smc *smc;	/* private board structure pointer */
-	skfddi_priv *bp;
-
-	smc = netdev_priv(dev);
-	bp = &smc->os;
+	struct s_smc *smc = netdev_priv(dev);
 
 	// IRQs enabled or disabled ?
 	if (inpd(ADDR(B0_IMSK)) == 0) {
@@ -623,7 +621,7 @@ static irqreturn_t skfp_interrupt(int irq, void *dev_id)
 		return IRQ_NONE;
 	}
 	CLI_FBI();		// Disable IRQs from our adapter.
-	spin_lock(&bp->DriverLock);
+	spin_lock(&smc->os.DriverLock);
 
 	// Call interrupt handler in hardware module (HWM).
 	fddi_isr(smc);
@@ -632,7 +630,7 @@ static irqreturn_t skfp_interrupt(int irq, void *dev_id)
 		ResetAdapter(smc);
 		smc->os.ResetRequested = FALSE;
 	}
-	spin_unlock(&bp->DriverLock);
+	spin_unlock(&smc->os.DriverLock);
 	STI_FBI();		// Enable IRQs from our adapter.
 
 	return IRQ_HANDLED;

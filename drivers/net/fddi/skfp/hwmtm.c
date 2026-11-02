@@ -129,7 +129,8 @@ extern int mac_drv_rx_init(struct s_smc *smc, int len, int fc, char *look_ahead,
 	-------------------------------------------------------------
 */
 void process_receive(struct s_smc *smc);
-void fddi_isr(struct s_smc *smc);
+void fddi_isr(struct s_smc *smc)
+	__must_hold(&smc->os.DriverLock);
 void smt_free_mbuf(struct s_smc *smc, SMbuf *mb);
 void init_driver_fplus(struct s_smc *smc);
 void mac_drv_rx_mode(struct s_smc *smc, int mode);
@@ -699,6 +700,7 @@ static u_long repair_rxd_ring(struct s_smc *smc, struct s_smt_rx_queue *queue)
  *	END_MANUAL_ENTRY
  */
 void fddi_isr(struct s_smc *smc)
+	__must_hold(&smc->os.DriverLock)
 {
 	u_long		is ;		/* ISR source */
 	u_short		stu, stl ;

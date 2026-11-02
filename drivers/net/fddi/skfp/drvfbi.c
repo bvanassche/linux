@@ -177,6 +177,7 @@ void card_stop(struct s_smc *smc)
 /*--------------------------- ISR handling ----------------------------------*/
 
 void mac1_irq(struct s_smc *smc, u_short stu, u_short stl)
+	__must_hold(&smc->os.DriverLock)
 {
 	int	restart_tx = 0 ;
 again:

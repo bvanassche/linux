@@ -471,14 +471,19 @@ void init_board(struct s_smc *smc, u_char *mac_addr);
 int init_fplus(struct s_smc *smc);
 void init_plc(struct s_smc *smc);
 int init_smt(struct s_smc *smc, const u_char *mac_addr);
-void mac1_irq(struct s_smc *smc, u_short stu, u_short stl);
-void mac2_irq(struct s_smc *smc, u_short code_s2u, u_short code_s2l);
+void mac1_irq(struct s_smc *smc, u_short stu, u_short stl)
+	__must_hold(&smc->os.DriverLock);
+void mac2_irq(struct s_smc *smc, u_short code_s2u, u_short code_s2l)
+	__must_hold(&smc->os.DriverLock);
 void mac3_irq(struct s_smc *smc, u_short code_s3u, u_short code_s3l);
 int pcm_status_twisted(struct s_smc *smc);
 void plc1_irq(struct s_smc *smc);
 void plc2_irq(struct s_smc *smc);
 void read_address(struct s_smc *smc, u_char *mac_addr);
 void timer_irq(struct s_smc *smc);
+/* Declared here instead of in cmtdef.h because it refers to struct s_smc. */
+void llc_restart_tx(struct s_smc *smc)
+	__must_hold(&smc->os.DriverLock);
 
 #endif	/* _SCMECM_ */
 

@@ -514,8 +514,10 @@ int ksz_sw_mdio_write(struct mii_bus *bus, int addr, int regnum, u16 val);
 int ksz_parent_mdio_read(struct mii_bus *bus, int addr, int regnum);
 int ksz_parent_mdio_write(struct mii_bus *bus, int addr, int regnum, u16 val);
 int ksz_mdio_register(struct ksz_device *dev);
-void ksz_irq_bus_lock(struct irq_data *d);
-void ksz_irq_bus_sync_unlock(struct irq_data *d);
+void ksz_irq_bus_lock(struct irq_data *d)
+	__acquires(&((struct ksz_irq *)irq_data_get_irq_chip_data(d))->dev->lock_irq);
+void ksz_irq_bus_sync_unlock(struct irq_data *d)
+	__releases(&((struct ksz_irq *)irq_data_get_irq_chip_data(d))->dev->lock_irq);
 int ksz_irq_common_setup(struct ksz_device *dev, struct ksz_irq *kirq,
 			 const struct irq_domain_ops *ops);
 int ksz_pirq_setup(struct ksz_device *dev, u8 p);

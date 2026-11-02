@@ -147,7 +147,8 @@ void sctp_ulpevent_read_sndrcvinfo(const struct sctp_ulpevent *event,
 void sctp_ulpevent_read_rcvinfo(const struct sctp_ulpevent *event,
 				struct msghdr *);
 void sctp_ulpevent_read_nxtinfo(const struct sctp_ulpevent *event,
-				struct msghdr *, struct sock *sk);
+				struct msghdr *, struct sock *sk)
+	__must_hold(sk);
 
 __u16 sctp_ulpevent_get_notification_type(const struct sctp_ulpevent *event);
 

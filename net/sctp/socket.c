@@ -73,12 +73,16 @@ static bool sctp_writeable(const struct sock *sk);
 static void sctp_wfree(struct sk_buff *skb);
 static int sctp_wait_for_sndbuf(struct sctp_association *asoc,
 				struct sctp_transport *transport,
-				long *timeo_p, size_t msg_len);
-static int sctp_wait_for_packet(struct sock *sk, int *err, long *timeo_p);
-static int sctp_wait_for_connect(struct sctp_association *,
-				 struct sctp_transport *, long *timeo_p);
-static int sctp_wait_for_accept(struct sock *sk, long timeo);
-static void sctp_wait_for_close(struct sock *sk, long timeo);
+				long *timeo_p, size_t msg_len)
+	__must_hold(asoc->base.sk);
+static int sctp_wait_for_packet(struct sock *sk, int *err, long *timeo_p)
+	__must_hold(sk);
+static int sctp_wait_for_connect(struct sctp_association *asoc, struct sctp_transport *, long *timeo_p)
+	__must_hold(asoc->base.sk);
+static int sctp_wait_for_accept(struct sock *sk, long timeo)
+	__must_hold(sk);
+static void sctp_wait_for_close(struct sock *sk, long timeo)
+	__must_hold(sk);
 static void sctp_destruct_sock(struct sock *sk);
 static struct sctp_af *sctp_sockaddr_af(struct sctp_sock *opt,
 					union sctp_addr *addr, int len);
@@ -1204,6 +1208,7 @@ static int sctp_connect_add_peer(struct sctp_association *asoc,
  */
 static int __sctp_connect(struct sock *sk, struct sockaddr *kaddrs,
 			  int addrs_size, int flags, sctp_assoc_t *assoc_id)
+	__must_hold(sk)
 {
 	struct sctp_sock *sp = sctp_sk(sk);
 	struct sctp_endpoint *ep = sp->ep;
@@ -1237,6 +1242,7 @@ static int __sctp_connect(struct sock *sk, struct sockaddr *kaddrs,
 	if (err)
 		return err;
 	asoc = transport->asoc;
+	__assume_ctx_lock(asoc->base.sk);
 
 	addr_buf += af->sockaddr_len;
 	walk_size = af->sockaddr_len;
@@ -1349,6 +1355,7 @@ out_free:
  */
 static int __sctp_setsockopt_connectx(struct sock *sk, struct sockaddr *kaddrs,
 				      int addrs_size, sctp_assoc_t *assoc_id)
+	__must_hold(sk)
 {
 	int err = 0, flags = 0;
 
@@ -1382,6 +1389,7 @@ static int __sctp_setsockopt_connectx(struct sock *sk, struct sockaddr *kaddrs,
 static int sctp_setsockopt_connectx_old(struct sock *sk,
 					struct sockaddr *kaddrs,
 					int addrs_size)
+	__must_hold(sk)
 {
 	return __sctp_setsockopt_connectx(sk, kaddrs, addrs_size, NULL);
 }
@@ -1395,6 +1403,7 @@ static int sctp_setsockopt_connectx_old(struct sock *sk,
 static int sctp_setsockopt_connectx(struct sock *sk,
 				    struct sockaddr *kaddrs,
 				    int addrs_size)
+	__must_hold(sk)
 {
 	sctp_assoc_t assoc_id = 0;
 	int err = 0;
@@ -1426,6 +1435,7 @@ struct compat_sctp_getaddrs_old {
 static int sctp_getsockopt_connectx3(struct sock *sk, int len,
 				     char __user *optval,
 				     int __user *optlen)
+	__must_hold(sk)
 {
 	struct sctp_getaddrs_old param;
 	sctp_assoc_t assoc_id = 0;
@@ -1840,6 +1850,7 @@ static int sctp_sendmsg_to_asoc(struct sctp_association *asoc,
 				struct msghdr *msg, size_t msg_len,
 				struct sctp_transport *transport,
 				struct sctp_sndrcvinfo *sinfo)
+	__must_hold(asoc->base.sk)
 {
 	struct sock *sk = asoc->base.sk;
 	struct sctp_sock *sp = sctp_sk(sk);
@@ -2027,6 +2038,7 @@ static int sctp_sendmsg(struct sock *sk, struct msghdr *msg, size_t msg_len)
 
 			sctp_sendmsg_update_sinfo(asoc, sinfo, &cmsgs);
 
+			__assume_ctx_lock(asoc->base.sk);
 			err = sctp_sendmsg_to_asoc(asoc, msg, msg_len,
 						   NULL, sinfo);
 			if (err < 0)
@@ -2083,6 +2095,7 @@ static int sctp_sendmsg(struct sock *sk, struct msghdr *msg, size_t msg_len)
 	sctp_sendmsg_update_sinfo(asoc, sinfo, &cmsgs);
 
 	/* Send msg to the asoc */
+	__assume_ctx_lock(asoc->base.sk);
 	err = sctp_sendmsg_to_asoc(asoc, msg, msg_len, transport, sinfo);
 	if (err < 0 && err != -ESRCH && new)
 		sctp_association_free(asoc);

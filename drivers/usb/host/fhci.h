@@ -562,7 +562,8 @@ irqreturn_t fhci_irq(struct usb_hcd *hcd);
 irqreturn_t fhci_frame_limit_timer_irq(int irq, void *_hcd);
 
 /* fhci-q.h */
-void fhci_urb_complete_free(struct fhci_hcd *fhci, struct urb *urb);
+void fhci_urb_complete_free(struct fhci_hcd *fhci, struct urb *urb)
+	__must_hold(&fhci->lock);
 struct td *fhci_remove_td_from_ed(struct ed *ed);
 struct td *fhci_remove_td_from_frame(struct fhci_time_frame *frame);
 void fhci_move_td_from_ed_to_done_list(struct fhci_usb *usb, struct ed *ed);
@@ -570,7 +571,8 @@ struct td *fhci_peek_td_from_frame(struct fhci_time_frame *frame);
 void fhci_add_td_to_frame(struct fhci_time_frame *frame, struct td *td);
 struct td *fhci_remove_td_from_done_list(struct fhci_controller_list *p_list);
 void fhci_done_td(struct urb *urb, struct td *td);
-void fhci_del_ed_list(struct fhci_hcd *fhci, struct ed *ed);
+void fhci_del_ed_list(struct fhci_hcd *fhci, struct ed *ed)
+	__must_hold(&fhci->lock);
 
 #ifdef CONFIG_FHCI_DEBUG
 

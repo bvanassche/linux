@@ -134,7 +134,8 @@ MODULE_DESCRIPTION("Broadcom MegaRAID SAS Driver");
 int megasas_transition_to_ready(struct megasas_instance *instance, int ocr);
 static int megasas_get_pd_list(struct megasas_instance *instance);
 static int megasas_ld_list_query(struct megasas_instance *instance,
-				 u8 query_type);
+				 u8 query_type)
+	__must_hold(&instance->reset_mutex);
 static int megasas_issue_init_mfi(struct megasas_instance *instance);
 static int megasas_register_aen(struct megasas_instance *instance,
 				u32 seq_num, u32 class_locale_word);

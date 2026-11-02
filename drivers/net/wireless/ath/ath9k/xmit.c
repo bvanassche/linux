@@ -748,6 +748,7 @@ static void ath_tx_process_buffer(struct ath_softc *sc, struct ath_txq *txq,
 					     ts->ts_rateindex);
 
 	hdr = (struct ieee80211_hdr *) bf->bf_mpdu->data;
+	__assume_shared_ctx_lock(RCU);
 	sta = ieee80211_find_sta_by_ifaddr(hw, hdr->addr1, hdr->addr2);
 	if (sta) {
 		struct ath_node *an = (struct ath_node *)sta->drv_priv;

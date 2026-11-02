@@ -132,14 +132,17 @@ MODULE_AUTHOR("megaraidlinux.pdl@broadcom.com");
 MODULE_DESCRIPTION("Broadcom MegaRAID SAS Driver");
 
 int megasas_transition_to_ready(struct megasas_instance *instance, int ocr);
-static int megasas_get_pd_list(struct megasas_instance *instance);
+static int megasas_get_pd_list(struct megasas_instance *instance)
+	__must_hold(&instance->reset_mutex);
 static int megasas_ld_list_query(struct megasas_instance *instance,
-				 u8 query_type);
+				 u8 query_type)
+	__must_hold(&instance->reset_mutex);
 static int megasas_issue_init_mfi(struct megasas_instance *instance);
 static int megasas_register_aen(struct megasas_instance *instance,
 				u32 seq_num, u32 class_locale_word);
 static void megasas_get_pd_info(struct megasas_instance *instance,
-				struct scsi_device *sdev);
+				struct scsi_device *sdev)
+	__must_hold(&instance->reset_mutex);
 static void
 megasas_set_ld_removed_by_fw(struct megasas_instance *instance);
 
@@ -4544,6 +4547,7 @@ dcmd_timeout_ocr_possible(struct megasas_instance *instance) {
 
 static void
 megasas_get_pd_info(struct megasas_instance *instance, struct scsi_device *sdev)
+	__must_hold(&instance->reset_mutex)
 {
 	int ret;
 	struct megasas_cmd *cmd;
@@ -4630,6 +4634,7 @@ megasas_get_pd_info(struct megasas_instance *instance, struct scsi_device *sdev)
  */
 static int
 megasas_get_pd_list(struct megasas_instance *instance)
+	__must_hold(&instance->reset_mutex)
 {
 	int ret = 0, pd_index = 0;
 	struct megasas_cmd *cmd;
@@ -4765,6 +4770,7 @@ megasas_get_pd_list(struct megasas_instance *instance)
  */
 static int
 megasas_get_ld_list(struct megasas_instance *instance)
+	__must_hold(&instance->reset_mutex)
 {
 	int ret = 0, ld_index = 0, ids = 0;
 	struct megasas_cmd *cmd;
@@ -4882,6 +4888,7 @@ megasas_get_ld_list(struct megasas_instance *instance)
  */
 static int
 megasas_ld_list_query(struct megasas_instance *instance, u8 query_type)
+	__must_hold(&instance->reset_mutex)
 {
 	int ret = 0, ld_index = 0, ids = 0;
 	struct megasas_cmd *cmd;
@@ -5004,6 +5011,7 @@ megasas_ld_list_query(struct megasas_instance *instance, u8 query_type)
 static int
 megasas_host_device_list_query(struct megasas_instance *instance,
 			       bool is_probe)
+	__must_hold(&instance->reset_mutex)
 {
 	int ret, i, target_id;
 	struct megasas_cmd *cmd;
@@ -5887,6 +5895,7 @@ fallback:
  */
 static
 int megasas_get_device_list(struct megasas_instance *instance)
+	__must_hold(&instance->reset_mutex)
 {
 	if (instance->enable_fw_dev_list) {
 		if (megasas_host_device_list_query(instance, true))
@@ -8779,6 +8788,7 @@ static inline void megasas_remove_scsi_device(struct scsi_device *sdev)
 static
 int megasas_update_device_list(struct megasas_instance *instance,
 			       int event_type)
+	__must_hold(&instance->reset_mutex)
 {
 	int dcmd_ret;
 

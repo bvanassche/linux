@@ -281,6 +281,7 @@ static int tls_push_record(struct sock *sk,
 			   struct tls_offload_context_tx *offload_ctx,
 			   struct tls_record_info *record,
 			   int flags)
+	__must_hold(sk)
 {
 	struct tls_prot_info *prot = &ctx->prot_info;
 	struct tcp_sock *tp = tcp_sk(sk);
@@ -684,6 +685,7 @@ static int tls_device_push_pending_record(struct sock *sk, int flags)
 }
 
 void tls_device_write_space(struct sock *sk, struct tls_context *ctx)
+	__must_hold(sk)
 {
 	if (tls_is_partially_sent_record(ctx)) {
 		gfp_t sk_allocation = sk->sk_allocation;

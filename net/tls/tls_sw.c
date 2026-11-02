@@ -406,6 +406,7 @@ static void tls_free_open_rec(struct sock *sk)
 }
 
 int tls_tx_records(struct sock *sk, int flags)
+	__must_hold(sk)
 {
 	struct tls_context *tls_ctx = tls_get_ctx(sk);
 	struct tls_sw_context_tx *ctx = tls_sw_ctx_tx(tls_ctx);
@@ -623,6 +624,7 @@ static int tls_do_encryption(struct sock *sk,
 
 static int tls_push_record(struct sock *sk, int flags,
 			   unsigned char record_type)
+	__must_hold(sk)
 {
 	struct tls_context *tls_ctx = tls_get_ctx(sk);
 	struct tls_prot_info *prot = &tls_ctx->prot_info;
@@ -2329,6 +2331,7 @@ void tls_sw_cancel_work_tx(struct tls_context *tls_ctx)
 }
 
 void tls_sw_release_resources_tx(struct sock *sk)
+	__must_hold(sk)
 {
 	struct tls_context *tls_ctx = tls_get_ctx(sk);
 	struct tls_sw_context_tx *ctx = tls_sw_ctx_tx(tls_ctx);

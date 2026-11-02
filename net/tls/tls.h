@@ -140,7 +140,8 @@ struct tls_context *tls_ctx_create(struct sock *sk);
 void tls_ctx_free(struct sock *sk, struct tls_context *ctx);
 void update_sk_prot(struct sock *sk, struct tls_context *ctx);
 
-int wait_on_pending_writer(struct sock *sk, long *timeo);
+int wait_on_pending_writer(struct sock *sk, long *timeo)
+	__must_hold(sk);
 void tls_err_abort(struct sock *sk, int err);
 void tls_strp_abort_strp(struct tls_strparser *strp, int err);
 
@@ -155,7 +156,7 @@ void tls_sw_strparser_done(struct tls_context *tls_ctx);
 int tls_sw_sendmsg(struct sock *sk, struct msghdr *msg, size_t size);
 void tls_sw_splice_eof(struct socket *sock);
 void tls_sw_cancel_work_tx(struct tls_context *tls_ctx);
-void tls_sw_release_resources_tx(struct sock *sk);
+void tls_sw_release_resources_tx(struct sock *sk) __must_hold(sk);
 void tls_sw_free_ctx_tx(struct tls_context *tls_ctx);
 void tls_sw_free_resources_rx(struct sock *sk);
 void tls_sw_release_resources_rx(struct sock *sk);
@@ -167,14 +168,16 @@ ssize_t tls_sw_splice_read(struct socket *sock, loff_t *ppos,
 			   struct pipe_inode_info *pipe,
 			   size_t len, unsigned int flags);
 int tls_sw_read_sock(struct sock *sk, read_descriptor_t *desc,
-		     sk_read_actor_t read_actor);
+		     sk_read_actor_t read_actor)
+	__must_hold(sk);
 
 int tls_device_sendmsg(struct sock *sk, struct msghdr *msg, size_t size);
 void tls_device_splice_eof(struct socket *sock);
-int tls_tx_records(struct sock *sk, int flags);
+int tls_tx_records(struct sock *sk, int flags) __must_hold(sk);
 
 void tls_sw_write_space(struct sock *sk, struct tls_context *ctx);
-void tls_device_write_space(struct sock *sk, struct tls_context *ctx);
+void tls_device_write_space(struct sock *sk, struct tls_context *ctx)
+	__must_hold(sk);
 
 int tls_process_cmsg(struct sock *sk, struct msghdr *msg,
 		     unsigned char *record_type);
@@ -267,9 +270,9 @@ tls_device_decrypted(struct sock *sk, struct tls_context *tls_ctx)
 
 int tls_push_sg(struct sock *sk, struct tls_context *ctx,
 		struct scatterlist *sg, u16 first_offset,
-		int flags);
+		int flags) __must_hold(sk);
 int tls_push_partial_record(struct sock *sk, struct tls_context *ctx,
-			    int flags);
+			    int flags) __must_hold(sk);
 void tls_free_partial_record(struct sock *sk, struct tls_context *ctx);
 
 static inline bool tls_is_partially_sent_record(struct tls_context *ctx)

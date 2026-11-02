@@ -298,7 +298,8 @@ void inet_csk_reqsk_queue_drop_and_put(struct sock *sk, struct request_sock *req
 
 void inet_csk_destroy_sock(struct sock *sk);
 void inet_csk_prepare_for_destroy_sock(struct sock *sk);
-void inet_csk_prepare_forced_close(struct sock *sk);
+void inet_csk_prepare_forced_close(struct sock *sk)
+	__releases(&sk->sk_lock.slock);
 
 /*
  * LISTEN is a special case for poll..

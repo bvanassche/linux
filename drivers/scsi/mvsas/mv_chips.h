@@ -184,6 +184,7 @@ static inline void mvs_int_full(struct mvs_info *mvi)
 	u32 tmp, stat;
 	int i;
 
+	lockdep_assume_ctx_held(&mvi->lock);
 	stat = mr32(MVS_INT_STAT);
 	mvs_int_rx(mvi, false);
 

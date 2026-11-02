@@ -181,8 +181,10 @@ u32 tegra_vde_readl(struct tegra_vde *vde, void __iomem *base, u32 offset);
 void tegra_vde_set_bits(struct tegra_vde *vde, u32 mask, void __iomem *base,
 			u32 offset);
 
-int tegra_vde_h264_decode_run(struct tegra_ctx *ctx);
-int tegra_vde_h264_decode_wait(struct tegra_ctx *ctx);
+int tegra_vde_h264_decode_run(struct tegra_ctx *ctx)
+	__cond_acquires(0, &ctx->vde->lock);
+int tegra_vde_h264_decode_wait(struct tegra_ctx *ctx)
+	__releases(&ctx->vde->lock);
 
 int tegra_vde_iommu_init(struct tegra_vde *vde);
 void tegra_vde_iommu_deinit(struct tegra_vde *vde);

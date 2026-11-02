@@ -34,7 +34,8 @@ struct smbd_connection *smbd_get_connection(
 const struct smbdirect_socket_parameters *smbd_get_parameters(struct smbd_connection *conn);
 
 /* Reconnect SMBDirect session */
-int smbd_reconnect(struct TCP_Server_Info *server);
+int smbd_reconnect(struct TCP_Server_Info *server)
+	__must_hold(&server->_srv_mutex);
 /* Destroy SMBDirect session */
 void smbd_destroy(struct TCP_Server_Info *server);
 
@@ -58,7 +59,11 @@ void smbd_debug_proc_show(struct TCP_Server_Info *server, struct seq_file *m);
 struct smbd_connection {};
 static inline void *smbd_get_connection(
 	struct TCP_Server_Info *server, struct sockaddr *dstaddr) {return NULL;}
-static inline int smbd_reconnect(struct TCP_Server_Info *server) {return -1; }
+static inline int smbd_reconnect(struct TCP_Server_Info *server)
+	__must_hold(&server->_srv_mutex)
+{
+	return -1;
+}
 static inline void smbd_destroy(struct TCP_Server_Info *server) {}
 static inline int smbd_recv(struct smbd_connection *info, struct msghdr *msg) {return -1; }
 static inline int smbd_send(struct TCP_Server_Info *server, int num_rqst, struct smb_rqst *rqst) {return -1; }

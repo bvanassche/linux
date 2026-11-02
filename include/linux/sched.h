@@ -406,8 +406,10 @@ enum uclamp_id {
 
 extern struct root_domain def_root_domain;
 extern struct mutex sched_domains_mutex;
-extern void sched_domains_mutex_lock(void);
-extern void sched_domains_mutex_unlock(void);
+extern void sched_domains_mutex_lock(void)
+	__acquires(&sched_domains_mutex);
+extern void sched_domains_mutex_unlock(void)
+	__releases(&sched_domains_mutex);
 
 struct sched_param {
 	int sched_priority;

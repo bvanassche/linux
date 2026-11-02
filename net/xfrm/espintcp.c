@@ -215,6 +215,7 @@ static int espintcp_sendskb_locked(struct sock *sk, struct espintcp_msg *emsg,
 
 static int espintcp_sendskmsg_locked(struct sock *sk,
 				     struct espintcp_msg *emsg, int flags)
+	__context_unsafe(/* TODO */)
 {
 	struct msghdr msghdr = {
 		.msg_flags = flags | MSG_SPLICE_PAGES | MSG_MORE,

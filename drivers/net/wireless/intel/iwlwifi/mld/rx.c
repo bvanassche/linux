@@ -2340,6 +2340,7 @@ iwl_mld_rx_with_sta(struct iwl_mld *mld, struct ieee80211_hdr *hdr,
 		    struct sk_buff *skb,
 		    const struct iwl_rx_mpdu_desc *mpdu_desc,
 		    const struct iwl_rx_packet *pkt, int queue, bool *drop)
+	__must_hold_shared(RCU)
 {
 	struct ieee80211_sta *sta = NULL;
 	struct ieee80211_link_sta *link_sta = NULL;

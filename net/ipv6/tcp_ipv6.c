@@ -1569,6 +1569,7 @@ INDIRECT_CALLABLE_DECLARE(struct dst_entry *ipv4_dst_check(struct dst_entry *,
  */
 INDIRECT_CALLABLE_SCOPE
 int tcp_v6_do_rcv(struct sock *sk, struct sk_buff *skb)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ipv6_pinfo *np = tcp_inet6_sk(sk);
 	struct sk_buff *opt_skb = NULL;

@@ -1834,6 +1834,7 @@ INDIRECT_CALLABLE_DECLARE(struct dst_entry *ipv4_dst_check(struct dst_entry *,
  * held.
  */
 int tcp_v4_do_rcv(struct sock *sk, struct sk_buff *skb)
+	__context_unsafe(/* conditional locking */)
 {
 	enum skb_drop_reason reason;
 

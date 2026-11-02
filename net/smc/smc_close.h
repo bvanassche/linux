@@ -20,11 +20,14 @@
 #define SMC_CLOSE_SOCK_PUT_DELAY		HZ
 
 void smc_close_wake_tx_prepared(struct smc_sock *smc);
-int smc_close_active(struct smc_sock *smc);
-int smc_close_shutdown_write(struct smc_sock *smc);
+int smc_close_active(struct smc_sock *smc)
+	__must_hold(&smc->sk);
+int smc_close_shutdown_write(struct smc_sock *smc)
+	__must_hold(&smc->sk);
 void smc_close_init(struct smc_sock *smc);
 void smc_clcsock_release(struct smc_sock *smc);
 int smc_close_abort(struct smc_connection *conn);
-void smc_close_active_abort(struct smc_sock *smc);
+void smc_close_active_abort(struct smc_sock *smc)
+	__must_hold(&smc->sk);
 
 #endif /* SMC_CLOSE_H */

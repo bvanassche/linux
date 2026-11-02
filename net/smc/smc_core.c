@@ -1537,9 +1537,10 @@ static void smc_sk_wake_ups(struct smc_sock *smc)
 }
 
 /* kill a connection */
-static void smc_conn_kill(struct smc_connection *conn, bool soft)
+static void smc_conn_kill(struct smc_sock *smc, bool soft)
+	__must_hold(&smc->sk)
 {
-	struct smc_sock *smc = container_of(conn, struct smc_sock, conn);
+	struct smc_connection *conn = &smc->conn;
 
 	if (conn->freed) {
 		/* The connection was already freed, e.g. by a close or
@@ -1625,7 +1626,7 @@ static void __smc_lgr_terminate(struct smc_link_group *lgr, bool soft)
 		 * link group by a retried handshake in the meantime.
 		 */
 		if (conn->lgr == lgr)
-			smc_conn_kill(conn, soft);
+			smc_conn_kill(smc, soft);
 		release_sock(&smc->sk);
 		sock_put(&smc->sk); /* sock_hold above */
 		read_lock_bh(&lgr->conns_lock);
@@ -1788,7 +1789,7 @@ static void smc_conn_abort_work(struct work_struct *work)
 	struct smc_sock *smc = container_of(conn, struct smc_sock, conn);
 
 	lock_sock(&smc->sk);
-	smc_conn_kill(conn, true);
+	smc_conn_kill(smc, true);
 	release_sock(&smc->sk);
 	sock_put(&smc->sk); /* sock_hold done by schedulers of abort_work */
 }

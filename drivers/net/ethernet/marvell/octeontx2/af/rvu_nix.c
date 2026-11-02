@@ -30,7 +30,8 @@ static int nix_verify_bandprof(struct nix_cn10k_aq_enq_req *req,
 			       struct nix_hw *nix_hw, u16 pcifunc);
 static int nix_free_all_bandprof(struct rvu *rvu, u16 pcifunc);
 static void nix_clear_ratelimit_aggr(struct rvu *rvu, struct nix_hw *nix_hw,
-				     u32 leaf_prof);
+				     u32 leaf_prof)
+	__must_hold(&rvu->rsrc_lock);
 static const char *nix_get_ctx_name(int ctype);
 static int nix_get_tx_link(struct rvu *rvu, u16 pcifunc);
 

@@ -2383,6 +2383,7 @@ int dquot_load_quota_sb(struct super_block *sb, int type, int format_id,
 	int error;
 
 	lockdep_assert_held_write(&sb->s_umount);
+	lockdep_assert_held(&sb->s_umount);
 
 	/* Just unsuspend quotas? */
 	if (WARN_ON_ONCE(flags & DQUOT_SUSPENDED))
@@ -2418,6 +2419,7 @@ int dquot_load_quota_sb(struct super_block *sb, int type, int format_id,
 		 * the quota file since if blocksize < pagesize, invalidation
 		 * of the cache could fail because of other unrelated dirty
 		 * data */
+		/* s_umount is held, see lockdep_assert_held_write() above. */
 		sync_filesystem(sb);
 		invalidate_bdev(sb->s_bdev);
 	}

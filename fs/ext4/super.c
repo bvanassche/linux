@@ -7374,7 +7374,7 @@ static int ext4_quota_off(struct super_block *sb, int type)
 	/* Force all delayed allocation blocks to be allocated.
 	 * Caller already holds s_umount sem */
 	if (test_opt(sb, DELALLOC))
-		sync_filesystem(sb);
+		context_unsafe(sync_filesystem(sb));
 
 	if (!inode || !igrab(inode))
 		goto out;

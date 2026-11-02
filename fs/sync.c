@@ -28,6 +28,7 @@
  * device.  Takes the superblock lock.
  */
 int sync_filesystem(struct super_block *sb)
+	__must_hold_shared(&sb->s_umount)
 {
 	int ret = 0;
 
@@ -72,6 +73,7 @@ int sync_filesystem(struct super_block *sb)
 EXPORT_SYMBOL(sync_filesystem);
 
 static void sync_inodes_one_sb(struct super_block *sb, void *arg)
+	__must_hold_shared(&sb->s_umount)
 {
 	if (!sb_rdonly(sb))
 		sync_inodes_sb(sb);

@@ -178,11 +178,14 @@ static inline void wb_domain_size_changed(struct wb_domain *dom)
  * fs/fs-writeback.c
  */	
 struct bdi_writeback;
-void writeback_inodes_sb(struct super_block *, enum wb_reason reason);
-void writeback_inodes_sb_nr(struct super_block *, unsigned long nr,
-							enum wb_reason reason);
+void writeback_inodes_sb(struct super_block *sb, enum wb_reason reason)
+	__must_hold_shared(&sb->s_umount);
+void writeback_inodes_sb_nr(struct super_block *sb, unsigned long nr,
+			    enum wb_reason reason)
+	__must_hold_shared(&sb->s_umount);
 void try_to_writeback_inodes_sb(struct super_block *sb, enum wb_reason reason);
-void sync_inodes_sb(struct super_block *);
+void sync_inodes_sb(struct super_block *sb)
+	__must_hold_shared(&sb->s_umount);
 void wakeup_flusher_threads(enum wb_reason reason);
 void wakeup_flusher_threads_bdi(struct backing_dev_info *bdi,
 				enum wb_reason reason);

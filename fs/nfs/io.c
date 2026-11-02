@@ -32,6 +32,7 @@
  */
 int
 nfs_start_io_read(struct inode *inode)
+	__cond_acquires_shared(0, &inode->i_rwsem)
 {
 	struct nfs_inode *nfsi = NFS_I(inode);
 	int err;
@@ -63,6 +64,7 @@ nfs_start_io_read(struct inode *inode)
  */
 void
 nfs_end_io_read(struct inode *inode)
+	__releases_shared(&inode->i_rwsem)
 {
 	up_read(&inode->i_rwsem);
 }
@@ -76,6 +78,7 @@ nfs_end_io_read(struct inode *inode)
  */
 int
 nfs_start_io_write(struct inode *inode)
+	__cond_acquires(0, &inode->i_rwsem)
 {
 	int err;
 
@@ -95,6 +98,7 @@ EXPORT_SYMBOL_GPL(nfs_start_io_write);
  */
 void
 nfs_end_io_write(struct inode *inode)
+	__releases(&inode->i_rwsem)
 {
 	up_write(&inode->i_rwsem);
 }
@@ -137,6 +141,7 @@ static int nfs_block_buffered_nowait(struct nfs_inode *nfsi, struct inode *inode
  */
 int
 nfs_start_io_direct(struct inode *inode)
+	__cond_acquires_shared(0, &inode->i_rwsem)
 {
 	struct nfs_inode *nfsi = NFS_I(inode);
 	int err;
@@ -170,6 +175,7 @@ nfs_start_io_direct(struct inode *inode)
  */
 int
 nfs_start_io_direct_nowait(struct inode *inode)
+	__cond_acquires_shared(0, &inode->i_rwsem)
 {
 	struct nfs_inode *nfsi = NFS_I(inode);
 
@@ -199,6 +205,7 @@ nfs_start_io_direct_nowait(struct inode *inode)
  */
 void
 nfs_end_io_direct(struct inode *inode)
+	__releases_shared(&inode->i_rwsem)
 {
 	up_read(&inode->i_rwsem);
 }

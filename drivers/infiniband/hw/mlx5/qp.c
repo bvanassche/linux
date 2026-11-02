@@ -839,9 +839,11 @@ static int to_mlx5_st(enum ib_qp_type type)
 }
 
 static void mlx5_ib_lock_cqs(struct mlx5_ib_cq *send_cq,
-			     struct mlx5_ib_cq *recv_cq);
+			     struct mlx5_ib_cq *recv_cq)
+	__acquires(&send_cq->lock);
 static void mlx5_ib_unlock_cqs(struct mlx5_ib_cq *send_cq,
-			       struct mlx5_ib_cq *recv_cq);
+			       struct mlx5_ib_cq *recv_cq)
+	__releases(&send_cq->lock);
 
 int bfregn_to_uar_index(struct mlx5_ib_dev *dev,
 			struct mlx5_bfreg_info *bfregi, u32 bfregn,

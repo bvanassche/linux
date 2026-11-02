@@ -208,10 +208,12 @@ struct mlx5hws_action {
 const char *mlx5hws_action_type_to_str(enum mlx5hws_action_type action_type);
 
 int mlx5hws_action_get_default_stc(struct mlx5hws_context *ctx,
-				   u8 tbl_type);
+				   u8 tbl_type)
+	__must_hold(&ctx->ctrl_lock);
 
 void mlx5hws_action_put_default_stc(struct mlx5hws_context *ctx,
-				    u8 tbl_type);
+				    u8 tbl_type)
+	__must_hold(&ctx->ctrl_lock);
 
 void mlx5hws_action_prepare_decap_l3_data(u8 *src, u8 *dst,
 					  u16 num_of_actions);
@@ -225,11 +227,13 @@ bool mlx5hws_action_check_combo(struct mlx5hws_context *ctx,
 int mlx5hws_action_alloc_single_stc(struct mlx5hws_context *ctx,
 				    struct mlx5hws_cmd_stc_modify_attr *stc_attr,
 				    u32 table_type,
-				    struct mlx5hws_pool_chunk *stc);
+				    struct mlx5hws_pool_chunk *stc)
+	__must_hold(&ctx->ctrl_lock);
 
 void mlx5hws_action_free_single_stc(struct mlx5hws_context *ctx,
 				    u32 table_type,
-				    struct mlx5hws_pool_chunk *stc);
+				    struct mlx5hws_pool_chunk *stc)
+	__must_hold(&ctx->ctrl_lock);
 
 static inline void
 mlx5hws_action_setter_default_single(struct mlx5hws_actions_apply_data *apply,

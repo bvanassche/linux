@@ -1965,6 +1965,7 @@ static void update_qp_retry_state(struct rvt_qp *qp, u32 psn, u32 spsn,
  */
 int do_rc_ack(struct rvt_qp *qp, u32 aeth, u32 psn, int opcode,
 	      u64 val, struct hfi1_ctxtdata *rcd)
+	__must_hold(&qp->s_lock)
 {
 	struct hfi1_ibport *ibp;
 	enum ib_wc_status status;

@@ -90,6 +90,7 @@ static int bpf_tcp_ingress(struct sock *sk, struct sk_psock *psock,
 
 static int tcp_bpf_push(struct sock *sk, struct sk_msg *msg, u32 apply_bytes,
 			int flags, bool uncharge)
+	__must_hold(sk)
 {
 	struct msghdr msghdr = {};
 	bool apply = apply_bytes;

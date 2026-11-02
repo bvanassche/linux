@@ -207,7 +207,8 @@ void amdxdna_hwctx_remove_all(struct amdxdna_client *client);
 int amdxdna_hwctx_walk(struct amdxdna_client *client, void *arg,
 		       int (*walk)(struct amdxdna_hwctx *hwctx, void *arg));
 int amdxdna_hwctx_sync_debug_bo(struct amdxdna_client *client, u32 debug_bo_hdl);
-int amdxdna_update_heap(struct amdxdna_client *client, struct amdxdna_hwctx *hwctx);
+int amdxdna_update_heap(struct amdxdna_client *client, struct amdxdna_hwctx *hwctx)
+	__must_hold(&client->xdna->dev_lock);
 
 int amdxdna_cmd_submit(struct amdxdna_client *client,
 		       struct amdxdna_drv_cmd *drv_cmd, u32 cmd_bo_hdls,

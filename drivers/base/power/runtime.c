@@ -61,8 +61,10 @@ static pm_callback_t __rpm_get_callback(struct device *dev, size_t cb_offset)
 #define RPM_GET_CALLBACK(dev, callback) \
 		__rpm_get_callback(dev, offsetof(struct dev_pm_ops, callback))
 
-static int rpm_resume(struct device *dev, int rpmflags);
-static int rpm_suspend(struct device *dev, int rpmflags);
+static int rpm_resume(struct device *dev, int rpmflags)
+	__releases(&dev->power.lock) __acquires(&dev->power.lock);
+static int rpm_suspend(struct device *dev, int rpmflags)
+	__releases(&dev->power.lock) __acquires(&dev->power.lock);
 
 /**
  * update_pm_runtime_accounting - Update the time accounting of power states

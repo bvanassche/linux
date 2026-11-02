@@ -69,6 +69,7 @@ static int aead_sendmsg(struct socket *sock, struct msghdr *msg, size_t size)
 
 static int _aead_recvmsg(struct socket *sock, struct msghdr *msg,
 			 size_t ignored, int flags)
+	__context_unsafe(/* TODO */)
 {
 	struct sock *sk = sock->sk;
 	struct alg_sock *ask = alg_sk(sk);

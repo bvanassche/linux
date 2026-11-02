@@ -100,6 +100,7 @@ static int algif_skcipher_export(struct sock *sk, struct skcipher_request *req)
 
 static int _skcipher_recvmsg(struct socket *sock, struct msghdr *msg,
 			     size_t ignored, int flags)
+	__context_unsafe(/* TODO */)
 {
 	struct sock *sk = sock->sk;
 	struct alg_sock *ask = alg_sk(sk);

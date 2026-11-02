@@ -67,6 +67,7 @@ out:
 
 static ssize_t __hfs_getxattr(struct inode *inode, enum hfs_xattr_type type,
 			      void *value, size_t size)
+	__context_unsafe(/* conditional locking */)
 {
 	struct hfs_find_data fd;
 	hfs_cat_rec rec;

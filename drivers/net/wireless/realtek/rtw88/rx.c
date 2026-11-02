@@ -111,6 +111,8 @@ static void rtw_rx_addr_match_iter(void *data, u8 *mac,
 	struct rtw_rx_pkt_stat *pkt_stat = iter_data->pkt_stat;
 	u8 *bssid = iter_data->bssid;
 
+	lockdep_assume_in_rcu_read_lock();
+
 	if (!ether_addr_equal(vif->bss_conf.bssid, bssid))
 		return;
 

@@ -1416,6 +1416,7 @@ done:
  * Return: 0 if the suspend succeeded.
  */
 static int usb_suspend_both(struct usb_device *udev, pm_message_t msg)
+	__context_unsafe(/* TODO */)
 {
 	int			status = 0;
 	int			i = 0, n = 0;
@@ -1540,6 +1541,7 @@ static int usb_suspend_both(struct usb_device *udev, pm_message_t msg)
  * Return: 0 on success.
  */
 static int usb_resume_both(struct usb_device *udev, pm_message_t msg)
+	__context_unsafe(/* TODO */)
 {
 	int			status = 0;
 	int			i;

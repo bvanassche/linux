@@ -2174,6 +2174,7 @@ ceph_sync_write(struct kiocb *iocb, struct iov_iter *from, loff_t pos,
  * Hmm, the sync read case isn't actually async... should it be?
  */
 static ssize_t ceph_read_iter(struct kiocb *iocb, struct iov_iter *to)
+	__context_unsafe(/* conditional locking */)
 {
 	struct file *filp = iocb->ki_filp;
 	struct ceph_file_info *fi = filp->private_data;
@@ -2400,6 +2401,7 @@ out_end:
  * client-side backpressure behavior.
  */
 static ssize_t ceph_write_iter(struct kiocb *iocb, struct iov_iter *from)
+	__context_unsafe(/* conditional locking */)
 {
 	struct file *file = iocb->ki_filp;
 	struct ceph_file_info *fi = file->private_data;

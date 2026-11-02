@@ -15,10 +15,12 @@ u16 ivtv_service2vbi(int type);
 void ivtv_expand_service_set(struct v4l2_sliced_vbi_format *fmt, int is_pal);
 u16 ivtv_get_service_set(struct v4l2_sliced_vbi_format *fmt);
 void ivtv_set_osd_alpha(struct ivtv *itv);
-int ivtv_set_speed(struct ivtv *itv, int speed);
+int ivtv_set_speed(struct ivtv *itv, int speed)
+	__must_hold(&itv->serialize_lock);
 void ivtv_set_funcs(struct video_device *vdev);
 void ivtv_s_std_enc(struct ivtv *itv, v4l2_std_id std);
-void ivtv_s_std_dec(struct ivtv *itv, v4l2_std_id std);
+void ivtv_s_std_dec(struct ivtv *itv, v4l2_std_id std)
+	__must_hold(&itv->serialize_lock);
 int ivtv_do_s_frequency(struct ivtv_stream *s, const struct v4l2_frequency *vf);
 int ivtv_do_s_input(struct ivtv *itv, unsigned int inp);
 

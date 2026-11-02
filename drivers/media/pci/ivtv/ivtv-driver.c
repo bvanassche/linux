@@ -1244,6 +1244,7 @@ err:
 }
 
 int ivtv_init_on_first_open(struct ivtv *itv)
+	__context_unsafe(/* TODO */)
 {
 	/* Needed to call ioctls later */
 	struct ivtv_stream *s = &itv->streams[IVTV_ENC_STREAM_TYPE_MPG];

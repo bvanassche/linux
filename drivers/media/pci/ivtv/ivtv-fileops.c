@@ -520,6 +520,7 @@ ssize_t ivtv_v4l2_read(struct file * filp, char __user *buf, size_t count, loff_
 }
 
 int ivtv_start_decoding(struct ivtv_open_id *id, int speed)
+	__context_unsafe(/* TODO */)
 {
 	struct ivtv *itv = id->itv;
 	struct ivtv_stream *s = &itv->streams[id->type];
@@ -565,6 +566,7 @@ static int ivtv_schedule_dma(struct ivtv_stream *s)
 }
 
 static ssize_t ivtv_write(struct file *filp, const char __user *user_buf, size_t count, loff_t *pos)
+	__context_unsafe(/* TODO */)
 {
 	struct ivtv_open_id *id = file2id(filp);
 	struct ivtv *itv = id->itv;
@@ -847,6 +849,7 @@ void ivtv_stop_capture(struct ivtv_open_id *id, int gop_end)
 }
 
 static void ivtv_stop_decoding(struct ivtv_open_id *id, int flags, u64 pts)
+	__context_unsafe(/* TODO */)
 {
 	struct ivtv *itv = id->itv;
 	struct ivtv_stream *s = &itv->streams[id->type];

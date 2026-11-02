@@ -13,6 +13,7 @@
 
 #include "../smb_common.h"
 #include "../ntlmssp.h"
+#include "../connection.h"
 
 #define CIFDS_SESSION_FLAG_SMB2		BIT(1)
 
@@ -135,7 +136,8 @@ struct ksmbd_session *ksmbd_session_lookup_all(struct ksmbd_conn *conn,
 struct ksmbd_session *ksmbd_session_lookup_all_states(struct ksmbd_conn *conn,
 						      unsigned long long id);
 void destroy_previous_session(struct ksmbd_conn *conn,
-			      struct ksmbd_user *user, u64 id);
+			      struct ksmbd_user *user, u64 id)
+	__must_hold(&conn->srv_mutex);
 struct preauth_session *ksmbd_preauth_session_alloc(struct ksmbd_conn *conn,
 						    u64 sess_id);
 void ksmbd_preauth_session_destroy(struct ksmbd_conn *conn);

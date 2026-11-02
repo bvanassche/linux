@@ -2603,6 +2603,8 @@ void brcms_c_suspend_mac_and_wait(struct brcms_c_info *wlc)
 	/*
 	 * Track overlapping suspend requests
 	 */
+	lockdep_assert_held(&wlc->wl->lock);
+
 	wlc_hw->mac_suspend_depth++;
 	if (wlc_hw->mac_suspend_depth > 1)
 		return;
@@ -4144,6 +4146,8 @@ static void brcms_c_radio_timer(void *arg)
 {
 	struct brcms_c_info *wlc = (struct brcms_c_info *) arg;
 
+	lockdep_assert_held(&wlc->wl->lock);
+
 	if (brcms_deviceremoved(wlc)) {
 		brcms_err(wlc->hw->d11core, "wl%d: %s: dead chip\n",
 			  wlc->pub->unit, __func__);
@@ -4176,6 +4180,7 @@ static void brcms_b_watchdog(struct brcms_c_info *wlc)
 
 /* common watchdog code */
 static void brcms_c_watchdog(struct brcms_c_info *wlc)
+	__must_hold(&wlc->wl->lock)
 {
 	brcms_dbg_info(wlc->hw->d11core, "wl%d\n", wlc->pub->unit);
 
@@ -4218,6 +4223,7 @@ static void brcms_c_watchdog_by_timer(void *arg)
 {
 	struct brcms_c_info *wlc = (struct brcms_c_info *) arg;
 
+	lockdep_assert_held(&wlc->wl->lock);
 	brcms_c_watchdog(wlc);
 }
 
@@ -7675,6 +7681,8 @@ bool brcms_c_dpc(struct brcms_c_info *wlc, bool bounded)
 	u32 macintstatus;
 	struct brcms_hardware *wlc_hw = wlc->hw;
 	struct bcma_device *core = wlc_hw->d11core;
+
+	lockdep_assert_held(&wlc->wl->lock);
 
 	if (brcms_deviceremoved(wlc)) {
 		brcms_err(core, "wl%d: %s: dead chip\n", wlc_hw->unit,

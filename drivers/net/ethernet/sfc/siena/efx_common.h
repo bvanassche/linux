@@ -53,9 +53,11 @@ int efx_siena_reconfigure_port(struct efx_nic *efx);
 	} while (0)
 
 int efx_siena_try_recovery(struct efx_nic *efx);
-void efx_siena_reset_down(struct efx_nic *efx, enum reset_type method);
+void efx_siena_reset_down(struct efx_nic *efx, enum reset_type method)
+	__acquires(&efx->mac_lock);
 void efx_siena_watchdog(struct net_device *net_dev, unsigned int txqueue);
-int efx_siena_reset_up(struct efx_nic *efx, enum reset_type method, bool ok);
+int efx_siena_reset_up(struct efx_nic *efx, enum reset_type method, bool ok)
+	__releases(&efx->mac_lock);
 int efx_siena_reset(struct efx_nic *efx, enum reset_type method);
 void efx_siena_schedule_reset(struct efx_nic *efx, enum reset_type type);
 

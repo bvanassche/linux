@@ -931,17 +931,19 @@ static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
 }
 
 void tty_write_unlock(struct tty_struct *tty)
+	__releases(&tty->atomic_write_lock)
 {
 	mutex_unlock(&tty->atomic_write_lock);
 	wake_up_interruptible_poll(&tty->write_wait, EPOLLOUT);
 }
 
 int tty_write_lock(struct tty_struct *tty, bool ndelay)
+	__cond_acquires_range(0, INT_MAX, &tty->atomic_write_lock)
 {
 	if (!mutex_trylock(&tty->atomic_write_lock)) {
 		if (ndelay)
 			return -EAGAIN;
-		if (mutex_lock_interruptible(&tty->atomic_write_lock))
+		if (mutex_lock_interruptible(&tty->atomic_write_lock) < 0)
 			return -ERESTARTSYS;
 	}
 	return 0;

@@ -587,7 +587,6 @@ void rtm_irq(struct s_smc *smc);
 void rtm_set_timer(struct s_smc *smc);
 void ring_status_indication(struct s_smc *smc, u_long status);
 void llc_recover_tx(struct s_smc *smc);
-void llc_restart_tx(struct s_smc *smc);
 void plc_clear_irq(struct s_smc *smc, int p);
 void plc_irq(struct s_smc *smc,	int np,	unsigned int cmd);
 int smt_set_mac_opvalues(struct s_smc *smc);

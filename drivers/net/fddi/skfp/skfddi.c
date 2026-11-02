@@ -122,7 +122,8 @@ unsigned long dma_master(struct s_smc *smc, void *virt, int len, int flag);
 void dma_complete(struct s_smc *smc, volatile union s_fp_descr *descr,
 		  int flag);
 void mac_drv_tx_complete(struct s_smc *smc, volatile struct s_smt_fp_txd *txd);
-void llc_restart_tx(struct s_smc *smc);
+void llc_restart_tx(struct s_smc *smc)
+	__must_hold(&smc->os.DriverLock);
 void mac_drv_rx_complete(struct s_smc *smc, volatile struct s_smt_fp_rxd *rxd,
 			 int frag_count, int len);
 void mac_drv_requeue_rxd(struct s_smc *smc, volatile struct s_smt_fp_rxd *rxd,

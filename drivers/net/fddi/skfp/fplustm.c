@@ -647,7 +647,8 @@ static void mac_ring_up(struct s_smc *smc, int up)
 	if (up) {
 		formac_rcv_restart(smc) ;	/* enable receive function */
 		smc->hw.mac_ring_is_up = TRUE ;
-		llc_restart_tx(smc) ;		/* TX queue */
+		/* The caller holds smc->os.DriverLock. */
+		context_unsafe(llc_restart_tx(smc)) ;	/* TX queue */
 	}
 	else {
 		/* disable receive function */

@@ -79,8 +79,10 @@ extern const struct mtk_vcodec_dec_pdata mtk_vdec_single_core_pdata;
  * mtk_vdec_lock get decoder hw lock and set curr_ctx
  * to ctx instance that get lock
  */
-void mtk_vdec_unlock(struct mtk_vcodec_dec_ctx *ctx);
-void mtk_vdec_lock(struct mtk_vcodec_dec_ctx *ctx);
+void mtk_vdec_unlock(struct mtk_vcodec_dec_ctx *ctx)
+	__releases(&ctx->dev->dec_mutex[ctx->hw_id]);
+void mtk_vdec_lock(struct mtk_vcodec_dec_ctx *ctx)
+	__acquires(&ctx->dev->dec_mutex[ctx->hw_id]);
 int mtk_vcodec_dec_queue_init(void *priv, struct vb2_queue *src_vq,
 			   struct vb2_queue *dst_vq);
 void mtk_vcodec_dec_set_default_params(struct mtk_vcodec_dec_ctx *ctx);

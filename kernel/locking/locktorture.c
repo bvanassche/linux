@@ -624,9 +624,12 @@ static void torture_ww_mutex_exit(void)
 }
 
 static int torture_ww_mutex_lock(int tid)
-__acquires(torture_ww_mutex_0)
-__acquires(torture_ww_mutex_1)
-__acquires(torture_ww_mutex_2)
+__acquires(&torture_ww_mutex_0)
+__acquires(&torture_ww_mutex_0.base)
+__acquires(&torture_ww_mutex_1)
+__acquires(&torture_ww_mutex_1.base)
+__acquires(&torture_ww_mutex_2)
+__acquires(&torture_ww_mutex_2.base)
 __acquires(&ww_acquire_ctxs[tid])
 __context_unsafe(/* lock is accessed through an alias */)
 {
@@ -670,9 +673,12 @@ __context_unsafe(/* lock is accessed through an alias */)
 }
 
 static void torture_ww_mutex_unlock(int tid)
-__releases(torture_ww_mutex_0)
-__releases(torture_ww_mutex_1)
-__releases(torture_ww_mutex_2)
+__releases(&torture_ww_mutex_0)
+__releases(&torture_ww_mutex_0.base)
+__releases(&torture_ww_mutex_1)
+__releases(&torture_ww_mutex_1.base)
+__releases(&torture_ww_mutex_2)
+__releases(&torture_ww_mutex_2.base)
 __releases(&ww_acquire_ctxs[tid])
 {
 	struct ww_acquire_ctx *ctx = &ww_acquire_ctxs[tid];

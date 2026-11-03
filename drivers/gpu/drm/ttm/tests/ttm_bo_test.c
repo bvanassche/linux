@@ -166,6 +166,7 @@ static void ttm_bo_reserve_deadlock(struct kunit *test)
 	KUNIT_ASSERT_EQ(test, err, 0);
 	/* ttm_bo_reserve() is not annotated */
 	__acquire(&bo1->base.resv->lock);
+	__acquire(&bo1->base.resv->lock.base);
 
 	err = ttm_bo_reserve(bo2, interruptible, no_wait, &ctx1);
 	KUNIT_ASSERT_EQ(test, err, -EDEADLK);

@@ -242,6 +242,8 @@ int virtio_gpu_array_lock_resv(struct virtio_gpu_object_array *objs)
 }
 
 int virtio_gpu_lock_one_resv_uninterruptible(struct virtio_gpu_object_array *objs)
+	__cond_acquires(0, &objs->objs[0]->resv->lock)
+	__cond_acquires(0, &objs->objs[0]->resv->lock.base)
 {
 	int ret;
 

@@ -1098,6 +1098,7 @@ static void mvs_port_notify_formed(struct asd_sas_phy *sas_phy, int lock)
 }
 
 static void mvs_port_notify_deformed(struct asd_sas_phy *sas_phy, int lock)
+	__context_unsafe(/*conditional locking*/)
 {
 	struct domain_device *dev;
 	struct mvs_phy *phy = sas_phy->lldd_phy;

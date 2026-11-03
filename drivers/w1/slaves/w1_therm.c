@@ -854,7 +854,7 @@ static struct w1_therm_family_converter *device_family(struct w1_slave *sl)
 static inline bool bus_mutex_lock(struct mutex *lock)
 	__cond_acquires(true, lock)
 {
-	if (mutex_lock_interruptible(lock) == 0)
+	if (mutex_lock_interruptible(lock) >= 0)
 		return true;
 
 	return false;	/* Didn't acquire the bus mutex */

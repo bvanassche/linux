@@ -157,7 +157,7 @@ static ssize_t output_store(struct device *device,
 	f_retval = ret;
 
 	ret = mutex_lock_interruptible(&dev->bus_mutex);
-	if (ret)
+	if (ret < 0)
 		return ret;
 
 	current_pio = w1_ds2405_read_pio(sl);

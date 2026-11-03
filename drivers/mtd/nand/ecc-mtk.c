@@ -316,7 +316,7 @@ int mtk_ecc_enable(struct mtk_ecc *ecc, struct mtk_ecc_config *config)
 	int ret;
 
 	ret = mutex_lock_interruptible(&ecc->lock);
-	if (ret) {
+	if (ret < 0) {
 		dev_err(ecc->dev, "interrupted when attempting to lock\n");
 		return ret;
 	}

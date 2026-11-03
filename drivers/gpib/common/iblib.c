@@ -667,7 +667,7 @@ int ibwait(struct gpib_board *board, int wait_mask, int clear_mask, int set_mask
 
 	if (retval)
 		return retval;
-	if (mutex_lock_interruptible(&board->big_gpib_mutex))
+	if (mutex_lock_interruptible(&board->big_gpib_mutex) < 0)
 		return -ERESTARTSYS;
 
 	/* make sure we only clear status bits that we are reporting */

@@ -893,7 +893,7 @@ static long tw_chrdev_ioctl(struct file *file, unsigned int cmd, unsigned long a
 
 	mutex_lock(&tw_mutex);
 	/* Only let one of these through at a time */
-	if (mutex_lock_interruptible(&tw_dev->ioctl_lock)) {
+	if (mutex_lock_interruptible(&tw_dev->ioctl_lock) < 0) {
 		mutex_unlock(&tw_mutex);
 		return -EINTR;
 	}

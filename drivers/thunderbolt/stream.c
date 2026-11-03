@@ -752,7 +752,7 @@ static int tbstream_dev_lock(struct tbstream_dev *sdev, bool nowait)
 		if (!mutex_trylock(&sdev->lock))
 			return -EAGAIN;
 	} else {
-		if (mutex_lock_interruptible(&sdev->lock))
+		if (mutex_lock_interruptible(&sdev->lock) < 0)
 			return -ERESTARTSYS;
 	}
 	return 0;

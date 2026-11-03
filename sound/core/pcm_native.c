@@ -5,6 +5,7 @@
  */
 
 #include <linux/compat.h>
+#include <linux/limits.h>
 #include <linux/mm.h>
 #include <linux/module.h>
 #include <linux/file.h>
@@ -724,7 +725,7 @@ static int snd_pcm_hw_params_choose(struct snd_pcm_substream *pcm,
  * block the further r/w operations
  */
 static int snd_pcm_buffer_access_lock(struct snd_pcm_runtime *runtime)
-	__cond_acquires(0, &runtime->buffer_mutex)
+	__cond_acquires_range(0, INT_MAX, &runtime->buffer_mutex)
 {
 	if (!atomic_dec_unless_positive(&runtime->buffer_accessing))
 		return -EBUSY;

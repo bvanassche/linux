@@ -1046,7 +1046,7 @@ struct vm_area_struct *expand_stack(struct mm_struct *mm, unsigned long addr)
 	struct vm_area_struct *vma, *prev;
 
 	mmap_read_unlock(mm);
-	if (mmap_write_lock_killable(mm))
+	if (mmap_write_lock_killable(mm) < 0)
 		return NULL;
 
 	vma = find_vma_prev(mm, addr, &prev);

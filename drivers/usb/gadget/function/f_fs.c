@@ -298,7 +298,7 @@ static void ffs_reset_work(struct work_struct *work);
 
 static int ffs_mutex_lock(struct mutex *mutex, unsigned nonblock)
 	__attribute__((warn_unused_result, nonnull))
-	__cond_acquires(0, mutex);
+	__cond_acquires_range(0, INT_MAX, mutex);
 static char *ffs_prepare_buffer(const char __user *buf, size_t len)
 	__attribute__((warn_unused_result, nonnull));
 
@@ -1046,7 +1046,7 @@ static ssize_t ffs_epfile_io(struct file *file, struct ffs_io_data *io_data)
 
 	/* We will be using request and read_buffer */
 	ret = ffs_mutex_lock(&epfile->mutex, file->f_flags & O_NONBLOCK);
-	if (ret)
+	if (ret < 0)
 		goto error;
 
 	/* Allocate & copy */
@@ -4460,6 +4460,7 @@ done:
 /* Misc helper functions ****************************************************/
 
 static int ffs_mutex_lock(struct mutex *mutex, unsigned nonblock)
+	__cond_acquires_range(0, INT_MAX, mutex)
 {
 	return nonblock
 		? mutex_trylock(mutex) ? 0 : -EAGAIN

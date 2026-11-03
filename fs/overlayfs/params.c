@@ -760,9 +760,9 @@ static void ovl_free(struct fs_context *fc)
 		ovl_fs_context_free(ctx);
 }
 
-static int ovl_reconfigure(struct fs_context *fc)
+static int ovl_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
 	struct ovl_fs *ofs = OVL_FS(sb);
 	struct super_block *upper_sb;
 	int ret = 0;

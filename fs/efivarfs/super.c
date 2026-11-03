@@ -411,9 +411,10 @@ static int efivarfs_get_tree(struct fs_context *fc)
 	return get_tree_single(fc, efivarfs_fill_super);
 }
 
-static int efivarfs_reconfigure(struct fs_context *fc)
+static int efivarfs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct efivarfs_fs_info *sfi = fc->root->d_sb->s_fs_info;
+	struct efivarfs_fs_info *sfi = sb->s_fs_info;
 	struct efivarfs_fs_info *new_sfi = fc->s_fs_info;
 
 	if (!efivar_supports_writes() && !(fc->sb_flags & SB_RDONLY)) {

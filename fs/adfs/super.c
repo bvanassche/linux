@@ -156,12 +156,13 @@ static int adfs_parse_param(struct fs_context *fc, struct fs_parameter *param)
 	return 0;
 }
 
-static int adfs_reconfigure(struct fs_context *fc)
+static int adfs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct adfs_sb_info *new_asb = fc->s_fs_info;
-	struct adfs_sb_info *asb = ADFS_SB(fc->root->d_sb);
+	struct adfs_sb_info *asb = ADFS_SB(sb);
 
-	sync_filesystem(fc->root->d_sb);
+	sync_filesystem(sb);
 	fc->sb_flags |= ADFS_SB_FLAGS;
 
 	/* Structure copy newly parsed options */

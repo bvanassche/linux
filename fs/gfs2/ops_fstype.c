@@ -1541,9 +1541,9 @@ static int gfs2_parse_param(struct fs_context *fc, struct fs_parameter *param)
 	return 0;
 }
 
-static int gfs2_reconfigure(struct fs_context *fc)
+static int gfs2_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
 	struct gfs2_sbd *sdp = sb->s_fs_info;
 	struct gfs2_args *oldargs = &sdp->sd_args;
 	struct gfs2_args *newargs = fc->fs_private;

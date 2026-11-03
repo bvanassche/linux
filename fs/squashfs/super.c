@@ -493,13 +493,13 @@ static int squashfs_get_tree(struct fs_context *fc)
 	return get_tree_bdev(fc, squashfs_fill_super);
 }
 
-static int squashfs_reconfigure(struct fs_context *fc)
+static int squashfs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
 	struct squashfs_sb_info *msblk = sb->s_fs_info;
 	struct squashfs_mount_opts *opts = fc->fs_private;
 
-	sync_filesystem(fc->root->d_sb);
+	sync_filesystem(sb);
 	fc->sb_flags |= SB_RDONLY;
 
 	msblk->panic_on_errors = (opts->errors == Opt_errors_panic);

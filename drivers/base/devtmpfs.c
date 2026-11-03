@@ -113,8 +113,7 @@ static int devtmpfs_get_tree(struct fs_context *fc)
 	down_write(&sb->s_umount);
 
 	if (ctx->fc->ops->reconfigure) {
-		/* ctx->fc->root->d_sb == sb, whose s_umount is held. */
-		err = context_unsafe(ctx->fc->ops->reconfigure(ctx->fc));
+		err = ctx->fc->ops->reconfigure(ctx->fc, sb);
 		if (err) {
 			deactivate_locked_super(sb);
 			return err;

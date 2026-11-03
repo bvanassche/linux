@@ -910,9 +910,10 @@ unacquire_none:
 }
 
 static int
-befs_reconfigure(struct fs_context *fc)
+befs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	sync_filesystem(fc->root->d_sb);
+	sync_filesystem(sb);
 	if (!(fc->sb_flags & SB_RDONLY))
 		return -EINVAL;
 	return 0;

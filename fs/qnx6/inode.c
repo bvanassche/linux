@@ -31,7 +31,8 @@ static const struct super_operations qnx6_sops;
 static void qnx6_put_super(struct super_block *sb);
 static struct inode *qnx6_alloc_inode(struct super_block *sb);
 static void qnx6_free_inode(struct inode *inode);
-static int qnx6_reconfigure(struct fs_context *fc);
+static int qnx6_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount);
 static int qnx6_statfs(struct dentry *dentry, struct kstatfs *buf);
 static int qnx6_show_options(struct seq_file *seq, struct dentry *root);
 
@@ -53,10 +54,9 @@ static int qnx6_show_options(struct seq_file *seq, struct dentry *root)
 	return 0;
 }
 
-static int qnx6_reconfigure(struct fs_context *fc)
+static int qnx6_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
-
 	sync_filesystem(sb);
 	fc->sb_flags |= SB_RDONLY;
 	return 0;

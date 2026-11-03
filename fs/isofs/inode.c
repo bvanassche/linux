@@ -111,9 +111,10 @@ static void destroy_inodecache(void)
 	kmem_cache_destroy(isofs_inode_cachep);
 }
 
-static int isofs_reconfigure(struct fs_context *fc)
+static int isofs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	sync_filesystem(fc->root->d_sb);
+	sync_filesystem(sb);
 	if (!(fc->sb_flags & SB_RDONLY))
 		return -EROFS;
 	return 0;

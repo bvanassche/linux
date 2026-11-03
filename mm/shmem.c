@@ -4956,10 +4956,11 @@ static int shmem_parse_monolithic(struct fs_context *fc, void *data)
 /*
  * Reconfigure a shmem filesystem.
  */
-static int shmem_reconfigure(struct fs_context *fc)
+static int shmem_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct shmem_options *ctx = fc->fs_private;
-	struct shmem_sb_info *sbinfo = SHMEM_SB(fc->root->d_sb);
+	struct shmem_sb_info *sbinfo = SHMEM_SB(sb);
 	unsigned long used_isp;
 	struct mempolicy *mpol = NULL;
 	const char *err;
@@ -5005,7 +5006,7 @@ static int shmem_reconfigure(struct fs_context *fc)
 	}
 
 	if (ctx->seen & SHMEM_SEEN_QUOTA &&
-	    !sb_any_quota_loaded(fc->root->d_sb)) {
+	    !sb_any_quota_loaded(sb)) {
 		err = "Cannot enable quota on remount";
 		goto out;
 	}

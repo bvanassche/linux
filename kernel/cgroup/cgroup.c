@@ -2087,8 +2087,8 @@ static int cgroup_show_options(struct seq_file *seq, struct kernfs_root *kf_root
 	return 0;
 }
 
-static int cgroup_reconfigure(struct fs_context *fc)
-	__must_hold(&fc->root->d_sb->s_umount)
+static int cgroup_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct cgroup_fs_context *ctx = cgroup_fc2context(fc);
 

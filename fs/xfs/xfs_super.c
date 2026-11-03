@@ -2109,6 +2109,7 @@ xfs_remount_rw(
 static int
 xfs_remount_ro(
 	struct xfs_mount	*mp)
+	__context_unsafe(/* xfs_fs_reconfigure() holds mp->m_super->s_umount */)
 {
 	struct xfs_icwalk	icw = {
 		.icw_flags	= XFS_ICWALK_FLAG_SYNC,
@@ -2182,9 +2183,11 @@ xfs_remount_ro(
  */
 static int
 xfs_fs_reconfigure(
-	struct fs_context *fc)
+	struct fs_context *fc,
+	struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct xfs_mount	*mp = XFS_M(fc->root->d_sb);
+	struct xfs_mount	*mp = XFS_M(sb);
 	struct xfs_mount        *new_mp = fc->s_fs_info;
 	int			flags = fc->sb_flags;
 	int			error;

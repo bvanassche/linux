@@ -877,9 +877,9 @@ static int erofs_fc_get_tree(struct fs_context *fc)
 	return ret;
 }
 
-static int erofs_fc_reconfigure(struct fs_context *fc)
+static int erofs_fc_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
 	struct erofs_sb_info *sbi = EROFS_SB(sb);
 	struct erofs_sb_info *new_sbi = fc->s_fs_info;
 

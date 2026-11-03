@@ -1364,13 +1364,13 @@ static int zonefs_get_tree(struct fs_context *fc)
 	return get_tree_bdev(fc, zonefs_fill_super);
 }
 
-static int zonefs_reconfigure(struct fs_context *fc)
+static int zonefs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct zonefs_context *ctx = fc->fs_private;
-	struct super_block *sb = fc->root->d_sb;
 	struct zonefs_sb_info *sbi = sb->s_fs_info;
 
-	sync_filesystem(fc->root->d_sb);
+	sync_filesystem(sb);
 	/* Copy new options from ctx into sbi. */
 	sbi->s_mount_opts = ctx->s_mount_opts;
 

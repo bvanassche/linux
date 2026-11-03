@@ -215,7 +215,8 @@ The filesystem context points to a table of operations::
 				   struct fs_parameter *param);
 		int (*parse_monolithic)(struct fs_context *fc, void *data);
 		int (*get_tree)(struct fs_context *fc);
-		int (*reconfigure)(struct fs_context *fc);
+		int (*reconfigure)(struct fs_context *fc,
+				   struct super_block *sb);
 	};
 
 These operations are invoked by the various stages of the mount procedure to
@@ -289,12 +290,13 @@ manage the filesystem context.  They are as follows:
 
    * ::
 
-	int (*reconfigure)(struct fs_context *fc);
+	int (*reconfigure)(struct fs_context *fc, struct super_block *sb);
 
      Called to effect reconfiguration of a superblock using information stored
      in the filesystem context.  It may detach any resources it desires from
      the filesystem context and transfer them to the superblock.  The
-     superblock can be found from fc->root->d_sb.
+     superblock to be reconfigured is passed as sb, which is the same as
+     fc->root->d_sb.  The caller holds sb->s_umount exclusively.
 
      On success it should return 0.  In the case of an error, it should return
      a negative error code.

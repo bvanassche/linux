@@ -268,7 +268,7 @@ static int hidp_get_raw_report(struct hid_device *hid,
 		return -EINVAL;
 	}
 
-	if (mutex_lock_interruptible(&session->report_mutex))
+	if (mutex_lock_interruptible(&session->report_mutex) < 0)
 		return -ERESTARTSYS;
 
 	/* Set up our wait, and send the report request to the device. */
@@ -346,7 +346,7 @@ static int hidp_set_raw_report(struct hid_device *hid, unsigned char reportnum,
 		return -EINVAL;
 	}
 
-	if (mutex_lock_interruptible(&session->report_mutex))
+	if (mutex_lock_interruptible(&session->report_mutex) < 0)
 		return -ERESTARTSYS;
 
 	/* Set up our wait, and send the report request to the device. */

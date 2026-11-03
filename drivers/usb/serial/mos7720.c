@@ -270,7 +270,7 @@ static void destroy_mos_parport(struct kref *kref)
  * our release function can return.
  */
 static int parport_prologue(struct parport *pp)
-	__cond_acquires(0, &((struct mos7715_parport *)pp->private_data)->serial->disc_mutex)
+	__cond_acquires_range(0, INT_MAX, &((struct mos7715_parport *)pp->private_data)->serial->disc_mutex)
 {
 	struct mos7715_parport *mos_parport;
 

@@ -464,12 +464,18 @@ size_t netfs_limit_iter(const struct iov_iter *iter, size_t start_offset,
 void netfs_prepare_write_failed(struct netfs_io_subrequest *subreq);
 void netfs_write_subrequest_terminated(void *_op, ssize_t transferred_or_error);
 
-int netfs_start_io_read(struct inode *inode);
-void netfs_end_io_read(struct inode *inode);
-int netfs_start_io_write(struct inode *inode);
-void netfs_end_io_write(struct inode *inode);
-int netfs_start_io_direct(struct inode *inode);
-void netfs_end_io_direct(struct inode *inode);
+int netfs_start_io_read(struct inode *inode)
+	__cond_acquires_shared_range(0, INT_MAX, &inode->i_rwsem);
+void netfs_end_io_read(struct inode *inode)
+	__releases_shared(&inode->i_rwsem);
+int netfs_start_io_write(struct inode *inode)
+	__cond_acquires_shared_range(0, INT_MAX, &inode->i_rwsem);
+void netfs_end_io_write(struct inode *inode)
+	__releases_shared(&inode->i_rwsem);
+int netfs_start_io_direct(struct inode *inode)
+	__cond_acquires_shared_range(0, INT_MAX, &inode->i_rwsem);
+void netfs_end_io_direct(struct inode *inode)
+	__releases_shared(&inode->i_rwsem);
 
 /* Miscellaneous APIs. */
 struct folio_queue *netfs_folioq_alloc(unsigned int rreq_id, gfp_t gfp,

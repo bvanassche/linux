@@ -242,7 +242,7 @@ ssize_t netfs_unbuffered_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 		return 0; /* Don't update atime */
 
 	ret = netfs_start_io_direct(inode);
-	if (ret == 0) {
+	if (ret >= 0) {
 		ret = netfs_unbuffered_read_iter_locked(iocb, iter);
 		netfs_end_io_direct(inode);
 	}

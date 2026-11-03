@@ -57,7 +57,7 @@ static void ceph_block_o_direct(struct ceph_inode_info *ci, struct inode *inode)
  * inode->i_rwsem, meaning that those are serialised w.r.t. the reads.
  */
 int ceph_start_io_read(struct inode *inode)
-	__cond_acquires_shared(0, &inode->i_rwsem)
+	__cond_acquires_shared_range(0, INT_MAX, &inode->i_rwsem)
 {
 	struct ceph_inode_info *ci = ceph_inode(inode);
 	bool is_odirect;
@@ -65,7 +65,7 @@ int ceph_start_io_read(struct inode *inode)
 
 	/* Be an optimist! */
 	err = down_read_killable(&inode->i_rwsem);
-	if (err)
+	if (err < 0)
 		return err;
 
 	spin_lock(&ci->i_ceph_lock);
@@ -79,7 +79,7 @@ int ceph_start_io_read(struct inode *inode)
 
 	/* Slow path.... */
 	err = down_write_killable(&inode->i_rwsem);
-	if (err)
+	if (err < 0)
 		return err;
 
 	ceph_block_o_direct(ci, inode);
@@ -110,12 +110,13 @@ ceph_end_io_read(struct inode *inode)
  * that we block all direct I/O.
  */
 int ceph_start_io_write(struct inode *inode)
-	__cond_acquires(0, &inode->i_rwsem)
+	__cond_acquires_range(0, INT_MAX, &inode->i_rwsem)
 {
 	int err = down_write_killable(&inode->i_rwsem);
-	if (!err)
-		ceph_block_o_direct(ceph_inode(inode), inode);
-	return err;
+	if (err < 0)
+		return err;
+	ceph_block_o_direct(ceph_inode(inode), inode);
+	return 0;
 }
 
 /**
@@ -173,7 +174,7 @@ static void ceph_block_buffered(struct ceph_inode_info *ci, struct inode *inode)
  * inode->i_rwsem, meaning that those are serialised w.r.t. O_DIRECT.
  */
 int ceph_start_io_direct(struct inode *inode)
-	__cond_acquires_shared(0, &inode->i_rwsem)
+	__cond_acquires_shared_range(0, INT_MAX, &inode->i_rwsem)
 {
 	struct ceph_inode_info *ci = ceph_inode(inode);
 	bool is_odirect;
@@ -181,7 +182,7 @@ int ceph_start_io_direct(struct inode *inode)
 
 	/* Be an optimist! */
 	err = down_read_killable(&inode->i_rwsem);
-	if (err)
+	if (err < 0)
 		return err;
 
 	spin_lock(&ci->i_ceph_lock);
@@ -195,7 +196,7 @@ int ceph_start_io_direct(struct inode *inode)
 
 	/* Slow path.... */
 	err = down_write_killable(&inode->i_rwsem);
-	if (err)
+	if (err < 0)
 		return err;
 
 	ceph_block_buffered(ci, inode);

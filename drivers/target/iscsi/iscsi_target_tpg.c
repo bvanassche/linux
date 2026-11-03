@@ -157,7 +157,7 @@ struct iscsi_portal_group *iscsit_get_tpg_from_np(
 
 int iscsit_get_tpg(
 	struct iscsi_portal_group *tpg)
-	__cond_acquires(0, &tpg->tpg_access_lock)
+	__cond_acquires_range(0, INT_MAX, &tpg->tpg_access_lock)
 {
 	return mutex_lock_interruptible(&tpg->tpg_access_lock);
 }

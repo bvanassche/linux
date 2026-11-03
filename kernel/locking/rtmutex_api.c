@@ -41,14 +41,14 @@ static __always_inline int __rt_mutex_lock_common(struct rt_mutex *lock,
 						  unsigned int state,
 						  struct lockdep_map *nest_lock,
 						  unsigned int subclass)
-	__cond_acquires(0, lock)
+	__cond_acquires_range(0, INT_MAX, lock)
 {
 	int ret;
 
 	might_sleep();
 	mutex_acquire_nest(&lock->dep_map, subclass, 0, nest_lock, _RET_IP_);
 	ret = __rt_mutex_lock(&lock->rtmutex, state);
-	if (ret) {
+	if (ret < 0) {
 		mutex_release(&lock->dep_map, _RET_IP_);
 		return ret;
 	}
@@ -71,7 +71,7 @@ EXPORT_SYMBOL(rt_mutex_base_init);
  */
 void __sched rt_mutex_lock_nested(struct rt_mutex *lock, unsigned int subclass)
 {
-	if (__rt_mutex_lock_common(lock, TASK_UNINTERRUPTIBLE, NULL, subclass) == 0)
+	if (__rt_mutex_lock_common(lock, TASK_UNINTERRUPTIBLE, NULL, subclass) >= 0)
 		return;
 	/*
 	 * The code below is never reached because __rt_mutex_lock_common() only
@@ -84,7 +84,7 @@ EXPORT_SYMBOL_GPL(rt_mutex_lock_nested);
 
 void __sched _rt_mutex_lock_nest_lock(struct rt_mutex *lock, struct lockdep_map *nest_lock)
 {
-	if (__rt_mutex_lock_common(lock, TASK_UNINTERRUPTIBLE, nest_lock, 0) == 0)
+	if (__rt_mutex_lock_common(lock, TASK_UNINTERRUPTIBLE, nest_lock, 0) >= 0)
 		return;
 	/*
 	 * The code below is never reached because __rt_mutex_lock_common() only
@@ -104,7 +104,7 @@ EXPORT_SYMBOL_GPL(_rt_mutex_lock_nest_lock);
  */
 void __sched rt_mutex_lock(struct rt_mutex *lock)
 {
-	if (__rt_mutex_lock_common(lock, TASK_UNINTERRUPTIBLE, NULL, 0) == 0)
+	if (__rt_mutex_lock_common(lock, TASK_UNINTERRUPTIBLE, NULL, 0) >= 0)
 		return;
 	/*
 	 * The code below is never reached because __rt_mutex_lock_common() only
@@ -126,6 +126,7 @@ EXPORT_SYMBOL_GPL(rt_mutex_lock);
  * -EINTR	when interrupted by a signal
  */
 int __sched rt_mutex_lock_interruptible(struct rt_mutex *lock)
+	__cond_acquires_range(0, INT_MAX, lock)
 {
 	return __rt_mutex_lock_common(lock, TASK_INTERRUPTIBLE, NULL, 0);
 }
@@ -141,6 +142,7 @@ EXPORT_SYMBOL_GPL(rt_mutex_lock_interruptible);
  * -EINTR	when interrupted by a signal
  */
 int __sched rt_mutex_lock_killable(struct rt_mutex *lock)
+	__cond_acquires_range(0, INT_MAX, lock)
 {
 	return __rt_mutex_lock_common(lock, TASK_KILLABLE, NULL, 0);
 }

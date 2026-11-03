@@ -322,7 +322,7 @@ static inline void wiimote_cmd_abort(struct wiimote_data *wdata)
 static inline int wiimote_cmd_acquire(struct wiimote_data *wdata)
 	__cond_acquires(0, &wdata->state.sync)
 {
-	return mutex_lock_interruptible(&wdata->state.sync) ? -ERESTARTSYS : 0;
+	return mutex_lock_interruptible(&wdata->state.sync) < 0 ? -ERESTARTSYS : 0;
 }
 
 static inline void wiimote_cmd_acquire_noint(struct wiimote_data *wdata)

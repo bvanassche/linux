@@ -622,7 +622,7 @@ static __always_inline int __sched
 __mutex_lock_common(struct mutex *lock, unsigned int state, unsigned int subclass,
 		    struct lockdep_map *nest_lock, unsigned long ip,
 		    struct ww_acquire_ctx *ww_ctx, const bool use_ww_ctx)
-	__cond_acquires(0, lock)
+	__cond_acquires_range(0, INT_MAX, lock)
 {
 	DEFINE_WAKE_Q(wake_q);
 	struct mutex_waiter waiter;
@@ -697,7 +697,7 @@ __mutex_lock_common(struct mutex *lock, unsigned int state, unsigned int subclas
 		 * themselves.
 		 */
 		ret = __ww_mutex_add_waiter(&waiter, lock, ww_ctx, &wake_q);
-		if (ret)
+		if (ret < 0)
 			goto err_early_kill;
 	}
 
@@ -730,7 +730,7 @@ __mutex_lock_common(struct mutex *lock, unsigned int state, unsigned int subclas
 
 		if (ww_ctx) {
 			ret = __ww_mutex_check_kill(lock, &waiter, ww_ctx);
-			if (ret)
+			if (ret < 0)
 				goto err;
 		}
 
@@ -829,7 +829,7 @@ err_early_kill:
 static int __sched
 __mutex_lock(struct mutex *lock, unsigned int state, unsigned int subclass,
 	     struct lockdep_map *nest_lock, unsigned long ip)
-	__cond_acquires(0, lock)
+	__cond_acquires_range(0, INT_MAX, lock)
 {
 	return __mutex_lock_common(lock, state, subclass, nest_lock, ip, NULL, false);
 }
@@ -839,7 +839,9 @@ __ww_mutex_lock(struct mutex *lock, unsigned int state, unsigned int subclass,
 		unsigned long ip, struct ww_acquire_ctx *ww_ctx)
 	__cond_acquires(0, lock)
 {
-	return __mutex_lock_common(lock, state, subclass, NULL, ip, ww_ctx, true);
+	int ret = __mutex_lock_common(lock, state, subclass, NULL, ip, ww_ctx, true);
+
+	return ret < 0 ? ret : 0;
 }
 
 /**
@@ -908,7 +910,7 @@ EXPORT_SYMBOL_GPL(_mutex_lock_nest_lock);
 int __sched
 _mutex_lock_killable(struct mutex *lock, unsigned int subclass,
 				      struct lockdep_map *nest)
-	__cond_acquires(0, lock)
+	__cond_acquires_range(0, INT_MAX, lock)
 {
 	return __mutex_lock(lock, TASK_KILLABLE, subclass, nest, _RET_IP_);
 }
@@ -916,7 +918,7 @@ EXPORT_SYMBOL_GPL(_mutex_lock_killable);
 
 int __sched
 mutex_lock_interruptible_nested(struct mutex *lock, unsigned int subclass)
-	__cond_acquires(0, lock)
+	__cond_acquires_range(0, INT_MAX, lock)
 {
 	return __mutex_lock(lock, TASK_INTERRUPTIBLE, subclass, NULL, _RET_IP_);
 }
@@ -1116,11 +1118,11 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
  */
 static noinline int __sched
 __mutex_lock_killable_slowpath(struct mutex *lock)
-	__cond_acquires(0, lock);
+	__cond_acquires_range(0, INT_MAX, lock);
 
 static noinline int __sched
 __mutex_lock_interruptible_slowpath(struct mutex *lock)
-	__cond_acquires(0, lock);
+	__cond_acquires_range(0, INT_MAX, lock);
 
 /**
  * mutex_lock_interruptible() - Acquire the mutex, interruptible by signals.
@@ -1135,7 +1137,7 @@ __mutex_lock_interruptible_slowpath(struct mutex *lock)
  * signal arrived.
  */
 int __sched mutex_lock_interruptible(struct mutex *lock)
-	__cond_acquires(0, lock)
+	__cond_acquires_range(0, INT_MAX, lock)
 {
 	might_sleep();
 
@@ -1160,7 +1162,7 @@ EXPORT_SYMBOL(mutex_lock_interruptible);
  * fatal signal arrived.
  */
 int __sched mutex_lock_killable(struct mutex *lock)
-	__cond_acquires(0, lock)
+	__cond_acquires_range(0, INT_MAX, lock)
 {
 	might_sleep();
 
@@ -1201,14 +1203,14 @@ __mutex_lock_slowpath(struct mutex *lock)
 
 static noinline int __sched
 __mutex_lock_killable_slowpath(struct mutex *lock)
-	__cond_acquires(0, lock)
+	__cond_acquires_range(0, INT_MAX, lock)
 {
 	return __mutex_lock(lock, TASK_KILLABLE, 0, NULL, _RET_IP_);
 }
 
 static noinline int __sched
 __mutex_lock_interruptible_slowpath(struct mutex *lock)
-	__cond_acquires(0, lock)
+	__cond_acquires_range(0, INT_MAX, lock)
 {
 	return __mutex_lock(lock, TASK_INTERRUPTIBLE, 0, NULL, _RET_IP_);
 }

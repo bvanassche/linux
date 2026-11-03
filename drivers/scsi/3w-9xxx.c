@@ -658,7 +658,7 @@ static long twa_chrdev_ioctl(struct file *file, unsigned int cmd, unsigned long 
 	mutex_lock(&twa_chrdev_mutex);
 
 	/* Only let one of these through at a time */
-	if (mutex_lock_interruptible(&tw_dev->ioctl_lock)) {
+	if (mutex_lock_interruptible(&tw_dev->ioctl_lock) < 0) {
 		retval = TW_IOCTL_ERROR_OS_EINTR;
 		goto out;
 	}

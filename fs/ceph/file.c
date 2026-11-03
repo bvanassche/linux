@@ -2351,7 +2351,7 @@ static ssize_t ceph_splice_read(struct file *in, loff_t *ppos,
 		return copy_splice_read(in, ppos, pipe, len, flags);
 
 	ret = ceph_start_io_read(inode);
-	if (ret)
+	if (ret < 0)
 		return ret;
 
 	want = CEPH_CAP_FILE_CACHE;

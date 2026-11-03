@@ -297,7 +297,7 @@ static void epio_complete (struct usb_ep *ep, struct usb_request *req)
  */
 static int
 get_ready_ep (unsigned f_flags, struct ep_data *epdata, bool is_write)
-	__cond_acquires(0, &epdata->lock)
+	__cond_acquires_range(0, INT_MAX, &epdata->lock)
 {
 	int	val;
 

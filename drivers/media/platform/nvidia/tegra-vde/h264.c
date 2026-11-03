@@ -541,7 +541,7 @@ static int tegra_vde_decode_begin(struct tegra_vde *vde,
 	int err;
 
 	err = mutex_lock_interruptible(&vde->lock);
-	if (err)
+	if (err < 0)
 		return err;
 
 	err = pm_runtime_resume_and_get(dev);

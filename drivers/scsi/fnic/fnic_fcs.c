@@ -91,6 +91,7 @@ void fnic_fdls_link_status_change(struct fnic *fnic, int linkup)
 				 "link up: %d, usefip: %d", linkup, iport->usefip);
 
 	spin_lock_irqsave(&fnic->fnic_lock, fnic->lock_flags);
+	lockdep_assume_ctx_held(&fnic->iport.fnic->fnic_lock);
 
 	if (linkup) {
 		if (iport->usefip) {
@@ -176,6 +177,7 @@ void fnic_handle_link(struct work_struct *work)
 					 "Interrupt mode is not MSI\n");
 
 	spin_lock_irqsave(&fnic->fnic_lock, fnic->lock_flags);
+	lockdep_assume_ctx_held(&fnic->iport.fnic->fnic_lock);
 
 	if (fnic->stop_rx_link_events) {
 		spin_unlock_irqrestore(&fnic->fnic_lock, fnic->lock_flags);
@@ -214,6 +216,7 @@ void fnic_handle_link(struct work_struct *work)
 		FNIC_FCS_DBG(KERN_INFO, fnic,
 					 "woken up from reset completion wait\n");
 		spin_lock_irqsave(&fnic->fnic_lock, fnic->lock_flags);
+		lockdep_assume_ctx_held(&fnic->iport.fnic->fnic_lock);
 
 		max_count++;
 		if (max_count >= MAX_RESET_WAIT_COUNT) {
@@ -276,6 +279,7 @@ void fnic_handle_link(struct work_struct *work)
 	}
 
 	spin_lock_irqsave(&fnic->fnic_lock, fnic->lock_flags);
+	lockdep_assume_ctx_held(&fnic->iport.fnic->fnic_lock);
 	fnic->reset_in_progress = NOT_IN_PROGRESS;
 	complete(&fnic->reset_completion_wait);
 
@@ -292,6 +296,7 @@ void fnic_handle_frame(struct work_struct *work)
 	struct fc_frame_header *fchdr;
 
 	spin_lock_irqsave(&fnic->fnic_lock, fnic->lock_flags);
+	lockdep_assume_ctx_held(&fnic->iport.fnic->fnic_lock);
 	list_for_each_entry_safe(cur_frame, next, &fnic->frame_queue, links) {
 		if (fnic->stop_rx_link_events) {
 			list_del(&cur_frame->links);
@@ -343,6 +348,7 @@ void fnic_handle_fip_frame(struct work_struct *work)
 				 "Processing FIP frame\n");
 
 	spin_lock_irqsave(&fnic->fnic_lock, fnic->lock_flags);
+	lockdep_assume_ctx_held(&fnic->iport.fnic->fnic_lock);
 	list_for_each_entry_safe(cur_frame, next, &fnic->fip_frame_queue,
 							 links) {
 		if (fnic->stop_rx_link_events) {
@@ -1031,6 +1037,7 @@ void fnic_delete_fcp_tports(struct fnic *fnic)
 	unsigned long flags;
 
 	spin_lock_irqsave(&fnic->fnic_lock, flags);
+	lockdep_assume_ctx_held(&fnic->iport.fnic->fnic_lock);
 	list_for_each_entry_safe(tport, next, &fnic->iport.tport_list, links) {
 		FNIC_FCS_DBG(KERN_INFO, fnic,
 					 "removing fcp rport fcid: 0x%x", tport->fcid);
@@ -1058,6 +1065,7 @@ void fnic_tport_event_handler(struct work_struct *work)
 	struct fnic_tport_s *tport;
 
 	spin_lock_irqsave(&fnic->fnic_lock, flags);
+	lockdep_assume_ctx_held(&fnic->iport.fnic->fnic_lock);
 	list_for_each_entry_safe(cur_evt, next, &fnic->tport_event_list, links) {
 		tport = cur_evt->arg1;
 		switch (cur_evt->event) {

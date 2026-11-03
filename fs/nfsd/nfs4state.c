@@ -5932,6 +5932,7 @@ nfsd4_lock_ol_stateid(struct nfs4_ol_stateid *stp)
 
 static struct nfs4_ol_stateid *
 nfsd4_find_and_lock_existing_open(struct nfs4_file *fp, struct nfsd4_open *open)
+	__context_unsafe(/* acquires st_mutex for caller on success */)
 {
 	struct nfs4_ol_stateid *stp;
 	for (;;) {
@@ -9348,6 +9349,7 @@ static struct nfs4_ol_stateid *
 find_or_create_lock_stateid(struct nfs4_lockowner *lo, struct nfs4_file *fi,
 			    struct inode *inode, struct nfs4_ol_stateid *ost,
 			    bool *new)
+	__context_unsafe(/* acquires st_mutex for caller on success */)
 {
 	struct nfs4_stid *ns = NULL;
 	struct nfs4_ol_stateid *lst;

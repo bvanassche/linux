@@ -601,6 +601,7 @@ static int iser_check_remote_inv(struct iser_conn *iser_conn, struct ib_wc *wc,
 		if (unlikely(!iser_conn->snd_w_inv))
 			goto bad_inv;
 
+		__assume_ctx_lock(&iser_conn->iscsi_conn->session->back_lock);
 		task = iscsi_itt_to_ctask(iser_conn->iscsi_conn->session,
 					  iser_conn->iscsi_conn, hdr->itt);
 		if (likely(task)) {

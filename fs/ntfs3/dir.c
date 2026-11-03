@@ -572,7 +572,7 @@ static int ntfs_readdir(struct file *file, struct dir_context *ctx)
 		 */
 		err = ntfs_read_hdr(sbi, ni, &root->ihdr, 0, pos, name, ctx);
 		if (err)
-			goto out;
+			goto out_put;
 
 		ni_lock(ni);
 		bit = 0;
@@ -616,7 +616,7 @@ static int ntfs_readdir(struct file *file, struct dir_context *ctx)
 				    ((u64)bit << index_bits) + sbi->record_size,
 				    pos, name, ctx);
 		if (err)
-			goto out;
+			goto out_put;
 
 		ni_lock(ni);
 	}
@@ -624,6 +624,7 @@ static int ntfs_readdir(struct file *file, struct dir_context *ctx)
 out:
 	ni_unlock(ni);
 
+out_put:
 	kfree(name);
 	put_indx_node(node);
 

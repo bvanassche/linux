@@ -297,9 +297,9 @@ static int ntfs_parse_param(struct fs_context *fc, struct fs_parameter *param)
 
 static int ntfs_sync_volume_dirty_state(struct ntfs_volume *vol);
 
-static int ntfs_reconfigure(struct fs_context *fc)
+static int ntfs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
 	struct ntfs_volume *vol = NTFS_SB(sb);
 	int err;
 

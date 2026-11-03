@@ -297,10 +297,12 @@ static int binderfs_fs_context_parse_param(struct fs_context *fc,
 	return 0;
 }
 
-static int binderfs_fs_context_reconfigure(struct fs_context *fc)
+static int binderfs_fs_context_reconfigure(struct fs_context *fc,
+					   struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct binderfs_mount_opts *ctx = fc->fs_private;
-	struct binderfs_info *info = BINDERFS_SB(fc->root->d_sb);
+	struct binderfs_info *info = BINDERFS_SB(sb);
 
 	if (info->mount_opts.stats_mode != ctx->stats_mode)
 		return invalfc(fc, "Binderfs stats mode cannot be changed during a remount");

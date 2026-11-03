@@ -1422,3 +1422,12 @@ helpers take a ``const struct mnt_idmap *``. mnt_idmap() and file_mnt_idmap()
 return one. The idmapping is immutable so nothing should have modified it
 anyway. References are taken and dropped via mnt_idmap_get() and
 mnt_idmap_put() as before, both accept a const pointer.
+
+---
+
+**mandatory**
+
+->reconfigure() in struct fs_context_operations takes the superblock to be
+reconfigured as its second argument: int (*reconfigure)(struct fs_context *fc,
+struct super_block *sb).  sb is the same as fc->root->d_sb and the caller holds
+sb->s_umount exclusively.

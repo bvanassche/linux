@@ -1003,10 +1003,10 @@ nfs_compare_remount_data(struct nfs_server *nfss,
 	return 0;
 }
 
-int nfs_reconfigure(struct fs_context *fc)
+int nfs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct nfs_fs_context *ctx = nfs_fc2context(fc);
-	struct super_block *sb = fc->root->d_sb;
 	struct nfs_server *nfss = sb->s_fs_info;
 	int ret;
 

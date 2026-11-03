@@ -1423,12 +1423,12 @@ static void ceph_free_fc(struct fs_context *fc)
 	}
 }
 
-static int ceph_reconfigure_fc(struct fs_context *fc)
+static int ceph_reconfigure_fc(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	int err;
 	struct ceph_parse_opts_ctx *pctx = fc->fs_private;
 	struct ceph_mount_options *fsopt = pctx->opts;
-	struct super_block *sb = fc->root->d_sb;
 	struct ceph_fs_client *fsc = ceph_sb_to_fs_client(sb);
 
 	err = ceph_apply_test_dummy_encryption(sb, fc, fsopt);

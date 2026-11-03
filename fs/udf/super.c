@@ -102,7 +102,8 @@ static int udf_statfs(struct dentry *, struct kstatfs *);
 static int udf_show_options(struct seq_file *, struct dentry *);
 static int udf_init_fs_context(struct fs_context *fc);
 static int udf_parse_param(struct fs_context *fc, struct fs_parameter *param);
-static int udf_reconfigure(struct fs_context *fc);
+static int udf_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount);
 static void udf_free_fc(struct fs_context *fc);
 static const struct fs_parameter_spec udf_param_spec[];
 
@@ -649,10 +650,10 @@ static int udf_parse_param(struct fs_context *fc, struct fs_parameter *param)
 	return 0;
 }
 
-static int udf_reconfigure(struct fs_context *fc)
+static int udf_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct udf_options *uopt = fc->fs_private;
-	struct super_block *sb = fc->root->d_sb;
 	struct udf_sb_info *sbi = UDF_SB(sb);
 	int readonly = fc->sb_flags & SB_RDONLY;
 	int error = 0;

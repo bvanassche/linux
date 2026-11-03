@@ -436,7 +436,8 @@ void fat_free_fc(struct fs_context *fc);
 
 int fat_parse_param(struct fs_context *fc, struct fs_parameter *param,
 		    bool is_vfat);
-int fat_reconfigure(struct fs_context *fc);
+int fat_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount);
 
 static inline unsigned long fat_dir_hash(int logstart)
 {

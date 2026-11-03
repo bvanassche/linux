@@ -767,7 +767,8 @@ static int smb3_fs_context_parse_monolithic(struct fs_context *fc,
 					    void *data);
 static int smb3_get_tree(struct fs_context *fc);
 static void smb3_sync_ses_chan_max(struct cifs_ses *ses, size_t max_channels);
-static int smb3_reconfigure(struct fs_context *fc);
+static int smb3_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount);
 
 static const struct fs_context_operations smb3_fs_context_ops = {
 	.free			= smb3_fs_context_free,
@@ -1062,13 +1063,13 @@ static void smb3_sync_ses_chan_max(struct cifs_ses *ses, size_t max_channels)
 	spin_unlock(&ses->chan_lock);
 }
 
-static int smb3_reconfigure(struct fs_context *fc)
+static int smb3_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct smb3_fs_context *ctx = smb3_fc2context(fc);
 	struct smb3_fs_context *new_ctx = NULL;
 	struct smb3_fs_context *old_ctx = NULL;
-	struct dentry *root = fc->root;
-	struct cifs_sb_info *cifs_sb = CIFS_SB(root->d_sb);
+	struct cifs_sb_info *cifs_sb = CIFS_SB(sb);
 	struct cifs_ses *ses = cifs_sb_master_tcon(cifs_sb)->ses;
 	unsigned int rsize = ctx->rsize, wsize = ctx->wsize;
 	char *new_password = NULL, *new_password2 = NULL;

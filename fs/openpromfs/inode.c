@@ -355,9 +355,10 @@ static struct inode *openprom_iget(struct super_block *sb, ino_t ino)
 	return inode;
 }
 
-static int openpromfs_reconfigure(struct fs_context *fc)
+static int openpromfs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	sync_filesystem(fc->root->d_sb);
+	sync_filesystem(sb);
 	fc->sb_flags |= SB_NOATIME;
 	return 0;
 }

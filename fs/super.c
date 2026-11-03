@@ -1057,6 +1057,7 @@ struct super_block *user_get_super(dev_t dev, bool excl)
  * Alters the configuration parameters of a live superblock.
  */
 int reconfigure_super(struct fs_context *fc)
+	__must_hold(&fc->root->d_sb->s_umount)
 {
 	struct super_block *sb = fc->root->d_sb;
 	int retval;
@@ -1117,7 +1118,7 @@ int reconfigure_super(struct fs_context *fc)
 	}
 
 	if (fc->ops->reconfigure) {
-		retval = fc->ops->reconfigure(fc);
+		retval = fc->ops->reconfigure(fc, sb);
 		if (retval) {
 			if (!force)
 				goto cancel_readonly;

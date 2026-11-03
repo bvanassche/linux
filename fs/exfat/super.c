@@ -778,9 +778,9 @@ static void exfat_free(struct fs_context *fc)
 		exfat_free_sbi(sbi);
 }
 
-static int exfat_reconfigure(struct fs_context *fc)
+static int exfat_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
 	struct exfat_sb_info *remount_sbi = fc->s_fs_info;
 	struct exfat_sb_info *sbi = EXFAT_SB(sb);
 	struct exfat_mount_options *new_opts = &remount_sbi->options;

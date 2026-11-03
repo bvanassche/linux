@@ -1120,10 +1120,10 @@ nilfs_fill_super(struct super_block *sb, struct fs_context *fc)
 	return err;
 }
 
-static int nilfs_reconfigure(struct fs_context *fc)
+static int nilfs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct nilfs_fs_context *ctx = fc->fs_private;
-	struct super_block *sb = fc->root->d_sb;
 	struct the_nilfs *nilfs = sb->s_fs_info;
 	int err;
 
@@ -1243,7 +1243,7 @@ nilfs_get_tree(struct fs_context *fc)
 			 * set, set it first and release it on failure.
 			 */
 			fc->root = dget(s->s_root);
-			err = nilfs_reconfigure(fc);
+			err = nilfs_reconfigure(fc, s);
 			if (err) {
 				dput(fc->root);
 				fc->root = NULL;  /* prevent double release */

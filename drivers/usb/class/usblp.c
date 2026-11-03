@@ -234,7 +234,7 @@ static const struct quirk_printer_struct quirk_printers[] = {
 static int usblp_wwait(struct usblp *usblp, int nonblock);
 static int usblp_wtest(struct usblp *usblp, int nonblock);
 static int usblp_rwait_and_lock(struct usblp *usblp, int nonblock)
-	__cond_acquires(0, &usblp->mut);
+	__cond_acquires_range(0, INT_MAX, &usblp->mut);
 static int usblp_rtest(struct usblp *usblp, int nonblock);
 static int usblp_submit_read(struct usblp *usblp);
 static int usblp_select_alts(struct usblp *usblp);
@@ -977,7 +977,7 @@ static int usblp_rwait_and_lock(struct usblp *usblp, int nonblock)
 
 	add_wait_queue(&usblp->rwait, &waita);
 	for (;;) {
-		if (mutex_lock_interruptible(&usblp->mut)) {
+		if (mutex_lock_interruptible(&usblp->mut) < 0) {
 			rc = -EINTR;
 			break;
 		}

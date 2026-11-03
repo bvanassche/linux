@@ -209,7 +209,7 @@ static int vmw_cmdbuf_cur_lock(struct vmw_cmdbuf_man *man, bool interruptible)
 	__cond_acquires(0, &man->cur_mutex)
 {
 	if (interruptible) {
-		if (mutex_lock_interruptible(&man->cur_mutex))
+		if (mutex_lock_interruptible(&man->cur_mutex) < 0)
 			return -ERESTARTSYS;
 	} else {
 		mutex_lock(&man->cur_mutex);

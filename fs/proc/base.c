@@ -438,7 +438,7 @@ print0:
 #endif /* CONFIG_KALLSYMS */
 
 static int lock_trace(struct task_struct *task)
-	__cond_acquires_shared(0, &task->signal->exec_update_lock)
+	__cond_acquires_shared_range(0, INT_MAX, &task->signal->exec_update_lock)
 {
 	int err = down_read_killable(&task->signal->exec_update_lock);
 	if (err)

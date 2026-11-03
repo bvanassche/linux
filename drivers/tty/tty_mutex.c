@@ -21,7 +21,7 @@ void tty_lock(struct tty_struct *tty)
 EXPORT_SYMBOL(tty_lock);
 
 int tty_lock_interruptible(struct tty_struct *tty)
-	__cond_acquires(0, &tty->legacy_mutex)
+	__cond_acquires_range(0, INT_MAX, &tty->legacy_mutex)
 {
 	int ret;
 

@@ -425,7 +425,7 @@ int xe_hw_engine_group_get_mode(struct xe_hw_engine_group *group,
 	bool has_deps = !!num_syncs;
 	int err = down_read_interruptible(&group->mode_sem);
 
-	if (err)
+	if (err < 0)
 		return err;
 
 	*previous_mode = group->cur_mode;
@@ -434,7 +434,7 @@ int xe_hw_engine_group_get_mode(struct xe_hw_engine_group *group,
 		up_read(&group->mode_sem);
 retry:
 		err = down_write_killable(&group->mode_sem);
-		if (err)
+		if (err < 0)
 			return err;
 
 		if (new_mode != group->cur_mode) {
@@ -456,7 +456,7 @@ retry:
 		downgrade_write(&group->mode_sem);
 	}
 
-	return err;
+	return 0;
 }
 
 /**

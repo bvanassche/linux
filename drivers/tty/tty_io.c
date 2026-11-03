@@ -938,12 +938,12 @@ void tty_write_unlock(struct tty_struct *tty)
 }
 
 int tty_write_lock(struct tty_struct *tty, bool ndelay)
-	__cond_acquires(0, &tty->atomic_write_lock)
+	__cond_acquires_range(0, INT_MAX, &tty->atomic_write_lock)
 {
 	if (!mutex_trylock(&tty->atomic_write_lock)) {
 		if (ndelay)
 			return -EAGAIN;
-		if (mutex_lock_interruptible(&tty->atomic_write_lock))
+		if (mutex_lock_interruptible(&tty->atomic_write_lock) < 0)
 			return -ERESTARTSYS;
 	}
 	return 0;

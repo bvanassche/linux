@@ -6,6 +6,8 @@
 #ifndef _TTY_INTERNAL_H
 #define _TTY_INTERNAL_H
 
+#include <linux/limits.h>
+
 #define tty_msg(fn, tty, f, ...) \
 	fn("%s %s: " f, tty_driver_name(tty), tty_name(tty), ##__VA_ARGS__)
 
@@ -70,7 +72,7 @@ void __start_tty(struct tty_struct *tty);
 void tty_write_unlock(struct tty_struct *tty)
 	__releases(&tty->atomic_write_lock);
 int tty_write_lock(struct tty_struct *tty, bool ndelay)
-	__cond_acquires(0, &tty->atomic_write_lock);
+	__cond_acquires_range(0, INT_MAX, &tty->atomic_write_lock);
 void tty_vhangup_session(struct tty_struct *tty);
 void tty_open_proc_set_tty(struct file *filp, struct tty_struct *tty);
 int tty_signal_session_leader(struct tty_struct *tty, int exit_session);

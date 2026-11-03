@@ -12,6 +12,7 @@
 #include <linux/wait_bit.h>
 #include <linux/cred.h>
 #include <linux/key-type.h>
+#include <linux/limits.h>
 #include <linux/task_work.h>
 #include <linux/keyctl.h>
 #include <linux/refcount.h>
@@ -99,13 +100,13 @@ extern void key_type_put(struct key_type *ktype)
 
 extern int __key_link_lock(struct key *keyring,
 			   const struct keyring_index_key *index_key)
-	__cond_acquires(0, &keyring->sem)
-	__cond_acquires(0, &keyring_serialise_link_lock);
+	__cond_acquires_range(0, INT_MAX, &keyring->sem)
+	__cond_acquires_range(0, INT_MAX, &keyring_serialise_link_lock);
 extern int __key_move_lock(struct key *l_keyring, struct key *u_keyring,
 			   const struct keyring_index_key *index_key)
-	__cond_acquires(0, &l_keyring->sem)
-	__cond_acquires(0, &u_keyring->sem)
-	__cond_acquires(0, &keyring_serialise_link_lock);
+	__cond_acquires_range(0, INT_MAX, &l_keyring->sem)
+	__cond_acquires_range(0, INT_MAX, &u_keyring->sem)
+	__cond_acquires_range(0, INT_MAX, &keyring_serialise_link_lock);
 extern int __key_link_begin(struct key *keyring,
 			    const struct keyring_index_key *index_key,
 			    struct assoc_array_edit **_edit);

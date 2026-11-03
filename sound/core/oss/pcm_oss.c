@@ -818,9 +818,9 @@ static int choose_rate(struct snd_pcm_substream *substream,
 
 /* parameter locking: returns immediately if tried during streaming */
 static int lock_params(struct snd_pcm_runtime *runtime)
-	__cond_acquires(0, &runtime->oss.params_lock)
+	__cond_acquires_range(0, INT_MAX, &runtime->oss.params_lock)
 {
-	if (mutex_lock_interruptible(&runtime->oss.params_lock))
+	if (mutex_lock_interruptible(&runtime->oss.params_lock) < 0)
 		return -ERESTARTSYS;
 	if (atomic_read(&runtime->oss.rw_ref)) {
 		mutex_unlock(&runtime->oss.params_lock);

@@ -1035,7 +1035,7 @@ static inline void inode_lock(struct inode *inode)
 }
 
 static inline __must_check int inode_lock_killable(struct inode *inode)
-	__cond_acquires(0, &inode->i_rwsem)
+	__cond_acquires_range(0, INT_MAX, &inode->i_rwsem)
 {
 	return down_write_killable(&inode->i_rwsem);
 }
@@ -1053,7 +1053,7 @@ static inline void inode_lock_shared(struct inode *inode)
 }
 
 static inline __must_check int inode_lock_shared_killable(struct inode *inode)
-	__cond_acquires_shared(0, &inode->i_rwsem)
+	__cond_acquires_shared_range(0, INT_MAX, &inode->i_rwsem)
 {
 	return down_read_killable(&inode->i_rwsem);
 }

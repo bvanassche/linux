@@ -148,16 +148,14 @@ static ssize_t output_store(struct device *device,
 	if (count < 1)
 		return -EINVAL;
 
-	if (sscanf(buf, " %u%n", &val, &ret) < 1)
+	if (sscanf(buf, " %u%zn", &val, &f_retval) < 1)
 		return -EINVAL;
 
 	if (val != 0 && val != 1)
 		return -EINVAL;
 
-	f_retval = ret;
-
 	ret = mutex_lock_interruptible(&dev->bus_mutex);
-	if (ret)
+	if (ret < 0)
 		return ret;
 
 	current_pio = w1_ds2405_read_pio(sl);

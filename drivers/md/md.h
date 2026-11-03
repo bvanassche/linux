@@ -707,7 +707,7 @@ static inline bool reshape_interrupted(struct mddev *mddev)
 }
 
 static inline int __must_check mddev_lock(struct mddev *mddev)
-	__cond_acquires(0, &mddev->reconfig_mutex)
+	__cond_acquires_range(0, INT_MAX, &mddev->reconfig_mutex)
 {
 	int ret;
 
@@ -1023,16 +1023,16 @@ static inline void mddev_check_write_zeroes(struct mddev *mddev, struct bio *bio
 }
 
 static inline int mddev_suspend_and_lock(struct mddev *mddev)
-	__cond_acquires(0, &mddev->reconfig_mutex)
+	__cond_acquires_range(0, INT_MAX, &mddev->reconfig_mutex)
 {
 	int ret;
 
 	ret = mddev_suspend(mddev, true);
-	if (ret)
+	if (ret < 0)
 		return ret;
 
 	ret = mddev_lock(mddev);
-	if (ret)
+	if (ret < 0)
 		mddev_resume(mddev);
 
 	return ret;

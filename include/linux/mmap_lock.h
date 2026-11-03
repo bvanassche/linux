@@ -567,6 +567,8 @@ static inline int __must_check mmap_write_lock_killable(struct mm_struct *mm)
 
 	__mmap_lock_trace_start_locking(mm, true);
 	ret = down_write_killable(&mm->mmap_lock);
+	if (ret > 0)
+		unreachable();
 	if (!ret)
 		mm_lock_seqcount_begin(mm);
 	__mmap_lock_trace_acquire_returned(mm, true, ret == 0);
@@ -631,6 +633,8 @@ static inline int __must_check mmap_read_lock_killable(struct mm_struct *mm)
 
 	__mmap_lock_trace_start_locking(mm, false);
 	ret = down_read_killable(&mm->mmap_lock);
+	if (ret > 0)
+		unreachable();
 	__mmap_lock_trace_acquire_returned(mm, false, ret == 0);
 	return ret;
 }

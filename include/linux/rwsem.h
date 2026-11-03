@@ -9,6 +9,7 @@
 #define _LINUX_RWSEM_H
 
 #include <linux/linkage.h>
+#include <linux/limits.h>
 
 #include <linux/types.h>
 #include <linux/list.h>
@@ -227,8 +228,8 @@ static inline void rwsem_assert_held_write(const struct rw_semaphore *sem)
  * lock for reading
  */
 extern void down_read(struct rw_semaphore *sem) __acquires_shared(sem);
-extern int __must_check down_read_interruptible(struct rw_semaphore *sem) __cond_acquires_shared(0, sem);
-extern int __must_check down_read_killable(struct rw_semaphore *sem) __cond_acquires_shared(0, sem);
+extern int __must_check down_read_interruptible(struct rw_semaphore *sem) __cond_acquires_shared_range(0, INT_MAX, sem);
+extern int __must_check down_read_killable(struct rw_semaphore *sem) __cond_acquires_shared_range(0, INT_MAX, sem);
 
 /*
  * trylock for reading -- returns 1 if successful, 0 if contention
@@ -239,7 +240,7 @@ extern int down_read_trylock(struct rw_semaphore *sem) __cond_acquires_shared(tr
  * lock for writing
  */
 extern void down_write(struct rw_semaphore *sem) __acquires(sem);
-extern int __must_check down_write_killable(struct rw_semaphore *sem) __cond_acquires(0, sem);
+extern int __must_check down_write_killable(struct rw_semaphore *sem) __cond_acquires_range(0, INT_MAX, sem);
 
 /*
  * trylock for writing -- returns 1 if successful, 0 if contention
@@ -302,9 +303,9 @@ extern void downgrade_write(struct rw_semaphore *sem) __releases(sem) __acquires
  * See Documentation/locking/lockdep-design.rst for more details.)
  */
 extern void down_read_nested(struct rw_semaphore *sem, int subclass) __acquires_shared(sem);
-extern int __must_check down_read_killable_nested(struct rw_semaphore *sem, int subclass) __cond_acquires_shared(0, sem);
+extern int __must_check down_read_killable_nested(struct rw_semaphore *sem, int subclass) __cond_acquires_shared_range(0, INT_MAX, sem);
 extern void down_write_nested(struct rw_semaphore *sem, int subclass) __acquires(sem);
-extern int down_write_killable_nested(struct rw_semaphore *sem, int subclass) __cond_acquires(0, sem);
+extern int down_write_killable_nested(struct rw_semaphore *sem, int subclass) __cond_acquires_range(0, INT_MAX, sem);
 extern void _down_write_nest_lock(struct rw_semaphore *sem, struct lockdep_map *nest_lock) __acquires(sem);
 
 # define down_write_nest_lock(sem, nest_lock)			\

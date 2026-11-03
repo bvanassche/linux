@@ -901,7 +901,7 @@ int blkg_conf_prep(struct blkcg *blkcg, const struct blkcg_policy *pol,
 			goto fail_exit;
 		}
 
-		if (radix_tree_preload(GFP_NOIO)) {
+		if (radix_tree_preload(GFP_NOIO) < 0) {
 			blkg_free(new_blkg);
 			ret = -ENOMEM;
 			goto fail_exit;

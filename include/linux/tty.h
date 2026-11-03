@@ -3,6 +3,7 @@
 #define _LINUX_TTY_H
 
 #include <linux/fs.h>
+#include <linux/limits.h>
 #include <linux/major.h>
 #include <linux/termios.h>
 #include <linux/workqueue.h>
@@ -506,7 +507,7 @@ long vt_compat_ioctl(struct tty_struct *tty, unsigned int cmd,
 void tty_lock(struct tty_struct *tty)
 	__acquires(&tty->legacy_mutex);
 int  tty_lock_interruptible(struct tty_struct *tty)
-	__cond_acquires(0, &tty->legacy_mutex);
+	__cond_acquires_range(0, INT_MAX, &tty->legacy_mutex);
 void tty_unlock(struct tty_struct *tty)
 	__releases(&tty->legacy_mutex);
 void tty_lock_slave(struct tty_struct *tty);

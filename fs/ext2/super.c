@@ -1340,10 +1340,10 @@ static void ext2_write_super(struct super_block *sb)
 		ext2_sync_fs(sb, 1);
 }
 
-static int ext2_reconfigure(struct fs_context *fc)
+static int ext2_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct ext2_fs_context *ctx = fc->fs_private;
-	struct super_block *sb = fc->root->d_sb;
 	struct ext2_sb_info * sbi = EXT2_SB(sb);
 	struct ext2_super_block * es;
 	struct ext2_mount_options new_opts;

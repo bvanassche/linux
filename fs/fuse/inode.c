@@ -184,10 +184,9 @@ static void fuse_evict_inode(struct inode *inode)
 	}
 }
 
-static int fuse_reconfigure(struct fs_context *fsc)
+static int fuse_reconfigure(struct fs_context *fsc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fsc->root->d_sb;
-
 	sync_filesystem(sb);
 	if (fsc->sb_flags & SB_MANDLOCK)
 		return -EINVAL;

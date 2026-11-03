@@ -2718,7 +2718,8 @@ static int f2fs_disable_checkpoint(struct f2fs_sb_info *sbi)
 			get_nr_caches(sbi, F2FS_DIRTY_NODES),
 			get_nr_caches(sbi, F2FS_DIRTY_DATA));
 
-	ret = sync_filesystem(sbi->sb);
+	/* s_umount is held by the mount/remount code. */
+	ret = context_unsafe(sync_filesystem(sbi->sb));
 	if (ret || err) {
 		err = ret ? ret : err;
 		goto restore_flag;
@@ -2780,7 +2781,7 @@ static int f2fs_enable_checkpoint(struct f2fs_sb_info *sbi)
 		skipped_write = get_nr_caches(sbi, F2FS_SKIPPED_WRITE);
 		dirty_data = get_nr_caches(sbi, F2FS_DIRTY_DATA);
 
-		sync_inodes_sb(sbi->sb);
+		context_unsafe(sync_inodes_sb(sbi->sb)); /* s_umount held by mount/remount */
 		f2fs_io_schedule_timeout(DEFAULT_SCHEDULE_TIMEOUT);
 
 		f2fs_info(sbi, "sync_inode_sb done, dirty_data: %lld, %lld, "
@@ -2836,6 +2837,7 @@ static int f2fs_enable_checkpoint(struct f2fs_sb_info *sbi)
 }
 
 static int __f2fs_remount(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct f2fs_sb_info *sbi = F2FS_SB(sb);
 	struct f2fs_mount_info org_mount_opt;
@@ -3016,7 +3018,7 @@ static int __f2fs_remount(struct fs_context *fc, struct super_block *sb)
 	}
 
 	if (flags & SB_RDONLY) {
-		sync_inodes_sb(sb);
+		context_unsafe(sync_inodes_sb(sb)); /* s_umount held by remount */
 
 		set_sbi_flag(sbi, SBI_IS_DIRTY);
 		set_sbi_flag(sbi, SBI_IS_CLOSE);
@@ -3658,6 +3660,7 @@ static int f2fs_quota_off(struct super_block *sb, int type)
 }
 
 void f2fs_quota_off_umount(struct super_block *sb)
+	__context_unsafe(/* s_umount held by mount/umount */)
 {
 	int type;
 	int err;
@@ -5639,7 +5642,7 @@ stop_gc_thread:
 	f2fs_stop_gc_thread(sbi);
 sync_free_meta:
 	/* safe to flush all the data */
-	sync_filesystem(sbi->sb);
+	context_unsafe(sync_filesystem(sbi->sb)); /* s_umount held by mount */
 	retry_cnt = 0;
 
 free_meta:
@@ -5726,10 +5729,9 @@ static int f2fs_get_tree(struct fs_context *fc)
 	return get_tree_bdev(fc, f2fs_fill_super);
 }
 
-static int f2fs_reconfigure(struct fs_context *fc)
+static int f2fs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
-
 	return __f2fs_remount(fc, sb);
 }
 

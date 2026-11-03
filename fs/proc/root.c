@@ -308,9 +308,9 @@ static int proc_fill_super(struct super_block *s, struct fs_context *fc)
 	return proc_setup_thread_self(s);
 }
 
-static int proc_reconfigure(struct fs_context *fc)
+static int proc_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
 	struct proc_fs_info *fs_info = proc_sb_info(sb);
 
 	sync_filesystem(sb);

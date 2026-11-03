@@ -121,10 +121,9 @@ static int hfs_statfs(struct dentry *dentry, struct kstatfs *buf)
 	return 0;
 }
 
-static int hfs_reconfigure(struct fs_context *fc)
+static int hfs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
-
 	sync_filesystem(sb);
 	fc->sb_flags |= SB_NODIRATIME;
 	if ((bool)(fc->sb_flags & SB_RDONLY) == sb_rdonly(sb))

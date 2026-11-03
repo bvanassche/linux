@@ -231,10 +231,9 @@ static inline void jffs2_update_mount_opts(struct fs_context *fc)
 	mutex_unlock(&c->alloc_sem);
 }
 
-static int jffs2_reconfigure(struct fs_context *fc)
+static int jffs2_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
-
 	sync_filesystem(sb);
 	jffs2_update_mount_opts(fc);
 

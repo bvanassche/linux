@@ -605,12 +605,12 @@ static unsigned long long ocfs2_max_file_offset(unsigned int bbits,
 	return (((unsigned long long)bytes) << bitshift) - trim;
 }
 
-static int ocfs2_reconfigure(struct fs_context *fc)
+static int ocfs2_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	int incompat_features;
 	int ret = 0;
 	struct mount_options *parsed_options = fc->fs_private;
-	struct super_block *sb = fc->root->d_sb;
 	struct ocfs2_super *osb = OCFS2_SB(sb);
 	u32 tmp;
 

@@ -89,9 +89,10 @@ void coda_destroy_inodecache(void)
 	kmem_cache_destroy(coda_inode_cachep);
 }
 
-static int coda_reconfigure(struct fs_context *fc)
+static int coda_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	sync_filesystem(fc->root->d_sb);
+	sync_filesystem(sb);
 	fc->sb_flags |= SB_NOATIME;
 	return 0;
 }

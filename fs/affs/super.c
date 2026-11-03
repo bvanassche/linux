@@ -517,9 +517,9 @@ got_root:
 	return 0;
 }
 
-static int affs_reconfigure(struct fs_context *fc)
+static int affs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block	*sb = fc->root->d_sb;
 	struct affs_context	*ctx = fc->fs_private;
 	struct affs_sb_info	*sbi = AFFS_SB(sb);
 	int			 res = 0;

@@ -468,9 +468,9 @@ static int ntfs_fs_parse_param(struct fs_context *fc,
 	return 0;
 }
 
-static int ntfs_fs_reconfigure(struct fs_context *fc)
+static int ntfs_fs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
 	struct ntfs_sb_info *sbi = sb->s_fs_info;
 	struct ntfs_mount_options *new_opts = fc->fs_private;
 	struct ntfs_mount_options *old_opts;

@@ -656,6 +656,7 @@ static bool grab_super(struct super_block *sb)
  *	it's very much not a general-purpose interface.
  */
 bool super_trylock_shared(struct super_block *sb)
+	__cond_acquires_shared(true, &sb->s_umount)
 {
 	if (down_read_trylock(&sb->s_umount)) {
 		if (!(sb->s_flags & SB_DYING) && sb->s_root &&
@@ -711,6 +712,7 @@ EXPORT_SYMBOL(retire_super);
  *	change the attachments of dentries to inodes.
  */
 void generic_shutdown_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	const struct super_operations *sop = sb->s_op;
 
@@ -922,6 +924,7 @@ void drop_super(struct super_block *sb)
 EXPORT_SYMBOL(drop_super);
 
 void drop_super_exclusive(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	super_unlock_excl(sb);
 	put_super(sb);
@@ -1054,6 +1057,7 @@ struct super_block *user_get_super(dev_t dev, bool excl)
  * Alters the configuration parameters of a live superblock.
  */
 int reconfigure_super(struct fs_context *fc)
+	__must_hold(&fc->root->d_sb->s_umount)
 {
 	struct super_block *sb = fc->root->d_sb;
 	int retval;
@@ -1114,7 +1118,7 @@ int reconfigure_super(struct fs_context *fc)
 	}
 
 	if (fc->ops->reconfigure) {
-		retval = fc->ops->reconfigure(fc);
+		retval = fc->ops->reconfigure(fc, sb);
 		if (retval) {
 			if (!force)
 				goto cancel_readonly;
@@ -1331,6 +1335,7 @@ int set_anon_super(struct super_block *s, void *data)
 EXPORT_SYMBOL(set_anon_super);
 
 void kill_anon_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	dev_t dev = sb->s_dev;
 	generic_shutdown_super(sb);
@@ -1874,6 +1879,7 @@ int get_tree_bdev(struct fs_context *fc,
 EXPORT_SYMBOL(get_tree_bdev);
 
 void kill_block_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct block_device *bdev = sb->s_bdev;
 

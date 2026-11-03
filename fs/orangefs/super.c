@@ -202,9 +202,9 @@ out_op_release:
  * Remount as initiated by VFS layer.  We just need to reparse the mount
  * options, no need to signal pvfs2-client-core about it.
  */
-static int orangefs_reconfigure(struct fs_context *fc)
+static int orangefs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
 	struct orangefs_sb_info_s *orangefs_sb = ORANGEFS_SB(sb);
 	struct orangefs_sb_info_s *revised = fc->s_fs_info;
 	unsigned int flags;

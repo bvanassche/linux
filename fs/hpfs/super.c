@@ -420,10 +420,11 @@ static int hpfs_parse_param(struct fs_context *fc, struct fs_parameter *param)
 	return 0;
 }
 
-static int hpfs_reconfigure(struct fs_context *fc)
+static int hpfs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct hpfs_fc_context *ctx = fc->fs_private;
-	struct super_block *s = fc->root->d_sb;
+	struct super_block *s = sb;
 	struct hpfs_sb_info *sbi = hpfs_sb(s);
 
 	sync_filesystem(s);

@@ -90,10 +90,12 @@ static int ext4_check_opt_consistency(struct fs_context *fc,
 static void ext4_apply_options(struct fs_context *fc, struct super_block *sb);
 static int ext4_parse_param(struct fs_context *fc, struct fs_parameter *param);
 static int ext4_get_tree(struct fs_context *fc);
-static int ext4_reconfigure(struct fs_context *fc);
+static int ext4_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount);
 static void ext4_fc_free(struct fs_context *fc);
 static int ext4_init_fs_context(struct fs_context *fc);
-static void ext4_kill_sb(struct super_block *sb);
+static void ext4_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount);
 static const struct fs_parameter_spec ext4_param_specs[];
 
 /*
@@ -6574,6 +6576,7 @@ static int ext4_sync_fs(struct super_block *sb, int wait)
  * modifications.
  */
 static int ext4_freeze(struct super_block *sb)
+	__context_unsafe(/* conditional locking */)
 {
 	int error = 0;
 	journal_t *journal = EXT4_SB(sb)->s_journal;
@@ -6641,6 +6644,7 @@ struct ext4_mount_options {
 };
 
 static int __ext4_remount(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct ext4_fs_context *ctx = fc->fs_private;
 	struct ext4_super_block *es;
@@ -6960,9 +6964,9 @@ restore_opts:
 	return err;
 }
 
-static int ext4_reconfigure(struct fs_context *fc)
+static int ext4_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
 	int ret;
 	bool old_ro = sb_rdonly(sb);
 
@@ -7370,7 +7374,7 @@ static int ext4_quota_off(struct super_block *sb, int type)
 	/* Force all delayed allocation blocks to be allocated.
 	 * Caller already holds s_umount sem */
 	if (test_opt(sb, DELALLOC))
-		sync_filesystem(sb);
+		context_unsafe(sync_filesystem(sb));
 
 	if (!inode || !igrab(inode))
 		goto out;

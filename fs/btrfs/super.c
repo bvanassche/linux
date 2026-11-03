@@ -1247,6 +1247,7 @@ static void btrfs_resize_thread_pool(struct btrfs_fs_info *fs_info,
 
 static inline void btrfs_remount_begin(struct btrfs_fs_info *fs_info,
 				       unsigned long long old_opts, int flags)
+	__context_unsafe(/* btrfs_reconfigure() holds fs_info->sb->s_umount */)
 {
 	if (btrfs_raw_test_opt(old_opts, AUTO_DEFRAG) &&
 	    (!btrfs_raw_test_opt(fs_info->mount_opt, AUTO_DEFRAG) ||
@@ -1481,9 +1482,9 @@ static void btrfs_emit_options(struct btrfs_fs_info *info,
 		btrfs_info(info, "max_inline set to %llu", info->max_inline);
 }
 
-static int btrfs_reconfigure(struct fs_context *fc)
+static int btrfs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
 	struct btrfs_fs_info *fs_info = btrfs_sb(sb);
 	struct btrfs_fs_context *ctx = fc->fs_private;
 	struct btrfs_fs_context old_ctx;
@@ -2042,11 +2043,12 @@ static int btrfs_get_tree_super(struct fs_context *fc)
  * work with different options work we need to keep backward compatibility.
  */
 static int btrfs_reconfigure_for_mount(struct fs_context *fc)
+	__must_hold(&fc->root->d_sb->s_umount)
 {
 	int ret = 0;
 
 	if (!(fc->sb_flags & SB_RDONLY) && (fc->root->d_sb->s_flags & SB_RDONLY))
-		ret = btrfs_reconfigure(fc);
+		ret = btrfs_reconfigure(fc, fc->root->d_sb);
 
 	return ret;
 }

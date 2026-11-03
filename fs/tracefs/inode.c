@@ -369,9 +369,9 @@ static int tracefs_apply_options(struct super_block *sb, bool remount)
 	return 0;
 }
 
-static int tracefs_reconfigure(struct fs_context *fc)
+static int tracefs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
 	struct tracefs_fs_info *sb_opts = sb->s_fs_info;
 	struct tracefs_fs_info *new_opts = fc->s_fs_info;
 
@@ -481,13 +481,14 @@ static int tracefs_fill_super(struct super_block *sb, struct fs_context *fc)
 }
 
 static int tracefs_get_tree(struct fs_context *fc)
+	__context_unsafe(/* get_tree_single() acquires s_umount on success */)
 {
 	int err = get_tree_single(fc, tracefs_fill_super);
 
 	if (err)
 		return err;
 
-	return tracefs_reconfigure(fc);
+	return tracefs_reconfigure(fc, fc->root->d_sb);
 }
 
 static void tracefs_free_fc(struct fs_context *fc)

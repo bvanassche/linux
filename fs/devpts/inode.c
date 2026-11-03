@@ -306,9 +306,10 @@ static void update_ptmx_mode(struct pts_fs_info *fsi)
 	fsi->ptmx_inode->i_mode = S_IFCHR|fsi->mount_opts.ptmxmode;
 }
 
-static int devpts_reconfigure(struct fs_context *fc)
+static int devpts_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct pts_fs_info *fsi = DEVPTS_SB(fc->root->d_sb);
+	struct pts_fs_info *fsi = DEVPTS_SB(sb);
 	struct pts_fs_info *new = fc->s_fs_info;
 
 	/* Apply the revised options.  We don't want to change ->reserve.

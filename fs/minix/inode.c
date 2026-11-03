@@ -136,10 +136,10 @@ static const struct super_operations minix_sops = {
 	.statfs		= minix_statfs,
 };
 
-static int minix_reconfigure(struct fs_context *fc)
+static int minix_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct minix_super_block * ms;
-	struct super_block *sb = fc->root->d_sb;
 	struct minix_sb_info * sbi = sb->s_fs_info;
 
 	sync_filesystem(sb);

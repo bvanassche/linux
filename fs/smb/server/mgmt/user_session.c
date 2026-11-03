@@ -410,6 +410,7 @@ void ksmbd_session_rpc_close(struct ksmbd_session *sess, int id)
 /* The reference pins the entry while waiting without holding rpc_lock. */
 struct ksmbd_session_rpc *ksmbd_session_rpc_get(struct ksmbd_work *work,
 					     int id)
+	__context_unsafe(/* returns with entry->lock held */)
 {
 	struct ksmbd_session_rpc *entry;
 	int err;
@@ -445,6 +446,7 @@ err_put:
 }
 
 void ksmbd_session_rpc_put(struct ksmbd_session_rpc *entry)
+	__context_unsafe(/* releases entry->lock */)
 {
 	mutex_unlock(&entry->lock);
 	ksmbd_session_rpc_free(entry);

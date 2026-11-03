@@ -152,8 +152,10 @@ void ksmbd_session_rpc_close(struct ksmbd_session *sess, int id);
 void ksmbd_session_rpc_clear_list(struct ksmbd_session *sess);
 int ksmbd_session_rpc_method(struct ksmbd_session *sess, int id);
 struct ksmbd_session_rpc *ksmbd_session_rpc_get(struct ksmbd_work *work,
-					     int id);
-void ksmbd_session_rpc_put(struct ksmbd_session_rpc *entry);
+					     int id)
+	__context_unsafe(/* returns with entry->lock held */);
+void ksmbd_session_rpc_put(struct ksmbd_session_rpc *entry)
+	__context_unsafe(/* releases entry->lock */);
 void ksmbd_user_session_get(struct ksmbd_session *sess);
 void ksmbd_user_session_put(struct ksmbd_session *sess);
 int create_proc_sessions(void);

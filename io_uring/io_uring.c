@@ -424,6 +424,7 @@ static __always_inline bool io_assign_file(struct io_kiocb *req,
 }
 
 static void io_req_queue_iowq_tw(struct io_tw_req tw_req, io_tw_token_t tw)
+	__context_unsafe(/* io_tw_lock() locks conditionally */)
 {
 	struct io_kiocb *req = tw_req.req;
 

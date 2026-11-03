@@ -644,6 +644,7 @@ static bool io_tctx_cancel_done(struct io_uring_task *tctx, bool cancel_all,
  * requests. @sqd should be not-null IFF it's an SQPOLL thread cancellation.
  */
 __cold void io_uring_cancel_generic(bool cancel_all, struct io_sq_data *sqd)
+	__context_unsafe(/* conditionally drops and reacquires sqd->lock if sqd != NULL */)
 {
 	struct io_uring_task *tctx = current->io_uring;
 	struct io_ring_ctx *ctx;

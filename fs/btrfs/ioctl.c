@@ -5105,7 +5105,7 @@ static int btrfs_ioctl_subvol_sync(struct btrfs_fs_info *fs_info, void __user *a
 
 	while (1) {
 		/* Wait for the specific one. */
-		if (down_read_interruptible(&fs_info->subvol_sem) == -EINTR)
+		if (down_read_interruptible(&fs_info->subvol_sem) < 0)
 			return -EINTR;
 		refs = -1;
 		spin_lock(&fs_info->fs_roots_radix_lock);

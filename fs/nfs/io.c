@@ -32,14 +32,14 @@
  */
 int
 nfs_start_io_read(struct inode *inode)
-	__cond_acquires_shared(0, &inode->i_rwsem)
+	__cond_acquires_shared_range(0, INT_MAX, &inode->i_rwsem)
 {
 	struct nfs_inode *nfsi = NFS_I(inode);
 	int err;
 
 	/* Be an optimist! */
 	err = down_read_killable(&inode->i_rwsem);
-	if (err)
+	if (err < 0)
 		return err;
 	if (test_bit(NFS_INO_ODIRECT, &nfsi->flags) == 0)
 		return 0;
@@ -47,7 +47,7 @@ nfs_start_io_read(struct inode *inode)
 
 	/* Slow path.... */
 	err = down_write_killable(&inode->i_rwsem);
-	if (err)
+	if (err < 0)
 		return err;
 	nfs_file_block_o_direct(nfsi);
 	downgrade_write(&inode->i_rwsem);
@@ -78,7 +78,7 @@ nfs_end_io_read(struct inode *inode)
  */
 int
 nfs_start_io_write(struct inode *inode)
-	__cond_acquires(0, &inode->i_rwsem)
+	__cond_acquires_range(0, INT_MAX, &inode->i_rwsem)
 {
 	int err;
 
@@ -141,14 +141,14 @@ static int nfs_block_buffered_nowait(struct nfs_inode *nfsi, struct inode *inode
  */
 int
 nfs_start_io_direct(struct inode *inode)
-	__cond_acquires_shared(0, &inode->i_rwsem)
+	__cond_acquires_shared_range(0, INT_MAX, &inode->i_rwsem)
 {
 	struct nfs_inode *nfsi = NFS_I(inode);
 	int err;
 
 	/* Be an optimist! */
 	err = down_read_killable(&inode->i_rwsem);
-	if (err)
+	if (err < 0)
 		return err;
 	if (test_bit(NFS_INO_ODIRECT, &nfsi->flags) != 0)
 		return 0;
@@ -156,7 +156,7 @@ nfs_start_io_direct(struct inode *inode)
 
 	/* Slow path.... */
 	err = down_write_killable(&inode->i_rwsem);
-	if (err)
+	if (err < 0)
 		return err;
 	nfs_block_buffered(nfsi, inode);
 	downgrade_write(&inode->i_rwsem);

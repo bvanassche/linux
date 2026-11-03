@@ -77,7 +77,7 @@ suspend_state_t pm_autosleep_state(void)
 }
 
 int pm_autosleep_lock(void)
-	__cond_acquires(0, &autosleep_lock)
+	__cond_acquires_range(0, INT_MAX, &autosleep_lock)
 {
 	return mutex_lock_interruptible(&autosleep_lock);
 }

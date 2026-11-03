@@ -14,6 +14,7 @@
 #define __LINUX_RT_MUTEX_H
 
 #include <linux/compiler.h>
+#include <linux/limits.h>
 #include <linux/linkage.h>
 #include <linux/rbtree_types.h>
 #include <linux/spinlock_types_raw.h>
@@ -128,9 +129,9 @@ extern void rt_mutex_lock(struct rt_mutex *lock) __acquires(lock);
 #endif
 
 extern int rt_mutex_lock_interruptible(struct rt_mutex *lock)
-	__cond_acquires(0, lock);
+	__cond_acquires_range(0, INT_MAX, lock);
 extern int rt_mutex_lock_killable(struct rt_mutex *lock)
-	__cond_acquires(0, lock);
+	__cond_acquires_range(0, INT_MAX, lock);
 extern int rt_mutex_trylock(struct rt_mutex *lock)
 	__cond_acquires(true, lock);
 

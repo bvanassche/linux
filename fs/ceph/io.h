@@ -5,15 +5,15 @@
 #include <linux/compiler_attributes.h>
 
 int __must_check ceph_start_io_read(struct inode *inode)
-	__cond_acquires_shared(0, &inode->i_rwsem);
+	__cond_acquires_shared_range(0, INT_MAX, &inode->i_rwsem);
 void ceph_end_io_read(struct inode *inode)
 	__releases_shared(&inode->i_rwsem);
 int __must_check ceph_start_io_write(struct inode *inode)
-	__cond_acquires(0, &inode->i_rwsem);
+	__cond_acquires_range(0, INT_MAX, &inode->i_rwsem);
 void ceph_end_io_write(struct inode *inode)
 	__releases(&inode->i_rwsem);
 int __must_check ceph_start_io_direct(struct inode *inode)
-	__cond_acquires_shared(0, &inode->i_rwsem);
+	__cond_acquires_shared_range(0, INT_MAX, &inode->i_rwsem);
 void ceph_end_io_direct(struct inode *inode)
 	__releases_shared(&inode->i_rwsem);
 

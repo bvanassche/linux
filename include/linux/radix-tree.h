@@ -10,6 +10,7 @@
 
 #include <linux/bitops.h>
 #include <linux/gfp_types.h>
+#include <linux/limits.h>
 #include <linux/list.h>
 #include <linux/lockdep.h>
 #include <linux/math.h>
@@ -238,9 +239,9 @@ unsigned int radix_tree_gang_lookup(const struct radix_tree_root *,
 			void **results, unsigned long first_index,
 			unsigned int max_items);
 int radix_tree_preload(gfp_t gfp_mask)
-	__cond_acquires(0, &radix_tree_preloads.lock);
+	__cond_acquires_range(0, INT_MAX, &radix_tree_preloads.lock);
 int radix_tree_maybe_preload(gfp_t gfp_mask)
-	__cond_acquires(0, &radix_tree_preloads.lock);
+	__cond_acquires_range(0, INT_MAX, &radix_tree_preloads.lock);
 void radix_tree_init(void);
 void *radix_tree_tag_set(struct radix_tree_root *,
 			unsigned long index, unsigned int tag);

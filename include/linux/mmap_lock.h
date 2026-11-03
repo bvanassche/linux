@@ -545,7 +545,7 @@ static inline void mmap_write_lock_nested(struct mm_struct *mm, int subclass)
 }
 
 static inline int __must_check mmap_write_lock_killable(struct mm_struct *mm)
-	__cond_acquires(0, &mm->mmap_lock)
+	__cond_acquires_range(0, INT_MAX, &mm->mmap_lock)
 {
 	int ret;
 
@@ -609,7 +609,7 @@ static inline void mmap_read_lock(struct mm_struct *mm)
 }
 
 static inline int __must_check mmap_read_lock_killable(struct mm_struct *mm)
-	__cond_acquires_shared(0, &mm->mmap_lock)
+	__cond_acquires_shared_range(0, INT_MAX, &mm->mmap_lock)
 {
 	int ret;
 

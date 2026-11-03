@@ -549,7 +549,9 @@ static inline bool get_mmap_lock_carefully(struct mm_struct *mm, struct pt_regs 
 			return false;
 	}
 
-	return !mmap_read_lock_killable(mm);
+	if (mmap_read_lock_killable(mm) == 0)
+		return true;
+	return false;
 }
 
 static inline bool mmap_upgrade_trylock(struct mm_struct *mm)
@@ -578,7 +580,9 @@ static inline bool upgrade_mmap_lock_carefully(struct mm_struct *mm, struct pt_r
 		if (!search_exception_tables(ip))
 			return false;
 	}
-	return !mmap_write_lock_killable(mm);
+	if (mmap_write_lock_killable(mm) == 0)
+		return true;
+	return false;
 }
 
 /*

@@ -77,7 +77,7 @@ static void genpd_lock_nested_mtx(struct generic_pm_domain *genpd,
 }
 
 static int genpd_lock_interruptible_mtx(struct generic_pm_domain *genpd)
-	__cond_acquires(0, &genpd->mlock)
+	__cond_acquires_range(0, INT_MAX, &genpd->mlock)
 {
 	return mutex_lock_interruptible(&genpd->mlock);
 }

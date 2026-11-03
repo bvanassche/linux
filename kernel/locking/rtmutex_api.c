@@ -126,6 +126,7 @@ EXPORT_SYMBOL_GPL(rt_mutex_lock);
  * -EINTR	when interrupted by a signal
  */
 int __sched rt_mutex_lock_interruptible(struct rt_mutex *lock)
+	__context_unsafe(/* acquires mutex for caller */)
 {
 	return __rt_mutex_lock_common(lock, TASK_INTERRUPTIBLE, NULL, 0);
 }
@@ -141,6 +142,7 @@ EXPORT_SYMBOL_GPL(rt_mutex_lock_interruptible);
  * -EINTR	when interrupted by a signal
  */
 int __sched rt_mutex_lock_killable(struct rt_mutex *lock)
+	__context_unsafe(/* acquires mutex for caller */)
 {
 	return __rt_mutex_lock_common(lock, TASK_KILLABLE, NULL, 0);
 }

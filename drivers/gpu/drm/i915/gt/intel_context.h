@@ -104,7 +104,7 @@ void intel_context_bind_parent_child(struct intel_context *parent,
  * intel_context_is_pinned() remains stable.
  */
 static inline int intel_context_lock_pinned(struct intel_context *ce)
-	__cond_acquires(0, &ce->pin_mutex)
+	__cond_acquires_range(0, INT_MAX, &ce->pin_mutex)
 {
 	return mutex_lock_interruptible(&ce->pin_mutex);
 }

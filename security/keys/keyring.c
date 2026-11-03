@@ -1251,8 +1251,8 @@ static int keyring_detect_cycle(struct key *A, struct key *B)
  */
 int __key_link_lock(struct key *keyring,
 		    const struct keyring_index_key *index_key)
-	__cond_acquires(0, &keyring->sem)
-	__cond_acquires(0, &keyring_serialise_link_lock)
+	__cond_acquires_range(0, INT_MAX, &keyring->sem)
+	__cond_acquires_range(0, INT_MAX, &keyring_serialise_link_lock)
 {
 	if (keyring->type != &key_type_keyring)
 		return -ENOTDIR;
@@ -1275,9 +1275,9 @@ int __key_link_lock(struct key *keyring,
  */
 int __key_move_lock(struct key *l_keyring, struct key *u_keyring,
 		    const struct keyring_index_key *index_key)
-	__cond_acquires(0, &l_keyring->sem)
-	__cond_acquires(0, &u_keyring->sem)
-	__cond_acquires(0, &keyring_serialise_link_lock)
+	__cond_acquires_range(0, INT_MAX, &l_keyring->sem)
+	__cond_acquires_range(0, INT_MAX, &u_keyring->sem)
+	__cond_acquires_range(0, INT_MAX, &keyring_serialise_link_lock)
 {
 	if (l_keyring->type != &key_type_keyring ||
 	    u_keyring->type != &key_type_keyring)
@@ -1491,7 +1491,7 @@ EXPORT_SYMBOL(key_link);
  * Lock a keyring for unlink.
  */
 static int __key_unlink_lock(struct key *keyring)
-	__cond_acquires(0, &keyring->sem)
+	__cond_acquires_range(0, INT_MAX, &keyring->sem)
 {
 	if (keyring->type != &key_type_keyring)
 		return -ENOTDIR;

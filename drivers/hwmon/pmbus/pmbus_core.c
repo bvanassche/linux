@@ -3952,7 +3952,7 @@ void pmbus_lock(struct i2c_client *client)
 EXPORT_SYMBOL_NS_GPL(pmbus_lock, "PMBUS");
 
 int pmbus_lock_interruptible(struct i2c_client *client)
-	__cond_acquires(0, &((struct pmbus_data *)i2c_get_clientdata(client))->update_lock)
+	__cond_acquires_range(0, INT_MAX, &((struct pmbus_data *)i2c_get_clientdata(client))->update_lock)
 {
 	struct pmbus_data *data = i2c_get_clientdata(client);
 

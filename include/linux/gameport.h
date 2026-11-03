@@ -6,6 +6,7 @@
 #define _GAMEPORT_H
 
 #include <linux/types.h>
+#include <linux/limits.h>
 #include <linux/list.h>
 #include <linux/mutex.h>
 #include <linux/device.h>
@@ -130,7 +131,7 @@ static inline void gameport_set_drvdata(struct gameport *gameport, void *data)
  * Use the following functions to pin gameport's driver in process context
  */
 static inline int gameport_pin_driver(struct gameport *gameport)
-	__cond_acquires(0, &gameport->drv_mutex)
+	__cond_acquires_range(0, INT_MAX, &gameport->drv_mutex)
 {
 	return mutex_lock_interruptible(&gameport->drv_mutex);
 }

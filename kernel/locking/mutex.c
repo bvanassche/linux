@@ -907,6 +907,7 @@ EXPORT_SYMBOL_GPL(_mutex_lock_nest_lock);
 int __sched
 _mutex_lock_killable(struct mutex *lock, unsigned int subclass,
 				      struct lockdep_map *nest)
+	__context_unsafe(/* acquires mutex for caller */)
 {
 	return __mutex_lock(lock, TASK_KILLABLE, subclass, nest, _RET_IP_);
 }
@@ -914,6 +915,7 @@ EXPORT_SYMBOL_GPL(_mutex_lock_killable);
 
 int __sched
 mutex_lock_interruptible_nested(struct mutex *lock, unsigned int subclass)
+	__context_unsafe(/* acquires mutex for caller */)
 {
 	return __mutex_lock(lock, TASK_INTERRUPTIBLE, subclass, NULL, _RET_IP_);
 }
@@ -1132,6 +1134,7 @@ __mutex_lock_interruptible_slowpath(struct mutex *lock)
  * signal arrived.
  */
 int __sched mutex_lock_interruptible(struct mutex *lock)
+	__context_unsafe(/* acquires mutex for caller */)
 {
 	might_sleep();
 
@@ -1156,6 +1159,7 @@ EXPORT_SYMBOL(mutex_lock_interruptible);
  * fatal signal arrived.
  */
 int __sched mutex_lock_killable(struct mutex *lock)
+	__context_unsafe(/* acquires mutex for caller */)
 {
 	might_sleep();
 

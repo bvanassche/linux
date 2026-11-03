@@ -14,6 +14,7 @@
 #include <linux/io.h>
 #include <linux/ioport.h>
 #include <linux/kernel.h>
+#include <linux/limits.h>
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/pm.h>
@@ -129,8 +130,8 @@ exit:
  * mode. If the lock_active bit is already set, return an error.
  */
 static int mlxbf2_gpio_lock_acquire(struct mlxbf2_gpio_context *gs)
-	__cond_acquires(0, yu_arm_gpio_lock_param.lock)
-	__cond_acquires(0, &gs->chip.lock)
+	__cond_acquires_range(0, INT_MAX, yu_arm_gpio_lock_param.lock)
+	__cond_acquires_range(0, INT_MAX, &gs->chip.lock)
 {
 	u32 arm_gpio_lock_val;
 

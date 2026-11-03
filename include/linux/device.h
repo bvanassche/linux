@@ -1111,7 +1111,7 @@ static inline void device_lock(struct device *dev)
 }
 
 static inline int device_lock_interruptible(struct device *dev)
-	__cond_acquires(0, &dev->mutex)
+	__cond_acquires_range(0, INT_MAX, &dev->mutex)
 {
 	return mutex_lock_interruptible(&dev->mutex);
 }

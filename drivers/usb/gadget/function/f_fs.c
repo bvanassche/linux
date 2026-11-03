@@ -298,7 +298,7 @@ static void ffs_reset_work(struct work_struct *work);
 
 static int ffs_mutex_lock(struct mutex *mutex, unsigned nonblock)
 	__attribute__((warn_unused_result, nonnull))
-	__cond_acquires(0, mutex);
+	__cond_acquires_range(0, INT_MAX, mutex);
 static char *ffs_prepare_buffer(const char __user *buf, size_t len)
 	__attribute__((warn_unused_result, nonnull));
 
@@ -1498,6 +1498,7 @@ static const struct dma_fence_ops ffs_dmabuf_fence_ops = {
 
 static int ffs_dma_resv_lock(struct dma_buf *dmabuf, bool nonblock)
 	__cond_acquires(0, &dmabuf->resv->lock)
+	__cond_acquires(0, &dmabuf->resv->lock.base)
 {
 	if (!nonblock)
 		return dma_resv_lock_interruptible(dmabuf->resv, NULL);

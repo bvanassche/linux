@@ -1450,16 +1450,19 @@ EXPORT_SYMBOL(drm_gem_vunmap_locked);
 
 void drm_gem_lock(struct drm_gem_object *obj)
 	__acquires(&obj->resv->lock)
+	__acquires(&obj->resv->lock.base)
 {
 	if (dma_resv_lock(obj->resv, NULL) == 0)
 		return;
 	WARN_ON_ONCE(true);
 	__acquire(&obj->resv->lock);
+	__acquire(&obj->resv->lock.base);
 }
 EXPORT_SYMBOL(drm_gem_lock);
 
 void drm_gem_unlock(struct drm_gem_object *obj)
 	__releases(&obj->resv->lock)
+	__releases(&obj->resv->lock.base)
 {
 	dma_resv_unlock(obj->resv);
 }

@@ -36,6 +36,7 @@ static inline void ivpu_dbg_bo(struct ivpu_device *vdev, struct ivpu_bo *bo, con
 
 static inline int ivpu_bo_lock(struct ivpu_bo *bo)
 	__acquires(&bo->base.base.resv->lock)
+	__acquires(&bo->base.base.resv->lock.base)
 	__context_unsafe(/* dma_resv_lock() does not fail if ctx == NULL */)
 {
 	return dma_resv_lock(bo->base.base.resv, NULL);
@@ -43,6 +44,7 @@ static inline int ivpu_bo_lock(struct ivpu_bo *bo)
 
 static inline void ivpu_bo_unlock(struct ivpu_bo *bo)
 	__releases(&bo->base.base.resv->lock)
+	__releases(&bo->base.base.resv->lock.base)
 {
 	dma_resv_unlock(bo->base.base.resv);
 }

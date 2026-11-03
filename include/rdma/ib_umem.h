@@ -179,9 +179,11 @@ int ib_umem_dmabuf_map_pages(struct ib_umem_dmabuf *umem_dmabuf);
 void ib_umem_dmabuf_unmap_pages(struct ib_umem_dmabuf *umem_dmabuf);
 void ib_umem_dmabuf_release(struct ib_umem_dmabuf *umem_dmabuf);
 void ib_umem_dmabuf_revoke_lock(struct ib_umem_dmabuf *umem_dmabuf)
-	__acquires(&umem_dmabuf->attach->dmabuf->resv->lock);
+	__acquires(&umem_dmabuf->attach->dmabuf->resv->lock)
+	__acquires(&umem_dmabuf->attach->dmabuf->resv->lock.base);
 void ib_umem_dmabuf_revoke_unlock(struct ib_umem_dmabuf *umem_dmabuf)
-	__releases(&umem_dmabuf->attach->dmabuf->resv->lock);
+	__releases(&umem_dmabuf->attach->dmabuf->resv->lock)
+	__releases(&umem_dmabuf->attach->dmabuf->resv->lock.base);
 void ib_umem_dmabuf_revoke(struct ib_umem_dmabuf *umem_dmabuf);
 
 int ib_umem_check_rereg(struct ib_umem *umem, int flags, int new_access_flags);
@@ -296,13 +298,17 @@ static inline void ib_umem_dmabuf_unmap_pages(struct ib_umem_dmabuf *umem_dmabuf
 static inline void ib_umem_dmabuf_release(struct ib_umem_dmabuf *umem_dmabuf) { }
 static inline void ib_umem_dmabuf_revoke_lock(struct ib_umem_dmabuf *umem_dmabuf)
 	__acquires(&umem_dmabuf->attach->dmabuf->resv->lock)
+	__acquires(&umem_dmabuf->attach->dmabuf->resv->lock.base)
 {
 	__acquire(&umem_dmabuf->attach->dmabuf->resv->lock);
+	__acquire(&umem_dmabuf->attach->dmabuf->resv->lock.base);
 }
 static inline void ib_umem_dmabuf_revoke_unlock(struct ib_umem_dmabuf *umem_dmabuf)
 	__releases(&umem_dmabuf->attach->dmabuf->resv->lock)
+	__releases(&umem_dmabuf->attach->dmabuf->resv->lock.base)
 {
 	__release(&umem_dmabuf->attach->dmabuf->resv->lock);
+	__release(&umem_dmabuf->attach->dmabuf->resv->lock.base);
 }
 static inline void ib_umem_dmabuf_revoke(struct ib_umem_dmabuf *umem_dmabuf) {}
 

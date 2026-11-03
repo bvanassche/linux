@@ -1790,6 +1790,7 @@ static void __xe_bo_vunmap(struct xe_bo *bo);
  */
 static bool xe_ttm_bo_lock_in_destructor(struct ttm_buffer_object *ttm_bo)
 	__cond_acquires(true, &ttm_bo->base._resv.lock)
+	__cond_acquires(true, &ttm_bo->base._resv.lock.base)
 {
 	struct xe_device *xe = ttm_to_xe_device(ttm_bo->bdev);
 	bool locked;

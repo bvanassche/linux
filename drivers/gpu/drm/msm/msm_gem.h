@@ -326,16 +326,19 @@ void msm_gem_describe_objects(struct list_head *list, struct seq_file *m);
 static inline void
 msm_gem_lock(struct drm_gem_object *obj)
 	__acquires(&obj->resv->lock)
+	__acquires(&obj->resv->lock.base)
 {
 	if (dma_resv_lock(obj->resv, NULL) == 0)
 		return;
 	WARN_ON_ONCE(true);
 	__acquire(&obj->resv->lock);
+	__acquire(&obj->resv->lock.base);
 }
 
 static inline bool __must_check
 msm_gem_trylock(struct drm_gem_object *obj)
 	__cond_acquires(true, &obj->resv->lock)
+	__cond_acquires(true, &obj->resv->lock.base)
 {
 	return dma_resv_trylock(obj->resv);
 }
@@ -343,6 +346,7 @@ msm_gem_trylock(struct drm_gem_object *obj)
 static inline int
 msm_gem_lock_interruptible(struct drm_gem_object *obj)
 	__cond_acquires(0, &obj->resv->lock)
+	__cond_acquires(0, &obj->resv->lock.base)
 {
 	return dma_resv_lock_interruptible(obj->resv, NULL);
 }
@@ -350,6 +354,7 @@ msm_gem_lock_interruptible(struct drm_gem_object *obj)
 static inline void
 msm_gem_unlock(struct drm_gem_object *obj)
 	__releases(&obj->resv->lock)
+	__releases(&obj->resv->lock.base)
 {
 	dma_resv_unlock(obj->resv);
 }

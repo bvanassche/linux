@@ -331,6 +331,7 @@ EXPORT_SYMBOL(ib_umem_dmabuf_get_pinned);
 
 void ib_umem_dmabuf_revoke_lock(struct ib_umem_dmabuf *umem_dmabuf)
 	__acquires(&umem_dmabuf->attach->dmabuf->resv->lock)
+	__acquires(&umem_dmabuf->attach->dmabuf->resv->lock.base)
 {
 	struct dma_buf *dmabuf = umem_dmabuf->attach->dmabuf;
 	int ret;
@@ -342,6 +343,7 @@ EXPORT_SYMBOL(ib_umem_dmabuf_revoke_lock);
 
 void ib_umem_dmabuf_revoke_unlock(struct ib_umem_dmabuf *umem_dmabuf)
 	__releases(&umem_dmabuf->attach->dmabuf->resv->lock)
+	__releases(&umem_dmabuf->attach->dmabuf->resv->lock.base)
 {
 	struct dma_buf *dmabuf = umem_dmabuf->attach->dmabuf;
 

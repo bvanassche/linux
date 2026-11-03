@@ -220,9 +220,11 @@ void drm_client_buffer_delete(struct drm_client_buffer *buffer);
 int drm_client_buffer_flush(struct drm_client_buffer *buffer, struct drm_rect *rect);
 int drm_client_buffer_vmap_local(struct drm_client_buffer *buffer,
 				 struct iosys_map *map_copy)
-	__cond_acquires(0, &buffer->fb->obj[0]->resv->lock);
+	__cond_acquires(0, &buffer->fb->obj[0]->resv->lock)
+	__cond_acquires(0, &buffer->fb->obj[0]->resv->lock.base);
 void drm_client_buffer_vunmap_local(struct drm_client_buffer *buffer)
-	__releases(&buffer->fb->obj[0]->resv->lock);
+	__releases(&buffer->fb->obj[0]->resv->lock)
+	__releases(&buffer->fb->obj[0]->resv->lock.base);
 int drm_client_buffer_vmap(struct drm_client_buffer *buffer,
 			   struct iosys_map *map);
 void drm_client_buffer_vunmap(struct drm_client_buffer *buffer);

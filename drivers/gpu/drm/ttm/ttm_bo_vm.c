@@ -120,6 +120,7 @@ static unsigned long ttm_bo_io_mem_pfn(struct ttm_buffer_object *bo,
 vm_fault_t ttm_bo_vm_reserve(struct ttm_buffer_object *bo,
 			     struct vm_fault *vmf)
 	__cond_acquires(0, &bo->base.resv->lock)
+	__cond_acquires(0, &bo->base.resv->lock.base)
 {
 	/*
 	 * Work around locking order reversal in fault / nopfn

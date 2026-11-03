@@ -1624,7 +1624,7 @@ static const struct blk_holder_ops fs_holder_ops = {
 };
 
 static struct super_dev *super_dev_find(dev_t dev, const struct super_block *sb)
-	__must_hold_shared(RCU)
+	__must_hold(&super_dev_lock)
 {
 	struct super_dev *sd;
 

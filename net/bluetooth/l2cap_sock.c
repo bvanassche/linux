@@ -1381,6 +1381,7 @@ static void l2cap_sock_kill(struct sock *sk)
 }
 
 static int __l2cap_wait_ack(struct sock *sk, struct l2cap_chan *chan)
+	__must_hold(sk)
 {
 	DECLARE_WAITQUEUE(wait, current);
 	int err = 0;

@@ -401,11 +401,12 @@ static int vboxsf_get_tree(struct fs_context *fc)
 	return get_tree_nodev(fc, vboxsf_fill_super);
 }
 
-static int vboxsf_reconfigure(struct fs_context *fc)
+static int vboxsf_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct vboxsf_sbi *sbi = VBOXSF_SBI(fc->root->d_sb);
+	struct vboxsf_sbi *sbi = VBOXSF_SBI(sb);
 	struct vboxsf_fs_context *ctx = fc->fs_private;
-	struct inode *iroot = fc->root->d_sb->s_root->d_inode;
+	struct inode *iroot = sb->s_root->d_inode;
 
 	/* Apply changed options to the root inode */
 	sbi->o = ctx->o;

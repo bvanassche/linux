@@ -1085,11 +1085,12 @@ static int check_cgroupfs_options(struct fs_context *fc)
 	return 0;
 }
 
-int cgroup1_reconfigure(struct fs_context *fc)
+int cgroup1_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 	__context_unsafe(/* cgroup_lock_and_drain_offline() locks for caller */)
 {
 	struct cgroup_fs_context *ctx = cgroup_fc2context(fc);
-	struct kernfs_root *kf_root = kernfs_root_from_sb(fc->root->d_sb);
+	struct kernfs_root *kf_root = kernfs_root_from_sb(sb);
 	struct cgroup_root *root = cgroup_root_from_kf(kf_root);
 	int ret = 0;
 	u32 added_mask, removed_mask;

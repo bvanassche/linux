@@ -272,11 +272,12 @@ static int pstore_show_options(struct seq_file *m, struct dentry *root)
 	return 0;
 }
 
-static int pstore_reconfigure(struct fs_context *fc)
+static int pstore_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct pstore_context *ctx = fc->fs_private;
 
-	sync_filesystem(fc->root->d_sb);
+	sync_filesystem(sb);
 	pstore_set_kmsg_bytes(ctx->kmsg_bytes);
 
 	return 0;
@@ -449,7 +450,7 @@ static int pstore_fill_super(struct super_block *sb, struct fs_context *fc)
 static int pstore_get_tree(struct fs_context *fc)
 {
 	if (fc->root)
-		return pstore_reconfigure(fc);
+		return context_unsafe(pstore_reconfigure(fc, fc->root->d_sb));
 
 	return get_tree_single(fc, pstore_fill_super);
 }

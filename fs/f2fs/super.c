@@ -2836,6 +2836,7 @@ static int f2fs_enable_checkpoint(struct f2fs_sb_info *sbi)
 }
 
 static int __f2fs_remount(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct f2fs_sb_info *sbi = F2FS_SB(sb);
 	struct f2fs_mount_info org_mount_opt;
@@ -5726,10 +5727,9 @@ static int f2fs_get_tree(struct fs_context *fc)
 	return get_tree_bdev(fc, f2fs_fill_super);
 }
 
-static int f2fs_reconfigure(struct fs_context *fc)
+static int f2fs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
-
 	return __f2fs_remount(fc, sb);
 }
 

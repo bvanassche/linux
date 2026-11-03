@@ -177,9 +177,9 @@ static void debugfs_apply_options_remount(struct super_block *sb)
 	_debugfs_apply_options(sb, true);
 }
 
-static int debugfs_reconfigure(struct fs_context *fc)
+static int debugfs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
-	struct super_block *sb = fc->root->d_sb;
 	struct debugfs_fs_info *sb_opts = sb->s_fs_info;
 	struct debugfs_fs_info *new_opts = fc->s_fs_info;
 
@@ -291,7 +291,7 @@ static int debugfs_get_tree(struct fs_context *fc)
 	if (err)
 		return err;
 
-	return debugfs_reconfigure(fc);
+	return context_unsafe(debugfs_reconfigure(fc, fc->root->d_sb));
 }
 
 static void debugfs_free_fc(struct fs_context *fc)

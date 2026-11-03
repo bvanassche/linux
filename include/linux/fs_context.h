@@ -118,7 +118,8 @@ struct fs_context_operations {
 	int (*parse_param)(struct fs_context *fc, struct fs_parameter *param);
 	int (*parse_monolithic)(struct fs_context *fc, void *data);
 	int (*get_tree)(struct fs_context *fc);
-	int (*reconfigure)(struct fs_context *fc);
+	int (*reconfigure)(struct fs_context *fc, struct super_block *sb)
+		__must_hold(&sb->s_umount);
 };
 
 /*

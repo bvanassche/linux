@@ -292,6 +292,7 @@ void cgroup1_release_agent(struct work_struct *work);
 void cgroup1_check_for_release(struct cgroup *cgrp);
 int cgroup1_parse_param(struct fs_context *fc, struct fs_parameter *param);
 int cgroup1_get_tree(struct fs_context *fc);
-int cgroup1_reconfigure(struct fs_context *ctx);
+int cgroup1_reconfigure(struct fs_context *ctx, struct super_block *sb)
+	__must_hold(&sb->s_umount);
 
 #endif /* __CGROUP_INTERNAL_H */

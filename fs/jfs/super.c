@@ -358,10 +358,10 @@ static int jfs_parse_param(struct fs_context *fc, struct fs_parameter *param)
 	return 0;
 }
 
-static int jfs_reconfigure(struct fs_context *fc)
+static int jfs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct jfs_context *ctx = fc->fs_private;
-	struct super_block *sb = fc->root->d_sb;
 	int readonly = fc->sb_flags & SB_RDONLY;
 	int rc = 0;
 	int flag = ctx->flag;

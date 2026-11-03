@@ -1236,13 +1236,13 @@ failed_nomem:
 	return -ENOMEM;
 }
 
-static int ufs_reconfigure(struct fs_context *fc)
+static int ufs_reconfigure(struct fs_context *fc, struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	struct ufs_sb_private_info * uspi;
 	struct ufs_super_block_first * usb1;
 	struct ufs_super_block_third * usb3;
 	struct ufs_fs_context *ctx = fc->fs_private;
-	struct super_block *sb = fc->root->d_sb;
 	unsigned int ufstype;
 	unsigned int flags;
 

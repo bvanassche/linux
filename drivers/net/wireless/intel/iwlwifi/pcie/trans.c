@@ -2354,7 +2354,7 @@ static void iwl_trans_pcie_reset(struct iwl_trans *trans, enum iwl_reset_mode mo
  * already disabled.
  */
 bool _iwl_trans_pcie_grab_nic_access(struct iwl_trans *trans, bool silent)
-	__context_unsafe(/* reg_lock is tracked as the trans context lock */)
+	__cond_acquires(true, &IWL_TRANS_GET_PCIE_TRANS(trans)->reg_lock)
 {
 	int ret;
 	struct iwl_trans_pcie *trans_pcie = IWL_TRANS_GET_PCIE_TRANS(trans);
@@ -2464,7 +2464,7 @@ void iwl_trans_pcie_resched_with_nic_access(struct iwl_trans *trans)
 }
 
 void iwl_trans_pcie_release_nic_access(struct iwl_trans *trans)
-	__context_unsafe(/* reg_lock is tracked as the trans context lock */)
+	__releases(&IWL_TRANS_GET_PCIE_TRANS(trans)->reg_lock)
 {
 	struct iwl_trans_pcie *trans_pcie = IWL_TRANS_GET_PCIE_TRANS(trans);
 

@@ -10767,7 +10767,7 @@ static void nf_tables_module_autoload_cleanup(struct net *net)
 }
 
 static void nf_tables_commit_release(struct net *net)
-	__context_unsafe(/* releases commit_mutex held by caller */)
+	__releases(&nft_pernet(net)->commit_mutex)
 {
 	struct nftables_pernet *nft_net = nft_pernet(net);
 	struct nft_trans *trans;
@@ -11546,7 +11546,7 @@ static int __nf_tables_abort(struct net *net, enum nfnl_abort_action action)
 
 static int nf_tables_abort(struct net *net, struct sk_buff *skb,
 			   enum nfnl_abort_action action)
-	__context_unsafe(/* releases commit_mutex held by caller */)
+	__releases(&nft_pernet(net)->commit_mutex)
 {
 	struct nftables_pernet *nft_net = nft_pernet(net);
 	unsigned int gc_seq;
@@ -11579,7 +11579,7 @@ static int nf_tables_abort(struct net *net, struct sk_buff *skb,
 }
 
 static bool nf_tables_valid_genid(struct net *net, u32 genid)
-	__context_unsafe(/* conditional locking */)
+	__cond_acquires(true, &nft_pernet(net)->commit_mutex)
 {
 	struct nftables_pernet *nft_net = nft_pernet(net);
 	bool genid_ok;

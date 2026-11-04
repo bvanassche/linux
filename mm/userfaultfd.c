@@ -3217,7 +3217,8 @@ void mremap_userfaultfd_fail(struct vm_userfaultfd_ctx *vm_ctx)
 
 bool userfaultfd_remove(struct vm_area_struct *vma,
 			unsigned long start, unsigned long end)
-	__context_unsafe(/* conditional unlocking */)
+	__releases_shared(&vma->vm_mm->mmap_lock)
+	__cond_acquires_shared(true, &vma->vm_mm->mmap_lock)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	struct userfaultfd_ctx *ctx;

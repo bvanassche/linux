@@ -277,7 +277,8 @@ static inline int ipc_idr_alloc(struct ipc_ids *ids, struct kern_ipc_perm *new)
  * Called with writer ipc_ids.rwsem held.
  */
 int ipc_addid(struct ipc_ids *ids, struct kern_ipc_perm *new, int limit)
-	__context_unsafe(/* conditional locking */)
+	__cond_acquires_range(0, INT_MAX, &new->lock)
+	__cond_acquires_shared_range(0, INT_MAX, RCU)
 {
 	kuid_t euid;
 	kgid_t egid;

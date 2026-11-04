@@ -1093,19 +1093,19 @@ static int lba_to_arena(struct btt *btt, sector_t sector, __u32 *premap,
  * readability, since they index into an array of locks
  */
 static void lock_map(struct arena_info *arena, u32 premap)
-	__context_unsafe(/* too complex */)
+	__acquires(&arena->map_locks[(premap * MAP_ENT_SIZE / L1_CACHE_BYTES) %
+				     arena->nfree].lock)
 {
-	u32 idx = (premap * MAP_ENT_SIZE / L1_CACHE_BYTES) % arena->nfree;
-
-	spin_lock(&arena->map_locks[idx].lock);
+	spin_lock(&arena->map_locks[(premap * MAP_ENT_SIZE / L1_CACHE_BYTES) %
+				    arena->nfree].lock);
 }
 
 static void unlock_map(struct arena_info *arena, u32 premap)
-	__context_unsafe(/* too complex */)
+	__releases(&arena->map_locks[(premap * MAP_ENT_SIZE / L1_CACHE_BYTES) %
+				     arena->nfree].lock)
 {
-	u32 idx = (premap * MAP_ENT_SIZE / L1_CACHE_BYTES) % arena->nfree;
-
-	spin_unlock(&arena->map_locks[idx].lock);
+	spin_unlock(&arena->map_locks[(premap * MAP_ENT_SIZE / L1_CACHE_BYTES) %
+				      arena->nfree].lock);
 }
 
 static int btt_data_read(struct arena_info *arena, struct page *page,

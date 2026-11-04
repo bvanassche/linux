@@ -6958,7 +6958,7 @@ static void clear_tracing_err_log(struct trace_array *tr)
 }
 
 static void *tracing_err_log_seq_start(struct seq_file *m, loff_t *pos)
-	__context_unsafe(/* acquires tracing_err_log_lock for caller */)
+	__acquires(&tracing_err_log_lock)
 {
 	struct trace_array *tr = m->private;
 
@@ -6975,7 +6975,7 @@ static void *tracing_err_log_seq_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void tracing_err_log_seq_stop(struct seq_file *m, void *v)
-	__context_unsafe(/* releases tracing_err_log_lock held by caller */)
+	__releases(&tracing_err_log_lock)
 {
 	mutex_unlock(&tracing_err_log_lock);
 }

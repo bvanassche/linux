@@ -285,7 +285,9 @@ void mremap_userfaultfd_fail(struct vm_userfaultfd_ctx *);
 
 extern bool userfaultfd_remove(struct vm_area_struct *vma,
 			       unsigned long start,
-			       unsigned long end);
+			       unsigned long end)
+	__releases_shared(&vma->vm_mm->mmap_lock)
+	__cond_acquires_shared(true, &vma->vm_mm->mmap_lock);
 
 extern int userfaultfd_unmap_prep(struct vm_area_struct *vma,
 		unsigned long start, unsigned long end, struct list_head *uf);

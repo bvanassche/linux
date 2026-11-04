@@ -1436,7 +1436,7 @@ static int io_buffer_acct_cloned_hpages(struct io_ring_ctx *ctx,
 
 /* Lock two rings at once. The rings must be different! */
 static void lock_two_rings(struct io_ring_ctx *ctx1, struct io_ring_ctx *ctx2)
-	__context_unsafe(/* acquires locks for caller */)
+	__acquires(&ctx1->uring_lock) __acquires(&ctx2->uring_lock)
 {
 	if (ctx1 > ctx2)
 		swap(ctx1, ctx2);

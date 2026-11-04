@@ -272,7 +272,7 @@ static void expunge_all(struct msg_queue *msq, int res,
  * before freeque() is called. msg_ids.rwsem remains locked on exit.
  */
 static void freeque(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
-	__context_unsafe(/* container_of() */)
+	__releases(&ipcp->lock) __releases_shared(RCU)
 {
 	struct msg_msg *msg, *t;
 	struct msg_queue *msq = container_of(ipcp, struct msg_queue, q_perm);
@@ -281,7 +281,7 @@ static void freeque(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
 	expunge_all(msq, -EIDRM, &wake_q);
 	ss_wakeup(msq, &wake_q, true);
 	msg_rmid(ns, msq);
-	ipc_unlock_object(&msq->q_perm);
+	ipc_unlock_object(ipcp);
 	wake_up_q(&wake_q);
 	rcu_read_unlock();
 

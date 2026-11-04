@@ -1427,7 +1427,7 @@ static void delayed_mntput(struct work_struct *unused)
 static DECLARE_DELAYED_WORK(delayed_mntput_work, delayed_mntput);
 
 static void noinline mntput_no_expire_slowpath(struct mount *mnt)
-	__context_unsafe(/* releases RCU read lock held by caller */)
+	__releases_shared(RCU)
 {
 	struct mnt_cover *cover;
 	struct hlist_node *n;
@@ -1622,7 +1622,7 @@ static struct mount *mnt_find_id_at_reverse(struct mnt_namespace *ns, u64 mnt_id
 
 /* iterator; we want it to have access to namespace_sem, thus here... */
 static void *m_start(struct seq_file *m, loff_t *pos)
-	__context_unsafe(/* acquires namespace_sem for caller */)
+	__acquires_shared(&namespace_sem)
 {
 	struct proc_mounts *p = m->private;
 	struct mount *mnt;
@@ -1655,7 +1655,7 @@ static void *m_next(struct seq_file *m, void *v, loff_t *pos)
 }
 
 static void m_stop(struct seq_file *m, void *v)
-	__context_unsafe(/* releases namespace_sem held by caller */)
+	__releases_shared(&namespace_sem)
 {
 	up_read(&namespace_sem);
 }

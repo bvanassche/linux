@@ -1986,7 +1986,7 @@ EXPORT_SYMBOL(inode_just_drop);
  * shutting down.
  */
 static void iput_final(struct inode *inode)
-	__context_unsafe(/* releases inode->i_lock held by caller */)
+	__releases(&inode->i_lock)
 {
 	struct super_block *sb = inode->i_sb;
 	const struct super_operations *op = inode->i_sb->s_op;
@@ -2043,7 +2043,6 @@ static void iput_final(struct inode *inode)
  *	Consequently, iput() can sleep.
  */
 void iput(struct inode *inode)
-	__context_unsafe(/* iput_final() releases inode->i_lock */)
 {
 	might_sleep();
 	if (unlikely(!inode))

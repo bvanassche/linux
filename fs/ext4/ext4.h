@@ -4029,9 +4029,12 @@ extern int ext4_ext_clear_bb(struct inode *inode);
 
 /* move_extent.c */
 extern void ext4_double_down_write_data_sem(struct inode *first,
-					    struct inode *second);
+					    struct inode *second)
+	__acquires(&EXT4_I(first)->i_data_sem, &EXT4_I(second)->i_data_sem);
 extern void ext4_double_up_write_data_sem(struct inode *orig_inode,
-					  struct inode *donor_inode);
+					  struct inode *donor_inode)
+	__releases(&EXT4_I(orig_inode)->i_data_sem,
+		   &EXT4_I(donor_inode)->i_data_sem);
 extern int ext4_move_extents(struct file *o_filp, struct file *d_filp,
 			     __u64 start_orig, __u64 start_donor,
 			     __u64 len, __u64 *moved_len);

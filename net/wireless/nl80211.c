@@ -233,7 +233,7 @@ cfg80211_get_dev_from_info(struct net *netns, struct genl_info *info)
 static struct wireless_dev *
 nl80211_lock_and_recheck(struct cfg80211_registered_device *rdev,
 			 struct net *netns, u32 wdev_id)
-	__context_unsafe(/* returns with wiphy.mtx held unless IS_ERR() */)
+	__cond_acquires_err_ptr(&rdev->wiphy.mtx)
 {
 	struct wireless_dev *wdev;
 
@@ -296,6 +296,7 @@ nl80211_wdev_by_id_rcu(struct cfg80211_registered_device *rdev,
 static struct wireless_dev *
 __nl80211_lock_held_wdev(struct cfg80211_registered_device *rdev,
 			 struct net *netns, struct wireless_dev *wdev)
+	__cond_acquires_err_ptr(&rdev->wiphy.mtx)
 {
 	u32 wdev_id = wdev->identifier;
 
@@ -309,7 +310,7 @@ __nl80211_lock_held_wdev(struct cfg80211_registered_device *rdev,
 static struct wireless_dev *
 nl80211_lock_held_wdev(struct cfg80211_registered_device *rdev,
 		       struct genl_info *info, struct wireless_dev *wdev)
-	__context_unsafe(/* returns ERR_PTR() */)
+	__cond_acquires_err_ptr(&rdev->wiphy.mtx)
 {
 	info->user_ptr[1] = NULL;
 	wdev = __nl80211_lock_held_wdev(rdev, genl_info_net(info), wdev);

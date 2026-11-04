@@ -493,7 +493,7 @@ out_release:
 EXPORT_SYMBOL_NS_GPL(ad_sigma_delta_single_conversion, "IIO_AD_SIGMA_DELTA");
 
 static int ad_sd_buffer_postenable(struct iio_dev *indio_dev)
-	__context_unsafe(/* SPI bus remains locked between postenable and predisable */)
+	__cond_acquires(0, &((struct ad_sigma_delta *)iio_device_get_drvdata(indio_dev))->spi->controller->bus_lock_mutex)
 {
 	struct ad_sigma_delta *sigma_delta = iio_device_get_drvdata(indio_dev);
 	const struct iio_scan_type *scan_type = &indio_dev->channels[0].scan_type;
@@ -603,7 +603,7 @@ err_unlock:
 }
 
 static int ad_sd_buffer_predisable(struct iio_dev *indio_dev)
-	__context_unsafe(/* SPI bus remains locked between postenable and predisable */)
+	__releases(&((struct ad_sigma_delta *)iio_device_get_drvdata(indio_dev))->spi->controller->bus_lock_mutex)
 {
 	struct ad_sigma_delta *sigma_delta = iio_device_get_drvdata(indio_dev);
 

@@ -398,7 +398,7 @@ static void sc16is7xx_power(struct uart_port *port, int on)
  * workqueue job in thread context.
  */
 static void sc16is7xx_regs_lock(struct uart_port *port, u8 register_set)
-	__context_unsafe(/* container_of() */)
+	__acquires(&to_sc16is7xx_one(port)->lock)
 {
 	struct sc16is7xx_one *one = to_sc16is7xx_one(port);
 
@@ -415,7 +415,7 @@ static void sc16is7xx_regs_lock(struct uart_port *port, u8 register_set)
 }
 
 static void sc16is7xx_regs_unlock(struct uart_port *port)
-	__context_unsafe(/* container_of() */)
+	__releases(&to_sc16is7xx_one(port)->lock)
 {
 	struct sc16is7xx_one *one = to_sc16is7xx_one(port);
 

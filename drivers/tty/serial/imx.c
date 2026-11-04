@@ -2098,7 +2098,7 @@ static void imx_uart_console_putchar(struct uart_port *port, unsigned char ch)
 }
 
 static void imx_uart_console_device_lock(struct console *co, unsigned long *flags)
-	__context_unsafe(/* container_of() */)
+	__acquires(&imx_uart_ports[co->index]->port.lock)
 {
 	struct uart_port *up = &imx_uart_ports[co->index]->port;
 
@@ -2106,7 +2106,7 @@ static void imx_uart_console_device_lock(struct console *co, unsigned long *flag
 }
 
 static void imx_uart_console_device_unlock(struct console *co, unsigned long flags)
-	__context_unsafe(/* container_of() */)
+	__releases(&imx_uart_ports[co->index]->port.lock)
 {
 	struct uart_port *up = &imx_uart_ports[co->index]->port;
 

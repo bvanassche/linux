@@ -606,7 +606,7 @@ static int sgx_encl_debug_write(struct sgx_encl *encl, struct sgx_encl_page *pag
 static struct sgx_encl_page *sgx_encl_reserve_page(struct sgx_encl *encl,
 						   unsigned long addr,
 						   vm_flags_t vm_flags)
-	__context_unsafe(/* conditional locking + returns ERR_PTR() */)
+	__cond_acquires_err_ptr(&encl->lock)
 {
 	struct sgx_encl_page *entry;
 

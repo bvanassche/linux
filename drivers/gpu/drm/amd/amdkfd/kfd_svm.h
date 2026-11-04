@@ -203,7 +203,8 @@ int kfd_criu_restore_svm(struct kfd_process *p,
 int kfd_criu_resume_svm(struct kfd_process *p);
 struct kfd_process_device *
 svm_range_get_pdd_by_node(struct svm_range *prange, struct kfd_node *node);
-void svm_range_list_lock_and_flush_work(struct svm_range_list *svms, struct mm_struct *mm);
+void svm_range_list_lock_and_flush_work(struct svm_range_list *svms, struct mm_struct *mm)
+	__acquires(&mm->mmap_lock);
 
 /* SVM API and HMM page migration work together, device memory type
  * is initialized to not 0 when page migration register device memory.

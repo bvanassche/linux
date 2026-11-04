@@ -1321,7 +1321,8 @@ static int wdm_resume(struct usb_interface *intf)
 #endif
 
 static int wdm_pre_reset(struct usb_interface *intf)
-	__context_unsafe(/* acquires rlock and wlock for caller */)
+	__acquires(&wdm_find_device(intf)->rlock)
+	__acquires(&wdm_find_device(intf)->wlock)
 {
 	struct wdm_device *desc = wdm_find_device(intf);
 
@@ -1347,7 +1348,8 @@ static int wdm_pre_reset(struct usb_interface *intf)
 }
 
 static int wdm_post_reset(struct usb_interface *intf)
-	__context_unsafe(/* releases rlock and wlock held by caller */)
+	__releases(&wdm_find_device(intf)->wlock)
+	__releases(&wdm_find_device(intf)->rlock)
 {
 	struct wdm_device *desc = wdm_find_device(intf);
 	int rv;

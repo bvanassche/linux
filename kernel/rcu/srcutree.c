@@ -476,7 +476,7 @@ static void raw_spin_lock_irqsave_check_contention(struct srcu_struct *ssp)
  * parameter permits this.
  */
 static void raw_spin_lock_irqsave_sdp_contention(struct srcu_data *sdp, unsigned long *flags)
-	__context_unsafe(/* conditional locking */)
+	__acquires(&sdp->lock)
 {
 	struct srcu_struct *ssp = sdp->ssp;
 
@@ -495,7 +495,7 @@ static void raw_spin_lock_irqsave_sdp_contention(struct srcu_data *sdp, unsigned
  * parameter permits this.
  */
 static void raw_spin_lock_irqsave_ssp_contention(struct srcu_struct *ssp, unsigned long *flags)
-	__context_unsafe(/* conditional locking */)
+	__acquires(&ssp->srcu_sup->lock)
 {
 	if (raw_spin_trylock_irqsave_rcu_node(ssp->srcu_sup, *flags))
 		return;

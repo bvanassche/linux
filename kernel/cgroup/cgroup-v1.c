@@ -395,7 +395,7 @@ static int pidlist_array_load(struct cgroup *cgrp, enum cgroup_filetype type,
  */
 
 static void *cgroup_pidlist_start(struct seq_file *s, loff_t *pos)
-	__context_unsafe(/* acquires pidlist_mutex for caller */)
+	__acquires(&seq_css(s)->cgroup->pidlist_mutex)
 {
 	/*
 	 * Initially we receive a position value that corresponds to
@@ -457,7 +457,7 @@ static void *cgroup_pidlist_start(struct seq_file *s, loff_t *pos)
 }
 
 static void cgroup_pidlist_stop(struct seq_file *s, void *v)
-	__context_unsafe(/* releases pidlist_mutex held by caller */)
+	__releases(&seq_css(s)->cgroup->pidlist_mutex)
 {
 	struct kernfs_open_file *of = s->private;
 	struct cgroup_file_ctx *ctx = of->priv;

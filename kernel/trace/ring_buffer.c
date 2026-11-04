@@ -6296,7 +6296,7 @@ rb_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
 EXPORT_SYMBOL_GPL(ring_buffer_iter_peek);
 
 static inline bool rb_reader_lock(struct ring_buffer_per_cpu *cpu_buffer)
-	__context_unsafe(/* conditional locking */)
+	__cond_acquires(true, &cpu_buffer->reader_lock)
 {
 	if (likely(!in_nmi())) {
 		raw_spin_lock(&cpu_buffer->reader_lock);

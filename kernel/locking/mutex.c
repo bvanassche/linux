@@ -585,7 +585,7 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
  * This function is similar to (but not equivalent to) up().
  */
 void __sched mutex_unlock(struct mutex *lock)
-	__context_unsafe(/* releases mutex held by caller */)
+	__releases(lock)
 {
 #ifndef CONFIG_DEBUG_LOCK_ALLOC
 	if (__mutex_unlock_fast(lock))
@@ -888,7 +888,7 @@ EXPORT_SYMBOL(ww_mutex_trylock);
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
 void __sched
 mutex_lock_nested(struct mutex *lock, unsigned int subclass)
-	__context_unsafe(/* acquires mutex for caller */)
+	__acquires(lock)
 {
 	__mutex_lock(lock, TASK_UNINTERRUPTIBLE, subclass, NULL, _RET_IP_);
 	__acquire(lock);
@@ -923,7 +923,7 @@ EXPORT_SYMBOL_GPL(mutex_lock_interruptible_nested);
 
 void __sched
 mutex_lock_io_nested(struct mutex *lock, unsigned int subclass)
-	__context_unsafe(/* acquires mutex for caller */)
+	__acquires(lock)
 {
 	int token;
 

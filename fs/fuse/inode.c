@@ -594,7 +594,7 @@ void fuse_try_prune_one_inode(struct fuse_conn *fc, u64 nodeid)
 }
 
 bool fuse_lock_inode(struct inode *inode)
-	__context_unsafe(/* conditional locking */)
+	__cond_acquires(true, &get_fuse_inode(inode)->mutex)
 {
 	bool locked = false;
 

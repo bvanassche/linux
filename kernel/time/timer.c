@@ -2086,7 +2086,8 @@ void fetch_next_timer_interrupt_remote(unsigned long basej, u64 basem,
  * Unlocks the remote timer bases.
  */
 void timer_unlock_remote_bases(unsigned int cpu)
-	__context_unsafe(/* releases remote timer base locks held by caller */)
+	__releases(&per_cpu_ptr(&timer_bases[BASE_GLOBAL], cpu)->lock)
+	__releases(&per_cpu_ptr(&timer_bases[BASE_LOCAL], cpu)->lock)
 {
 	struct timer_base *base_local, *base_global;
 
@@ -2104,7 +2105,8 @@ void timer_unlock_remote_bases(unsigned int cpu)
  * Locks the remote timer bases.
  */
 void timer_lock_remote_bases(unsigned int cpu)
-	__context_unsafe(/* acquires remote timer base locks for caller */)
+	__acquires(&per_cpu_ptr(&timer_bases[BASE_LOCAL], cpu)->lock)
+	__acquires(&per_cpu_ptr(&timer_bases[BASE_GLOBAL], cpu)->lock)
 {
 	struct timer_base *base_local, *base_global;
 

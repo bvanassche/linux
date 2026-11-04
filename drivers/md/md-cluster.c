@@ -1103,7 +1103,7 @@ static int metadata_update_start(struct mddev *mddev)
 }
 
 static int metadata_update_finish(struct mddev *mddev)
-	__context_unsafe(/* conditional unlock */)
+	__releases(&mddev->cluster_info->recv_mutex)
 {
 	struct md_cluster_info *cinfo = mddev->cluster_info;
 	struct cluster_msg cmsg;

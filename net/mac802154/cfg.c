@@ -503,7 +503,7 @@ ieee802154_get_llsec_table(struct wpan_phy *wpan_phy,
 static void
 ieee802154_lock_llsec_table(struct wpan_phy *wpan_phy,
 			    struct wpan_dev *wpan_dev)
-	__context_unsafe(/* acquires sec_mtx for caller */)
+	__acquires(&IEEE802154_DEV_TO_SUB_IF(wpan_dev->netdev)->sec_mtx)
 {
 	struct net_device *dev = wpan_dev->netdev;
 	struct ieee802154_sub_if_data *sdata = IEEE802154_DEV_TO_SUB_IF(dev);
@@ -514,7 +514,7 @@ ieee802154_lock_llsec_table(struct wpan_phy *wpan_phy,
 static void
 ieee802154_unlock_llsec_table(struct wpan_phy *wpan_phy,
 			      struct wpan_dev *wpan_dev)
-	__context_unsafe(/* releases sec_mtx held by caller */)
+	__releases(&IEEE802154_DEV_TO_SUB_IF(wpan_dev->netdev)->sec_mtx)
 {
 	struct net_device *dev = wpan_dev->netdev;
 	struct ieee802154_sub_if_data *sdata = IEEE802154_DEV_TO_SUB_IF(dev);

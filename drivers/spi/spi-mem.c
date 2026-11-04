@@ -297,7 +297,8 @@ bool spi_mem_supports_op(struct spi_mem *mem, const struct spi_mem_op *op)
 EXPORT_SYMBOL_GPL(spi_mem_supports_op);
 
 static int spi_mem_access_start(struct spi_mem *mem)
-	__context_unsafe(/* requires alias analysis */)
+	__cond_acquires(0, &mem->spi->controller->bus_lock_mutex)
+	__cond_acquires(0, &mem->spi->controller->io_mutex)
 {
 	struct spi_controller *ctlr = mem->spi->controller;
 
@@ -325,7 +326,8 @@ static int spi_mem_access_start(struct spi_mem *mem)
 }
 
 static void spi_mem_access_end(struct spi_mem *mem)
-	__context_unsafe(/* requires alias analysis */)
+	__releases(&mem->spi->controller->io_mutex)
+	__releases(&mem->spi->controller->bus_lock_mutex)
 {
 	struct spi_controller *ctlr = mem->spi->controller;
 

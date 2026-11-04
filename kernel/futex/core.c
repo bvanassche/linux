@@ -930,7 +930,7 @@ retry:
 }
 
 void futex_q_lockptr_lock(struct futex_q *q)
-	__context_unsafe(/* retry loop on unstable q->lock_ptr */)
+	__acquires(q->lock_ptr)
 {
 	spinlock_t *lock_ptr;
 

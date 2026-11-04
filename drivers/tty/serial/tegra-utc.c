@@ -460,7 +460,7 @@ static void tegra_utc_console_write_thread(struct console *cons, struct nbcon_wr
 }
 
 static void tegra_utc_console_device_lock(struct console *cons, unsigned long *flags)
-	__context_unsafe(/* container_of() */)
+	__acquires(&container_of(cons, struct tegra_utc_port, console)->port.lock)
 {
 	struct tegra_utc_port *tup = container_of(cons, struct tegra_utc_port, console);
 	struct uart_port *port = &tup->port;
@@ -469,7 +469,7 @@ static void tegra_utc_console_device_lock(struct console *cons, unsigned long *f
 }
 
 static void tegra_utc_console_device_unlock(struct console *cons, unsigned long flags)
-	__context_unsafe(/* container_of() */)
+	__releases(&container_of(cons, struct tegra_utc_port, console)->port.lock)
 {
 	struct tegra_utc_port *tup = container_of(cons, struct tegra_utc_port, console);
 	struct uart_port *port = &tup->port;

@@ -445,8 +445,10 @@ static inline bool ovl_open_flags_need_copy_up(int flags)
 /* util.c */
 int ovl_get_write_access(struct dentry *dentry);
 void ovl_put_write_access(struct dentry *dentry);
-void ovl_start_write(struct dentry *dentry);
-void ovl_end_write(struct dentry *dentry);
+void ovl_start_write(struct dentry *dentry)
+	__acquires_shared(ovl_upper_mnt(OVL_FS(dentry->d_sb))->mnt_sb);
+void ovl_end_write(struct dentry *dentry)
+	__releases_shared(ovl_upper_mnt(OVL_FS(dentry->d_sb))->mnt_sb);
 int ovl_want_write(struct dentry *dentry);
 void ovl_drop_write(struct dentry *dentry);
 struct dentry *ovl_workdir(struct dentry *dentry);

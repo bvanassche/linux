@@ -2392,8 +2392,11 @@ const struct v4l2_subscribed_event_ops uvc_ctrl_sub_ev_ops = {
  * control lock.
  */
 int uvc_ctrl_begin(struct uvc_video_chain *chain)
+	__cond_acquires_range(0, INT_MAX, &chain->ctrl_mutex)
 {
-	return mutex_lock_interruptible(&chain->ctrl_mutex) ? -ERESTARTSYS : 0;
+	if (mutex_lock_interruptible(&chain->ctrl_mutex) < 0)
+		return -ERESTARTSYS;
+	return 0;
 }
 
 /*
@@ -2493,7 +2496,7 @@ static int uvc_ctrl_find_ctrl_idx(struct uvc_entity *entity,
 
 int __uvc_ctrl_commit(struct uvc_fh *handle, int rollback,
 		      struct v4l2_ext_controls *ctrls)
-	__context_unsafe(/* __releases(&handle->chain->ctrl_mutex) */)
+	__releases(&handle->chain->ctrl_mutex)
 {
 	struct uvc_video_chain *chain = handle->chain;
 	struct uvc_control *err_ctrl;

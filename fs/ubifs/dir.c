@@ -424,7 +424,7 @@ out_free:
  * wrapper function.
  */
 static void lock_2_inodes(struct inode *inode1, struct inode *inode2)
-	__context_unsafe(/* acquires locks for caller */)
+	__acquires(&ubifs_inode(inode1)->ui_mutex, &ubifs_inode(inode2)->ui_mutex)
 {
 	mutex_lock_nested(&ubifs_inode(inode1)->ui_mutex, WB_MUTEX_1);
 	mutex_lock_nested(&ubifs_inode(inode2)->ui_mutex, WB_MUTEX_2);
@@ -436,7 +436,7 @@ static void lock_2_inodes(struct inode *inode1, struct inode *inode2)
  * @inode2: second inode
  */
 static void unlock_2_inodes(struct inode *inode1, struct inode *inode2)
-	__context_unsafe(/* releases locks held by caller */)
+	__releases(&ubifs_inode(inode1)->ui_mutex, &ubifs_inode(inode2)->ui_mutex)
 {
 	mutex_unlock(&ubifs_inode(inode2)->ui_mutex);
 	mutex_unlock(&ubifs_inode(inode1)->ui_mutex);

@@ -44,7 +44,7 @@ EXPORT_SYMBOL_GPL(fpga_region_class_find);
  * * -ENODEV if can't take parent driver module refcount.
  */
 static struct fpga_region *fpga_region_get(struct fpga_region *region)
-	__context_unsafe(/* __cond_acquires() does not support ERR_PTR() */)
+	__cond_acquires_err_ptr(&region->mutex)
 {
 	struct device *dev = &region->dev;
 
@@ -61,6 +61,9 @@ static struct fpga_region *fpga_region_get(struct fpga_region *region)
 	}
 
 	dev_dbg(dev, "get\n");
+
+	if (IS_ERR(region))
+		unreachable();
 
 	return region;
 }

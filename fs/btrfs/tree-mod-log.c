@@ -206,7 +206,7 @@ static inline bool skip_eb_logging(const struct extent_buffer *eb)
  * write unlock fs_info::tree_mod_log_lock.
  */
 static bool tree_mod_dont_log(struct btrfs_fs_info *fs_info, const struct extent_buffer *eb)
-	__context_unsafe(/* conditional locking */)
+	__cond_acquires(false, &fs_info->tree_mod_log_lock)
 {
 	if (!test_bit(BTRFS_FS_TREE_MOD_LOG_USERS, &fs_info->flags))
 		return true;

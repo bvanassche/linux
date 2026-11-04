@@ -3197,7 +3197,7 @@ static void *ipmr_vif_seq_start(struct seq_file *seq, loff_t *pos)
 }
 
 static void ipmr_vif_seq_stop(struct seq_file *seq, void *v)
-	__context_unsafe(/* releases RCU held by caller */)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

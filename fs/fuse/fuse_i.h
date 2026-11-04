@@ -1240,7 +1240,8 @@ int fuse_do_setattr(const struct mnt_idmap *idmap, struct dentry *dentry,
 		    struct iattr *attr, struct file *file);
 
 void fuse_unlock_inode(struct inode *inode, bool locked);
-bool fuse_lock_inode(struct inode *inode);
+bool fuse_lock_inode(struct inode *inode)
+	__cond_acquires(true, &get_fuse_inode(inode)->mutex);
 
 int fuse_setxattr(struct inode *inode, const char *name, const void *value,
 		  size_t size, int flags, unsigned int extra_flags);

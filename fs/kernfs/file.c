@@ -155,7 +155,7 @@ static void kernfs_seq_stop_active(struct seq_file *sf, void *v)
 }
 
 static void *kernfs_seq_start(struct seq_file *sf, loff_t *ppos)
-	__context_unsafe(/* acquires of->mutex for caller */)
+	__acquires(&((struct kernfs_open_file *)sf->private)->mutex)
 {
 	struct kernfs_open_file *of = sf->private;
 	const struct kernfs_ops *ops;
@@ -201,7 +201,7 @@ static void *kernfs_seq_next(struct seq_file *sf, void *v, loff_t *ppos)
 }
 
 static void kernfs_seq_stop(struct seq_file *sf, void *v)
-	__context_unsafe(/* releases of->mutex held by caller */)
+	__releases(&((struct kernfs_open_file *)sf->private)->mutex)
 {
 	struct kernfs_open_file *of = sf->private;
 

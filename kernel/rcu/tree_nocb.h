@@ -90,7 +90,7 @@ module_param(nocb_nobypass_lim_per_jiffy, int, 0);
  * lock isn't immediately available, perform minimal sanity check.
  */
 static void rcu_nocb_bypass_lock(struct rcu_data *rdp)
-	__context_unsafe(/* acquires nocb_bypass_lock for caller */)
+	__acquires(&rdp->nocb_bypass_lock)
 {
 	lockdep_assert_irqs_disabled();
 	if (raw_spin_trylock(&rdp->nocb_bypass_lock))
@@ -108,6 +108,7 @@ static void rcu_nocb_bypass_lock(struct rcu_data *rdp)
  * ->nocb_bypass_lock.
  */
 static bool rcu_nocb_bypass_trylock(struct rcu_data *rdp)
+	__cond_acquires(true, &rdp->nocb_bypass_lock)
 {
 	lockdep_assert_irqs_disabled();
 	return raw_spin_trylock(&rdp->nocb_bypass_lock);
@@ -117,7 +118,7 @@ static bool rcu_nocb_bypass_trylock(struct rcu_data *rdp)
  * Release the specified rcu_data structure's ->nocb_bypass_lock.
  */
 static void rcu_nocb_bypass_unlock(struct rcu_data *rdp)
-	__context_unsafe(/* releases nocb_bypass_lock held by caller */)
+	__releases(&rdp->nocb_bypass_lock)
 {
 	lockdep_assert_irqs_disabled();
 	raw_spin_unlock(&rdp->nocb_bypass_lock);
@@ -370,7 +371,7 @@ static void wake_nocb_gp_defer(struct rcu_data *rdp, int waketype,
  */
 static bool rcu_nocb_do_flush_bypass(struct rcu_data *rdp, struct rcu_head *rhp_in,
 				     unsigned long j, bool lazy)
-	__context_unsafe(/* releases nocb_bypass_lock held by caller */)
+	__releases(&rdp->nocb_bypass_lock)
 {
 	struct rcu_cblist rcl;
 	struct rcu_head *rhp = rhp_in;

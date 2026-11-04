@@ -1952,7 +1952,7 @@ free_ctx:
 void
 svm_range_list_lock_and_flush_work(struct svm_range_list *svms,
 				   struct mm_struct *mm)
-	__context_unsafe(/* conditionally acquires the mm semaphore */)
+	__acquires(&mm->mmap_lock)
 {
 retry_flush_work:
 	flush_work(&svms->deferred_list_work);

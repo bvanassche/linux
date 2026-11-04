@@ -683,13 +683,13 @@ static inline void __slab_clear_pfmemalloc(struct slab *slab)
  * Per slab locking using the pagelock
  */
 static __always_inline void slab_lock(struct slab *slab)
-	__context_unsafe(/* acquires slab lock for caller */)
+	__acquires(__bitlock(SL_locked, &slab->flags.f))
 {
 	bit_spin_lock(SL_locked, &slab->flags.f);
 }
 
 static __always_inline void slab_unlock(struct slab *slab)
-	__context_unsafe(/* releases slab lock held by caller */)
+	__releases(__bitlock(SL_locked, &slab->flags.f))
 {
 	bit_spin_unlock(SL_locked, &slab->flags.f);
 }
@@ -4755,7 +4755,8 @@ bool slab_post_alloc_hook(struct kmem_cache *s, gfp_t flags, size_t size,
 static struct slub_percpu_sheaves *
 __pcs_replace_empty_main(struct kmem_cache *s, struct slub_percpu_sheaves *pcs,
 			 gfp_t gfp, unsigned int alloc_flags)
-	__context_unsafe(/* conditional unlocking */)
+	__releases(&s->cpu_sheaves->lock)
+	__cond_acquires(nonnull, &s->cpu_sheaves->lock)
 {
 	struct slab_sheaf *empty = NULL;
 	struct slab_sheaf *full;

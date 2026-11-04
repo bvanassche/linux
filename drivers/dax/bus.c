@@ -723,7 +723,7 @@ static struct dev_dax_range *get_dax_range(struct device *dev)
 	int rc;
 
 	rc = down_write_killable(&dax_region_rwsem);
-	if (rc)
+	if (rc < 0)
 		return NULL;
 	if (mapping->range_id < 0) {
 		up_write(&dax_region_rwsem);

@@ -136,6 +136,7 @@ Keywords
                  __acquires_shared
                  __cond_acquires_shared
                  __cond_acquires_shared_range
+                 __cond_acquires_shared_err_ptr
                  __releases_shared
                  __acquire
                  __release

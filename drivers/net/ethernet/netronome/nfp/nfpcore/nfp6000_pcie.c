@@ -417,6 +417,7 @@ static int
 find_unused_bar_and_lock(struct nfp6000_pcie *nfp,
 			 int tgt, int act, int tok,
 			 u64 offset, size_t size, int width)
+	__cond_acquires_range(0, INT_MAX, &nfp->bar_lock)
 {
 	unsigned long flags;
 	int n;
@@ -426,8 +427,6 @@ find_unused_bar_and_lock(struct nfp6000_pcie *nfp,
 	n = find_unused_bar_noblock(nfp, tgt, act, tok, offset, size, width);
 	if (n < 0)
 		spin_unlock_irqrestore(&nfp->bar_lock, flags);
-	else
-		__release(&nfp->bar_lock);
 
 	return n;
 }
@@ -446,6 +445,8 @@ static void nfp_bar_put(struct nfp6000_pcie *nfp, struct nfp_bar *bar)
 static int
 nfp_wait_for_bar(struct nfp6000_pcie *nfp, int *barnum,
 		 u32 tgt, u32 act, u32 tok, u64 offset, size_t size, int width)
+	__cond_acquires_range(0, INT_MAX, &nfp->bar_lock)
+	__context_unsafe(/* TODO */)
 {
 	return wait_event_interruptible(nfp->bar_waiters,
 		(*barnum = find_unused_bar_and_lock(nfp, tgt, act, tok,
@@ -488,7 +489,6 @@ nfp_alloc_bar(struct nfp6000_pcie *nfp,
 					  offset, size, width);
 		if (retval)
 			return retval;
-		__acquire(&nfp->bar_lock);
 	}
 
 	nfp_bar_get(nfp, &nfp->bar[barnum]);

@@ -291,6 +291,7 @@ int smc_rx_wait(struct sock *sk, struct smc_sock *smc, long *timeo,
  * RMB; smc_conn_kill() wakes it and the caller checks conn->killed.
  */
 static void smc_rx_wait_splice(struct smc_sock *smc, long *timeo)
+	__must_hold(&smc->sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct smc_connection *conn = &smc->conn;
@@ -384,6 +385,8 @@ int smc_rx_recvmsg(struct sock *sk, struct smc_sock *smc, struct msghdr *msg,
 	long timeo;
 	int target;		/* Read at least these many bytes */
 	int rc;
+
+	__assume_ctx_lock(&smc->sk);
 
 	if (unlikely(flags & MSG_ERRQUEUE))
 		return -EINVAL; /* future work for sk.sk_family == AF_SMC */

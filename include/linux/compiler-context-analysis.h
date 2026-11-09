@@ -354,6 +354,17 @@ static inline void _context_unsafe_alias(void **p) { }
 #define __cond_acquires_range(first, last, ...) \
 	__try_acquires_ctx_lock_range(first, last, __VA_ARGS__)
 
+/**
+ * __cond_acquires_err_ptr() - function attribute, function conditionally
+ *                             acquires context lock(s) exclusively unless
+ *                             returning an error pointer
+ * @...: context lock instance pointer(s)
+ *
+ * Function attribute declaring that the function conditionally acquires the
+ * given context lock instance(s) exclusively, but does not release them. The
+ * context lock(s) are acquired if and only if the function returns a valid
+ * non-error pointer (or NULL), i.e. when IS_ERR() evaluates to false.
+ */
 #define __cond_acquires_err_ptr(...)					\
 	__cond_acquires_range(0, (unsigned long)-MAX_ERRNO - 1, __VA_ARGS__)
 
@@ -458,6 +469,20 @@ static inline void _context_unsafe_alias(void **p) { }
  */
 #define __cond_acquires_shared_range(first, last, ...) \
 	__try_acquires_shared_ctx_lock_range(first, last, __VA_ARGS__)
+
+/**
+ * __cond_acquires_shared_err_ptr() - function attribute, function conditionally
+ *                                    acquires context lock(s) shared unless
+ *                                    returning an error pointer
+ * @...: context lock instance pointer(s)
+ *
+ * Function attribute declaring that the function conditionally acquires the
+ * given context lock instance(s) with shared access, but does not release
+ * them. The context lock(s) are acquired if and only if the function returns
+ * a valid non-error pointer (or NULL), i.e. when IS_ERR() evaluates to false.
+ */
+#define __cond_acquires_shared_err_ptr(...)				\
+	__cond_acquires_shared_range(0, (unsigned long)-MAX_ERRNO - 1, __VA_ARGS__)
 
 /**
  * __releases_shared() - function attribute, function releases a

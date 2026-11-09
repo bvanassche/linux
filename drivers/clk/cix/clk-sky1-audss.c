@@ -595,18 +595,12 @@ static u8 sky1_audss_clk_mux_get_parent(struct clk_hw *hw)
 	return clk_mux_val_to_index(hw, mux->table, mux->flags, val);
 }
 
-static int sky1_audss_clk_mux_set_parent(struct clk_hw *hw, u8 index)
+static void __sky1_audss_clk_mux_set_parent(struct clk_hw *hw, u8 index)
 {
 	struct clk_mux *mux = to_clk_mux(hw);
 	u32 val = clk_mux_index_to_val(mux->table, mux->flags, index);
 	struct sky1_clk_mux *sky1_mux = to_sky1_clk_mux(mux);
-	unsigned long flags = 0;
 	u32 reg;
-
-	if (mux->lock)
-		spin_lock_irqsave(mux->lock, flags);
-	else
-		__acquire(mux->lock);
 
 	if (mux->flags & CLK_MUX_HIWORD_MASK) {
 		reg = mux->mask << (mux->shift + 16);
@@ -617,11 +611,18 @@ static int sky1_audss_clk_mux_set_parent(struct clk_hw *hw, u8 index)
 	val = val << mux->shift;
 	reg |= val;
 	regmap_write(sky1_mux->regmap, sky1_mux->offset, reg);
+}
 
-	if (mux->lock)
-		spin_unlock_irqrestore(mux->lock, flags);
-	else
-		__release(mux->lock);
+static int sky1_audss_clk_mux_set_parent(struct clk_hw *hw, u8 index)
+{
+	struct clk_mux *mux = to_clk_mux(hw);
+
+	if (mux->lock) {
+		guard(spinlock_irqsave)(mux->lock);
+		__sky1_audss_clk_mux_set_parent(hw, index);
+	} else {
+		__sky1_audss_clk_mux_set_parent(hw, index);
+	}
 
 	return 0;
 }

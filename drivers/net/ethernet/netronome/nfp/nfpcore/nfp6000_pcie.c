@@ -447,10 +447,17 @@ static int
 nfp_wait_for_bar(struct nfp6000_pcie *nfp, int *barnum,
 		 u32 tgt, u32 act, u32 tok, u64 offset, size_t size, int width)
 {
-	return wait_event_interruptible(nfp->bar_waiters,
+	int ret;
+
+	ret = wait_event_interruptible(nfp->bar_waiters,
 		(*barnum = find_unused_bar_and_lock(nfp, tgt, act, tok,
 						    offset, size, width))
 					!= -EAGAIN);
+	if (ret)
+		return ret;
+	if (*barnum < 0)
+		return *barnum;
+	return 0;
 }
 
 static int

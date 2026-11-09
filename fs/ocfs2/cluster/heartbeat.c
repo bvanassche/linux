@@ -1884,6 +1884,7 @@ out:
  */
 static ssize_t __o2hb_region_dev_store(struct o2hb_region *reg,
 				       const char *page, size_t count)
+	__must_hold(&reg->hr_dev_mutex)
 {
 	struct task_struct *hb_task;
 	long fd;

@@ -307,6 +307,7 @@ choice
 
 	config RANDSTRUCT_FULL
 		bool "Fully randomize structure layout"
+		depends on BROKEN
 		depends on CC_HAS_RANDSTRUCT || GCC_PLUGINS
 		select MODVERSIONS if MODULES && !COMPILE_TEST
 		help

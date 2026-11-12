@@ -339,6 +339,7 @@ endif # MODULE_SIG || IMA_APPRAISE_MODSIG
 
 config MODULE_COMPRESS
 	bool "Module compression"
+	depends on BROKEN
 	help
 	  Enable module compression to reduce on-disk size of module binaries.
 	  This is fully compatible with signed modules.
@@ -381,6 +382,7 @@ endchoice
 
 config MODULE_COMPRESS_ALL
 	bool "Automatically compress all modules"
+	depends on BROKEN
 	default y
 	help
 	  Compress all modules during 'make modules_install'.

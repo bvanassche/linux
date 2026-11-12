@@ -945,6 +945,7 @@ config ARCH_USES_CFI_GENERIC_LLVM_PASS
 
 config CFI
 	bool "Use Kernel Control Flow Integrity (kCFI)"
+	depends on BROKEN
 	default CFI_CLANG
 	depends on ARCH_SUPPORTS_CFI
 	depends on $(cc-option,-fsanitize=kcfi)

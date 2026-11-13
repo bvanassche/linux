@@ -551,6 +551,7 @@ static void kill_super_notify(struct super_block *sb)
  *	Caller holds exclusive lock on superblock; that lock is released.
  */
 void deactivate_locked_super(struct super_block *s)
+	__releases(&s->s_umount)
 {
 	struct file_system_type *fs = s->s_type;
 	if (atomic_dec_and_test(&s->s_active)) {
@@ -693,6 +694,7 @@ EXPORT_SYMBOL(retire_super);
  *	change the attachments of dentries to inodes.
  */
 void generic_shutdown_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	const struct super_operations *sop = sb->s_op;
 
@@ -1312,6 +1314,7 @@ int set_anon_super(struct super_block *s, void *data)
 EXPORT_SYMBOL(set_anon_super);
 
 void kill_anon_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	dev_t dev = sb->s_dev;
 	generic_shutdown_super(sb);
@@ -1848,6 +1851,7 @@ int get_tree_bdev(struct fs_context *fc,
 EXPORT_SYMBOL(get_tree_bdev);
 
 void kill_block_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct block_device *bdev = sb->s_bdev;
 

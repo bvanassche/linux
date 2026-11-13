@@ -2332,7 +2332,7 @@ struct file_system_type {
 #define FS_RENAME_DOES_D_MOVE	32768	/* FS will handle d_move() during rename() internally. */
 	int (*init_fs_context)(struct fs_context *);
 	const struct fs_parameter_spec *parameters;
-	void (*kill_sb) (struct super_block *);
+	void (*kill_sb) (struct super_block *sb) __releases(&sb->s_umount);
 	struct module *owner;
 	struct hlist_node list;
 	struct hlist_head fs_supers;
@@ -2365,11 +2365,15 @@ static inline bool is_mgtime(const struct inode *inode)
 
 extern struct dentry *mount_subtree(struct vfsmount *mnt, const char *path);
 void retire_super(struct super_block *sb);
-void generic_shutdown_super(struct super_block *sb);
-void kill_block_super(struct super_block *sb);
-void kill_anon_super(struct super_block *sb);
+void generic_shutdown_super(struct super_block *sb)
+	__releases(&sb->s_umount);
+void kill_block_super(struct super_block *sb)
+	__releases(&sb->s_umount);
+void kill_anon_super(struct super_block *sb)
+	__releases(&sb->s_umount);
 void deactivate_super(struct super_block *sb);
-void deactivate_locked_super(struct super_block *sb);
+void deactivate_locked_super(struct super_block *sb)
+	__releases(&sb->s_umount);
 int set_anon_super(struct super_block *s, void *data);
 int set_anon_super_fc(struct super_block *s, struct fs_context *fc);
 int get_anon_bdev(dev_t *);

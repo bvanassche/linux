@@ -804,8 +804,7 @@ static int io_register_mem_region(struct io_ring_ctx *ctx, void __user *uarg)
 
 static int __io_uring_register(struct io_ring_ctx *ctx, unsigned opcode,
 			       void __user *arg, unsigned nr_args)
-	__releases(ctx->uring_lock)
-	__acquires(ctx->uring_lock)
+	__must_hold(&ctx->uring_lock)
 {
 	int ret;
 

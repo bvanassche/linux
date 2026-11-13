@@ -29,6 +29,7 @@
 
 #include <linux/list.h>
 #include <linux/irqreturn.h>
+#include <linux/srcu.h>
 
 #include <video/nomodeset.h>
 
@@ -480,6 +481,8 @@ void drm_dev_unregister(struct drm_device *dev);
 void drm_dev_get(struct drm_device *dev);
 void drm_dev_put(struct drm_device *dev);
 void drm_put_dev(struct drm_device *dev);
+extern struct srcu_struct drm_unplug_srcu;
+
 bool drm_dev_enter(struct drm_device *dev, int *idx);
 void drm_dev_exit(int idx);
 void drm_dev_unplug(struct drm_device *dev);

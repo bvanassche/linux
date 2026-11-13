@@ -27,6 +27,8 @@
 #include <linux/kthread.h>
 #include <linux/types.h>
 
+#include <drm/drm_device.h>
+#include <drm/drm_gem.h>
 #include <drm/drm_ioctl.h>
 #include <drm/drm_vblank.h>
 

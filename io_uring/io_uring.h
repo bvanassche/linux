@@ -381,14 +381,18 @@ static inline void io_put_file(struct io_kiocb *req)
 
 static inline void io_ring_submit_unlock(struct io_ring_ctx *ctx,
 					 unsigned issue_flags)
+	__releases(&ctx->uring_lock)
 {
 	lockdep_assert_held(&ctx->uring_lock);
 	if (unlikely(issue_flags & IO_URING_F_UNLOCKED))
 		mutex_unlock(&ctx->uring_lock);
+	else
+		__release(&ctx->uring_lock);
 }
 
 static inline void io_ring_submit_lock(struct io_ring_ctx *ctx,
 				       unsigned issue_flags)
+	__acquires(&ctx->uring_lock)
 {
 	/*
 	 * "Normal" inline submissions always hold the uring_lock, since we
@@ -398,6 +402,8 @@ static inline void io_ring_submit_lock(struct io_ring_ctx *ctx,
 	 */
 	if (unlikely(issue_flags & IO_URING_F_UNLOCKED))
 		mutex_lock(&ctx->uring_lock);
+	else
+		__acquire(&ctx->uring_lock);
 	lockdep_assert_held(&ctx->uring_lock);
 }
 

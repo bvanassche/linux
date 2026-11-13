@@ -10,6 +10,8 @@
 
 #include <drm/drm_connector.h>
 #include <drm/drm_crtc.h>
+#include <drm/drm_framebuffer.h>
+#include <drm/drm_gem.h>
 
 struct drm_client_dev;
 struct drm_device;

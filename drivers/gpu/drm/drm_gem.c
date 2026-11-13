@@ -503,7 +503,7 @@ drm_gem_handle_create_tail(struct drm_file *file_priv,
 	spin_unlock(&file_priv->table_lock);
 	idr_preload_end();
 
-	mutex_unlock(&dev->object_name_lock);
+	mutex_unlock(&obj->dev->object_name_lock);
 	if (ret < 0)
 		goto err_unref;
 

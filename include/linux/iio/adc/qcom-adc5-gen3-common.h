@@ -12,8 +12,11 @@
 #include <linux/auxiliary_bus.h>
 #include <linux/bitfield.h>
 #include <linux/bits.h>
+#include <linux/completion.h>
 #include <linux/device.h>
 #include <linux/iio/adc/qcom-vadc-common.h>
+#include <linux/iio/iio.h>
+#include <linux/mutex.h>
 #include <linux/regmap.h>
 #include <linux/types.h>
 
@@ -179,6 +182,33 @@ struct tm5_aux_dev_wrapper {
 	struct auxiliary_device aux_dev;
 	struct adc5_device_data *dev_data;
 	struct adc5_channel_common_prop *tm_props;
+	unsigned int n_tm_channels;
+};
+
+struct adc5_channel_prop;
+
+/**
+ * struct adc5_chip - SPMI PMIC5 Gen3 ADC device structure.
+ * @dev: SPMI ADC5 Gen3 device.
+ * @dev_data: top-level ADC5 Gen3 device data.
+ * @nchannels: number of ADC channels.
+ * @chan_props: array of ADC channel properties.
+ * @iio_chans: array of IIO channels specification.
+ * @complete: ADC result notification after interrupt is received.
+ * @lock: ADC lock for access to the peripheral, to prevent concurrent
+ *	requests from multiple clients.
+ * @data: software configuration data.
+ * @n_tm_channels: number of ADC channels used for TM measurements.
+ */
+struct adc5_chip {
+	struct device *dev;
+	struct adc5_device_data dev_data;
+	unsigned int nchannels;
+	struct adc5_channel_prop *chan_props;
+	struct iio_chan_spec *iio_chans;
+	struct completion complete;
+	struct mutex lock;
+	const struct adc5_data *data;
 	unsigned int n_tm_channels;
 };
 

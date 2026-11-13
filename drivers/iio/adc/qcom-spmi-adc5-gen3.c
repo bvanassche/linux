@@ -43,31 +43,6 @@ struct adc5_channel_prop {
 	struct adc5_chip *chip;
 };
 
-/**
- * struct adc5_chip - ADC private structure.
- * @dev: SPMI ADC5 Gen3 device.
- * @dev_data: Top-level ADC device data.
- * @nchannels: number of ADC channels.
- * @chan_props: array of ADC channel properties.
- * @iio_chans: array of IIO channels specification.
- * @complete: ADC result notification after interrupt is received.
- * @lock: ADC lock for access to the peripheral, to prevent concurrent
- *	requests from multiple clients.
- * @data: software configuration data.
- * @n_tm_channels: number of ADC channels used for TM measurements.
- */
-struct adc5_chip {
-	struct device *dev;
-	struct adc5_device_data dev_data;
-	unsigned int nchannels;
-	struct adc5_channel_prop *chan_props;
-	struct iio_chan_spec *iio_chans;
-	struct completion complete;
-	struct mutex lock;
-	const struct adc5_data *data;
-	unsigned int n_tm_channels;
-};
-
 int adc5_gen3_read(struct adc5_device_data *adc, unsigned int sdam_index,
 		   u16 offset, u8 *data, int len)
 {

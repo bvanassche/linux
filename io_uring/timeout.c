@@ -198,6 +198,7 @@ __cold void io_flush_timeouts(struct io_ring_ctx *ctx)
 		if (events_got < events_needed)
 			break;
 
+		lockdep_assert_held(&req->ctx->timeout_lock);
 		io_kill_timeout(req, &list);
 	}
 	ctx->cq_last_tm_flush = seq;
@@ -824,6 +825,7 @@ __cold bool io_kill_timeouts(struct io_ring_ctx *ctx, struct io_uring_task *tctx
 	list_for_each_entry_safe(timeout, tmp, &ctx->timeout_list, list) {
 		struct io_kiocb *req = cmd_to_io_kiocb(timeout);
 
+		lockdep_assert_held(&req->ctx->timeout_lock);
 		if (io_match_task(req, tctx, cancel_all))
 			io_kill_timeout(req, &list);
 	}

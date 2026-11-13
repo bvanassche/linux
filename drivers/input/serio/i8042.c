@@ -153,7 +153,7 @@ static DEFINE_SPINLOCK(i8042_lock);
  * implementations write to one of the ports will immediately abort
  * command that is being processed by another port).
  */
-static DEFINE_MUTEX(i8042_mutex);
+DEFINE_MUTEX(i8042_mutex);
 
 struct i8042_port {
 	struct serio *serio;

@@ -4,6 +4,7 @@
 
 
 #include <linux/errno.h>
+#include <linux/mutex.h>
 #include <linux/types.h>
 
 /*
@@ -69,6 +70,8 @@ struct serio;
  */
 typedef bool (*i8042_filter_t)(unsigned char data, unsigned char str, struct serio *serio,
 			       void *context);
+
+extern struct mutex i8042_mutex;
 
 #if defined(CONFIG_SERIO_I8042) || defined(CONFIG_SERIO_I8042_MODULE)
 

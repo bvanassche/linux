@@ -7,4 +7,3 @@
 # selected.
 
 [thread-safety]
-src:*arch/*/include/*

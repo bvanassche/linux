@@ -29,7 +29,7 @@ unsigned int key_quota_maxkeys = 200;		/* general key count quota */
 unsigned int key_quota_maxbytes = 20000;	/* general key space quota */
 
 static LIST_HEAD(key_types_list);
-static DECLARE_RWSEM(key_types_sem);
+DECLARE_RWSEM(key_types_sem);
 
 /* We serialise key instantiation and link */
 DEFINE_MUTEX(key_construction_mutex);

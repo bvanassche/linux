@@ -255,7 +255,7 @@ int rxe_odp_mr_copy(struct rxe_mr *mr, u64 iova, void *addr, int length,
 	}
 
 	err = rxe_odp_map_range_and_lock(mr, iova, length, flags);
-	if (err)
+	if (err < 0)
 		return err;
 
 	err =  __rxe_odp_mr_copy(mr, iova, addr, length, dir);
@@ -348,7 +348,7 @@ int rxe_odp_flush_pmem_iova(struct rxe_mr *mr, u64 iova,
 	/* A flush never modifies memory; read-only access suffices. */
 	err = rxe_odp_map_range_and_lock(mr, iova, length,
 					 RXE_PAGEFAULT_RDONLY);
-	if (err)
+	if (err < 0)
 		return err;
 
 	while (length > 0) {
@@ -391,7 +391,7 @@ enum resp_states rxe_odp_do_atomic_write(struct rxe_mr *mr, u64 iova, u64 value)
 
 	err = rxe_odp_map_range_and_lock(mr, iova, sizeof(value),
 					 RXE_PAGEFAULT_DEFAULT);
-	if (err)
+	if (err < 0)
 		return RESPST_ERR_RKEY_VIOLATION;
 
 	page_offset = rxe_odp_iova_to_page_offset(umem_odp, iova);

@@ -1061,17 +1061,16 @@ int keyring_restrict(key_ref_t keyring_ref, const char *type,
 			return PTR_ERR(restrict_type);
 
 		if (!restrict_type->lookup_restriction) {
-			ret = -ENOENT;
-			goto error;
+			key_type_put(restrict_type);
+			return -ENOENT;
 		}
 
 		restrict_link = restrict_type->lookup_restriction(restriction);
+		key_type_put(restrict_type);
 	}
 
-	if (IS_ERR(restrict_link)) {
-		ret = PTR_ERR(restrict_link);
-		goto error;
-	}
+	if (IS_ERR(restrict_link))
+		return PTR_ERR(restrict_link);
 
 	down_write(&keyring->sem);
 	down_write(&keyring_serialise_restrict_sem);
@@ -1092,10 +1091,6 @@ int keyring_restrict(key_ref_t keyring_ref, const char *type,
 		key_put(restrict_link->key);
 		kfree(restrict_link);
 	}
-
-error:
-	if (restrict_type)
-		key_type_put(restrict_type);
 
 	return ret;
 }

@@ -106,23 +106,6 @@ struct uverbs_obj_idr_type {
 					   struct uverbs_attr_bundle *attrs);
 };
 
-struct ib_uobject *rdma_lookup_get_uobject(const struct uverbs_api_object *obj,
-					   struct ib_uverbs_file *ufile, s64 id,
-					   enum rdma_lookup_mode mode,
-					   struct uverbs_attr_bundle *attrs);
-void rdma_lookup_put_uobject(struct ib_uobject *uobj,
-			     enum rdma_lookup_mode mode);
-struct ib_uobject *rdma_alloc_begin_uobject(const struct uverbs_api_object *obj,
-					    struct uverbs_attr_bundle *attrs);
-void rdma_alloc_abort_uobject(struct ib_uobject *uobj,
-			      struct uverbs_attr_bundle *attrs,
-			      bool hw_obj_valid);
-void rdma_alloc_commit_uobject(struct ib_uobject *uobj,
-			       struct uverbs_attr_bundle *attrs);
-void rdma_assign_uobject(struct ib_uobject *to_uobj,
-			 struct ib_uobject *new_uobj,
-			 struct uverbs_attr_bundle *attrs);
-
 /*
  * uverbs_uobject_get is called in order to increase the reference count on
  * an uobject. This is useful when a handler wants to keep the uobject's memory

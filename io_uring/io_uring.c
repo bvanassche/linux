@@ -2007,6 +2007,7 @@ static int io_init_req(struct io_ring_ctx *ctx, struct io_kiocb *req,
 
 static __cold int io_submit_fail_init(const struct io_uring_sqe *sqe,
 				      struct io_kiocb *req, int ret)
+	__must_hold(&req->ctx->uring_lock)
 {
 	struct io_ring_ctx *ctx = req->ctx;
 	struct io_submit_link *link = &ctx->submit_state.link;
@@ -2029,6 +2030,7 @@ static __cold int io_submit_fail_init(const struct io_uring_sqe *sqe,
 			link->last->link = req;
 			link->head = NULL;
 			req = head;
+			lockdep_assert_held(&req->ctx->uring_lock);
 		}
 		io_queue_sqe_fallback(req);
 		return ret;
@@ -2050,6 +2052,7 @@ static inline int io_submit_sqe(struct io_ring_ctx *ctx, struct io_kiocb *req,
 	int ret;
 
 	ret = io_init_req(ctx, req, sqe, left);
+	lockdep_assert_held(&req->ctx->uring_lock);
 	if (unlikely(ret))
 		return io_submit_fail_init(sqe, req, ret);
 
@@ -2078,6 +2081,7 @@ static inline int io_submit_sqe(struct io_ring_ctx *ctx, struct io_kiocb *req,
 			return 0;
 		/* last request of the link, flush it */
 		req = link->head;
+		lockdep_assert_held(&req->ctx->uring_lock);
 		link->head = NULL;
 		if (req->flags & (REQ_F_FORCE_ASYNC | REQ_F_FAIL))
 			goto fallback;
@@ -2102,11 +2106,14 @@ fallback:
  * Batched submission is done, ensure local IO is flushed out.
  */
 static void io_submit_state_end(struct io_ring_ctx *ctx)
+	__must_hold(&ctx->uring_lock)
 {
 	struct io_submit_state *state = &ctx->submit_state;
 
-	if (unlikely(state->link.head))
+	if (unlikely(state->link.head)) {
+		lockdep_assert_held(&state->link.head->ctx->uring_lock);
 		io_queue_sqe_fallback(state->link.head);
+	}
 	/* flush only after queuing links as they can generate completions */
 	io_submit_flush_completions(ctx);
 	if (state->plug_started)

@@ -6887,9 +6887,9 @@ __acquires(bitlock)
 	 * being trimmed.
 	 */
 	mb_mark_used(e4b, &ex);
-	ext4_unlock_group(sb, group);
+	ext4_unlock_group(sb, e4b->bd_group);
 	ret = ext4_issue_discard(sb, group, start, count);
-	ext4_lock_group(sb, group);
+	ext4_lock_group(sb, e4b->bd_group);
 	mb_free_blocks(NULL, e4b, start, ex.fe_len);
 	return ret;
 }

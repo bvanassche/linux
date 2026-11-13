@@ -736,11 +736,11 @@ static inline void mddev_lock_nointr(struct mddev *mddev)
 
 static inline int mddev_trylock(struct mddev *mddev)
 {
-	int ret;
+	bool ret;
 
 	ret = mutex_trylock(&mddev->reconfig_mutex);
 	if (ret && test_bit(MD_DELETED, &mddev->flags)) {
-		ret = 0;
+		ret = false;
 		mutex_unlock(&mddev->reconfig_mutex);
 	}
 	return ret;

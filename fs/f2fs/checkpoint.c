@@ -1582,7 +1582,7 @@ retry_flush_nodes:
 	 */
 	__prepare_cp_block(sbi);
 	f2fs_up_write(&sbi->node_change);
-	return err;
+	return 0;
 }
 
 static void unblock_operations(struct f2fs_sb_info *sbi)

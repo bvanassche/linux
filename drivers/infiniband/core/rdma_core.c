@@ -538,7 +538,6 @@ err_fd:
 struct ib_uobject *rdma_alloc_begin_uobject(const struct uverbs_api_object *obj,
 					    struct uverbs_attr_bundle *attrs)
 {
-	struct ib_uverbs_file *ufile = attrs->ufile;
 	struct ib_uobject *ret;
 
 	if (IS_ERR(obj))
@@ -549,12 +548,12 @@ struct ib_uobject *rdma_alloc_begin_uobject(const struct uverbs_api_object *obj,
 	 * released during rdma_alloc_commit_uobject or
 	 * rdma_alloc_abort_uobject
 	 */
-	if (!down_read_trylock(&ufile->hw_destroy_rwsem))
+	if (!down_read_trylock(&attrs->ufile->hw_destroy_rwsem))
 		return ERR_PTR(-EIO);
 
 	ret = obj->type_class->alloc_begin(obj, attrs);
 	if (IS_ERR(ret)) {
-		up_read(&ufile->hw_destroy_rwsem);
+		up_read(&attrs->ufile->hw_destroy_rwsem);
 		return ret;
 	}
 	return ret;
@@ -704,7 +703,7 @@ void rdma_alloc_commit_uobject(struct ib_uobject *uobj,
 	uobj->uapi_object->type_class->alloc_commit(uobj);
 
 	/* Matches the down_read in rdma_alloc_begin_uobject */
-	up_read(&ufile->hw_destroy_rwsem);
+	up_read(&attrs->ufile->hw_destroy_rwsem);
 }
 EXPORT_SYMBOL_NS_GPL(rdma_alloc_commit_uobject, "rdma_core");
 
@@ -747,7 +746,6 @@ void rdma_alloc_abort_uobject(struct ib_uobject *uobj,
 			      struct uverbs_attr_bundle *attrs,
 			      bool hw_obj_valid)
 {
-	struct ib_uverbs_file *ufile = uobj->ufile;
 	int ret;
 
 	if (hw_obj_valid) {
@@ -767,7 +765,7 @@ void rdma_alloc_abort_uobject(struct ib_uobject *uobj,
 	uverbs_destroy_uobject(uobj, RDMA_REMOVE_ABORT, attrs);
 
 	/* Matches the down_read in rdma_alloc_begin_uobject */
-	up_read(&ufile->hw_destroy_rwsem);
+	up_read(&attrs->ufile->hw_destroy_rwsem);
 }
 EXPORT_SYMBOL_NS_GPL(rdma_alloc_abort_uobject, "rdma_core");
 

@@ -247,7 +247,8 @@ static inline bool af_alg_readable(struct sock *sk)
 unsigned int af_alg_count_tsgl(struct sock *sk, size_t bytes);
 void af_alg_pull_tsgl(struct sock *sk, size_t used, struct scatterlist *dst);
 void af_alg_wmem_wakeup(struct sock *sk);
-int af_alg_wait_for_data(struct sock *sk, unsigned flags, unsigned min);
+int af_alg_wait_for_data(struct sock *sk, unsigned flags, unsigned min)
+	__must_hold(sk);
 int af_alg_sendmsg(struct socket *sock, struct msghdr *msg, size_t size,
 		   unsigned int ivsize);
 void af_alg_free_resources(struct af_alg_async_req *areq);

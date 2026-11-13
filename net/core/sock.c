@@ -3322,8 +3322,7 @@ static void __lock_sock(struct sock *sk)
 }
 
 void __release_sock(struct sock *sk)
-	__releases(&sk->sk_lock.slock)
-	__acquires(&sk->sk_lock.slock)
+	__must_hold(&sk->sk_lock.slock)
 {
 	struct sk_buff *skb, *next;
 	int nb = 0;
@@ -3381,6 +3380,7 @@ EXPORT_SYMBOL_GPL(__sk_flush_backlog);
  * it is very likely that release_sock() added new data.
  */
 int sk_wait_data(struct sock *sk, long *timeo, const struct sk_buff *skb)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	int rc;
@@ -3901,6 +3901,8 @@ void sock_init_data(struct socket *sock, struct sock *sk)
 EXPORT_SYMBOL(sock_init_data);
 
 void noinline lock_sock_nested(struct sock *sk, int subclass)
+	__must_not_hold(&sk->sk_lock.slock)
+	__acquires(sk)
 {
 	/* The sk_lock has mutex_lock() semantics here. */
 	mutex_acquire(&sk->sk_lock.dep_map, subclass, 0, _RET_IP_);
@@ -3918,19 +3920,24 @@ void noinline lock_sock_nested(struct sock *sk, int subclass)
 		};
 
 		if (likely(try_cmpxchg(&sk->sk_lock.combined,
-				       &old.combined, tmp.combined)))
+				       &old.combined, tmp.combined))) {
+			__acquire(sk);
 			return;
+		}
 	}
 #endif
 	spin_lock_bh(&sk->sk_lock.slock);
 	if (unlikely(sock_owned_by_user_nocheck(sk)))
 		__lock_sock(sk);
 	sk->sk_lock.owned = 1;
+	__acquire(sk);
 	spin_unlock_bh(&sk->sk_lock.slock);
 }
 EXPORT_SYMBOL(lock_sock_nested);
 
 void release_sock(struct sock *sk)
+	__must_not_hold(&sk->sk_lock.slock)
+	__releases(sk)
 {
 	spin_lock_bh(&sk->sk_lock.slock);
 

@@ -58,6 +58,7 @@ void sk_stream_write_space(struct sock *sk)
  * Must be called with the socket locked.
  */
 int sk_stream_wait_connect(struct sock *sk, long *timeo_p)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct task_struct *tsk = current;
@@ -98,6 +99,7 @@ static int sk_stream_closing(const struct sock *sk)
 }
 
 void sk_stream_wait_close(struct sock *sk, long timeout)
+	__must_hold(sk)
 {
 	if (timeout) {
 		DEFINE_WAIT_FUNC(wait, woken_wake_function);
@@ -119,6 +121,7 @@ void sk_stream_wait_close(struct sock *sk, long timeout)
  * @timeo_p: for how long
  */
 int sk_stream_wait_memory(struct sock *sk, long *timeo_p)
+	__must_hold(sk)
 {
 	int ret, err = 0;
 	long vm_wait = 0;

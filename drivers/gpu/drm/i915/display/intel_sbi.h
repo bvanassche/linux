@@ -8,6 +8,8 @@
 
 #include <linux/types.h>
 
+#include "intel_display_core.h"
+
 struct intel_display;
 
 enum intel_sbi_destination {

@@ -466,7 +466,7 @@ static void vmw_local_fifo_commit(struct vmw_private *dev_priv, uint32_t bytes)
 	mb();
 	up_write(&fifo_state->rwsem);
 	vmw_fifo_ping_host(dev_priv, SVGA_SYNC_GENERIC);
-	mutex_unlock(&fifo_state->fifo_mutex);
+	mutex_unlock(&dev_priv->fifo->fifo_mutex);
 }
 
 void vmw_cmd_commit(struct vmw_private *dev_priv, uint32_t bytes)

@@ -1551,18 +1551,20 @@ static void wait_for_syncr(void __iomem *rdbase)
 static void __direct_lpi_inv(struct irq_data *d, u64 val)
 {
 	void __iomem *rdbase;
+	raw_spinlock_t *rd_lock;
 	unsigned long flags;
 	int cpu;
 
 	/* Target the redistributor this LPI is currently routed to */
 	cpu = irq_to_cpuid_lock(d, &flags);
-	raw_spin_lock(&gic_data_rdist_cpu(cpu)->rd_lock);
+	rd_lock = &gic_data_rdist_cpu(cpu)->rd_lock;
+	raw_spin_lock(rd_lock);
 
 	rdbase = per_cpu_ptr(gic_rdists->rdist, cpu)->rd_base;
 	gic_write_lpir(val, rdbase + GICR_INVLPIR);
 	wait_for_syncr(rdbase);
 
-	raw_spin_unlock(&gic_data_rdist_cpu(cpu)->rd_lock);
+	raw_spin_unlock(rd_lock);
 	irq_to_cpuid_unlock(d, flags);
 }
 
@@ -3893,13 +3895,14 @@ static void its_vpe_db_proxy_move(struct its_vpe *vpe, int from, int to)
 
 static void its_vpe_4_1_invall_locked(int cpu, struct its_vpe *vpe)
 {
+	raw_spinlock_t *rd_lock = &gic_data_rdist_cpu(cpu)->rd_lock;
 	void __iomem *rdbase;
 	u64 val;
 
 	val  = GICR_INVALLR_V;
 	val |= FIELD_PREP(GICR_INVALLR_VPEID, vpe->vpe_id);
 
-	guard(raw_spinlock)(&gic_data_rdist_cpu(cpu)->rd_lock);
+	guard(raw_spinlock)(rd_lock);
 	rdbase = per_cpu_ptr(gic_rdists->rdist, cpu)->rd_base;
 	gic_write_lpir(val, rdbase + GICR_INVALLR);
 	wait_for_syncr(rdbase);
@@ -4408,6 +4411,7 @@ static int its_sgi_get_irqchip_state(struct irq_data *d,
 {
 	struct its_vpe *vpe = irq_data_get_irq_chip_data(d);
 	void __iomem *base;
+	raw_spinlock_t *rd_lock;
 	unsigned long flags;
 	u32 count = 1000000;	/* 1s! */
 	u32 status;
@@ -4427,7 +4431,8 @@ static int its_sgi_get_irqchip_state(struct irq_data *d,
 	 *   MMIO registers, this must be made atomic one way or another.
 	 */
 	cpu = vpe_to_cpuid_lock(vpe, &flags);
-	raw_spin_lock(&gic_data_rdist_cpu(cpu)->rd_lock);
+	rd_lock = &gic_data_rdist_cpu(cpu)->rd_lock;
+	raw_spin_lock(rd_lock);
 	base = gic_data_rdist_cpu(cpu)->rd_base + SZ_128K;
 	writel_relaxed(vpe->vpe_id, base + GICR_VSGIR);
 	do {
@@ -4445,7 +4450,7 @@ static int its_sgi_get_irqchip_state(struct irq_data *d,
 	} while (count);
 
 out:
-	raw_spin_unlock(&gic_data_rdist_cpu(cpu)->rd_lock);
+	raw_spin_unlock(rd_lock);
 	vpe_to_cpuid_unlock(vpe, flags);
 
 	if (!count)

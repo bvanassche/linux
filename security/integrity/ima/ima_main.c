@@ -727,6 +727,7 @@ static int ima_file_truncate(struct file *file)
 
 static int __ima_inode_hash(struct inode *inode, struct file *file, char *buf,
 			    size_t buf_size)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ima_iint_cache *iint = NULL, tmp_iint;
 	int rc, hash_algo;

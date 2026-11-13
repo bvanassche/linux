@@ -1322,6 +1322,7 @@ static int ceph_setup_bdi(struct super_block *sb, struct ceph_fs_client *fsc)
 }
 
 static int ceph_get_tree(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct ceph_parse_opts_ctx *pctx = fc->fs_private;
 	struct ceph_mount_options *fsopt = pctx->opts;
@@ -1577,6 +1578,7 @@ void ceph_dec_osd_stopping_blocker(struct ceph_mds_client *mdsc)
 }
 
 static void ceph_kill_sb(struct super_block *s)
+	__releases(&s->s_umount)
 {
 	struct ceph_fs_client *fsc = ceph_sb_to_fs_client(s);
 	struct ceph_client *cl = fsc->client;

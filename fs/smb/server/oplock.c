@@ -967,6 +967,7 @@ static bool smb2_break_complete(struct oplock_info *opinfo, bool expect_ack)
 }
 
 static int smb2_break_failed(struct oplock_info *opinfo, bool expect_ack)
+	__context_unsafe(/* conditional locking */)
 {
 	struct lease *lease = opinfo->o_lease;
 	bool timed_out;
@@ -1208,6 +1209,7 @@ static void smb2_break_init_header(struct smb2_hdr *hdr)
 static int smb2_break_notify(struct oplock_info *opinfo, struct ksmbd_inode *ci,
 			     bool expect_ack, bool wait_ack, bool inc_epoch,
 			     struct work_struct *interim_work)
+	__context_unsafe(/* conditional locking */)
 {
 	struct smb2_break_channel owner = {}, *channel, *tmp, *last = NULL;
 	struct ksmbd_work *work;

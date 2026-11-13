@@ -4262,6 +4262,7 @@ static int move_existing_remap(struct btrfs_fs_info *fs_info,
 			       struct btrfs_path *path,
 			       struct btrfs_block_group *bg, u64 new_addr,
 			       u64 length, u64 old_addr)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_trans_handle *trans;
 	struct extent_buffer *leaf;

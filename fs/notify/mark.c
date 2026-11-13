@@ -864,6 +864,7 @@ static int fsnotify_attach_connector_to_object(fsnotify_connp_t *connp,
  */
 static struct fsnotify_mark_connector *fsnotify_grab_connector(
 						fsnotify_connp_t *connp)
+	__context_unsafe(/* returns with conn->lock held if conn != NULL */)
 {
 	struct fsnotify_mark_connector *conn;
 	int idx;
@@ -927,6 +928,8 @@ restart:
 			return err;
 		goto restart;
 	}
+
+	__acquire(&conn->lock);
 
 	if (conn->flags & FSNOTIFY_CONN_FLAG_DESTROYING) {
 		err = -ENOENT;
@@ -1051,6 +1054,8 @@ struct fsnotify_mark *fsnotify_find_mark(void *obj, unsigned int obj_type,
 	if (!conn)
 		return NULL;
 
+	__acquire(&conn->lock);
+
 	hlist_for_each_entry(mark, &conn->list, obj_list) {
 		if (mark->group == group &&
 		    (mark->flags & FSNOTIFY_MARK_FLAG_ATTACHED)) {
@@ -1120,6 +1125,9 @@ void fsnotify_destroy_marks(fsnotify_connp_t *connp)
 	conn = fsnotify_grab_connector(connp);
 	if (!conn)
 		return;
+
+	__acquire(&conn->lock);
+
 	/*
 	 * New marks could be inserted before our cursor and survive the final
 	 * detachment of the connector from the object. Prevent additions to

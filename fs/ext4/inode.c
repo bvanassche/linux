@@ -5211,6 +5211,7 @@ truncate_pagecache:
 }
 
 static void ext4_wait_dax_page(struct inode *inode)
+	__must_hold(&inode->i_mapping->invalidate_lock)
 {
 	filemap_invalidate_unlock(inode->i_mapping);
 	schedule();

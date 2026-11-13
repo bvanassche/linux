@@ -498,6 +498,7 @@ static struct nvme_ns *nvme_numa_path(struct nvme_ns_head *head)
 }
 
 inline struct nvme_ns *nvme_find_path(struct nvme_ns_head *head)
+	__must_hold_shared(&head->srcu)
 {
 	switch (READ_ONCE(head->subsys->iopolicy)) {
 	case NVME_IOPOLICY_QD:

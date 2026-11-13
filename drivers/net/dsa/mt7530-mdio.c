@@ -75,12 +75,14 @@ mt7530_regmap_read(void *context, unsigned int reg, unsigned int *val)
 
 static void
 mt7530_mdio_regmap_lock(void *mdio_lock)
+	__acquires((struct mutex *)mdio_lock)
 {
 	mutex_lock_nested(mdio_lock, MDIO_MUTEX_NESTED);
 }
 
 static void
 mt7530_mdio_regmap_unlock(void *mdio_lock)
+	__releases((struct mutex *)mdio_lock)
 {
 	mutex_unlock(mdio_lock);
 }

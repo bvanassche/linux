@@ -250,8 +250,8 @@ out:
  * The files->file_lock should be held on entry, and will be held on exit.
  */
 static int expand_fdtable(struct files_struct *files, unsigned int nr)
-	__releases(files->file_lock)
-	__acquires(files->file_lock)
+	__releases(&files->file_lock)
+	__acquires(&files->file_lock)
 {
 	struct fdtable *new_fdt, *cur_fdt;
 
@@ -286,8 +286,8 @@ static int expand_fdtable(struct files_struct *files, unsigned int nr)
  * The files->file_lock should be held on entry, and will be held on exit.
  */
 static int expand_files(struct files_struct *files, unsigned int nr)
-	__releases(files->file_lock)
-	__acquires(files->file_lock)
+	__releases(&files->file_lock)
+	__acquires(&files->file_lock)
 {
 	struct fdtable *fdt;
 	int error;
@@ -1404,6 +1404,7 @@ bool file_seek_cur_needs_f_lock(struct file *file)
 }
 
 struct fd fdget_pos(unsigned int fd)
+	__context_unsafe(/* conditional locking */)
 {
 	struct fd f = fdget(fd);
 	struct file *file = fd_file(f);
@@ -1416,6 +1417,7 @@ struct fd fdget_pos(unsigned int fd)
 }
 
 void __f_unlock_pos(struct file *f)
+	__context_unsafe(/* releases f_pos_lock held by caller */)
 {
 	mutex_unlock(&f->f_pos_lock);
 }

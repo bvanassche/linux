@@ -101,6 +101,7 @@ static int amdgpu_reset_xgmi_reset_on_init_restore_hwctxt(
 static int amdgpu_reset_xgmi_reset_on_init_perform_reset(
 	struct amdgpu_reset_control *reset_ctl,
 	struct amdgpu_reset_context *reset_context)
+	__context_unsafe(/* locking inside a loop */)
 {
 	struct amdgpu_device *adev = (struct amdgpu_device *)reset_ctl->handle;
 	struct list_head *reset_device_list = reset_context->reset_device_list;
@@ -309,6 +310,7 @@ struct amdgpu_reset_domain *amdgpu_reset_create_reset_domain(enum amdgpu_reset_d
 }
 
 void amdgpu_device_lock_reset_domain(struct amdgpu_reset_domain *reset_domain)
+	__acquires(&reset_domain->sem)
 {
 	atomic_set(&reset_domain->in_gpu_reset, 1);
 	down_write(&reset_domain->sem);
@@ -316,6 +318,7 @@ void amdgpu_device_lock_reset_domain(struct amdgpu_reset_domain *reset_domain)
 
 
 void amdgpu_device_unlock_reset_domain(struct amdgpu_reset_domain *reset_domain)
+	__releases(&reset_domain->sem)
 {
 	atomic_set(&reset_domain->in_gpu_reset, 0);
 	up_write(&reset_domain->sem);

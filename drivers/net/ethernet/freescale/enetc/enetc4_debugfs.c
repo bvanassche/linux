@@ -10,6 +10,7 @@
 #include "enetc4_debugfs.h"
 
 static void enetc_vf_state_lock(struct enetc_pf *pf, int vf_id)
+	__context_unsafe(/* conditional locking */)
 {
 	struct enetc_vf_state *vf_state;
 
@@ -21,6 +22,7 @@ static void enetc_vf_state_lock(struct enetc_pf *pf, int vf_id)
 }
 
 static void enetc_vf_state_unlock(struct enetc_pf *pf, int vf_id)
+	__context_unsafe(/* conditional locking */)
 {
 	struct enetc_vf_state *vf_state;
 

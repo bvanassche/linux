@@ -20,6 +20,7 @@ struct patch {
 static DEFINE_RAW_SPINLOCK(patch_lock);
 
 static void __kprobes *patch_map(void *addr, int fixmap, unsigned long *flags)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned int uintaddr = (uintptr_t) addr;
 	bool module = !core_kernel_text(uintaddr);
@@ -41,6 +42,7 @@ static void __kprobes *patch_map(void *addr, int fixmap, unsigned long *flags)
 }
 
 static void __kprobes patch_unmap(int fixmap, unsigned long *flags)
+	__context_unsafe(/* conditional unlocking */)
 {
 	clear_fixmap(fixmap);
 

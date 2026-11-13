@@ -85,6 +85,7 @@ INDIRECT_CALLABLE_SCOPE
 const struct nft_set_ext *
 nft_rhash_lookup(const struct net *net, const struct nft_set *set,
 		 const u32 *key)
+	__must_hold_shared(RCU)
 {
 	struct nft_rhash *priv = nft_set_priv(set);
 	const struct nft_rhash_elem *he;
@@ -105,6 +106,7 @@ nft_rhash_lookup(const struct net *net, const struct nft_set *set,
 static struct nft_elem_priv *
 nft_rhash_get(const struct net *net, const struct nft_set *set,
 	      const struct nft_set_elem *elem, unsigned int flags)
+	__must_hold_shared(RCU)
 {
 	struct nft_rhash *priv = nft_set_priv(set);
 	struct nft_rhash_elem *he;
@@ -125,6 +127,7 @@ nft_rhash_get(const struct net *net, const struct nft_set *set,
 static const struct nft_set_ext *
 nft_rhash_update(struct nft_set *set, const u32 *key,
 		 const struct nft_expr *expr, struct nft_regs *regs)
+	__must_hold_shared(RCU)
 {
 	struct nft_rhash *priv = nft_set_priv(set);
 	struct nft_rhash_elem *he, *prev;
@@ -246,6 +249,7 @@ static void nft_rhash_remove(const struct net *net,
 
 static bool nft_rhash_delete(const struct nft_set *set,
 			     const u32 *key)
+	__must_hold_shared(RCU)
 {
 	struct nft_rhash *priv = nft_set_priv(set);
 	struct nft_rhash_cmp_arg arg = {

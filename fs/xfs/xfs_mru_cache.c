@@ -227,7 +227,7 @@ _xfs_mru_cache_list_insert(
 STATIC void
 _xfs_mru_cache_clear_reap_list(
 	struct xfs_mru_cache	*mru)
-		__releases(mru->lock) __acquires(mru->lock)
+		__releases(&mru->lock) __acquires(&mru->lock)
 {
 	struct xfs_mru_cache_elem *elem, *next;
 	LIST_HEAD(tmp);
@@ -535,7 +535,7 @@ xfs_mru_cache_lookup(
 void
 xfs_mru_cache_done(
 	struct xfs_mru_cache	*mru)
-		__releases(mru->lock)
+		__releases(&mru->lock)
 {
 	spin_unlock(&mru->lock);
 }

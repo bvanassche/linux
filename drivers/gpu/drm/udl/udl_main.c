@@ -27,7 +27,8 @@
 
 #define UDL_SKU_PIXEL_LIMIT_DEFAULT	2080000
 
-static struct urb *udl_get_urb_locked(struct udl_device *udl, long timeout);
+static struct urb *udl_get_urb_locked(struct udl_device *udl, long timeout)
+	__must_hold(&udl->urbs.lock);
 
 /*
  * Try to make sense of whatever we parse. Therefore return @end on
@@ -260,6 +261,7 @@ retry:
 }
 
 static struct urb *udl_get_urb_locked(struct udl_device *udl, long timeout)
+	__must_hold(&udl->urbs.lock)
 {
 	struct urb_node *unode;
 

@@ -705,6 +705,7 @@ void ath12k_dp_link_peer_reset_rx_stats(struct ath12k_dp *dp, const u8 *addr)
 
 int ath12k_dp_peer_fixup_peer_id(struct ath12k_base *ab,
 				 const u8 *peer_addr, u16 peer_id)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ath12k_dp_link_peer *link_peer;
 	struct ath12k_dp_peer *dp_peer = NULL;

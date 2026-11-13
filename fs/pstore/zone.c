@@ -1298,6 +1298,7 @@ free_out:
  * Return: 0 on success, others on failure.
  */
 int register_pstore_zone(struct pstore_zone_info *info)
+	__context_unsafe(/* lock is accessed through an alias */)
 {
 	int err = -EINVAL;
 	struct psz_context *cxt = &pstore_zone_cxt;

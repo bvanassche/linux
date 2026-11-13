@@ -176,6 +176,7 @@ static int rxrpc_sendmsg_oob_cmsg(struct msghdr *msg, struct rxrpc_oob_params *p
 static int rxrpc_respond_to_oob(struct rxrpc_sock *rx,
 				struct rxrpc_oob_params *p,
 				struct msghdr *msg)
+	__releases(&rx->sk)
 {
 	struct rxrpc_connection *conn;
 	struct rxrpc_skb_priv *sp;
@@ -228,6 +229,7 @@ static int rxrpc_respond_to_oob(struct rxrpc_sock *rx,
  * - the socket may be either a client socket or a server socket
  */
 int rxrpc_sendmsg_oob(struct rxrpc_sock *rx, struct msghdr *msg, size_t len)
+	__must_hold(&rx->sk)
 {
 	struct rxrpc_oob_params p = {};
 	int ret;

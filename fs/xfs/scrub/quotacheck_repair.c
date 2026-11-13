@@ -93,6 +93,7 @@ xqcheck_commit_dquot(
 	struct xqcheck		*xqc,
 	xfs_dqtype_t		dqtype,
 	struct xfs_dquot	*dq)
+	__context_unsafe(/* transaction commit releases dq->q_qlock */)
 {
 	struct xqcheck_dquot	xcdq;
 	struct xfarray		*counts = xqcheck_counters_for(xqc, dqtype);
@@ -177,6 +178,7 @@ STATIC int
 xqcheck_commit_dqtype(
 	struct xqcheck		*xqc,
 	unsigned int		dqtype)
+	__context_unsafe(/* drops and reacquires xqc->lock in a loop */)
 {
 	struct xchk_dqiter	cursor = { };
 	struct xqcheck_dquot	xcdq;

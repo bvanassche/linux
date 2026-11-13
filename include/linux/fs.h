@@ -2010,10 +2010,12 @@ struct file_operations {
 #define FOP_IMMUTABLE		((__force fop_flags_t)(1 << 8))
 
 /* Wrap a directory iterator that needs exclusive inode access */
-int wrap_directory_iterator(struct file *, struct dir_context *,
-			    int (*) (struct file *, struct dir_context *));
+int wrap_directory_iterator(struct file *file, struct dir_context *ctx,
+			    int (*) (struct file *, struct dir_context *))
+	__must_hold_shared(&file_inode(file)->i_rwsem);
 #define WRAP_DIR_ITER(x) \
-	static int shared_##x(struct file *file , struct dir_context *ctx) \
+	static int shared_##x(struct file *file, struct dir_context *ctx) \
+		__must_hold_shared(&file_inode(file)->i_rwsem) \
 	{ return wrap_directory_iterator(file, ctx, x); }
 
 enum fs_update_time {

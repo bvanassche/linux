@@ -386,6 +386,7 @@ static void clear_tcons_dying(struct list_head *tcons)
 }
 
 static void cifs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct cifs_sb_info *cifs_sb = CIFS_SB(sb);
 	LIST_HEAD(tcons);
@@ -1094,6 +1095,7 @@ cifs_get_root(struct smb3_fs_context *ctx, struct super_block *sb)
 
 struct dentry *
 cifs_smb3_do_mount(struct fs_context *fc, struct smb3_fs_context *old_ctx)
+	__context_unsafe(/* may return ERR_PTR() */)
 {
 	struct cifs_mnt_data mnt_data;
 	struct cifs_sb_info *cifs_sb;

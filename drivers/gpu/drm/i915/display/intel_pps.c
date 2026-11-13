@@ -68,6 +68,7 @@ static const char *pps_name(struct intel_dp *intel_dp)
 }
 
 struct ref_tracker *intel_pps_lock(struct intel_dp *intel_dp)
+	__context_unsafe(/* __acquires(&__intel_dp_to_intel_display(intel_dp)->pps.mutex) */)
 {
 	struct intel_display *display = to_intel_display(intel_dp);
 	struct ref_tracker *wakeref;
@@ -82,6 +83,7 @@ struct ref_tracker *intel_pps_lock(struct intel_dp *intel_dp)
 }
 
 struct ref_tracker *intel_pps_unlock(struct intel_dp *intel_dp, struct ref_tracker *wakeref)
+	__context_unsafe(/* __releases(&__intel_dp_to_intel_display(intel_dp)->pps.mutex) */)
 {
 	struct intel_display *display = to_intel_display(intel_dp);
 

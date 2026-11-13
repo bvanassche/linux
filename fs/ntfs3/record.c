@@ -113,6 +113,7 @@ int mi_init(struct mft_inode *mi, struct ntfs_sb_info *sbi, CLST rno)
  * mi_read - Read MFT data.
  */
 int mi_read(struct mft_inode *mi, bool is_mft)
+	__context_unsafe(/* conditional locking */)
 {
 	int err;
 	struct MFT_REC *rec = mi->mrec;
@@ -441,6 +442,7 @@ int mi_write(struct mft_inode *mi, int wait)
 
 int mi_format_new(struct mft_inode *mi, struct ntfs_sb_info *sbi, CLST rno,
 		  __le16 flags, bool is_mft)
+	__context_unsafe(/* conditional locking */)
 {
 	int err;
 	u16 seq = 1;

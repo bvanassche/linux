@@ -804,6 +804,7 @@ error:
  */
 int cachefiles_check_in_use(struct cachefiles_cache *cache, struct dentry *dir,
 			    char *filename)
+	__context_unsafe(/* cachefiles_lookup_for_cull() locks conditionally */)
 {
 	struct dentry *victim;
 	int ret = 0;

@@ -1120,6 +1120,7 @@ void tcp_rate_check_app_limited(struct sock *sk)
 EXPORT_SYMBOL_GPL(tcp_rate_check_app_limited);
 
 int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
+	__must_hold(sk)
 {
 	struct net_devmem_dmabuf_binding *binding = NULL;
 	struct tcp_sock *tp = tcp_sk(sk);
@@ -1995,10 +1996,13 @@ static void tcp_zerocopy_set_hint_for_skb(struct sock *sk,
 
 static int tcp_recvmsg_locked(struct sock *sk, struct msghdr *msg, size_t len,
 			      int flags, struct scm_timestamping_internal *tss,
-			      int *cmsg_flags);
+			      int *cmsg_flags)
+	__must_hold(sk);
+
 static int receive_fallback_to_copy(struct sock *sk,
 				    struct tcp_zerocopy_receive *zc, int inq,
 				    struct scm_timestamping_internal *tss)
+	__must_hold(sk)
 {
 	unsigned long copy_address = (unsigned long)zc->copybuf_address;
 	struct msghdr msg = {};
@@ -2192,6 +2196,7 @@ static void tcp_zc_finalize_rx_tstamp(struct sock *sk,
 
 static struct vm_area_struct *find_tcp_vma(struct mm_struct *mm,
 					   unsigned long address)
+	__context_unsafe(/* conditional locking */)
 {
 	struct vm_area_struct *vma = vma_start_read_unlocked(mm, address);
 
@@ -2210,6 +2215,7 @@ static struct vm_area_struct *find_tcp_vma(struct mm_struct *mm,
 static int tcp_zerocopy_receive(struct sock *sk,
 				struct tcp_zerocopy_receive *zc,
 				struct scm_timestamping_internal *tss)
+	__context_unsafe(/* conditional unlocking */)
 {
 	u32 length = 0, offset, vma_len, avail_len, copylen = 0;
 	unsigned long address = (unsigned long)zc->address;
@@ -2667,6 +2673,7 @@ out:
 static int tcp_recvmsg_locked(struct sock *sk, struct msghdr *msg, size_t len,
 			      int flags, struct scm_timestamping_internal *tss,
 			      int *cmsg_flags)
+	__must_hold(sk)
 {
 	struct tcp_sock *tp = tcp_sk(sk);
 	int last_copied_dmabuf = -1; /* uninitialized */
@@ -3145,6 +3152,7 @@ bool tcp_check_oom(const struct sock *sk, int shift)
 }
 
 void __tcp_close(struct sock *sk, long timeout)
+	__must_hold(sk)
 {
 	bool data_was_unread = false;
 	struct sk_buff *skb;
@@ -5125,6 +5133,7 @@ void tcp_done(struct sock *sk)
 }
 
 int tcp_abort(struct sock *sk, int err)
+	__context_unsafe(/* conditional locking */)
 {
 	int state = inet_sk_state_load(sk);
 	bool listener = false;

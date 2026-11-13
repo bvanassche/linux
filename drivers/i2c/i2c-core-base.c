@@ -847,6 +847,7 @@ static int i2c_check_addr_busy(struct i2c_adapter *adapter, int addr)
  */
 static void i2c_adapter_lock_bus(struct i2c_adapter *adapter,
 				 unsigned int flags)
+	__acquires(&adapter->bus_lock)
 {
 	rt_mutex_lock_nested(&adapter->bus_lock, i2c_adapter_depth(adapter));
 }
@@ -859,6 +860,7 @@ static void i2c_adapter_lock_bus(struct i2c_adapter *adapter,
  */
 static int i2c_adapter_trylock_bus(struct i2c_adapter *adapter,
 				   unsigned int flags)
+	__cond_acquires(true, &adapter->bus_lock)
 {
 	return rt_mutex_trylock(&adapter->bus_lock);
 }
@@ -871,6 +873,7 @@ static int i2c_adapter_trylock_bus(struct i2c_adapter *adapter,
  */
 static void i2c_adapter_unlock_bus(struct i2c_adapter *adapter,
 				   unsigned int flags)
+	__releases(&adapter->bus_lock)
 {
 	rt_mutex_unlock(&adapter->bus_lock);
 }

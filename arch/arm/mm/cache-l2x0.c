@@ -284,6 +284,7 @@ static void l2c220_op_way(void __iomem *base, unsigned reg)
 
 static unsigned long l2c220_op_pa_range(void __iomem *reg, unsigned long start,
 	unsigned long end, unsigned long flags)
+	__must_hold(&l2x0_lock)
 {
 	raw_spinlock_t *lock = &l2x0_lock;
 

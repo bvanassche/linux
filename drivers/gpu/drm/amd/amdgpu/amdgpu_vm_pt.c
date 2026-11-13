@@ -516,6 +516,7 @@ int amdgpu_vm_pt_create(struct amdgpu_device *adev, struct amdgpu_vm *vm,
  */
 static int amdgpu_vm_pt_alloc(struct amdgpu_vm_update_params *p,
 			      struct amdgpu_vm_pt_cursor *cursor)
+	__must_hold(&p->vm->eviction_lock)
 {
 	struct amdgpu_vm_bo_base *entry = cursor->entry;
 	struct amdgpu_bo *pt_bo;
@@ -817,6 +818,7 @@ static void amdgpu_vm_pte_fragment(struct amdgpu_vm_update_params *params,
 int amdgpu_vm_ptes_update(struct amdgpu_vm_update_params *params,
 			  uint64_t start, uint64_t end,
 			  uint64_t dst, uint64_t flags)
+	__must_hold(&params->vm->root.bo->tbo.base.resv->lock.base)
 {
 	struct amdgpu_device *adev = params->adev;
 	struct amdgpu_vm_pt_cursor cursor;

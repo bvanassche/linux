@@ -66,8 +66,11 @@ static const struct k_clock clock_realtime, clock_monotonic;
 #error "SIGEV_THREAD_ID must not share bit with other SIGEV values!"
 #endif
 
-static struct k_itimer *lock_timer(timer_t timer_id);
+static struct k_itimer *posix_timer_by_id(timer_t id);
+static struct k_itimer *lock_timer(timer_t timer_id)
+	__cond_acquires(nonnull, &posix_timer_by_id(timer_id)->it_lock);
 static inline void unlock_timer(struct k_itimer *timr)
+	__context_unsafe(/* releases timr->it_lock held by caller */)
 {
 	if (likely((timr)))
 		spin_unlock_irq(&timr->it_lock);
@@ -335,6 +338,7 @@ static bool __posixtimer_deliver_signal(struct kernel_siginfo *info, struct k_it
  * it.
  */
 bool posixtimer_deliver_signal(struct kernel_siginfo *info, struct sigqueue *timer_sigq)
+	__must_hold(&current->sighand->siglock)
 {
 	struct k_itimer *timr = container_of(timer_sigq, struct k_itimer, sigq);
 	bool ret;
@@ -602,6 +606,7 @@ COMPAT_SYSCALL_DEFINE3(timer_create, clockid_t, which_clock,
 #endif
 
 static struct k_itimer *lock_timer(timer_t timer_id)
+	__cond_acquires(nonnull, &posix_timer_by_id(timer_id)->it_lock)
 {
 	struct k_itimer *timr;
 
@@ -1026,6 +1031,7 @@ static inline void posix_timer_cleanup_ignored(struct k_itimer *tmr)
 }
 
 static void posix_timer_delete(struct k_itimer *timer)
+	__must_hold(&timer->it_lock)
 {
 	/*
 	 * Invalidate the timer, remove it from the linked list and remove
@@ -1069,6 +1075,7 @@ SYSCALL_DEFINE1(timer_delete, timer_t, timer_id)
 
 	scoped_timer_get_or_fail(timer_id) {
 		timer = scoped_timer;
+		lockdep_assert_held(&timer->it_lock);
 		posix_timer_delete(timer);
 	}
 	/* Remove it from the hash, which frees up the timer ID */

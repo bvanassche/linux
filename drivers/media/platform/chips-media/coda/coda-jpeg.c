@@ -1504,6 +1504,7 @@ const struct coda_context_ops coda9_jpeg_decode_ops = {
 };
 
 irqreturn_t coda9_jpeg_irq_handler(int irq, void *data)
+	__context_unsafe(/* conditional unlock */)
 {
 	struct coda_dev *dev = data;
 	struct coda_ctx *ctx;

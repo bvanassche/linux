@@ -343,6 +343,7 @@ out_abort:
 }
 
 int iommufd_hwpt_alloc(struct iommufd_ucmd *ucmd)
+	__context_unsafe(/* conditional locking */)
 {
 	struct iommu_hwpt_alloc *cmd = ucmd->cmd;
 	const struct iommu_user_data user_data = {

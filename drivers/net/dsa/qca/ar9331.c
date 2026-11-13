@@ -749,6 +749,7 @@ static void ar9331_sw_unmask_irq(struct irq_data *d)
 }
 
 static void ar9331_sw_irq_bus_lock(struct irq_data *d)
+	__acquires(&((struct ar9331_sw_priv *)irq_data_get_irq_chip_data(d))->lock_irq)
 {
 	struct ar9331_sw_priv *priv = irq_data_get_irq_chip_data(d);
 
@@ -756,6 +757,7 @@ static void ar9331_sw_irq_bus_lock(struct irq_data *d)
 }
 
 static void ar9331_sw_irq_bus_sync_unlock(struct irq_data *d)
+	__releases(&((struct ar9331_sw_priv *)irq_data_get_irq_chip_data(d))->lock_irq)
 {
 	struct ar9331_sw_priv *priv = irq_data_get_irq_chip_data(d);
 	struct regmap *regmap = priv->regmap;

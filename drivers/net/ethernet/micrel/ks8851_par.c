@@ -59,6 +59,7 @@ struct ks8851_net_par {
  * Claim chip register access lock
  */
 static void ks8851_lock_par(struct ks8851_net *ks)
+	__acquires(&to_ks8851_par(ks)->lock)
 {
 	struct ks8851_net_par *ksp = to_ks8851_par(ks);
 
@@ -72,6 +73,7 @@ static void ks8851_lock_par(struct ks8851_net *ks)
  * Release chip register access lock
  */
 static void ks8851_unlock_par(struct ks8851_net *ks)
+	__releases(&to_ks8851_par(ks)->lock)
 {
 	struct ks8851_net_par *ksp = to_ks8851_par(ks);
 

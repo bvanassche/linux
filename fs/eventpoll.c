@@ -1862,6 +1862,7 @@ static struct epitem *ep_alloc_epitem(struct eventpoll *ep,
 static int ep_register_epitem(struct ep_ctl_ctx *ctx, struct eventpoll *ep,
 			      struct epitem *epi, struct eventpoll *tep,
 			      int full_check)
+	__context_unsafe(/* conditional locking */)
 {
 	struct file *tfile = epi->ffd.file;
 	int error;
@@ -1896,6 +1897,7 @@ static int ep_register_epitem(struct ep_ctl_ctx *ctx, struct eventpoll *ep,
 static int ep_insert(struct ep_ctl_ctx *ctx, struct eventpoll *ep,
 		     const struct epoll_event *event, struct epoll_key *tf,
 		     int full_check)
+	__context_unsafe(/* caller conditionally holds epnested_mutex */)
 {
 	int error, pwake = 0;
 	__poll_t revents;
@@ -2564,6 +2566,7 @@ static inline void ep_take_care_of_epollwakeup(struct epoll_event *epev)
 #endif
 
 static inline int epoll_mutex_lock(struct mutex *mutex, bool nonblock)
+	__cond_acquires_range(0, INT_MAX, mutex)
 {
 	if (!nonblock) {
 		mutex_lock(mutex);
@@ -2597,6 +2600,8 @@ static inline int epoll_mutex_lock(struct mutex *mutex, bool nonblock)
  */
 static int ep_ctl_lock(struct ep_ctl_ctx *ctx, struct eventpoll *ep, int op,
 		       struct file *epfile, struct file *tfile, bool nonblock)
+	__cond_acquires_range(0, INT_MAX, &ep->mtx)
+	__context_unsafe(/* conditional locking */)
 {
 	struct eventpoll *tep;
 	int error;
@@ -2642,6 +2647,8 @@ err_unlock_nested:
 
 static void ep_ctl_unlock(struct ep_ctl_ctx *ctx, struct eventpoll *ep,
 			  int full_check)
+	__releases(&ep->mtx)
+	__context_unsafe(/* releases epnested_mutex held by caller */)
 {
 	mutex_unlock(&ep->mtx);
 	if (full_check) {

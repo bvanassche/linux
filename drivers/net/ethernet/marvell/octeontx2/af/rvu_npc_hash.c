@@ -759,6 +759,7 @@ bool rvu_npc_exact_has_match_table(struct rvu *rvu)
  */
 static struct npc_exact_table_entry *
 __rvu_npc_exact_find_entry_by_seq_id(struct rvu *rvu, u32 seq_id)
+	__must_hold(&rvu->hw->table->lock)
 {
 	struct npc_exact_table *table = rvu->hw->table;
 	struct npc_exact_table_entry *entry = NULL;

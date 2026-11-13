@@ -172,6 +172,7 @@ EXPORT_SYMBOL_GPL(power_supply_changed);
  * Avoid that by waiting on parent's mutex.
  */
 static void power_supply_deferred_register_work(struct work_struct *work)
+	__context_unsafe(/* conditional locking */)
 {
 	struct power_supply *psy = container_of(work, struct power_supply,
 						deferred_register_work.work);

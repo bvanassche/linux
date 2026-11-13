@@ -79,12 +79,14 @@ static void revo_set_rate_val(struct snd_akm4xxx *ak, unsigned int rate)
  */
 
 static void revo_i2c_start(struct snd_i2c_bus *bus)
+	__acquires(&((struct snd_ice1712 *)bus->private_data)->gpio_mutex)
 {
 	struct snd_ice1712 *ice = bus->private_data;
 	snd_ice1712_save_gpio_status(ice);
 }
 
 static void revo_i2c_stop(struct snd_i2c_bus *bus)
+	__releases(&((struct snd_ice1712 *)bus->private_data)->gpio_mutex)
 {
 	struct snd_ice1712 *ice = bus->private_data;
 	snd_ice1712_restore_gpio_status(ice);
@@ -406,6 +408,7 @@ static unsigned char read_data(struct snd_ice1712 *ice, unsigned int gpio,
 }
 
 static unsigned int ap192_4wire_start(struct snd_ice1712 *ice)
+	__acquires(&ice->gpio_mutex)
 {
 	unsigned int tmp;
 
@@ -420,6 +423,7 @@ static unsigned int ap192_4wire_start(struct snd_ice1712 *ice)
 }
 
 static void ap192_4wire_finish(struct snd_ice1712 *ice, unsigned int tmp)
+	__releases(&ice->gpio_mutex)
 {
 	tmp |= VT1724_REVO_CS3;
 	tmp |= VT1724_REVO_CS0;

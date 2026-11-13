@@ -717,6 +717,7 @@ snd_nm256_capture_copy(struct snd_pcm_substream *substream,
 /* spinlock held! */
 static void
 snd_nm256_playback_update(struct nm256 *chip)
+	__must_hold(&chip->reg_lock)
 {
 	struct nm256_stream *s;
 
@@ -732,6 +733,7 @@ snd_nm256_playback_update(struct nm256 *chip)
 /* spinlock held! */
 static void
 snd_nm256_capture_update(struct nm256 *chip)
+	__must_hold(&chip->reg_lock)
 {
 	struct nm256_stream *s;
 

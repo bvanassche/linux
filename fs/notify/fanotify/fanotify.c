@@ -932,6 +932,7 @@ static int fanotify_handle_event(struct fsnotify_group *group, u32 mask,
 				 struct inode *dir,
 				 const struct qstr *file_name, u32 cookie,
 				 struct fsnotify_iter_info *iter_info)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret = 0;
 	struct fanotify_event *event;

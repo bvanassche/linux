@@ -84,6 +84,7 @@ int spufs_handle_class0(struct spu_context *ctx)
  *       in order to speed up the easy case.
  */
 int spufs_handle_class1(struct spu_context *ctx)
+	__must_hold(&ctx->state_mutex)
 {
 	u64 ea, dsisr, access;
 	unsigned long flags;

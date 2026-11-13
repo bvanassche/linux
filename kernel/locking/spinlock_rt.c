@@ -44,14 +44,18 @@ static __always_inline void rtlock_lock(struct rt_mutex_base *rtm)
 }
 
 static __always_inline void __rt_spin_lock(spinlock_t *lock)
+	__acquires(lock)
 {
 	rtlock_might_resched();
 	rtlock_lock(&lock->lock);
 	rcu_read_lock();
+	__release_shared(RCU);
 	migrate_disable();
+	__acquire(lock);
 }
 
-void __sched rt_spin_lock(spinlock_t *lock) __acquires(RCU)
+void __sched rt_spin_lock(spinlock_t *lock)
+	__acquires(lock)
 {
 	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
 	__rt_spin_lock(lock);
@@ -60,6 +64,7 @@ EXPORT_SYMBOL(rt_spin_lock);
 
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
 void __sched rt_spin_lock_nested(spinlock_t *lock, int subclass)
+	__acquires(lock)
 {
 	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
 	__rt_spin_lock(lock);
@@ -68,6 +73,7 @@ EXPORT_SYMBOL(rt_spin_lock_nested);
 
 void __sched rt_spin_lock_nest_lock(spinlock_t *lock,
 				    struct lockdep_map *nest_lock)
+	__acquires(lock)
 {
 	spin_acquire_nest(&lock->dep_map, 0, 0, nest_lock, _RET_IP_);
 	__rt_spin_lock(lock);
@@ -75,13 +81,16 @@ void __sched rt_spin_lock_nest_lock(spinlock_t *lock,
 EXPORT_SYMBOL(rt_spin_lock_nest_lock);
 #endif
 
-void __sched rt_spin_unlock(spinlock_t *lock) __releases(RCU)
+void __sched rt_spin_unlock(spinlock_t *lock)
+	__releases(lock)
 {
 	spin_release(&lock->dep_map, _RET_IP_);
 	migrate_enable();
 
 	if (unlikely(!rt_mutex_cmpxchg_release(&lock->lock, current, NULL)))
 		rt_mutex_slowunlock(&lock->lock);
+
+	__release(lock);
 
 	/*
 	 * This must be last to prevent the following UAF:
@@ -99,6 +108,7 @@ void __sched rt_spin_unlock(spinlock_t *lock) __releases(RCU)
 	 *   kfree(p);
 	 *			    UAF ->	  rt_mutex_cmpxchg_release(&p->lock.lock...)
 	 */
+	__acquire_shared(RCU);
 	rcu_read_unlock();
 }
 EXPORT_SYMBOL(rt_spin_unlock);
@@ -116,6 +126,7 @@ void __sched rt_spin_lock_unlock(spinlock_t *lock)
 EXPORT_SYMBOL(rt_spin_lock_unlock);
 
 static __always_inline int __rt_spin_trylock(spinlock_t *lock)
+	__cond_acquires(true, lock)
 {
 	int ret = 1;
 
@@ -125,18 +136,22 @@ static __always_inline int __rt_spin_trylock(spinlock_t *lock)
 	if (ret) {
 		spin_acquire(&lock->dep_map, 0, 1, _RET_IP_);
 		rcu_read_lock();
+		__release_shared(RCU);
 		migrate_disable();
+		__acquire(lock);
 	}
 	return ret;
 }
 
 int __sched rt_spin_trylock(spinlock_t *lock)
+	__cond_acquires(true, lock)
 {
 	return __rt_spin_trylock(lock);
 }
 EXPORT_SYMBOL(rt_spin_trylock);
 
 int __sched rt_spin_trylock_bh(spinlock_t *lock)
+	__cond_acquires(true, lock)
 {
 	int ret;
 
@@ -181,6 +196,7 @@ rwbase_rtmutex_lock_state(struct rt_mutex_base *rtm, unsigned int state)
 static __always_inline int
 rwbase_rtmutex_slowlock_locked(struct rt_mutex_base *rtm, unsigned int state,
 			       struct wake_q_head *wake_q)
+	__must_hold(&rtm->wait_lock)
 {
 	rtlock_slowlock_locked(rtm, wake_q);
 	return 0;
@@ -216,6 +232,7 @@ static __always_inline int  rwbase_rtmutex_trylock(struct rt_mutex_base *rtm)
  * The common functions which get wrapped into the rwlock API.
  */
 int __sched rt_read_trylock(rwlock_t *rwlock)
+	__cond_acquires_shared(true, rwlock)
 {
 	int ret;
 
@@ -223,13 +240,16 @@ int __sched rt_read_trylock(rwlock_t *rwlock)
 	if (ret) {
 		rwlock_acquire_read(&rwlock->dep_map, 0, 1, _RET_IP_);
 		rcu_read_lock();
+		__release_shared(RCU);
 		migrate_disable();
+		__acquire_shared(rwlock);
 	}
 	return ret;
 }
 EXPORT_SYMBOL(rt_read_trylock);
 
 int __sched rt_write_trylock(rwlock_t *rwlock)
+	__cond_acquires(true, rwlock)
 {
 	int ret;
 
@@ -237,62 +257,79 @@ int __sched rt_write_trylock(rwlock_t *rwlock)
 	if (ret) {
 		rwlock_acquire(&rwlock->dep_map, 0, 1, _RET_IP_);
 		rcu_read_lock();
+		__release_shared(RCU);
 		migrate_disable();
+		__acquire(rwlock);
 	}
 	return ret;
 }
 EXPORT_SYMBOL(rt_write_trylock);
 
-void __sched rt_read_lock(rwlock_t *rwlock) __acquires(RCU)
+void __sched rt_read_lock(rwlock_t *rwlock)
+	__acquires_shared(rwlock)
 {
 	rtlock_might_resched();
 	rwlock_acquire_read(&rwlock->dep_map, 0, 0, _RET_IP_);
 	rwbase_read_lock(&rwlock->rwbase, TASK_RTLOCK_WAIT);
 	rcu_read_lock();
+	__release_shared(RCU);
 	migrate_disable();
+	__acquire_shared(rwlock);
 }
 EXPORT_SYMBOL(rt_read_lock);
 
-void __sched rt_write_lock(rwlock_t *rwlock) __acquires(RCU)
+void __sched rt_write_lock(rwlock_t *rwlock)
+	__acquires(rwlock)
 {
 	rtlock_might_resched();
 	rwlock_acquire(&rwlock->dep_map, 0, 0, _RET_IP_);
 	rwbase_write_lock(&rwlock->rwbase, TASK_RTLOCK_WAIT);
 	rcu_read_lock();
+	__release_shared(RCU);
 	migrate_disable();
+	__acquire(rwlock);
 }
 EXPORT_SYMBOL(rt_write_lock);
 
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
-void __sched rt_write_lock_nested(rwlock_t *rwlock, int subclass) __acquires(RCU)
+void __sched rt_write_lock_nested(rwlock_t *rwlock, int subclass)
+	__acquires(rwlock)
 {
 	rtlock_might_resched();
 	rwlock_acquire(&rwlock->dep_map, subclass, 0, _RET_IP_);
 	rwbase_write_lock(&rwlock->rwbase, TASK_RTLOCK_WAIT);
 	rcu_read_lock();
+	__release_shared(RCU);
 	migrate_disable();
+	__acquire(rwlock);
 }
 EXPORT_SYMBOL(rt_write_lock_nested);
 #endif
 
-void __sched rt_read_unlock(rwlock_t *rwlock) __releases(RCU)
+void __sched rt_read_unlock(rwlock_t *rwlock)
+	__releases_shared(rwlock)
 {
 	rwlock_release(&rwlock->dep_map, _RET_IP_);
 	migrate_enable();
 	rwbase_read_unlock(&rwlock->rwbase, TASK_RTLOCK_WAIT);
+	__release_shared(rwlock);
 
 	/* This must be last. See comment in rt_spin_unlock() */
+	__acquire_shared(RCU);
 	rcu_read_unlock();
 }
 EXPORT_SYMBOL(rt_read_unlock);
 
-void __sched rt_write_unlock(rwlock_t *rwlock) __releases(RCU)
+void __sched rt_write_unlock(rwlock_t *rwlock)
+	__releases(rwlock)
 {
 	rwlock_release(&rwlock->dep_map, _RET_IP_);
 	migrate_enable();
 	rwbase_write_unlock(&rwlock->rwbase);
+	__release(rwlock);
 
 	/* This must be last. See comment in rt_spin_unlock() */
+	__acquire_shared(RCU);
 	rcu_read_unlock();
 }
 EXPORT_SYMBOL(rt_write_unlock);

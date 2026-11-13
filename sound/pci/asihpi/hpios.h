@@ -95,6 +95,7 @@ struct hpios_spinlock {
 #define IN_LOCK_BH 1
 #define IN_LOCK_IRQ 0
 static inline void cond_lock(struct hpios_spinlock *l)
+	__acquires(&l->lock)
 {
 	if (irqs_disabled()) {
 		/* NO bh or isr can execute on this processor,
@@ -109,6 +110,7 @@ static inline void cond_lock(struct hpios_spinlock *l)
 }
 
 static inline void cond_unlock(struct hpios_spinlock *l)
+	__releases(&l->lock)
 {
 	if (l->lock_context == IN_LOCK_BH)
 		spin_unlock_bh(&((l)->lock));

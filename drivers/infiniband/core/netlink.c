@@ -80,6 +80,7 @@ static bool is_nl_msg_valid(unsigned int type, unsigned int op)
 
 static const struct rdma_nl_cbs *
 get_cb_table(const struct sk_buff *skb, unsigned int type, unsigned int op)
+	__must_hold_shared(&rdma_nl_types[type].sem)
 {
 	const struct rdma_nl_cbs *cb_table;
 

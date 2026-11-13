@@ -144,6 +144,7 @@ static void acct_arg_size(struct linux_binprm *bprm, unsigned long pages)
 
 static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
 		int write)
+	__context_unsafe(/* mmap_read_lock_maybe_expand() locks conditionally */)
 {
 	struct page *page;
 	struct vm_area_struct *vma = bprm->vma;
@@ -841,6 +842,7 @@ EXPORT_SYMBOL(read_code);
  * bprm->old_mm for setup_new_exec() to release outside the lock.
  */
 static int exec_mmap(struct linux_binprm *bprm)
+	__context_unsafe(/* acquires exec_update_lock for caller */)
 {
 	struct task_exec_state *exec_state __free(put_task_exec_state) = NULL;
 	struct mm_struct *mm = bprm->mm;
@@ -1123,6 +1125,7 @@ static struct file *bprm_identity_file(const struct linux_binprm *bprm)
  * (after exec_mmap()) by search_binary_handler (see below).
  */
 int begin_new_exec(struct linux_binprm * bprm)
+	__context_unsafe(/* releases locks held by caller on error */)
 {
 	struct task_struct *me = current;
 	struct files_struct *files = NULL;
@@ -1374,6 +1377,7 @@ void would_dump(struct linux_binprm *bprm, struct file *file)
 EXPORT_SYMBOL(would_dump);
 
 void setup_new_exec(struct linux_binprm * bprm)
+	__context_unsafe(/* releases locks held by caller */)
 {
 	/* Setup things that can depend upon the personality */
 	struct task_struct *me = current;
@@ -1415,6 +1419,7 @@ EXPORT_SYMBOL(finalize_exec);
  * and unlock.
  */
 static int prepare_bprm_creds(struct linux_binprm *bprm)
+	__context_unsafe(/* acquires cred_guard_mutex for caller */)
 {
 	if (mutex_lock_interruptible(&current->signal->cred_guard_mutex))
 		return -ERESTARTNOINTR;
@@ -1470,6 +1475,7 @@ void bprm_drop_loader(struct linux_binprm *bprm)
 }
 
 static void free_bprm(struct linux_binprm *bprm)
+	__context_unsafe(/* releases cred_guard_mutex held by caller */)
 {
 	struct mm_struct *mm = bprm->mm;
 

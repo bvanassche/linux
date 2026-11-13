@@ -219,6 +219,7 @@ static unsigned long iommu_range_alloc(struct device *dev,
                                        unsigned long *handle,
                                        unsigned long mask,
                                        unsigned int align_order)
+	__context_unsafe(/* too complex */)
 { 
 	unsigned long n, end, start;
 	unsigned long limit;

@@ -676,6 +676,7 @@ static void ff400_handle_msg(struct snd_ff *ff, unsigned int offset, const __le3
 }
 
 static long ff400_copy_msg_to_user(struct snd_ff *ff, char __user *buf, long count)
+	__must_hold(&ff->lock)
 {
 	struct snd_firewire_event_ff400_message ev = {
 		.type = SNDRV_FIREWIRE_EVENT_FF400_MESSAGE,

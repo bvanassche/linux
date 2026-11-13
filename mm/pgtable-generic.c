@@ -295,6 +295,7 @@ static void pmdp_get_lockless_end(unsigned long irqflags) { }
 #endif
 
 pte_t *__pte_offset_map(pmd_t *pmd, unsigned long addr, pmd_t *pmdvalp)
+	__context_unsafe(/* conditionally acquires RCU */)
 {
 	unsigned long irqflags;
 	pmd_t pmdval;

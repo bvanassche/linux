@@ -456,6 +456,7 @@ static int monitors_show(struct seq_file *m, void *p)
  * operation.
  */
 static void monitors_stop(struct seq_file *m, void *p)
+	__releases(&rv_interface_lock)
 {
 	mutex_unlock(&rv_interface_lock);
 }
@@ -464,6 +465,7 @@ static void monitors_stop(struct seq_file *m, void *p)
  * Available monitor seq functions.
  */
 static void *available_monitors_start(struct seq_file *m, loff_t *pos)
+	__acquires(&rv_interface_lock)
 {
 	mutex_lock(&rv_interface_lock);
 	return seq_list_start(&rv_monitors_list, *pos);
@@ -492,6 +494,7 @@ static void *enabled_monitors_next(struct seq_file *m, void *p, loff_t *pos)
 }
 
 static void *enabled_monitors_start(struct seq_file *m, loff_t *pos)
+	__acquires(&rv_interface_lock)
 {
 	struct list_head *head;
 	loff_t l;
@@ -861,6 +864,7 @@ int __init rv_init_interface(void)
  * Returns 0 on success, -EBUSY if any real monitor is already enabled.
  */
 int rv_set_testing(struct kunit_suite *suite)
+	__cond_acquires(0, &rv_interface_lock)
 {
 	struct rv_monitor *mon;
 
@@ -881,6 +885,7 @@ EXPORT_SYMBOL_IF_KUNIT(rv_set_testing);
  * rv_clear_testing - allow real monitors to run again after KUnit tests
  */
 void rv_clear_testing(struct kunit_suite *suite)
+	__releases(&rv_interface_lock)
 {
 	mutex_unlock(&rv_interface_lock);
 }

@@ -221,6 +221,7 @@ static int ext4_issue_zeroout_stub(struct inode *inode, ext4_lblk_t lblk,
 }
 
 static int extents_kunit_init(struct kunit *test)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ext4_extent_header *eh = NULL;
 	struct ext4_inode_info *ei;

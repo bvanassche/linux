@@ -58,14 +58,16 @@ static inline struct mutex *get_task_blocked_on(struct task_struct *p)
 extern void debug_mutex_lock_common(struct mutex *lock,
 				    struct mutex_waiter *waiter);
 extern void debug_mutex_wake_waiter(struct mutex *lock,
-				    struct mutex_waiter *waiter);
+				    struct mutex_waiter *waiter)
+	__must_hold(&lock->wait_lock);
 extern void debug_mutex_free_waiter(struct mutex_waiter *waiter);
 extern void debug_mutex_add_waiter(struct mutex *lock,
 				   struct mutex_waiter *waiter,
 				   struct task_struct *task);
 extern void debug_mutex_remove_waiter(struct mutex *lock, struct mutex_waiter *waiter,
 				      struct task_struct *task);
-extern void debug_mutex_unlock(struct mutex *lock);
+extern void debug_mutex_unlock(struct mutex *lock)
+	__must_hold(&lock->wait_lock);
 extern void debug_mutex_init(struct mutex *lock);
 #else /* CONFIG_DEBUG_MUTEXES */
 # define debug_mutex_lock_common(lock, waiter)		do { } while (0)

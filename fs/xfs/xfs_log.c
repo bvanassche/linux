@@ -787,7 +787,7 @@ int
 xlog_wait_on_iclog(
 	struct xlog		*log,
 	struct xlog_in_core	*iclog)
-		__releases(log->l_icloglock)
+		__releases(&log->l_icloglock)
 {
 	trace_xlog_iclog_wait_on(iclog, _RET_IP_);
 	if (!xlog_is_shutdown(log) &&
@@ -864,6 +864,7 @@ xlog_write_unmount_record(
 static void
 xlog_unmount_write(
 	struct xlog		*log)
+	__must_not_hold(&log->l_icloglock)
 {
 	struct xfs_mount	*mp = log->l_mp;
 	struct xlog_in_core	*iclog;

@@ -54,6 +54,7 @@ bpf_mmap_unlock_guard_put(struct mmap_unlock_irq_work *work)
 }
 
 static inline void bpf_mmap_unlock_mm(struct mmap_unlock_irq_work *work, struct mm_struct *mm)
+	__releases_shared(&mm->mmap_lock)
 {
 	if (!work) {
 		mmap_read_unlock(mm);
@@ -65,6 +66,7 @@ static inline void bpf_mmap_unlock_mm(struct mmap_unlock_irq_work *work, struct 
 		 * it doesn't complain that we forgot to release it.
 		 */
 		rwsem_release(&mm->mmap_lock.dep_map, _RET_IP_);
+		__release_shared(&mm->mmap_lock);
 		irq_work_queue(&work->irq_work);
 	}
 }

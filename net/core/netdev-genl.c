@@ -131,6 +131,7 @@ int netdev_nl_dev_get_doit(struct sk_buff *skb, struct genl_info *info)
 		goto err_free_msg;
 	}
 
+	__acquire(&netdev->lock);
 	err = netdev_nl_dev_fill(netdev, rsp, info);
 	netdev_unlock(netdev);
 
@@ -221,6 +222,7 @@ nla_put_failure:
 }
 
 int netdev_nl_napi_get_doit(struct sk_buff *skb, struct genl_info *info)
+	__context_unsafe(/* netdev_napi_by_id_lock() locks conditionally */)
 {
 	struct napi_struct *napi;
 	struct sk_buff *rsp;
@@ -306,6 +308,7 @@ int netdev_nl_napi_get_dumpit(struct sk_buff *skb, struct netlink_callback *cb)
 	if (ifindex) {
 		netdev = netdev_get_by_index_lock(net, ifindex);
 		if (netdev) {
+			__acquire(&netdev->lock);
 			err = netdev_nl_napi_dump_one(netdev, skb, info, ctx);
 			netdev_unlock(netdev);
 		} else {
@@ -368,6 +371,7 @@ netdev_nl_napi_set_config(struct napi_struct *napi, struct genl_info *info)
 }
 
 int netdev_nl_napi_set_doit(struct sk_buff *skb, struct genl_info *info)
+	__context_unsafe(/* netdev_napi_by_id_lock() locks conditionally */)
 {
 	struct napi_struct *napi;
 	unsigned int napi_id;
@@ -560,6 +564,7 @@ netdev_nl_queue_fill(struct sk_buff *rsp, struct net_device *netdev, u32 q_idx,
 }
 
 int netdev_nl_queue_get_doit(struct sk_buff *skb, struct genl_info *info)
+	__context_unsafe(/* conditional locking */)
 {
 	u32 q_id, q_type, ifindex;
 	struct net_device *netdev;
@@ -625,6 +630,7 @@ netdev_nl_queue_dump_one(struct net_device *netdev, struct sk_buff *rsp,
 }
 
 int netdev_nl_queue_get_dumpit(struct sk_buff *skb, struct netlink_callback *cb)
+	__context_unsafe(/* conditional locking */)
 {
 	struct netdev_nl_dump_ctx *ctx = netdev_dump_ctx(cb);
 	const struct genl_info *info = genl_info_dump(cb);
@@ -1083,6 +1089,7 @@ int netdev_nl_bind_rx_doit(struct sk_buff *skb, struct genl_info *info)
 		err = -ENODEV;
 		goto err_unlock_sock;
 	}
+	__acquire(&netdev->lock);
 	if (!netif_device_present(netdev))
 		err = -ENODEV;
 	else if (!netdev_need_ops_lock(netdev))
@@ -1193,6 +1200,7 @@ netdev_find_netmem_tx_dev(struct net_device *dev)
  * device state.
  */
 int netdev_nl_bind_tx_doit(struct sk_buff *skb, struct genl_info *info)
+	__context_unsafe(/* conditional locking */)
 {
 	struct net_devmem_dmabuf_binding *binding;
 	struct net_device *bind_dev;
@@ -1370,6 +1378,7 @@ int netdev_nl_queue_create_doit(struct sk_buff *skb, struct genl_info *info)
 		err = -ENODEV;
 		goto err_genlmsg_free;
 	}
+	__acquire(&dev->lock);
 	if (!netdev_can_create_queue(dev, info->extack)) {
 		err = -EINVAL;
 		goto err_unlock_dev;

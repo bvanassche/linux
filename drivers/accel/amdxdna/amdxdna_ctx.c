@@ -489,6 +489,7 @@ out:
 }
 
 int amdxdna_update_heap(struct amdxdna_client *client, struct amdxdna_hwctx *hwctx)
+	__must_hold(&client->xdna->dev_lock)
 {
 	unsigned long hwctx_id;
 	int ret;

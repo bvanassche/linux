@@ -100,8 +100,8 @@ static u8 i2c_ctrl_read(struct controller *, void __iomem *, u8);
 static u8 i2c_ctrl_write(struct controller *, void __iomem *, u8, u8);
 static u8 hpc_writecmdtoindex(u8, u8);
 static u8 hpc_readcmdtoindex(u8, u8);
-static void get_hpc_access(void);
-static void free_hpc_access(void);
+static void get_hpc_access(void) __acquires(&sem_hpcaccess);
+static void free_hpc_access(void) __releases(&sem_hpcaccess);
 static int poll_hpc(void *data);
 static int process_changeinstatus(struct slot *, struct slot *);
 static int process_changeinlatch(u8, u8, struct controller *);
@@ -742,6 +742,7 @@ int ibmphp_hpc_writeslot(struct slot *pslot, u8 cmd)
 * Action: make sure only one process can access HPC at one time
 *---------------------------------------------------------------------*/
 static void get_hpc_access(void)
+	__acquires(&sem_hpcaccess)
 {
 	mutex_lock(&sem_hpcaccess);
 }
@@ -750,6 +751,7 @@ static void get_hpc_access(void)
 * Name:    free_hpc_access()
 *---------------------------------------------------------------------*/
 void free_hpc_access(void)
+	__releases(&sem_hpcaccess)
 {
 	mutex_unlock(&sem_hpcaccess);
 }
@@ -760,6 +762,7 @@ void free_hpc_access(void)
 * Action: make sure only one process can change the data structure
 *---------------------------------------------------------------------*/
 void ibmphp_lock_operations(void)
+	__acquires(&operations_mutex)
 {
 	mutex_lock(&operations_mutex);
 	to_debug = 1;
@@ -769,6 +772,7 @@ void ibmphp_lock_operations(void)
 * Name:    ibmphp_unlock_operations()
 *---------------------------------------------------------------------*/
 void ibmphp_unlock_operations(void)
+	__releases(&operations_mutex)
 {
 	debug("%s - Entry\n", __func__);
 	mutex_unlock(&operations_mutex);

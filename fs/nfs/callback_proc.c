@@ -133,7 +133,6 @@ out:
  */
 static struct inode *nfs_layout_find_inode_by_stateid(struct nfs_client *clp,
 		const nfs4_stateid *stateid)
-	__must_hold(RCU)
 {
 	struct nfs_server *server;
 	struct inode *inode;

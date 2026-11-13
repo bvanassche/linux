@@ -198,6 +198,7 @@ out_rcu_unlock:
  */
 static struct ipq *ip_find(struct net *net, struct iphdr *iph,
 			   u32 user, int vif)
+	__must_hold_shared(RCU)
 {
 	struct frag_v4_compare_key key = {
 		.saddr = iph->saddr,

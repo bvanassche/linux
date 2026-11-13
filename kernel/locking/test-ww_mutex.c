@@ -39,6 +39,7 @@ struct test_mutex {
 #define __TEST_MTX_LAST BIT(3)
 
 static void test_mutex_work(struct work_struct *work)
+	__context_unsafe(/* conditional locking */)
 {
 	struct test_mutex *mtx = container_of(work, typeof(*mtx), work);
 
@@ -56,6 +57,7 @@ static void test_mutex_work(struct work_struct *work)
 }
 
 static int __test_mutex(struct ww_class *class, unsigned int flags)
+	__context_unsafe(/* conditional locking */)
 {
 #define TIMEOUT (HZ / 16)
 	struct test_mutex mtx;
@@ -122,6 +124,7 @@ static int test_mutex(struct ww_class *class)
 }
 
 static int test_aa(struct ww_class *class, bool trylock)
+	__context_unsafe(/* double ww_mutex_trylock() call */)
 {
 	struct ww_mutex mutex;
 	struct ww_acquire_ctx ctx;
@@ -188,6 +191,7 @@ struct test_abba {
 };
 
 static void test_abba_work(struct work_struct *work)
+	__context_unsafe(/* intentional EDEADLK */)
 {
 	struct test_abba *abba = container_of(work, typeof(*abba), work);
 	struct ww_acquire_ctx ctx;
@@ -220,6 +224,7 @@ static void test_abba_work(struct work_struct *work)
 }
 
 static int test_abba(struct ww_class *class, bool trylock, bool resolve)
+	__context_unsafe(/* intentional locking violation in selftest */)
 {
 	struct test_abba abba;
 	struct ww_acquire_ctx ctx;
@@ -290,6 +295,7 @@ struct test_cycle {
 };
 
 static void test_cycle_work(struct work_struct *work)
+	__context_unsafe(/* intentional locking violation in selftest */)
 {
 	struct test_cycle *cycle = container_of(work, typeof(*cycle), work);
 	struct ww_acquire_ctx ctx;
@@ -434,6 +440,7 @@ static void dummy_load(struct stress *stress)
 }
 
 static void stress_inorder_work(struct work_struct *work)
+	__context_unsafe(/* intentional locking violation in selftest */)
 {
 	struct stress *stress = container_of(work, typeof(*stress), work);
 	const int nlocks = stress->nlocks;
@@ -493,6 +500,7 @@ struct reorder_lock {
 };
 
 static void stress_reorder_work(struct work_struct *work)
+	__context_unsafe(/* intentional locking violation in selftest */)
 {
 	struct stress *stress = container_of(work, typeof(*stress), work);
 	LIST_HEAD(locks);

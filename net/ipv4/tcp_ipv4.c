@@ -1681,6 +1681,7 @@ struct sock *tcp_v4_syn_recv_sock(const struct sock *sk, struct sk_buff *skb,
 				  bool *own_req,
 				  void (*opt_child_init)(struct sock *newsk,
 							 const struct sock *sk))
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct inet_request_sock *ireq;
 	bool found_dup_sk = false;
@@ -1904,6 +1905,7 @@ err_discard:
 }
 
 enum skb_drop_reason tcp_add_backlog(struct sock *sk, struct sk_buff *skb)
+	__context_unsafe(/* conditionally releases &sk->sk_lock.slock */)
 {
 	u32 tail_gso_size, tail_gso_segs;
 	struct skb_shared_info *shinfo;
@@ -2075,6 +2077,7 @@ static void tcp_v4_fill_cb(struct sk_buff *skb, const struct iphdr *iph,
  */
 
 int tcp_v4_rcv(struct sk_buff *skb)
+	__context_unsafe(/* conditional locking */)
 {
 	struct net *net = dev_net_rcu(skb->dev);
 	enum skb_drop_reason drop_reason;
@@ -2484,6 +2487,7 @@ static bool seq_sk_match(struct seq_file *seq, const struct sock *sk)
  * and return the first sk from it.
  */
 static void *listening_get_first(struct seq_file *seq)
+	__context_unsafe(/* conditional locking */)
 {
 	struct inet_hashinfo *hinfo = seq_file_net(seq)->ipv4.tcp_death_row.hashinfo;
 	struct tcp_iter_state *st = seq->private;
@@ -2515,6 +2519,7 @@ static void *listening_get_first(struct seq_file *seq)
  * non empty bucket.
  */
 static void *listening_get_next(struct seq_file *seq, void *cur)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct tcp_iter_state *st = seq->private;
 	struct inet_listen_hashbucket *ilb2;
@@ -2565,6 +2570,7 @@ static inline bool empty_bucket(struct inet_hashinfo *hinfo,
  * If st->bucket is zero, the very first socket in the hash is returned.
  */
 static void *established_get_first(struct seq_file *seq)
+	__context_unsafe(/* conditional locking */)
 {
 	struct inet_hashinfo *hinfo = seq_file_net(seq)->ipv4.tcp_death_row.hashinfo;
 	struct tcp_iter_state *st = seq->private;
@@ -2593,6 +2599,7 @@ static void *established_get_first(struct seq_file *seq)
 }
 
 static void *established_get_next(struct seq_file *seq, void *cur)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct inet_hashinfo *hinfo = seq_file_net(seq)->ipv4.tcp_death_row.hashinfo;
 	struct tcp_iter_state *st = seq->private;
@@ -2732,6 +2739,7 @@ out:
 }
 
 void tcp_seq_stop(struct seq_file *seq, void *v)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct inet_hashinfo *hinfo = seq_file_net(seq)->ipv4.tcp_death_row.hashinfo;
 	struct tcp_iter_state *st = seq->private;
@@ -2969,6 +2977,7 @@ static struct sock *bpf_iter_tcp_resume_bucket(struct sock *first_sk,
 }
 
 static struct sock *bpf_iter_tcp_resume_listening(struct seq_file *seq)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct inet_hashinfo *hinfo = seq_file_net(seq)->ipv4.tcp_death_row.hashinfo;
 	struct bpf_tcp_iter_state *iter = seq->private;
@@ -2999,6 +3008,7 @@ static struct sock *bpf_iter_tcp_resume_listening(struct seq_file *seq)
 }
 
 static struct sock *bpf_iter_tcp_resume_established(struct seq_file *seq)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct inet_hashinfo *hinfo = seq_file_net(seq)->ipv4.tcp_death_row.hashinfo;
 	struct bpf_tcp_iter_state *iter = seq->private;
@@ -3121,6 +3131,7 @@ static unsigned int bpf_iter_fill_batch(struct seq_file *seq,
 }
 
 static void bpf_iter_tcp_unlock_bucket(struct seq_file *seq)
+	__context_unsafe(/* releases bucket lock held by caller */)
 {
 	struct inet_hashinfo *hinfo = seq_file_net(seq)->ipv4.tcp_death_row.hashinfo;
 	struct bpf_tcp_iter_state *iter = seq->private;
@@ -3232,6 +3243,7 @@ static void *bpf_iter_tcp_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static int bpf_iter_tcp_seq_show(struct seq_file *seq, void *v)
+	__context_unsafe(/* conditional locking */)
 {
 	struct bpf_iter_meta meta;
 	struct bpf_prog *prog;

@@ -307,7 +307,7 @@ static int ioat_reset_sync(struct ioatdma_chan *ioat_chan, unsigned long tmo)
 }
 
 static dma_cookie_t ioat_tx_submit_unlock(struct dma_async_tx_descriptor *tx)
-	__releases(&ioat_chan->prep_lock)
+	__releases(&to_ioat_chan(tx->chan)->prep_lock)
 {
 	struct dma_chan *c = tx->chan;
 	struct ioatdma_chan *ioat_chan = to_ioat_chan(c);
@@ -461,7 +461,7 @@ ioat_alloc_ring(struct dma_chan *c, int order, gfp_t flags)
  * @num_descs: allocation length
  */
 int ioat_check_space_lock(struct ioatdma_chan *ioat_chan, int num_descs)
-	__acquires(&ioat_chan->prep_lock)
+	__cond_acquires(0, &ioat_chan->prep_lock)
 {
 	spin_lock_bh(&ioat_chan->prep_lock);
 	/* never allow the last descriptor to be consumed, we need at

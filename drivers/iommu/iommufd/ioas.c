@@ -413,6 +413,7 @@ out_put:
 
 static void iommufd_release_all_iova_rwsem(struct iommufd_ctx *ictx,
 					   struct xarray *ioas_list)
+	__context_unsafe(/* unlock call inside loop */)
 {
 	struct iommufd_ioas *ioas;
 	unsigned long index;
@@ -427,6 +428,7 @@ static void iommufd_release_all_iova_rwsem(struct iommufd_ctx *ictx,
 
 static int iommufd_take_all_iova_rwsem(struct iommufd_ctx *ictx,
 				       struct xarray *ioas_list)
+	__context_unsafe(/* down_write() inside loop */)
 {
 	struct iommufd_object *obj;
 	unsigned long index;

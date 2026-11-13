@@ -1276,6 +1276,7 @@ static int f2fs_write_compressed_pages(struct compress_ctx *cc,
 					int *submitted,
 					struct writeback_control *wbc,
 					enum iostat_type io_type)
+	__context_unsafe(/* conditional locking */)
 {
 	struct inode *inode = cc->inode;
 	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
@@ -1506,6 +1507,7 @@ static int f2fs_write_raw_pages(struct compress_ctx *cc,
 					int *submitted_p,
 					struct writeback_control *wbc,
 					enum iostat_type io_type)
+	__context_unsafe(/* conditional locking */)
 {
 	struct address_space *mapping = cc->inode->i_mapping;
 	struct f2fs_sb_info *sbi = F2FS_M_SB(mapping);

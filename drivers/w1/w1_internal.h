@@ -41,7 +41,8 @@ struct w1_slave *w1_search_slave(struct w1_reg_num *id);
  * returns the reference count after it has been decremented
  */
 int w1_unref_slave(struct w1_slave *sl);
-void w1_slave_found(struct w1_master *dev, u64 rn);
+void w1_slave_found(struct w1_master *dev, u64 rn)
+		__must_hold(&dev->mutex);
 void w1_search_process_cb(struct w1_master *dev, u8 search_type,
 			  w1_slave_found_callback cb);
 struct w1_slave *w1_slave_search_device(struct w1_master *dev,

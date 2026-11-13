@@ -259,7 +259,8 @@ static inline bool mshv_partition_encrypted(struct mshv_partition *partition)
 
 struct mshv_partition *mshv_partition_get(struct mshv_partition *partition);
 void mshv_partition_put(struct mshv_partition *partition);
-struct mshv_partition *mshv_partition_find(u64 partition_id) __must_hold(RCU);
+struct mshv_partition *mshv_partition_find(u64 partition_id)
+	__must_hold_shared(RCU);
 
 static inline bool is_l1vh_parent(u64 partition_id)
 {

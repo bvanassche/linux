@@ -297,6 +297,7 @@ void alc_fixup_dell_xps13(struct hda_codec *codec,
  * COEF access helper functions
  */
 static inline void coef_mutex_lock(struct hda_codec *codec)
+	__acquires(&((struct alc_spec *)(codec->spec))->coef_mutex)
 {
 	struct alc_spec *spec = codec->spec;
 
@@ -305,6 +306,7 @@ static inline void coef_mutex_lock(struct hda_codec *codec)
 }
 
 static inline void coef_mutex_unlock(struct hda_codec *codec)
+	__releases(&((struct alc_spec *)(codec->spec))->coef_mutex)
 {
 	struct alc_spec *spec = codec->spec;
 

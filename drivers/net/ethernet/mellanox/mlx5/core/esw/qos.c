@@ -71,6 +71,7 @@ struct mlx5_esw_sched_node {
  * - devlink callers use esw_qos_devlink_lock/esw_qos_devlink_unlock.
  */
 static void esw_assert_qos_lock_held(struct mlx5_core_dev *dev)
+	__context_unsafe(/* conditional locking */)
 {
 	if (dev->shd)
 		devl_assert_locked(dev->shd);
@@ -79,6 +80,7 @@ static void esw_assert_qos_lock_held(struct mlx5_core_dev *dev)
 }
 
 static void esw_qos_lock(struct mlx5_core_dev *dev)
+	__context_unsafe(/* conditional locking */)
 {
 	if (dev->shd)
 		devl_lock(dev->shd);
@@ -87,6 +89,7 @@ static void esw_qos_lock(struct mlx5_core_dev *dev)
 }
 
 static void esw_qos_unlock(struct mlx5_core_dev *dev)
+	__context_unsafe(/* conditional locking */)
 {
 	if (dev->shd)
 		devl_unlock(dev->shd);
@@ -95,24 +98,28 @@ static void esw_qos_unlock(struct mlx5_core_dev *dev)
 }
 
 static void esw_qos_shd_lock(struct mlx5_core_dev *dev)
+	__context_unsafe(/* conditional locking */)
 {
 	if (dev->shd)
 		devl_lock(dev->shd);
 }
 
 static void esw_qos_shd_unlock(struct mlx5_core_dev *dev)
+	__context_unsafe(/* conditional locking */)
 {
 	if (dev->shd)
 		devl_unlock(dev->shd);
 }
 
 static void esw_qos_devlink_lock(struct mlx5_core_dev *dev)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!dev->shd)
 		mutex_lock(&dev->priv.eswitch->state_lock);
 }
 
 static void esw_qos_devlink_unlock(struct mlx5_core_dev *dev)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!dev->shd)
 		mutex_unlock(&dev->priv.eswitch->state_lock);

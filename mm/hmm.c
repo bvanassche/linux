@@ -500,6 +500,8 @@ static int hmm_vma_walk_pud(pud_t *pudp, unsigned long start, unsigned long end,
 	if (!ptl)
 		return 0;
 
+	__acquire(ptl);
+
 	/* Normally we don't want to split the huge page */
 	walk->action = ACTION_CONTINUE;
 
@@ -787,6 +789,7 @@ EXPORT_SYMBOL(hmm_range_fault);
  */
 int hmm_range_fault_unlocked_timeout(struct hmm_range *range,
 				     unsigned long timeout)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mm_struct *mm = range->notifier->mm;
 	unsigned long deadline = 0;

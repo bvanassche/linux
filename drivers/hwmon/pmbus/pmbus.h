@@ -638,9 +638,12 @@ int pmbus_get_fan_rate_device(struct i2c_client *client, int page, int id,
 			      enum pmbus_fan_mode mode);
 int pmbus_get_fan_rate_cached(struct i2c_client *client, int page, int id,
 			      enum pmbus_fan_mode mode);
-int pmbus_lock_interruptible(struct i2c_client *client);
-void pmbus_lock(struct i2c_client *client);
-void pmbus_unlock(struct i2c_client *client);
+int pmbus_lock_interruptible(struct i2c_client *client)
+	__cond_acquires(0, &((struct pmbus_data *)i2c_get_clientdata(client))->update_lock);
+void pmbus_lock(struct i2c_client *client)
+	__acquires(&((struct pmbus_data *)i2c_get_clientdata(client))->update_lock);
+void pmbus_unlock(struct i2c_client *client)
+	__releases(&((struct pmbus_data *)i2c_get_clientdata(client))->update_lock);
 
 DEFINE_GUARD(pmbus_lock, struct i2c_client *, pmbus_lock(_T), pmbus_unlock(_T))
 

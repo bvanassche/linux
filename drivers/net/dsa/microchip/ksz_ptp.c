@@ -1534,6 +1534,7 @@ static void ksz_ptp_irq_unmask(struct irq_data *d)
 }
 
 static void ksz_ptp_irq_bus_lock(struct irq_data *d)
+	__acquires(&((struct ksz_irq *)irq_data_get_irq_chip_data(d))->dev->lock_irq)
 {
 	struct ksz_irq *kirq  = irq_data_get_irq_chip_data(d);
 
@@ -1541,6 +1542,7 @@ static void ksz_ptp_irq_bus_lock(struct irq_data *d)
 }
 
 static void ksz_ptp_irq_bus_sync_unlock(struct irq_data *d)
+	__releases(&((struct ksz_irq *)irq_data_get_irq_chip_data(d))->dev->lock_irq)
 {
 	struct ksz_irq *kirq  = irq_data_get_irq_chip_data(d);
 	struct ksz_device *dev = kirq->dev;

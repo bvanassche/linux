@@ -1528,6 +1528,7 @@ EXPORT_SYMBOL_GPL(svc_xprt_names);
 /*----------------------------------------------------------------------------*/
 
 static void *svc_pool_stats_start(struct seq_file *m, loff_t *pos)
+	__acquires(((struct svc_info *)m->private)->mutex)
 {
 	unsigned int pidx = (unsigned int)*pos;
 	struct svc_info *si = m->private;
@@ -1568,6 +1569,7 @@ static void *svc_pool_stats_next(struct seq_file *m, void *p, loff_t *pos)
 }
 
 static void svc_pool_stats_stop(struct seq_file *m, void *p)
+	__releases(((struct svc_info *)m->private)->mutex)
 {
 	struct svc_info *si = m->private;
 

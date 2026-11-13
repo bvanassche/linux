@@ -90,6 +90,7 @@ int xfrm_input_unregister_afinfo(const struct xfrm_input_afinfo *afinfo)
 EXPORT_SYMBOL(xfrm_input_unregister_afinfo);
 
 static const struct xfrm_input_afinfo *xfrm_input_get_afinfo(u8 family, bool is_ipip)
+	__cond_acquires_shared(nonnull, RCU)
 {
 	const struct xfrm_input_afinfo *afinfo;
 
@@ -464,6 +465,7 @@ static int xfrm_inner_mode_input(struct xfrm_state *x,
  * function after a previous invocation early terminated for async operation.
  */
 int xfrm_input(struct sk_buff *skb, int nexthdr, __be32 spi, int encap_type)
+	__context_unsafe(/* conditional locking */)
 {
 	const struct xfrm_state_afinfo *afinfo;
 	struct net *net = dev_net(skb->dev);

@@ -264,6 +264,7 @@ static void __percpu_ref_switch_to_percpu(struct percpu_ref *ref)
 
 static void __percpu_ref_switch_mode(struct percpu_ref *ref,
 				     percpu_ref_func_t *confirm_switch)
+	__must_hold(&percpu_ref_switch_lock)
 {
 	struct percpu_ref_data *data = ref->data;
 

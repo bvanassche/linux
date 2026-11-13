@@ -539,18 +539,20 @@ void __io_commit_cqring_flush(struct io_ring_ctx *ctx)
 }
 
 static inline void __io_cq_lock(struct io_ring_ctx *ctx)
+	__context_unsafe(/* conditional locking */)
 {
 	if (!(ctx->int_flags & IO_RING_F_LOCKLESS_CQ))
 		spin_lock(&ctx->completion_lock);
 }
 
 static inline void io_cq_lock(struct io_ring_ctx *ctx)
-	__acquires(ctx->completion_lock)
+	__acquires(&ctx->completion_lock)
 {
 	spin_lock(&ctx->completion_lock);
 }
 
 static inline void __io_cq_unlock_post(struct io_ring_ctx *ctx)
+	__context_unsafe(/* conditional locking */)
 {
 	io_commit_cqring(ctx);
 	if (!(ctx->int_flags & IO_RING_F_TASK_COMPLETE)) {
@@ -564,7 +566,7 @@ static inline void __io_cq_unlock_post(struct io_ring_ctx *ctx)
 }
 
 static void io_cq_unlock_post(struct io_ring_ctx *ctx)
-	__releases(ctx->completion_lock)
+	__releases(&ctx->completion_lock)
 {
 	io_commit_cqring(ctx);
 	spin_unlock(&ctx->completion_lock);
@@ -573,6 +575,7 @@ static void io_cq_unlock_post(struct io_ring_ctx *ctx)
 }
 
 static void __io_cqring_overflow_flush(struct io_ring_ctx *ctx, bool dying)
+	__must_hold(&ctx->uring_lock)
 {
 	lockdep_assert_held(&ctx->uring_lock);
 
@@ -630,6 +633,7 @@ static void __io_cqring_overflow_flush(struct io_ring_ctx *ctx, bool dying)
 }
 
 static void io_cqring_overflow_kill(struct io_ring_ctx *ctx)
+	__must_hold(&ctx->uring_lock)
 {
 	if (ctx->rings)
 		__io_cqring_overflow_flush(ctx, true);
@@ -643,6 +647,7 @@ void io_cqring_do_overflow_flush(struct io_ring_ctx *ctx)
 }
 
 void io_cqring_overflow_flush_locked(struct io_ring_ctx *ctx)
+	__must_hold(&ctx->uring_lock)
 {
 	__io_cqring_overflow_flush(ctx, false);
 }
@@ -1042,7 +1047,7 @@ defer_complete:
 }
 
 void io_req_defer_failed(struct io_kiocb *req, s32 res)
-	__must_hold(&ctx->uring_lock)
+	__must_hold(&req->ctx->uring_lock)
 {
 	const struct io_cold_def *def = &io_cold_defs[req->opcode];
 
@@ -1332,6 +1337,7 @@ __cold void io_iopoll_try_reap_events(struct io_ring_ctx *ctx)
 }
 
 static int io_iopoll_check(struct io_ring_ctx *ctx, unsigned int min_events)
+	__must_hold(&ctx->uring_lock)
 {
 	unsigned long check_cq;
 
@@ -1414,6 +1420,7 @@ void io_req_task_complete(struct io_tw_req tw_req, io_tw_token_t tw)
  * accessing the kiocb cookie.
  */
 static void io_iopoll_req_issued(struct io_kiocb *req, unsigned int issue_flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct io_ring_ctx *ctx = req->ctx;
 	const bool needs_lock = issue_flags & IO_URING_F_UNLOCKED;
@@ -1468,7 +1475,7 @@ io_req_flags_t io_file_get_flags(struct file *file)
 }
 
 static __cold void io_drain_req(struct io_kiocb *req)
-	__must_hold(&ctx->uring_lock)
+	__must_hold(&req->ctx->uring_lock)
 {
 	struct io_ring_ctx *ctx = req->ctx;
 	bool drain = req->flags & IOSQE_IO_DRAIN;
@@ -1527,6 +1534,7 @@ static inline int __io_issue_sqe(struct io_kiocb *req,
 }
 
 static int io_issue_sqe(struct io_kiocb *req, unsigned int issue_flags)
+	__context_unsafe(/* caller holds uring_lock */)
 {
 	const struct io_issue_def *def = &io_issue_defs[req->opcode];
 	int ret;

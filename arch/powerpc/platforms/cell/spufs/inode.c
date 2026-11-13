@@ -378,6 +378,7 @@ static int
 spufs_create_context(struct inode *inode, struct dentry *dentry,
 			struct vfsmount *mnt, int flags, umode_t mode,
 			struct file *aff_filp)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 	int affinity;

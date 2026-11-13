@@ -440,6 +440,7 @@ static void amdgpu_userq_detach_doorbell(struct amdgpu_usermode_queue *queue)
 void
 amdgpu_userq_ensure_ev_fence(struct amdgpu_userq_mgr *uq_mgr,
 			     struct amdgpu_eviction_fence_mgr *evf_mgr)
+	__acquires(&uq_mgr->userq_mutex)
 {
 	struct dma_fence *ev_fence;
 
@@ -561,6 +562,7 @@ amdgpu_userq_destroy(struct amdgpu_userq_mgr *uq_mgr, struct amdgpu_usermode_que
 	cancel_delayed_work_sync(&queue->hang_detect_work);
 
 	mutex_lock(&uq_mgr->userq_mutex);
+	lockdep_assert_held(&queue->userq_mgr->userq_mutex);
 	amdgpu_userq_wait_for_last_fence(queue);
 
 	amdgpu_userq_detach_doorbell(queue);

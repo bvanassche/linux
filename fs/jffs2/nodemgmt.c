@@ -77,6 +77,7 @@ static int jffs2_do_reserve_space(struct jffs2_sb_info *c,  uint32_t minsize,
 
 int jffs2_reserve_space(struct jffs2_sb_info *c, uint32_t minsize,
 			uint32_t *len, int prio, uint32_t sumsize)
+	__cond_acquires(0, &c->alloc_sem)
 {
 	int ret = -EAGAIN;
 	int blocksneeded = c->resv_blocks_write;
@@ -282,6 +283,7 @@ static void jffs2_close_nextblock(struct jffs2_sb_info *c, struct jffs2_eraseblo
 /* Select a new jeb for nextblock */
 
 static int jffs2_find_nextblock(struct jffs2_sb_info *c)
+	__must_hold(&c->erase_completion_lock)
 {
 	struct list_head *next;
 
@@ -357,6 +359,7 @@ static int jffs2_find_nextblock(struct jffs2_sb_info *c)
 /* Called with alloc sem _and_ erase_completion_lock */
 static int jffs2_do_reserve_space(struct jffs2_sb_info *c, uint32_t minsize,
 				  uint32_t *len, uint32_t sumsize)
+	__must_hold(&c->erase_completion_lock)
 {
 	struct jffs2_eraseblock *jeb = c->nextblock;
 	uint32_t reserved_size;				/* for summary information at the end of the jeb */
@@ -561,6 +564,7 @@ struct jffs2_raw_node_ref *jffs2_add_physical_node_ref(struct jffs2_sb_info *c,
 
 
 void jffs2_complete_reservation(struct jffs2_sb_info *c)
+	__releases(&c->alloc_sem)
 {
 	jffs2_dbg(1, "jffs2_complete_reservation()\n");
 	spin_lock(&c->erase_completion_lock);
@@ -584,6 +588,7 @@ static inline int on_list(struct list_head *obj, struct list_head *head)
 }
 
 void jffs2_mark_node_obsolete(struct jffs2_sb_info *c, struct jffs2_raw_node_ref *ref)
+	__context_unsafe(/* conditional locking */)
 {
 	struct jffs2_eraseblock *jeb;
 	int blocknr;

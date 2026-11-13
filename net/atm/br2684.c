@@ -764,7 +764,7 @@ static struct atm_ioctl br2684_ioctl_ops = {
 
 #ifdef CONFIG_PROC_FS
 static void *br2684_seq_start(struct seq_file *seq, loff_t * pos)
-	__acquires(devs_lock)
+	__acquires_shared(&devs_lock)
 {
 	read_lock(&devs_lock);
 	return seq_list_start(&br2684_devs, *pos);
@@ -776,7 +776,7 @@ static void *br2684_seq_next(struct seq_file *seq, void *v, loff_t * pos)
 }
 
 static void br2684_seq_stop(struct seq_file *seq, void *v)
-	__releases(devs_lock)
+	__releases_shared(&devs_lock)
 {
 	read_unlock(&devs_lock);
 }

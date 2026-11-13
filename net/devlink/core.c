@@ -310,18 +310,21 @@ EXPORT_SYMBOL_GPL(devl_lock_is_held);
 #endif
 
 void devl_lock(struct devlink *devlink)
+	__context_unsafe(/* acquires devlink->lock for caller */)
 {
 	mutex_lock(&devlink->lock);
 }
 EXPORT_SYMBOL_GPL(devl_lock);
 
 int devl_trylock(struct devlink *devlink)
+	__context_unsafe(/* mutex_trylock() locks conditionally */)
 {
 	return mutex_trylock(&devlink->lock);
 }
 EXPORT_SYMBOL_GPL(devl_trylock);
 
 void devl_unlock(struct devlink *devlink)
+	__context_unsafe(/* releases devlink->lock held by caller */)
 {
 	mutex_unlock(&devlink->lock);
 }

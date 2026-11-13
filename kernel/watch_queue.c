@@ -40,6 +40,7 @@ MODULE_AUTHOR("Red Hat, Inc.");
  * turn makes sure that the notification pipe still exists.
  */
 static inline bool lock_wqueue(struct watch_queue *wqueue)
+	__cond_acquires(true, &wqueue->lock)
 {
 	spin_lock_bh(&wqueue->lock);
 	if (unlikely(!wqueue->pipe)) {
@@ -50,6 +51,7 @@ static inline bool lock_wqueue(struct watch_queue *wqueue)
 }
 
 static inline void unlock_wqueue(struct watch_queue *wqueue)
+	__releases(&wqueue->lock)
 {
 	spin_unlock_bh(&wqueue->lock);
 }

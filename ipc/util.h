@@ -129,7 +129,9 @@ struct pid_namespace *ipc_seq_pid_ns(struct seq_file *);
 #define ipcid_seq_max()	  (INT_MAX >> ipcmni_seq_shift())
 
 /* must be called with ids->rwsem acquired for writing */
-int ipc_addid(struct ipc_ids *, struct kern_ipc_perm *, int);
+int ipc_addid(struct ipc_ids *ids, struct kern_ipc_perm *new, int limit)
+	__cond_acquires_range(0, INT_MAX, &new->lock)
+	__cond_acquires_shared_range(0, INT_MAX, RCU);
 
 /* must be called with both locks acquired. */
 void ipc_rmid(struct ipc_ids *, struct kern_ipc_perm *);
@@ -206,11 +208,13 @@ static inline int ipc_checkid(struct kern_ipc_perm *ipcp, int id)
 }
 
 static inline void ipc_lock_object(struct kern_ipc_perm *perm)
+	__acquires(&perm->lock)
 {
 	spin_lock(&perm->lock);
 }
 
 static inline void ipc_unlock_object(struct kern_ipc_perm *perm)
+	__releases(&perm->lock)
 {
 	spin_unlock(&perm->lock);
 }
@@ -221,6 +225,8 @@ static inline void ipc_assert_locked_object(struct kern_ipc_perm *perm)
 }
 
 static inline void ipc_unlock(struct kern_ipc_perm *perm)
+	__releases(&perm->lock)
+	__releases_shared(RCU)
 {
 	ipc_unlock_object(perm);
 	rcu_read_unlock();

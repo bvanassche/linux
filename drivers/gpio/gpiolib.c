@@ -5499,6 +5499,7 @@ struct gpiolib_seq_priv {
 };
 
 static void *gpiolib_seq_start(struct seq_file *s, loff_t *pos)
+	__context_unsafe(/* conditional locking */)
 {
 	struct gpiolib_seq_priv *priv;
 	struct gpio_device *gdev;
@@ -5538,6 +5539,7 @@ static void *gpiolib_seq_next(struct seq_file *s, void *v, loff_t *pos)
 }
 
 static void gpiolib_seq_stop(struct seq_file *s, void *v)
+	__context_unsafe(/* conditional locking */)
 {
 	struct gpiolib_seq_priv *priv;
 

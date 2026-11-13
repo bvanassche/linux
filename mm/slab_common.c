@@ -1136,6 +1136,7 @@ static void print_slabinfo_header(struct seq_file *m)
 }
 
 static void *slab_start(struct seq_file *m, loff_t *pos)
+	__acquires(&slab_mutex)
 {
 	mutex_lock(&slab_mutex);
 	return seq_list_start(&slab_caches, *pos);
@@ -1147,6 +1148,7 @@ static void *slab_next(struct seq_file *m, void *p, loff_t *pos)
 }
 
 static void slab_stop(struct seq_file *m, void *p)
+	__releases(&slab_mutex)
 {
 	mutex_unlock(&slab_mutex);
 }
@@ -1502,6 +1504,7 @@ debug_rcu_bhead_unqueue(struct kvfree_rcu_bulk_data *bhead)
 
 static inline struct kfree_rcu_cpu *
 krc_this_cpu_lock(unsigned long *flags)
+	__context_unsafe(/* this_cpu_ptr() */)
 {
 	struct kfree_rcu_cpu *krcp;
 
@@ -1514,6 +1517,7 @@ krc_this_cpu_lock(unsigned long *flags)
 
 static inline void
 krc_this_cpu_unlock(struct kfree_rcu_cpu *krcp, unsigned long flags)
+	__releases(&krcp->lock)
 {
 	raw_spin_unlock_irqrestore(&krcp->lock, flags);
 }
@@ -1913,11 +1917,13 @@ static void fill_page_cache_func(struct work_struct *work)
 static inline bool
 add_ptr_to_bulk_krc_lock(struct kfree_rcu_cpu **krcp,
 	unsigned long *flags, void *ptr, bool can_alloc)
+	__acquires(&(*krcp)->lock)
 {
 	struct kvfree_rcu_bulk_data *bnode;
 	int idx;
 
 	*krcp = krc_this_cpu_lock(flags);
+	__acquire(&(*krcp)->lock);
 	if (unlikely(!(*krcp)->initialized))
 		return false;
 

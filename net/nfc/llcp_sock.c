@@ -15,6 +15,7 @@
 #include "llcp.h"
 
 static int sock_wait_state(struct sock *sk, int state, unsigned long timeo)
+	__must_hold(sk)
 {
 	DECLARE_WAITQUEUE(wait, current);
 	int err = 0;

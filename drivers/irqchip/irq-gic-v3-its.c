@@ -359,12 +359,14 @@ static struct its_vlpi_map *get_vlpi_map(struct irq_data *d)
 }
 
 static int vpe_to_cpuid_lock(struct its_vpe *vpe, unsigned long *flags)
+	__acquires(&vpe->vpe_lock)
 {
 	raw_spin_lock_irqsave(&vpe->vpe_lock, *flags);
 	return vpe->col_idx;
 }
 
 static void vpe_to_cpuid_unlock(struct its_vpe *vpe, unsigned long flags)
+	__releases(&vpe->vpe_lock)
 {
 	raw_spin_unlock_irqrestore(&vpe->vpe_lock, flags);
 }
@@ -372,6 +374,7 @@ static void vpe_to_cpuid_unlock(struct its_vpe *vpe, unsigned long flags)
 static struct irq_chip its_vpe_irq_chip;
 
 static int irq_to_cpuid_lock(struct irq_data *d, unsigned long *flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct its_vpe *vpe = NULL;
 	int cpu;
@@ -398,6 +401,7 @@ static int irq_to_cpuid_lock(struct irq_data *d, unsigned long *flags)
 }
 
 static void irq_to_cpuid_unlock(struct irq_data *d, unsigned long flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct its_vpe *vpe = NULL;
 
@@ -3911,6 +3915,7 @@ static void its_vpe_4_1_invall_locked(int cpu, struct its_vpe *vpe)
 static int its_vpe_set_affinity(struct irq_data *d,
 				const struct cpumask *mask_val,
 				bool force)
+	__context_unsafe(/* conditional locking */)
 {
 	struct its_vpe *vpe = irq_data_get_irq_chip_data(d);
 	unsigned int from, cpu = nr_cpu_ids;

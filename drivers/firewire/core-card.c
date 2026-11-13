@@ -574,6 +574,7 @@ static void bm_work(struct work_struct *work)
 void fw_card_initialize(struct fw_card *card,
 			const struct fw_card_driver *driver,
 			struct device *device)
+	__context_unsafe(/* single-threaded initialization */)
 {
 	static atomic_t index = ATOMIC_INIT(-1);
 
@@ -862,7 +863,7 @@ void fw_core_remove_card(struct fw_card *card)
 	destroy_work_on_stack(&closer.work);
 
 	WARN_ON(!list_empty(&closer.packet_list));
-	WARN_ON(!list_empty(&card->transactions.list));
+	context_unsafe(WARN_ON(!list_empty(&card->transactions.list)));
 }
 EXPORT_SYMBOL(fw_core_remove_card);
 

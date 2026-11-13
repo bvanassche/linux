@@ -214,6 +214,7 @@ static DEFINE_IOMAP_ITER_NEXT(fuse_ext_map_iomap_next,
 			      fuse_ext_map_iomap_begin);
 
 static vm_fault_t fuse_ext_map_huge_fault(struct vm_fault *vmf, unsigned int order)
+	__context_unsafe(/* conditional locking */)
 {
 	struct inode *inode = file_inode(vmf->vma->vm_file);
 	bool write_fault = (vmf->flags & FAULT_FLAG_WRITE) && (vmf->vma->vm_flags & VM_SHARED);

@@ -278,6 +278,7 @@ static struct rockchip_pmu *dmc_pmu;
  * Caller must unblock PMU transitions via rockchip_pmu_unblock().
  */
 int rockchip_pmu_block(void)
+	__context_unsafe(/* conditional locking */)
 {
 	struct rockchip_pmu *pmu;
 	struct generic_pm_domain *genpd;
@@ -341,6 +342,7 @@ EXPORT_SYMBOL_GPL(rockchip_pmu_block);
 
 /* Unblock PMU transitions. */
 void rockchip_pmu_unblock(void)
+	__context_unsafe(/* conditional locking */)
 {
 	struct rockchip_pmu *pmu;
 	struct generic_pm_domain *genpd;

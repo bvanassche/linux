@@ -524,8 +524,10 @@ int hwmon_notify_event(struct device *dev, enum hwmon_sensor_types type,
 char *hwmon_sanitize_name(const char *name);
 char *devm_hwmon_sanitize_name(struct device *dev, const char *name);
 
-void hwmon_lock(struct device *dev);
-void hwmon_unlock(struct device *dev);
+void hwmon_lock(struct device *dev)
+	__acquires(&to_hwmon_device(dev)->lock);
+void hwmon_unlock(struct device *dev)
+	__releases(&to_hwmon_device(dev)->lock);
 
 DEFINE_GUARD(hwmon_lock, struct device *, hwmon_lock(_T), hwmon_unlock(_T))
 

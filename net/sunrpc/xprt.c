@@ -1718,6 +1718,7 @@ out:
 }
 
 static struct rpc_rqst *xprt_dynamic_alloc_slot(struct rpc_xprt *xprt)
+	__must_hold(&xprt->reserve_lock)
 {
 	struct rpc_rqst *req = ERR_PTR(-EAGAIN);
 

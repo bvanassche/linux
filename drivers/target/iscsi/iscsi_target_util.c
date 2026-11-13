@@ -37,6 +37,7 @@ int iscsit_add_r2t_to_list(
 	u32 xfer_len,
 	int recovery,
 	u32 r2t_sn)
+	__must_hold(&cmd->r2t_lock)
 {
 	struct iscsi_r2t *r2t;
 

@@ -36,6 +36,7 @@ static bool psock_has_data(struct sk_psock *psock)
 
 static int udp_msg_wait_data(struct sock *sk, struct sk_psock *psock,
 			     long timeo)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	int ret = 0;

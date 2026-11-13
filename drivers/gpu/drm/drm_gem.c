@@ -482,6 +482,7 @@ int
 drm_gem_handle_create_tail(struct drm_file *file_priv,
 			   struct drm_gem_object *obj,
 			   u32 *handlep)
+	__releases(&obj->dev->object_name_lock)
 {
 	struct drm_device *dev = obj->dev;
 	u32 handle;
@@ -986,6 +987,7 @@ err:
 int
 drm_gem_open_ioctl(struct drm_device *dev, void *data,
 		   struct drm_file *file_priv)
+	__context_unsafe(/* requires alias analysis */)
 {
 	struct drm_gem_open *args = data;
 	struct drm_gem_object *obj;
@@ -1447,6 +1449,8 @@ void drm_gem_vunmap_locked(struct drm_gem_object *obj, struct iosys_map *map)
 EXPORT_SYMBOL(drm_gem_vunmap_locked);
 
 void drm_gem_lock(struct drm_gem_object *obj)
+	__acquires(&obj->resv->lock)
+	__acquires(&obj->resv->lock.base)
 {
 	if (dma_resv_lock(obj->resv, NULL))
 		unreachable();
@@ -1454,6 +1458,8 @@ void drm_gem_lock(struct drm_gem_object *obj)
 EXPORT_SYMBOL(drm_gem_lock);
 
 void drm_gem_unlock(struct drm_gem_object *obj)
+	__releases(&obj->resv->lock)
+	__releases(&obj->resv->lock.base)
 {
 	dma_resv_unlock(obj->resv);
 }
@@ -1500,6 +1506,7 @@ EXPORT_SYMBOL(drm_gem_vunmap);
 int
 drm_gem_lock_reservations(struct drm_gem_object **objs, int count,
 			  struct ww_acquire_ctx *acquire_ctx)
+	__cond_acquires(0, acquire_ctx)
 {
 	int contended = -1;
 	int i, ret;
@@ -1552,6 +1559,8 @@ EXPORT_SYMBOL(drm_gem_lock_reservations);
 void
 drm_gem_unlock_reservations(struct drm_gem_object **objs, int count,
 			    struct ww_acquire_ctx *acquire_ctx)
+	__releases(acquire_ctx)
+	__context_unsafe(/* dma_resv_unlock() inside loop */)
 {
 	int i;
 
@@ -1664,6 +1673,7 @@ drm_gem_lru_scan(struct drm_device *dev,
 		 unsigned int nr_to_scan,
 		 unsigned long *remaining,
 		 bool (*shrink)(struct drm_gem_object *obj))
+	__context_unsafe(/* conditional locking */)
 {
 	struct drm_gem_lru still_in_lru;
 	struct drm_gem_object *obj;

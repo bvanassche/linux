@@ -938,6 +938,7 @@ EXPORT_SYMBOL_GPL(ssam_controller_put);
  * See ssam_controller_stateunlock() for the corresponding unlock function.
  */
 void ssam_controller_statelock(struct ssam_controller *c)
+	__acquires_shared(&c->lock)
 {
 	down_read(&c->lock);
 }
@@ -950,6 +951,7 @@ EXPORT_SYMBOL_GPL(ssam_controller_statelock);
  * See ssam_controller_statelock() for the corresponding lock function.
  */
 void ssam_controller_stateunlock(struct ssam_controller *c)
+	__releases_shared(&c->lock)
 {
 	up_read(&c->lock);
 }
@@ -966,6 +968,7 @@ EXPORT_SYMBOL_GPL(ssam_controller_stateunlock);
  * See ssam_controller_unlock() for the corresponding unlock function.
  */
 void ssam_controller_lock(struct ssam_controller *c)
+	__acquires(&c->lock)
 {
 	down_write(&c->lock);
 }
@@ -977,6 +980,7 @@ void ssam_controller_lock(struct ssam_controller *c)
  * See ssam_controller_lock() for the corresponding lock function.
  */
 void ssam_controller_unlock(struct ssam_controller *c)
+	__releases(&c->lock)
 {
 	up_write(&c->lock);
 }

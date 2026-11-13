@@ -16,6 +16,7 @@ void amdxdna_pm_init(struct amdxdna_dev *xdna);
 void amdxdna_pm_fini(struct amdxdna_dev *xdna);
 
 static inline int amdxdna_pm_resume_get_locked(struct amdxdna_dev *xdna)
+	__must_hold(&xdna->dev_lock)
 {
 	int ret;
 

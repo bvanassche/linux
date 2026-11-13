@@ -1651,6 +1651,7 @@ static const struct fs_context_operations bm_context_ops = {
 };
 
 static void bm_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct user_namespace *user_ns = sb->s_fs_info;
 

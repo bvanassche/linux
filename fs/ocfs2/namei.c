@@ -877,6 +877,7 @@ static inline int ocfs2_inode_is_unlinkable(struct inode *inode)
 
 static int ocfs2_unlink(struct inode *dir,
 			struct dentry *dentry)
+	__context_unsafe(/* conditional locking */)
 {
 	int status;
 	int child_locked = 0;
@@ -1211,6 +1212,7 @@ static int ocfs2_rename(const struct mnt_idmap *idmap,
 			struct inode *new_dir,
 			struct dentry *new_dentry,
 			unsigned int flags)
+	__context_unsafe(/* conditional locking */)
 {
 	int status = 0, rename_lock = 0, parents_locked = 0, target_exists = 0;
 	int old_child_locked = 0, new_child_locked = 0, update_dot_dot = 0;
@@ -2116,6 +2118,7 @@ bail:
 static int ocfs2_lookup_lock_orphan_dir(struct ocfs2_super *osb,
 					struct inode **ret_orphan_dir,
 					struct buffer_head **ret_orphan_dir_bh)
+	__context_unsafe(/* conditional locking */)
 {
 	struct inode *orphan_dir_inode;
 	struct buffer_head *orphan_dir_bh = NULL;
@@ -2211,6 +2214,7 @@ static int ocfs2_prepare_orphan_dir(struct ocfs2_super *osb,
 				    char *name,
 				    struct ocfs2_dir_lookup_result *lookup,
 				    bool dio)
+	__context_unsafe(/* conditional locking */)
 {
 	struct inode *orphan_dir_inode = NULL;
 	struct buffer_head *orphan_dir_bh = NULL;
@@ -2453,6 +2457,7 @@ static int ocfs2_prep_new_orphaned_file(struct inode *dir,
 					u64 *ret_di_blkno,
 					struct ocfs2_dir_lookup_result *orphan_insert,
 					struct ocfs2_alloc_context **ret_inode_ac)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 	u64 di_blkno;
@@ -2518,6 +2523,7 @@ out:
 int ocfs2_create_inode_in_orphan(struct inode *dir,
 				 int mode,
 				 struct inode **new_inode)
+	__context_unsafe(/* conditional locking */)
 {
 	int status, did_quota_inode = 0;
 	struct inode *inode = NULL;
@@ -2636,6 +2642,7 @@ leave:
 
 int ocfs2_add_inode_to_orphan(struct ocfs2_super *osb,
 	struct inode *inode)
+	__context_unsafe(/* conditional locking */)
 {
 	char orphan_name[OCFS2_DIO_ORPHAN_PREFIX_LEN + OCFS2_ORPHAN_NAMELEN + 1];
 	struct inode *orphan_dir_inode = NULL;

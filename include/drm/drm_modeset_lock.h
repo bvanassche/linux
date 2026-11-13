@@ -98,8 +98,10 @@ struct drm_modeset_lock {
 #define DRM_MODESET_ACQUIRE_INTERRUPTIBLE BIT(0)
 
 void drm_modeset_acquire_init(struct drm_modeset_acquire_ctx *ctx,
-		uint32_t flags);
-void drm_modeset_acquire_fini(struct drm_modeset_acquire_ctx *ctx);
+		uint32_t flags)
+	__acquires(&ctx->ww_ctx);
+void drm_modeset_acquire_fini(struct drm_modeset_acquire_ctx *ctx)
+	__releases(&ctx->ww_ctx);
 void drm_modeset_drop_locks(struct drm_modeset_acquire_ctx *ctx);
 int drm_modeset_backoff(struct drm_modeset_acquire_ctx *ctx);
 

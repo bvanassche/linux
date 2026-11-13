@@ -121,6 +121,7 @@ static int ocfs2_reserve_clusters_with_limit(struct ocfs2_super *osb,
 					     struct ocfs2_alloc_context **ac);
 
 void ocfs2_free_ac_resource(struct ocfs2_alloc_context *ac)
+	__context_unsafe(/* conditional locking */)
 {
 	struct inode *inode = ac->ac_inode;
 
@@ -887,6 +888,7 @@ static int ocfs2_reserve_suballoc_bits(struct ocfs2_super *osb,
 				       u32 slot,
 				       u64 *last_alloc_group,
 				       int flags)
+	__context_unsafe(/* conditional locking */)
 {
 	int status;
 	u32 bits_wanted = ac->ac_bits_wanted;
@@ -1264,6 +1266,7 @@ static int ocfs2_reserve_clusters_with_limit(struct ocfs2_super *osb,
 					     u32 bits_wanted, u64 max_block,
 					     int flags,
 					     struct ocfs2_alloc_context **ac)
+	__context_unsafe(/* conditional locking */)
 {
 	int status, ret = 0;
 	int retried = 0;
@@ -2609,6 +2612,7 @@ static int ocfs2_block_group_clear_bits(handle_t *handle,
 					unsigned int max_contig_bits,
 					void (*undo_fn)(unsigned int bit,
 							unsigned long *bmap))
+	__context_unsafe(/* conditional locking */)
 {
 	int status;
 	unsigned int tmp;

@@ -170,6 +170,7 @@ static int vc4_hdmi_debugfs_regs(struct seq_file *m, void *unused)
 }
 
 static void vc4_hdmi_reset(struct vc4_hdmi *vc4_hdmi)
+	__context_unsafe(/* conditional locking */)
 {
 	struct drm_device *drm = vc4_hdmi->connector.dev;
 	unsigned long flags;
@@ -203,6 +204,7 @@ static void vc4_hdmi_reset(struct vc4_hdmi *vc4_hdmi)
 }
 
 static void vc5_hdmi_reset(struct vc4_hdmi *vc4_hdmi)
+	__context_unsafe(/* conditional locking */)
 {
 	struct drm_device *drm = vc4_hdmi->connector.dev;
 	unsigned long flags;
@@ -232,6 +234,7 @@ static void vc5_hdmi_reset(struct vc4_hdmi *vc4_hdmi)
 
 #ifdef CONFIG_DRM_VC4_HDMI_CEC
 static void vc4_hdmi_cec_update_clk_div(struct vc4_hdmi *vc4_hdmi)
+	__context_unsafe(/* conditional locking */)
 {
 	struct drm_device *drm = vc4_hdmi->connector.dev;
 	unsigned long cec_rate;

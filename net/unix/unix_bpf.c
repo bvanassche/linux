@@ -15,6 +15,7 @@
 
 static int unix_msg_wait_data(struct sock *sk, struct sk_psock *psock,
 			      long timeo)
+	__context_unsafe(/* drops and reacquires u->iolock */)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct unix_sock *u = unix_sk(sk);

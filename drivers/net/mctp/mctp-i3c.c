@@ -345,6 +345,7 @@ static void mctp_i3c_remove(struct i3c_device *i3c)
 /* Returns the device for an address, with mi->lock held */
 static struct mctp_i3c_device *
 mctp_i3c_lookup(struct mctp_i3c_bus *mbus, u64 pid)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mctp_i3c_device *mi = NULL, *ret = NULL;
 
@@ -360,6 +361,7 @@ mctp_i3c_lookup(struct mctp_i3c_bus *mbus, u64 pid)
 }
 
 static void mctp_i3c_xmit(struct mctp_i3c_bus *mbus, struct sk_buff *skb)
+	__context_unsafe(/* conditional locking */)
 {
 	struct net_device_stats *stats = &mbus->ndev->stats;
 	struct i3c_xfer xfer = { .rnw = false };
@@ -496,6 +498,7 @@ __must_hold(&busdevs_lock)
 }
 
 static void mctp_i3c_ndo_uninit(struct net_device *ndev)
+	__must_hold(&busdevs_lock)
 {
 	struct mctp_i3c_bus *mbus = netdev_priv(ndev);
 

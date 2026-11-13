@@ -1400,6 +1400,7 @@ int mtk_vcodec_enc_queue_init(void *priv, struct vb2_queue *src_vq,
 }
 
 int mtk_venc_unlock(struct mtk_vcodec_enc_ctx *ctx)
+	__releases(&ctx->dev->enc_mutex)
 {
 	struct mtk_vcodec_enc_dev *dev = ctx->dev;
 
@@ -1408,6 +1409,7 @@ int mtk_venc_unlock(struct mtk_vcodec_enc_ctx *ctx)
 }
 
 int mtk_venc_lock(struct mtk_vcodec_enc_ctx *ctx)
+	__acquires(&ctx->dev->enc_mutex)
 {
 	struct mtk_vcodec_enc_dev *dev = ctx->dev;
 

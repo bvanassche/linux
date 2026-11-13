@@ -9,6 +9,7 @@
 #include "adf_common_drv.h"
 
 static void *qat_dev_cfg_start(struct seq_file *sfile, loff_t *pos)
+	__acquires_shared(&((struct adf_cfg_device_data *)sfile->private)->lock)
 {
 	struct adf_cfg_device_data *dev_cfg = sfile->private;
 
@@ -39,6 +40,7 @@ static void *qat_dev_cfg_next(struct seq_file *sfile, void *v, loff_t *pos)
 }
 
 static void qat_dev_cfg_stop(struct seq_file *sfile, void *v)
+	__releases_shared(&((struct adf_cfg_device_data *)sfile->private)->lock)
 {
 	struct adf_cfg_device_data *dev_cfg = sfile->private;
 

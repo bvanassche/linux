@@ -186,7 +186,8 @@ void sync_inodes_sb(struct super_block *);
 void wakeup_flusher_threads(enum wb_reason reason);
 void wakeup_flusher_threads_bdi(struct backing_dev_info *bdi,
 				enum wb_reason reason);
-void inode_wait_for_writeback(struct inode *inode);
+void inode_wait_for_writeback(struct inode *inode)
+	__must_hold(&inode->i_lock);
 void inode_io_list_del(struct inode *inode);
 
 static inline xa_mark_t wbc_to_tag(struct writeback_control *wbc)

@@ -117,11 +117,13 @@ static const struct regmap_bus gsw1xx_regmap_bus = {
 };
 
 static void gsw1xx_mdio_regmap_lock(void *mdio_lock)
+	__acquires((struct mutex *)mdio_lock)
 {
 	mutex_lock_nested(mdio_lock, MDIO_MUTEX_NESTED);
 }
 
 static void gsw1xx_mdio_regmap_unlock(void *mdio_lock)
+	__releases((struct mutex *)mdio_lock)
 {
 	mutex_unlock(mdio_lock);
 }

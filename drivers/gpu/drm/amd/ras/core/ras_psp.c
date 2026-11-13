@@ -232,6 +232,7 @@ static int __ras_psp_mem_fini(struct ras_core_context *ras_core)
 }
 
 static void __acquire_psp_cmd_lock(struct ras_core_context *ras_core)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ras_psp_ctx *psp_ctx = &ras_core->ras_psp.psp_ctx;
 
@@ -242,6 +243,7 @@ static void __acquire_psp_cmd_lock(struct ras_core_context *ras_core)
 }
 
 static void __release_psp_cmd_lock(struct ras_core_context *ras_core)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ras_psp_ctx *psp_ctx = &ras_core->ras_psp.psp_ctx;
 

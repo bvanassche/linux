@@ -68,10 +68,13 @@ void vfio_config_free(struct vfio_pci_core_device *vdev);
 int vfio_pci_set_power_state(struct vfio_pci_core_device *vdev,
 			     pci_power_t state);
 
-void vfio_pci_zap_and_down_write_memory_lock(struct vfio_pci_core_device *vdev);
-u16 vfio_pci_memory_lock_and_enable(struct vfio_pci_core_device *vdev);
+void vfio_pci_zap_and_down_write_memory_lock(struct vfio_pci_core_device *vdev)
+	__acquires(&vdev->memory_lock);
+u16 vfio_pci_memory_lock_and_enable(struct vfio_pci_core_device *vdev)
+	__acquires(&vdev->memory_lock);
 void vfio_pci_memory_unlock_and_restore(struct vfio_pci_core_device *vdev,
-					u16 cmd);
+					u16 cmd)
+	__releases(&vdev->memory_lock);
 
 #ifdef CONFIG_VFIO_PCI_IGD
 bool vfio_pci_is_intel_display(struct pci_dev *pdev);

@@ -1768,9 +1768,11 @@ extern struct vmbus_connection vmbus_connection;
 
 int vmbus_send_tl_connect_request(const guid_t *shv_guest_servie_id,
 				  const guid_t *shv_host_servie_id);
-int vmbus_send_modifychannel(struct vmbus_channel *channel, u32 target_vp);
+int vmbus_send_modifychannel(struct vmbus_channel *channel, u32 target_vp)
+	__must_hold(&vmbus_connection.channel_mutex);
 void vmbus_set_event(struct vmbus_channel *channel);
-int vmbus_channel_set_cpu(struct vmbus_channel *channel, u32 target_cpu);
+int vmbus_channel_set_cpu(struct vmbus_channel *channel, u32 target_cpu)
+	__must_hold(&vmbus_connection.channel_mutex);
 
 /* Get the start of the ring buffer. */
 static inline void *

@@ -15,6 +15,7 @@
 #define XE_GUC_PAGEFAULT_FLUSH_PERIOD	BIT(4)	/* Sixteen */
 
 static void guc_ack_fault_begin(void *private)
+	__acquires(&((struct xe_guc *)private)->ct.lock)
 {
 	struct xe_guc *guc = private;
 
@@ -63,6 +64,7 @@ static void guc_ack_fault(struct xe_pagefault *pf, int err)
 }
 
 static void guc_ack_fault_end(void *private)
+	__releases(&((struct xe_guc *)private)->ct.lock)
 {
 	struct xe_guc *guc = private;
 

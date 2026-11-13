@@ -26,6 +26,7 @@ static int mtd_get_sb(struct fs_context *fc,
 		      struct mtd_info *mtd,
 		      int (*fill_super)(struct super_block *,
 					struct fs_context *))
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct super_block *sb;
 	int ret;

@@ -878,6 +878,7 @@ devm_pse_pi_regulator_register(struct pse_controller_dev *pcdev,
 }
 
 static void __pse_pw_d_release(struct kref *kref)
+	__releases(&pse_pw_d_mutex)
 {
 	struct pse_power_domain *pw_d = container_of(kref,
 						     struct pse_power_domain,

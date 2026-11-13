@@ -162,6 +162,7 @@ static unsigned long rxe_odp_iova_to_page_offset(struct ib_umem_odp *umem_odp, u
 }
 
 static int rxe_odp_map_range_and_lock(struct rxe_mr *mr, u64 iova, int length, u32 flags)
+	__cond_acquires_range(0, INT_MAX, &to_ib_umem_odp(mr->umem)->umem_mutex)
 {
 	struct ib_umem_odp *umem_odp = to_ib_umem_odp(mr->umem);
 	bool write = !(flags & RXE_PAGEFAULT_RDONLY);

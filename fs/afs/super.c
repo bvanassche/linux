@@ -30,7 +30,8 @@
 #include "internal.h"
 
 static void afs_i_init_once(void *foo);
-static void afs_kill_super(struct super_block *sb);
+static void afs_kill_super(struct super_block *sb)
+	__releases(&sb->s_umount);
 static struct inode *afs_alloc_inode(struct super_block *sb);
 static void afs_destroy_inode(struct inode *inode);
 static void afs_free_inode(struct inode *inode);
@@ -528,6 +529,7 @@ static void afs_destroy_sbi(struct afs_super_info *as)
 }
 
 static void afs_kill_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct afs_super_info *as = AFS_FS_S(sb);
 
@@ -546,6 +548,7 @@ static void afs_kill_super(struct super_block *sb)
  * Get an AFS superblock and root directory.
  */
 static int afs_get_tree(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct afs_fs_context *ctx = fc->fs_private;
 	struct super_block *sb;

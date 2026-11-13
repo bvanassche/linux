@@ -12,8 +12,10 @@ struct mii_bus;
 
 struct device_node *phy_package_get_node(struct phy_device *phydev);
 void *phy_package_get_priv(struct phy_device *phydev);
-void phy_package_lock(struct phy_device *phydev);
-void phy_package_unlock(struct phy_device *phydev);
+void phy_package_lock(struct phy_device *phydev)
+	__acquires(&phydev->mdio.bus->shared_lock);
+void phy_package_unlock(struct phy_device *phydev)
+	__releases(&phydev->mdio.bus->shared_lock);
 int __phy_package_read(struct phy_device *phydev, unsigned int addr_offset,
 		       u32 regnum);
 int __phy_package_write(struct phy_device *phydev, unsigned int addr_offset,

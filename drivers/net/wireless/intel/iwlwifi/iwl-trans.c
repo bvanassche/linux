@@ -680,6 +680,7 @@ int iwl_trans_read_config32(struct iwl_trans *trans, u32 ofs,
 }
 
 bool iwl_trans_grab_nic_access(struct iwl_trans *trans)
+	__cond_acquires(true, trans)
 {
 	if (WARN_ON_ONCE(!trans->ops->grab_nic_access))
 		return false;
@@ -688,6 +689,7 @@ bool iwl_trans_grab_nic_access(struct iwl_trans *trans)
 IWL_EXPORT_SYMBOL(iwl_trans_grab_nic_access);
 
 void iwl_trans_resched_with_nic_access(struct iwl_trans *trans)
+	__must_hold(trans)
 {
 	if (WARN_ON_ONCE(!trans->ops->resched_with_nic_access))
 		return;
@@ -695,7 +697,9 @@ void iwl_trans_resched_with_nic_access(struct iwl_trans *trans)
 }
 
 void iwl_trans_release_nic_access(struct iwl_trans *trans)
+	__releases(trans)
 {
+	__release(trans);
 	if (WARN_ON_ONCE(!trans->ops->release_nic_access))
 		return;
 	trans->ops->release_nic_access(trans);

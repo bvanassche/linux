@@ -2215,6 +2215,7 @@ out_rpm:
 }
 
 int i915_vma_unbind_async(struct i915_vma *vma, bool trylock_vm)
+	__context_unsafe(/* conditional locking */)
 {
 	struct drm_i915_gem_object *obj = vma->obj;
 	struct i915_address_space *vm = vma->vm;

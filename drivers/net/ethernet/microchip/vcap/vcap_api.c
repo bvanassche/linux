@@ -935,11 +935,13 @@ static bool vcap_rule_exists(struct vcap_control *vctrl, u32 id)
 }
 
 void vcap_lock(struct vcap_admin *admin)
+	__acquires(&admin->vctrl->lock)
 {
 	mutex_lock(&admin->vctrl->lock);
 }
 
 void vcap_unlock(struct vcap_admin *admin)
+	__releases(&admin->vctrl->lock)
 {
 	mutex_unlock(&admin->vctrl->lock);
 }
@@ -947,6 +949,7 @@ void vcap_unlock(struct vcap_admin *admin)
 /* Find a rule with a provided rule id return a locked vcap */
 static struct vcap_rule_internal *
 vcap_get_locked_rule(struct vcap_control *vctrl, u32 id)
+	__context_unsafe(/* not appropriate for static analysis */)
 {
 	struct vcap_rule_internal *ri;
 	struct vcap_admin *admin;
@@ -2445,6 +2448,7 @@ err_free_rule:
 }
 
 struct vcap_rule *vcap_get_rule(struct vcap_control *vctrl, u32 id)
+	__context_unsafe(/* see vcap_get_locked_rule() */)
 {
 	struct vcap_rule_internal *elem;
 	struct vcap_rule *rule;
@@ -2466,6 +2470,7 @@ EXPORT_SYMBOL_GPL(vcap_get_rule);
 
 /* Update existing rule */
 int vcap_mod_rule(struct vcap_rule *rule)
+	__context_unsafe(/* see vcap_get_locked_rule() */)
 {
 	struct vcap_rule_internal *ri = to_intrule(rule);
 	struct vcap_counter ctr;
@@ -2548,6 +2553,7 @@ static int vcap_fill_rule_gap(struct vcap_rule_internal *ri)
 
 /* Delete rule in a VCAP instance */
 int vcap_del_rule(struct vcap_control *vctrl, struct net_device *ndev, u32 id)
+	__context_unsafe(/* see vcap_get_locked_rule() */)
 {
 	struct vcap_rule_internal *ri, *elem;
 	struct vcap_admin *admin;

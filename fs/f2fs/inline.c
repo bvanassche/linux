@@ -649,6 +649,7 @@ out:
 
 int f2fs_add_inline_entry(struct inode *dir, const struct f2fs_filename *fname,
 			  struct inode *inode, nid_t ino, umode_t mode)
+	__context_unsafe(/* conditional locking */)
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(dir);
 	struct f2fs_cached_block *ientry;

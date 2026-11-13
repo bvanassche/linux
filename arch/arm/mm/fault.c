@@ -337,6 +337,7 @@ do_kernel_address_page_fault(struct mm_struct *mm, unsigned long addr,
 
 static int __kprobes
 do_page_fault(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
+	__context_unsafe(/* handle_mm_fault() unlocks conditionally */)
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;

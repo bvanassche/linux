@@ -75,6 +75,7 @@ void smc_tx_sndbuf_nonfull(struct smc_sock *smc)
  * or urgent Byte was consumed
  */
 static int smc_tx_wait(struct sock *sk, struct smc_sock *smc, int flags)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct smc_connection *conn = &smc->conn;
@@ -179,6 +180,7 @@ static bool smc_tx_should_cork(struct smc_sock *smc, struct msghdr *msg)
  */
 int smc_tx_sendmsg(struct sock *sk, struct smc_sock *smc, struct msghdr *msg,
 		   size_t len)
+	__must_hold(sk)
 {
 	size_t copylen, send_done = 0, send_remaining = len;
 	size_t chunk_len, chunk_off, chunk_len_sum;

@@ -927,6 +927,7 @@ out_unlock:
 struct auxiliary_device *mlx5_sd_get_adev(struct mlx5_core_dev *dev,
 					  struct auxiliary_device *adev,
 					  int idx)
+	__context_unsafe(/* conditional locking */)
 {
 	struct mlx5_sd *sd = mlx5_get_sd(dev);
 	struct mlx5_core_dev *primary;
@@ -1086,6 +1087,7 @@ unlock:
 
 void mlx5_sd_put_adev(struct auxiliary_device *actual_adev,
 		      struct auxiliary_device *adev)
+	__context_unsafe(/* conditional release */)
 {
 	if (actual_adev != adev) {
 		device_unlock(&actual_adev->dev);

@@ -255,6 +255,7 @@ static int kempld_irq_set_type(struct irq_data *data, unsigned int type)
 }
 
 static void kempld_irq_bus_lock(struct irq_data *data)
+	__acquires(&((struct kempld_gpio_data *)gpiochip_get_data((struct gpio_chip *)irq_data_get_irq_chip_data(data)))->irq_lock)
 {
 	struct gpio_chip *chip = irq_data_get_irq_chip_data(data);
 	struct kempld_gpio_data *gpio = gpiochip_get_data(chip);
@@ -263,6 +264,7 @@ static void kempld_irq_bus_lock(struct irq_data *data)
 }
 
 static void kempld_irq_bus_sync_unlock(struct irq_data *data)
+	__releases(&((struct kempld_gpio_data *)gpiochip_get_data((struct gpio_chip *)irq_data_get_irq_chip_data(data)))->irq_lock)
 {
 	struct gpio_chip *chip = irq_data_get_irq_chip_data(data);
 	struct kempld_gpio_data *gpio = gpiochip_get_data(chip);

@@ -22,6 +22,7 @@ static DEFINE_SPINLOCK(master_lock);
 
 static inline int ux500_enter_idle(struct cpuidle_device *dev,
 				   struct cpuidle_driver *drv, int index)
+	__context_unsafe(/* conditional locking */)
 {
 	int this_cpu = smp_processor_id();
 	bool recouple = false;

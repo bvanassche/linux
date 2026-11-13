@@ -1685,6 +1685,7 @@ static void virtio_fs_conn_destroy(struct fuse_mount *fm)
 }
 
 static void virtio_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct fuse_mount *fm = get_fuse_mount_super(sb);
 	bool last;
@@ -1709,6 +1710,7 @@ static int virtio_fs_test_super(struct super_block *sb,
 }
 
 static int virtio_fs_get_tree(struct fs_context *fsc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct virtio_fs *fs;
 	struct super_block *sb;

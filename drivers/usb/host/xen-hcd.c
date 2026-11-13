@@ -761,6 +761,7 @@ static int xenhcd_translate_status(int status)
 
 static void xenhcd_giveback_urb(struct xenhcd_info *info, struct urb *urb,
 				int status)
+	__context_unsafe(/* drops and reacquires info->lock */)
 {
 	struct urb_priv *urbp = (struct urb_priv *)urb->hcpriv;
 	int priv_status = urbp->status;

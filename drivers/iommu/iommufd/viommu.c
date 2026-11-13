@@ -147,6 +147,7 @@ void iommufd_vdevice_destroy(struct iommufd_object *obj)
 }
 
 int iommufd_vdevice_alloc_ioctl(struct iommufd_ucmd *ucmd)
+	__context_unsafe(/* conditional locking */)
 {
 	struct iommu_vdevice_alloc *cmd = ucmd->cmd;
 	struct iommufd_vdevice *vdev;

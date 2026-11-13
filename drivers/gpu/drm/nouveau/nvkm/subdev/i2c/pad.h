@@ -23,8 +23,10 @@ void nvkm_i2c_pad_del(struct nvkm_i2c_pad **);
 void nvkm_i2c_pad_init(struct nvkm_i2c_pad *);
 void nvkm_i2c_pad_fini(struct nvkm_i2c_pad *);
 void nvkm_i2c_pad_mode(struct nvkm_i2c_pad *, enum nvkm_i2c_pad_mode);
-int nvkm_i2c_pad_acquire(struct nvkm_i2c_pad *, enum nvkm_i2c_pad_mode);
-void nvkm_i2c_pad_release(struct nvkm_i2c_pad *);
+int nvkm_i2c_pad_acquire(struct nvkm_i2c_pad *pad, enum nvkm_i2c_pad_mode mode)
+	__cond_acquires(0, &pad->mutex);
+void nvkm_i2c_pad_release(struct nvkm_i2c_pad *pad)
+	__releases(&pad->mutex);
 
 void g94_i2c_pad_mode(struct nvkm_i2c_pad *, enum nvkm_i2c_pad_mode);
 

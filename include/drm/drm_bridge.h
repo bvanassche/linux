@@ -1235,8 +1235,10 @@ drm_priv_to_bridge(struct drm_private_obj *priv)
 
 extern struct srcu_struct drm_bridge_unplug_srcu;
 
-bool drm_bridge_enter(struct drm_bridge *bridge, int *idx);
-void drm_bridge_exit(int idx);
+bool drm_bridge_enter(struct drm_bridge *bridge, int *idx)
+	__cond_acquires_shared(true, &drm_bridge_unplug_srcu);
+void drm_bridge_exit(int idx)
+	__releases_shared(&drm_bridge_unplug_srcu);
 void drm_bridge_unplug(struct drm_bridge *bridge);
 
 struct drm_bridge *drm_bridge_get(struct drm_bridge *bridge);

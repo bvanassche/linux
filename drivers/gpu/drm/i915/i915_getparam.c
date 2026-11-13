@@ -7,6 +7,7 @@
 #include "display/intel_overlay.h"
 #include "gem/i915_gem_mman.h"
 #include "gt/intel_engine_user.h"
+#include "gt/intel_reset.h"
 #include "pxp/intel_pxp.h"
 
 #include "i915_cmd_parser.h"

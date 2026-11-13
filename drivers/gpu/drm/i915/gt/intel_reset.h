@@ -11,6 +11,7 @@
 #include <linux/srcu.h>
 
 #include "intel_engine_types.h"
+#include "intel_gt_types.h"
 #include "intel_reset_types.h"
 
 struct i915_request;

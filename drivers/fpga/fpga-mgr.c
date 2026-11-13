@@ -752,6 +752,7 @@ EXPORT_SYMBOL_GPL(fpga_mgr_put);
  * Return: 0 for success or -EBUSY
  */
 int fpga_mgr_lock(struct fpga_manager *mgr)
+	__cond_acquires_range(0, INT_MAX, &mgr->ref_mutex)
 {
 	if (!mutex_trylock(&mgr->ref_mutex)) {
 		dev_err(&mgr->dev, "FPGA manager is in use.\n");
@@ -767,6 +768,7 @@ EXPORT_SYMBOL_GPL(fpga_mgr_lock);
  * @mgr:	fpga manager
  */
 void fpga_mgr_unlock(struct fpga_manager *mgr)
+	__releases(&mgr->ref_mutex)
 {
 	mutex_unlock(&mgr->ref_mutex);
 }

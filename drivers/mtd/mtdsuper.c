@@ -172,6 +172,7 @@ EXPORT_SYMBOL_GPL(get_tree_mtd);
  * destroy an MTD-based superblock
  */
 void kill_mtd_super(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	generic_shutdown_super(sb);
 	put_mtd_device(sb->s_mtd);

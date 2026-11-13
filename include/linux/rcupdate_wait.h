@@ -60,6 +60,7 @@ do {												\
 	_wait_rcu_gp(IS_ENABLED(CONFIG_TINY_RCU), TASK_UNINTERRUPTIBLE, __VA_ARGS__)
 
 static inline void cond_resched_rcu(void)
+	__must_hold_shared(RCU)
 {
 #if defined(CONFIG_DEBUG_ATOMIC_SLEEP) || !defined(CONFIG_PREEMPT_RCU)
 	rcu_read_unlock();

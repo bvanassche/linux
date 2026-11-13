@@ -2394,6 +2394,7 @@ static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
 
 pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
 		      spinlock_t **ptl)
+	__cond_acquires(nonnull, *ptl)
 {
 	pmd_t *pmd = walk_to_pmd(mm, addr);
 

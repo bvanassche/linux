@@ -1465,18 +1465,8 @@ void mem_cgroup_scan_tasks(struct mem_cgroup *memcg,
 	}
 }
 
-/**
- * folio_lruvec_lock - Lock the lruvec for a folio.
- * @folio: Pointer to the folio.
- *
- * These functions are safe to use under any of the following conditions:
- * - folio locked
- * - folio_test_lru false
- * - folio frozen (refcount of 0)
- *
- * Return: The lruvec this folio is on with its lock held and rcu read lock held.
- */
-struct lruvec *folio_lruvec_lock(const struct folio *folio)
+struct lruvec *__folio_lruvec_lock(const struct folio *folio)
+	__context_unsafe(/* see folio_lruvec_lock() */)
 {
 	struct lruvec *lruvec;
 
@@ -1492,19 +1482,8 @@ retry:
 	return lruvec;
 }
 
-/**
- * folio_lruvec_lock_irq - Lock the lruvec for a folio.
- * @folio: Pointer to the folio.
- *
- * These functions are safe to use under any of the following conditions:
- * - folio locked
- * - folio_test_lru false
- * - folio frozen (refcount of 0)
- *
- * Return: The lruvec this folio is on with its lock held and interrupts
- * disabled and rcu read lock held.
- */
-struct lruvec *folio_lruvec_lock_irq(const struct folio *folio)
+struct lruvec *__folio_lruvec_lock_irq(const struct folio *folio)
+	__context_unsafe(/* see folio_lruvec_lock() */)
 {
 	struct lruvec *lruvec;
 
@@ -1520,21 +1499,9 @@ retry:
 	return lruvec;
 }
 
-/**
- * folio_lruvec_lock_irqsave - Lock the lruvec for a folio.
- * @folio: Pointer to the folio.
- * @flags: Pointer to irqsave flags.
- *
- * These functions are safe to use under any of the following conditions:
- * - folio locked
- * - folio_test_lru false
- * - folio frozen (refcount of 0)
- *
- * Return: The lruvec this folio is on with its lock held and interrupts
- * disabled and rcu read lock held.
- */
-struct lruvec *folio_lruvec_lock_irqsave(const struct folio *folio,
+struct lruvec *__folio_lruvec_lock_irqsave(const struct folio *folio,
 		unsigned long *flags)
+	__context_unsafe(/* see folio_lruvec_lock() */)
 {
 	struct lruvec *lruvec;
 

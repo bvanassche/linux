@@ -1792,6 +1792,7 @@ void init_new_hugetlb_folio(struct folio *folio)
  * not get the lock, simply return NULL to caller.
  */
 struct address_space *hugetlb_folio_mapping_lock_write(struct folio *folio)
+	__cond_acquires(nonnull, &folio_mapping(folio)->i_mmap_rwsem)
 {
 	struct address_space *mapping = folio_mapping(folio);
 

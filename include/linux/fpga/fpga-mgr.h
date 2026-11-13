@@ -8,6 +8,7 @@
 #ifndef _LINUX_FPGA_MGR_H
 #define _LINUX_FPGA_MGR_H
 
+#include <linux/limits.h>
 #include <linux/mutex.h>
 #include <linux/platform_device.h>
 
@@ -223,8 +224,9 @@ void fpga_image_info_free(struct fpga_image_info *info);
 
 int fpga_mgr_load(struct fpga_manager *mgr, struct fpga_image_info *info);
 
-int fpga_mgr_lock(struct fpga_manager *mgr);
-void fpga_mgr_unlock(struct fpga_manager *mgr);
+int fpga_mgr_lock(struct fpga_manager *mgr)
+	__cond_acquires_range(0, INT_MAX, &mgr->ref_mutex);
+void fpga_mgr_unlock(struct fpga_manager *mgr) __releases(&mgr->ref_mutex);
 
 struct fpga_manager *of_fpga_mgr_get(struct device_node *node);
 

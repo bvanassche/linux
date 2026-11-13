@@ -554,7 +554,8 @@ static void fsnotify_put_mark_wake(struct fsnotify_mark *mark)
 }
 
 bool fsnotify_prepare_user_wait(struct fsnotify_iter_info *iter_info)
-	__releases(&fsnotify_mark_srcu)
+	__releases_shared(&fsnotify_mark_srcu)
+	__cond_acquires_shared(0, &fsnotify_mark_srcu)
 {
 	int type;
 
@@ -563,10 +564,8 @@ bool fsnotify_prepare_user_wait(struct fsnotify_iter_info *iter_info)
 
 		/* This can fail if mark is being removed */
 		while (mark && !fsnotify_get_mark_safe(mark)) {
-			if (mark->group == iter_info->current_group) {
-				__release(&fsnotify_mark_srcu);
+			if (mark->group == iter_info->current_group)
 				goto fail;
-			}
 			/* This is a mark in an unrelated group, skip */
 			mark = fsnotify_next_mark(mark);
 			iter_info->marks[type] = mark;
@@ -589,7 +588,7 @@ fail:
 }
 
 void fsnotify_finish_user_wait(struct fsnotify_iter_info *iter_info)
-	__acquires(&fsnotify_mark_srcu)
+	__acquires_shared(&fsnotify_mark_srcu)
 {
 	int type;
 

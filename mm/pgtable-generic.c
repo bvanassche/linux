@@ -411,6 +411,7 @@ pte_t *pte_offset_map_rw_nolock(struct mm_struct *mm, pmd_t *pmd,
  */
 pte_t *pte_offset_map_lock(struct mm_struct *mm, pmd_t *pmd,
 			   unsigned long addr, spinlock_t **ptlp)
+	__cond_acquires(nonnull, *ptlp)
 {
 	spinlock_t *ptl;
 	pmd_t pmdval;
@@ -423,6 +424,8 @@ again:
 	spin_lock(ptl);
 	if (likely(pmd_same(pmdval, pmdp_get_lockless(pmd)))) {
 		*ptlp = ptl;
+		__release(ptl);
+		__acquire(*ptlp);
 		return pte;
 	}
 	pte_unmap_unlock(pte, ptl);

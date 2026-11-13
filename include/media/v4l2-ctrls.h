@@ -590,6 +590,7 @@ int v4l2_ctrl_handler_free(struct v4l2_ctrl_handler *hdl);
  * @ctrl:	The control to lock.
  */
 static inline void v4l2_ctrl_lock(struct v4l2_ctrl *ctrl)
+	__acquires(ctrl->handler->lock)
 {
 	mutex_lock(ctrl->handler->lock);
 }
@@ -600,6 +601,7 @@ static inline void v4l2_ctrl_lock(struct v4l2_ctrl *ctrl)
  * @ctrl:	The control to unlock.
  */
 static inline void v4l2_ctrl_unlock(struct v4l2_ctrl *ctrl)
+	__releases(ctrl->handler->lock)
 {
 	mutex_unlock(ctrl->handler->lock);
 }

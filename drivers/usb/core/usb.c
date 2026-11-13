@@ -894,6 +894,7 @@ EXPORT_SYMBOL_GPL(usb_intf_get_dma_device);
  */
 int usb_lock_device_for_reset(struct usb_device *udev,
 			      const struct usb_interface *iface)
+	__cond_acquires_range(0, INT_MAX, &udev->dev.mutex)
 {
 	unsigned long jiffies_expire = jiffies + HZ;
 

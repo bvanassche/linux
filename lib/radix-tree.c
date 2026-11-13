@@ -1467,6 +1467,7 @@ EXPORT_SYMBOL(radix_tree_tagged);
  * returns with preemption disabled.  It will be enabled by idr_preload_end().
  */
 void idr_preload(gfp_t gfp_mask)
+	__acquires(&radix_tree_preloads.lock)
 {
 	if (__radix_tree_preload(gfp_mask, IDR_PRELOAD_SIZE))
 		local_lock(&radix_tree_preloads.lock);

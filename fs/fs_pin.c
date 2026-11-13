@@ -42,6 +42,7 @@ static int pin_kill_wake_function(struct wait_queue_entry *wait,
 }
 
 void pin_kill(struct fs_pin *p)
+	__releases_shared(RCU)
 {
 	wait_queue_entry_t wait;
 

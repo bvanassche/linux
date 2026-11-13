@@ -292,6 +292,7 @@ bool ttm_bo_shrink_avoid_wait(void);
 static inline int ttm_bo_reserve(struct ttm_buffer_object *bo,
 				 bool interruptible, bool no_wait,
 				 struct ww_acquire_ctx *ticket)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret = 0;
 
@@ -327,6 +328,7 @@ static inline int ttm_bo_reserve(struct ttm_buffer_object *bo,
 static inline int ttm_bo_reserve_slowpath(struct ttm_buffer_object *bo,
 					  bool interruptible,
 					  struct ww_acquire_ctx *ticket)
+	__context_unsafe(/* conditional locking */)
 {
 	if (interruptible) {
 		int ret = dma_resv_lock_slow_interruptible(bo->base.resv,
@@ -378,6 +380,7 @@ static inline void ttm_bo_move_null(struct ttm_buffer_object *bo,
  * Unreserve a previous reservation of @bo.
  */
 static inline void ttm_bo_unreserve(struct ttm_buffer_object *bo)
+	__context_unsafe(/* ttm_bo_reserve() has not been annotated */)
 {
 	ttm_bo_move_to_lru_tail_unlocked(bo);
 	dma_resv_unlock(bo->base.resv);

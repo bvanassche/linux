@@ -14,6 +14,7 @@
 #include <linux/errno.h>        /* for -ENODEV */
 #include <linux/delay.h>	/* for mdelay() */
 #include <linux/interrupt.h>	/* for in_interrupt() */
+#include <linux/limits.h>
 #include <linux/list.h>		/* for struct list_head */
 #include <linux/kref.h>		/* for struct kref */
 #include <linux/device.h>	/* for struct device */
@@ -784,7 +785,8 @@ extern struct usb_device *usb_hub_find_child(struct usb_device *hdev,
 #define usb_lock_device_interruptible(udev)	device_lock_interruptible(&(udev)->dev)
 #define usb_trylock_device(udev)		device_trylock(&(udev)->dev)
 extern int usb_lock_device_for_reset(struct usb_device *udev,
-				     const struct usb_interface *iface);
+				     const struct usb_interface *iface)
+	__cond_acquires_range(0, INT_MAX, &udev->dev.mutex);
 
 /* USB port reset for device reinitialization */
 extern int usb_reset_device(struct usb_device *dev);

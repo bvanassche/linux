@@ -532,6 +532,7 @@ static void netif_freeze_queues(struct net_device *dev)
 }
 
 void netif_tx_lock(struct net_device *dev)
+	__acquires(&dev->tx_global_lock)
 {
 	spin_lock(&dev->tx_global_lock);
 	netif_freeze_queues(dev);
@@ -555,6 +556,7 @@ static void netif_unfreeze_queues(struct net_device *dev)
 }
 
 void netif_tx_unlock(struct net_device *dev)
+	__releases(&dev->tx_global_lock)
 {
 	netif_unfreeze_queues(dev);
 	spin_unlock(&dev->tx_global_lock);

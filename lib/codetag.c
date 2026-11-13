@@ -38,18 +38,29 @@ static DEFINE_MUTEX(codetag_lock);
 static LIST_HEAD(codetag_types);
 
 void codetag_lock_module_list(struct codetag_type *cttype)
+	__acquires_shared(cttype)
 {
 	down_read(&cttype->mod_lock);
+	__release_shared(&cttype->mod_lock);
+	__acquire_shared(cttype);
 }
 
 bool codetag_trylock_module_list(struct codetag_type *cttype)
+	__cond_acquires_shared(true, cttype)
 {
-	return down_read_trylock(&cttype->mod_lock) != 0;
+	if (!down_read_trylock(&cttype->mod_lock))
+		return false;
+	__release_shared(&cttype->mod_lock);
+	__acquire_shared(cttype);
+	return true;
 }
 
 void codetag_unlock_module_list(struct codetag_type *cttype)
+	__releases_shared(cttype)
 {
+	__acquire_shared(&cttype->mod_lock);
 	up_read(&cttype->mod_lock);
+	__release_shared(cttype);
 }
 
 unsigned long codetag_get_content_id(struct codetag_type *cttype)

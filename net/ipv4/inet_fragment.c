@@ -422,6 +422,7 @@ static struct inet_frag_queue *inet_frag_create(struct fqdir *fqdir,
 }
 
 struct inet_frag_queue *inet_frag_find(struct fqdir *fqdir, void *key)
+	__must_hold_shared(RCU)
 {
 	/* This pairs with WRITE_ONCE() in fqdir_pre_exit(). */
 	long high_thresh = READ_ONCE(fqdir->high_thresh);

@@ -894,6 +894,7 @@ share_extant_sb:
 EXPORT_SYMBOL(sget_fc);
 
 void drop_super(struct super_block *sb)
+	__releases_shared(&sb->s_umount)
 {
 	super_unlock_shared(sb);
 	put_super(sb);
@@ -902,6 +903,7 @@ void drop_super(struct super_block *sb)
 EXPORT_SYMBOL(drop_super);
 
 void drop_super_exclusive(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	super_unlock_excl(sb);
 	put_super(sb);

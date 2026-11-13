@@ -1405,6 +1405,7 @@ drm_bridge_chain_get_last_bridge(struct drm_encoder *encoder)
 
 /* Internal to drm_for_each_bridge_in_chain*() */
 static inline struct drm_bridge *__drm_for_each_bridge_in_chain_next(struct drm_bridge *bridge)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct drm_bridge *next = drm_bridge_get_next_bridge(bridge);
 
@@ -1423,6 +1424,7 @@ DEFINE_FREE(__drm_for_each_bridge_in_chain_cleanup, struct drm_bridge *,
 /* Internal to drm_for_each_bridge_in_chain() */
 static inline struct drm_bridge *
 __drm_for_each_bridge_in_chain_start(struct drm_encoder *encoder)
+	__context_unsafe(/* conditional locking */)
 {
 	mutex_lock(&encoder->bridge_chain_mutex);
 
@@ -1454,6 +1456,7 @@ __drm_for_each_bridge_in_chain_start(struct drm_encoder *encoder)
 /* Internal to drm_for_each_bridge_in_chain_from() */
 static inline struct drm_bridge *
 __drm_for_each_bridge_in_chain_from_start(struct drm_bridge *bridge)
+	__context_unsafe(/* unlocked by the iterator or cleanup */)
 {
 	drm_bridge_get(bridge);
 	mutex_lock(&bridge->encoder->bridge_chain_mutex);

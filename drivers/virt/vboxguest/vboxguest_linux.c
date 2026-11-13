@@ -433,6 +433,8 @@ static void vbg_pci_remove(struct pci_dev *pci)
 
 struct vbg_dev *vbg_get_gdev(void)
 {
+	struct vbg_dev *gdev;
+
 	mutex_lock(&vbg_gdev_mutex);
 
 	/*
@@ -440,8 +442,9 @@ struct vbg_dev *vbg_get_gdev(void)
 	 * this stops vbg_pci_remove from removing the device from underneath
 	 * vboxsf. vboxsf will only hold a reference for a short while.
 	 */
-	if (vbg_gdev)
-		return vbg_gdev;
+	gdev = vbg_gdev;
+	if (!IS_ERR_OR_NULL(gdev))
+		return gdev;
 
 	mutex_unlock(&vbg_gdev_mutex);
 	return ERR_PTR(-ENODEV);

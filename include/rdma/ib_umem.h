@@ -7,7 +7,9 @@
 #ifndef IB_UMEM_H
 #define IB_UMEM_H
 
+#include <linux/dma-buf.h>
 #include <linux/dma-direction.h>
+#include <linux/dma-resv.h>
 #include <linux/scatterlist.h>
 
 struct ib_device;

@@ -320,6 +320,7 @@ radix_tree_node_free(struct radix_tree_node *node)
  * __GFP_DIRECT_RECLAIM being passed to INIT_RADIX_TREE().
  */
 static __must_check int __radix_tree_preload(gfp_t gfp_mask, unsigned nr)
+	__cond_acquires_range(0, INT_MAX, &radix_tree_preloads.lock)
 {
 	struct radix_tree_preload *rtp;
 	struct radix_tree_node *node;
@@ -363,6 +364,7 @@ out:
  * __GFP_DIRECT_RECLAIM being passed to INIT_RADIX_TREE().
  */
 int radix_tree_preload(gfp_t gfp_mask)
+	__cond_acquires_range(0, INT_MAX, &radix_tree_preloads.lock)
 {
 	/* Warn on non-sensical use... */
 	WARN_ON_ONCE(!gfpflags_allow_blocking(gfp_mask));
@@ -376,6 +378,7 @@ EXPORT_SYMBOL(radix_tree_preload);
  * disabled. On error, return -ENOMEM with preemption not disabled.
  */
 int radix_tree_maybe_preload(gfp_t gfp_mask)
+	__cond_acquires_range(0, INT_MAX, &radix_tree_preloads.lock)
 {
 	if (gfpflags_allow_blocking(gfp_mask))
 		return __radix_tree_preload(gfp_mask, RADIX_TREE_PRELOAD_SIZE);

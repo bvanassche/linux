@@ -1137,9 +1137,8 @@ static void io_req_task_cancel(struct io_tw_req tw_req, io_tw_token_t tw)
 void io_req_task_submit(struct io_tw_req tw_req, io_tw_token_t tw)
 {
 	struct io_kiocb *req = tw_req.req;
-	struct io_ring_ctx *ctx = req->ctx;
 
-	io_tw_lock(ctx, tw);
+	io_tw_lock(req->ctx, tw);
 	if (unlikely(tw.cancel))
 		io_req_defer_failed(req, -EFAULT);
 	else if (req->flags & REQ_F_FORCE_ASYNC)
@@ -1409,6 +1408,7 @@ void io_req_task_complete(struct io_tw_req tw_req, io_tw_token_t tw)
 {
 	struct io_kiocb *req = tw_req.req;
 
+	io_tw_lock(req->ctx, tw);
 	if (io_req_complete_ready(req))
 		io_req_complete_defer(req);
 }

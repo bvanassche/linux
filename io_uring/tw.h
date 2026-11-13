@@ -99,6 +99,7 @@ static inline bool io_task_work_pending(struct io_ring_ctx *ctx)
 }
 
 static inline void io_tw_lock(struct io_ring_ctx *ctx, io_tw_token_t tw)
+	__assumes_ctx_lock(&ctx->uring_lock)
 {
 	lockdep_assert_held(&ctx->uring_lock);
 }

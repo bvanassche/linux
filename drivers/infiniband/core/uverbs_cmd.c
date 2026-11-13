@@ -855,7 +855,6 @@ static int ib_uverbs_rereg_mr(struct uverbs_attr_bundle *attrs)
 		rdma_assign_uobject(uobj, new_uobj, attrs);
 		rdma_alloc_commit_uobject(new_uobj, attrs);
 		uobj_put_destroy(uobj);
-		new_uobj = NULL;
 		uobj = NULL;
 		mr = new_mr;
 	} else {
@@ -871,6 +870,7 @@ static int ib_uverbs_rereg_mr(struct uverbs_attr_bundle *attrs)
 		}
 		lkey = mr->lkey;
 		rkey = mr->rkey;
+		uobj_alloc_abort(new_uobj, attrs);
 	}
 
 	memset(&resp, 0, sizeof(resp));
@@ -878,10 +878,10 @@ static int ib_uverbs_rereg_mr(struct uverbs_attr_bundle *attrs)
 	resp.rkey = rkey;
 
 	ret = uverbs_response(attrs, &resp, sizeof(resp));
+	goto put_uobj_pd;
 
 put_new_uobj:
-	if (new_uobj)
-		uobj_alloc_abort(new_uobj, attrs);
+	uobj_alloc_abort(new_uobj, attrs);
 put_uobj_pd:
 	if (cmd.flags & IB_MR_REREG_PD)
 		uobj_put_obj_read(new_pd);

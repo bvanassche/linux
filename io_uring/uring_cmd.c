@@ -50,6 +50,7 @@ void io_uring_cmd_cleanup(struct io_kiocb *req)
 
 bool io_uring_try_cancel_uring_cmd(struct io_ring_ctx *ctx,
 				   struct io_uring_task *tctx)
+	__must_hold(&ctx->uring_lock)
 {
 	struct hlist_node *tmp;
 	struct io_kiocb *req;

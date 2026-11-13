@@ -16,7 +16,8 @@ void io_uring_free_tctx(struct task_struct *tsk);
 
 void io_uring_unreg_ringfd(void);
 int io_ringfd_register(struct io_ring_ctx *ctx, void __user *__arg,
-		       unsigned nr_args);
+		       unsigned nr_args)
+	__must_hold(&ctx->uring_lock);
 int io_ringfd_unregister(struct io_ring_ctx *ctx, void __user *__arg,
 			 unsigned nr_args);
 

@@ -1129,7 +1129,7 @@ static void metadata_update_cancel(struct mddev *mddev)
 {
 	struct md_cluster_info *cinfo = mddev->cluster_info;
 	clear_bit(MD_CLUSTER_SEND_LOCKED_ALREADY, &cinfo->state);
-	unlock_comm(cinfo);
+	unlock_comm(mddev->cluster_info);
 }
 
 static int update_bitmap_size(struct mddev *mddev, sector_t size)
@@ -1509,7 +1509,7 @@ static void add_new_disk_cancel(struct mddev *mddev)
 {
 	struct md_cluster_info *cinfo = mddev->cluster_info;
 	clear_bit(MD_CLUSTER_SEND_LOCKED_ALREADY, &cinfo->state);
-	unlock_comm(cinfo);
+	unlock_comm(mddev->cluster_info);
 }
 
 static int new_disk_ack(struct mddev *mddev, bool ack)

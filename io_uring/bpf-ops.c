@@ -20,6 +20,8 @@ __bpf_kfunc int bpf_io_uring_submit_sqes(struct iou_ctx *loop_ctx, u32 nr)
 	struct bpf_run_ctx *old_run_ctx;
 	int ret;
 
+	lockdep_assert_held(&ctx->uring_lock);
+
 	/*
 	 * The requests come from the SQ, which user space can write, so they
 	 * are issued for the task and not for the BPF program. Hide the run

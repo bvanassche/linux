@@ -6,7 +6,13 @@
 #ifndef __INTEL_TC_H__
 #define __INTEL_TC_H__
 
+#include <linux/mutex.h>
 #include <linux/types.h>
+#include <linux/workqueue.h>
+
+#include "intel_display_limits.h"
+#include "intel_display_power.h"
+#include "intel_display_types.h"
 
 struct drm_printer;
 struct intel_crtc_state;
@@ -81,6 +87,43 @@ enum intel_tc_pin_assignment {            /* Lanes (a)   Signal/   Cable   Notes
 	 *     specification.
 	 */
 };
+
+enum tc_port_mode {
+	TC_PORT_DISCONNECTED,
+	TC_PORT_TBT_ALT,
+	TC_PORT_DP_ALT,
+	TC_PORT_LEGACY,
+};
+
+struct intel_tc_phy_ops;
+
+struct intel_tc_port {
+	struct intel_digital_port *dig_port;
+
+	const struct intel_tc_phy_ops *phy_ops;
+
+	struct mutex lock;	/* protects the TypeC port mode */
+	struct ref_tracker *lock_wakeref;
+#if IS_ENABLED(CONFIG_DRM_I915_DEBUG_RUNTIME_PM)
+	enum intel_display_power_domain lock_power_domain;
+#endif
+	struct delayed_work disconnect_phy_work;
+	struct delayed_work link_reset_work;
+	int link_refcount;
+	bool legacy_port:1;
+	const char *port_name;
+	enum tc_port_mode mode;
+	enum tc_port_mode init_mode;
+	enum phy_fia phy_fia;
+	enum intel_tc_pin_assignment pin_assignment;
+	u8 phy_fia_idx;
+	u8 max_lane_count;
+};
+
+static inline struct intel_tc_port *to_tc_port(struct intel_digital_port *dig_port)
+{
+	return dig_port->tc;
+}
 
 bool intel_tc_port_in_tbt_alt_mode(struct intel_digital_port *dig_port);
 bool intel_tc_port_in_dp_alt_mode(struct intel_digital_port *dig_port);

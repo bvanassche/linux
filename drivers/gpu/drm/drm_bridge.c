@@ -243,7 +243,7 @@ static DEFINE_MUTEX(bridge_lock);
 static LIST_HEAD(bridge_list);
 static LIST_HEAD(bridge_lingering_list);
 
-DEFINE_STATIC_SRCU(drm_bridge_unplug_srcu);
+DEFINE_SRCU(drm_bridge_unplug_srcu);
 
 /**
  * drm_bridge_enter - Enter DRM bridge critical section

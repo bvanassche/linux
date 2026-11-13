@@ -27,6 +27,7 @@
 #include <linux/ctype.h>
 #include <linux/list.h>
 #include <linux/mutex.h>
+#include <linux/srcu.h>
 
 #include <drm/drm_atomic.h>
 #include <drm/drm_encoder.h>
@@ -1231,6 +1232,8 @@ drm_priv_to_bridge(struct drm_private_obj *priv)
 {
 	return container_of(priv, struct drm_bridge, base);
 }
+
+extern struct srcu_struct drm_bridge_unplug_srcu;
 
 bool drm_bridge_enter(struct drm_bridge *bridge, int *idx);
 void drm_bridge_exit(int idx);

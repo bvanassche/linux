@@ -1300,7 +1300,7 @@ int netdev_nl_queue_create_doit(struct sk_buff *skb, struct genl_info *info)
 	struct nlattr *qtb[ARRAY_SIZE(netdev_queue_id_nl_policy)];
 	struct nlattr *ltb[ARRAY_SIZE(netdev_lease_nl_policy)];
 	struct netdev_rx_queue *rxq, *rxq_lease;
-	struct net_device *dev, *dev_lease;
+	struct net_device *dev, *dev_lease, *locked_lease;
 	netdevice_tracker dev_tracker;
 	s32 netns_lease = -1;
 	struct nlattr *nest;
@@ -1396,8 +1396,14 @@ int netdev_nl_queue_create_doit(struct sk_buff *skb, struct genl_info *info)
 		goto err_put_netns;
 	}
 
-	dev_lease = netdev_put_lock(dev_lease, net, &dev_tracker);
-	if (!dev_lease) {
+	/*
+	 * netdev_put_lock() returns either NULL or its first argument. Use a
+	 * separate variable for its return value such that the Clang
+	 * thread-safety analyzer can match the netdev_unlock(dev_lease) calls
+	 * below with the lock acquired by netdev_put_lock().
+	 */
+	locked_lease = netdev_put_lock(dev_lease, net, &dev_tracker);
+	if (!locked_lease) {
 		err = -ENODEV;
 		goto err_put_netns;
 	}

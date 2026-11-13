@@ -758,8 +758,10 @@ void rdma_alloc_abort_uobject(struct ib_uobject *uobj,
 		 * done during FD close after the driver has a few more tries to
 		 * destroy it.
 		 */
-		if (WARN_ON(ret))
-			return rdma_alloc_commit_uobject(uobj, attrs);
+		if (WARN_ON(ret)) {
+			rdma_alloc_commit_uobject(uobj, attrs);
+			return;
+		}
 	}
 
 	uverbs_destroy_uobject(uobj, RDMA_REMOVE_ABORT, attrs);

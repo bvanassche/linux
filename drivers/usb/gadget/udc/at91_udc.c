@@ -1589,7 +1589,7 @@ static void at91udc_shutdown(struct platform_device *dev)
 
 	/* force disconnect on reboot */
 	spin_lock_irqsave(&udc->lock, flags);
-	pullup(platform_get_drvdata(dev), 0);
+	pullup(udc, 0);
 	spin_unlock_irqrestore(&udc->lock, flags);
 }
 

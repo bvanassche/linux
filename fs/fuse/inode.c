@@ -595,6 +595,7 @@ void fuse_try_prune_one_inode(struct fuse_conn *fc, u64 nodeid)
 }
 
 bool fuse_lock_inode(struct inode *inode)
+	__cond_acquires(true, &get_fuse_inode(inode)->mutex)
 {
 	bool locked = false;
 
@@ -607,6 +608,7 @@ bool fuse_lock_inode(struct inode *inode)
 }
 
 void fuse_unlock_inode(struct inode *inode, bool locked)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (locked)
 		mutex_unlock(&get_fuse_inode(inode)->mutex);
@@ -1716,6 +1718,7 @@ static int fuse_fill_super_submount(struct super_block *sb,
 
 /* Filesystem context private data holds the FUSE inode of the mount point */
 static int fuse_get_tree_submount(struct fs_context *fsc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct fuse_mount *fm;
 	struct fuse_inode *mp_fi = fsc->fs_private;
@@ -2039,6 +2042,7 @@ void fuse_mount_destroy(struct fuse_mount *fm)
 EXPORT_SYMBOL(fuse_mount_destroy);
 
 static void fuse_kill_sb_anon(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	fuse_sb_destroy(sb);
 	kill_anon_super(sb);
@@ -2057,6 +2061,7 @@ MODULE_ALIAS_FS("fuse");
 
 #ifdef CONFIG_BLOCK
 static void fuse_kill_sb_blk(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	fuse_sb_destroy(sb);
 	kill_block_super(sb);

@@ -916,6 +916,7 @@ static void xhci_del_comp_mod_timer(struct xhci_hcd *xhci, u32 portsc, int portn
 static int xhci_handle_usb2_port_link_resume(struct xhci_port *port,
 					     u32 portsc,
 					     unsigned long *flags)
+	__context_unsafe(/* drops and reacquires xhci->lock */)
 {
 	struct xhci_bus_state *bus_state;
 	struct xhci_hcd	*xhci;

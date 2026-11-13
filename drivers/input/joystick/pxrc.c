@@ -224,6 +224,7 @@ static int pxrc_resume(struct usb_interface *intf)
 }
 
 static int pxrc_pre_reset(struct usb_interface *intf)
+	__acquires(&((struct pxrc *)usb_get_intfdata(intf))->pm_mutex)
 {
 	struct pxrc *pxrc = usb_get_intfdata(intf);
 
@@ -233,6 +234,7 @@ static int pxrc_pre_reset(struct usb_interface *intf)
 }
 
 static int pxrc_post_reset(struct usb_interface *intf)
+	__releases(&((struct pxrc *)usb_get_intfdata(intf))->pm_mutex)
 {
 	struct pxrc *pxrc = usb_get_intfdata(intf);
 	int retval = 0;

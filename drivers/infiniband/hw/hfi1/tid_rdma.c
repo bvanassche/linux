@@ -503,7 +503,7 @@ static struct rvt_qp *first_qp(struct hfi1_ctxtdata *rcd,
  */
 static bool kernel_tid_waiters(struct hfi1_ctxtdata *rcd,
 			       struct tid_queue *queue, struct rvt_qp *qp)
-	__must_hold(&rcd->exp_lock) __must_hold(&qp->s_lock)
+	__must_hold(&rcd->exp_lock)
 {
 	struct rvt_qp *fqp;
 	bool ret = true;
@@ -536,7 +536,7 @@ static bool kernel_tid_waiters(struct hfi1_ctxtdata *rcd,
  */
 static void dequeue_tid_waiter(struct hfi1_ctxtdata *rcd,
 			       struct tid_queue *queue, struct rvt_qp *qp)
-	__must_hold(&rcd->exp_lock) __must_hold(&qp->s_lock)
+	__must_hold(&rcd->exp_lock)
 {
 	struct hfi1_qp_priv *priv = qp->priv;
 
@@ -563,7 +563,7 @@ static void dequeue_tid_waiter(struct hfi1_ctxtdata *rcd,
  */
 static void queue_qp_for_tid_wait(struct hfi1_ctxtdata *rcd,
 				  struct tid_queue *queue, struct rvt_qp *qp)
-	__must_hold(&rcd->exp_lock) __must_hold(&qp->s_lock)
+	__must_hold(&rcd->exp_lock)
 {
 	struct hfi1_qp_priv *priv = qp->priv;
 
@@ -587,7 +587,6 @@ static void queue_qp_for_tid_wait(struct hfi1_ctxtdata *rcd,
  * assuming the caller is holding the qp->s_lock.
  */
 static void __trigger_tid_waiter(struct rvt_qp *qp)
-	__must_hold(&qp->s_lock)
 {
 	lockdep_assert_held(&qp->s_lock);
 	if (!(qp->s_flags & HFI1_S_WAIT_TID_SPACE))
@@ -1460,7 +1459,6 @@ static void kern_program_rcvarray(struct tid_rdma_flow *flow)
  */
 int hfi1_kern_exp_rcv_setup(struct tid_rdma_request *req,
 			    struct rvt_sge_state *ss, bool *last)
-	__must_hold(&req->qp->s_lock)
 {
 	struct tid_rdma_flow *flow = &req->flows[req->setup_head];
 	struct hfi1_ctxtdata *rcd = req->rcd;
@@ -1551,7 +1549,6 @@ static void hfi1_tid_rdma_reset_flow(struct tid_rdma_flow *flow)
  * circular buffer.
  */
 int hfi1_kern_exp_rcv_clear(struct tid_rdma_request *req)
-	__must_hold(&req->qp->s_lock)
 {
 	struct tid_rdma_flow *flow = &req->flows[req->clear_tail];
 	struct hfi1_ctxtdata *rcd = req->rcd;
@@ -1594,7 +1591,6 @@ int hfi1_kern_exp_rcv_clear(struct tid_rdma_request *req)
  * a request.
  */
 void hfi1_kern_exp_rcv_clear_all(struct tid_rdma_request *req)
-	__must_hold(&req->qp->s_lock)
 {
 	/* Use memory barrier for proper ordering */
 	while (CIRC_CNT(req->setup_head, req->clear_tail, MAX_FLOWS)) {
@@ -2655,7 +2651,7 @@ static void restart_tid_rdma_read_req(struct hfi1_ctxtdata *rcd,
 static bool handle_read_kdeth_eflags(struct hfi1_ctxtdata *rcd,
 				     struct hfi1_packet *packet, u8 rcv_type,
 				     u8 rte, u32 psn, u32 ibpsn)
-	__must_hold(&packet->qp->r_lock) __must_hold(RCU)
+	__must_hold_shared(RCU)
 {
 	struct hfi1_pportdata *ppd = rcd->ppd;
 	struct hfi1_devdata *dd = ppd->dd;

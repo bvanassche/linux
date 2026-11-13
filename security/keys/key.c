@@ -723,6 +723,7 @@ EXPORT_SYMBOL(key_lookup);
  * available -ENOKEY is returned instead.
  */
 struct key_type *key_type_lookup(const char *type)
+	__cond_acquires_shared_err_ptr(&key_types_sem)
 {
 	struct key_type *ktype;
 
@@ -761,6 +762,7 @@ EXPORT_SYMBOL_GPL(key_set_timeout);
  * Unlock a key type locked by key_type_lookup().
  */
 void key_type_put(struct key_type *ktype)
+	__releases_shared(&key_types_sem)
 {
 	up_read(&key_types_sem);
 }

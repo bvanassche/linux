@@ -123,6 +123,7 @@ nv50_instobj_fast = {
 
 static void
 nv50_instobj_kmap(struct nv50_instobj *iobj, struct nvkm_vmm *vmm)
+	__must_hold(&iobj->imem->base.mutex)
 {
 	struct nv50_instmem *imem = iobj->imem;
 	struct nv50_instobj *eobj;

@@ -1894,6 +1894,7 @@ err_no_resv:
 }
 
 static void xe_vm_close(struct xe_vm *vm)
+	__context_unsafe(/* conditional locking */)
 {
 	struct xe_device *xe = vm->xe;
 	bool bound;
@@ -4004,6 +4005,7 @@ static int xe_vm_bind_ioctl_validate_bo(struct xe_device *xe, struct xe_bo *bo,
 }
 
 int xe_vm_bind_ioctl(struct drm_device *dev, void *data, struct drm_file *file)
+	__context_unsafe(/* conditional locking */)
 {
 	struct xe_device *xe = to_xe_device(dev);
 	struct xe_file *xef = to_xe_file(file);
@@ -4457,6 +4459,7 @@ release_vm_lock:
  * always returns 0.
  */
 int xe_vm_lock(struct xe_vm *vm, bool intr)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 
@@ -4475,6 +4478,7 @@ int xe_vm_lock(struct xe_vm *vm, bool intr)
  * Unlock a buffer object lock that was locked by xe_vm_lock().
  */
 void xe_vm_unlock(struct xe_vm *vm)
+	__context_unsafe(/* matches xe_vm_lock() */)
 {
 	dma_resv_unlock(xe_vm_resv(vm));
 }

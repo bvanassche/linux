@@ -118,6 +118,7 @@ amdgpu_gem_update_timeline_node(struct drm_file *filp,
 }
 
 static vm_fault_t amdgpu_gem_fault(struct vm_fault *vmf)
+	__context_unsafe(/* conditional unlock */)
 {
 	struct ttm_buffer_object *bo = vmf->vma->vm_private_data;
 	struct drm_device *ddev = bo->base.dev;

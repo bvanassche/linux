@@ -3955,6 +3955,7 @@ struct dentry *pmbus_get_debugfs_dir(struct i2c_client *client)
 EXPORT_SYMBOL_NS_GPL(pmbus_get_debugfs_dir, "PMBUS");
 
 void pmbus_lock(struct i2c_client *client)
+	__acquires(&((struct pmbus_data *)i2c_get_clientdata(client))->update_lock)
 {
 	struct pmbus_data *data = i2c_get_clientdata(client);
 
@@ -3963,6 +3964,7 @@ void pmbus_lock(struct i2c_client *client)
 EXPORT_SYMBOL_NS_GPL(pmbus_lock, "PMBUS");
 
 int pmbus_lock_interruptible(struct i2c_client *client)
+	__cond_acquires(0, &((struct pmbus_data *)i2c_get_clientdata(client))->update_lock)
 {
 	struct pmbus_data *data = i2c_get_clientdata(client);
 
@@ -3971,6 +3973,7 @@ int pmbus_lock_interruptible(struct i2c_client *client)
 EXPORT_SYMBOL_NS_GPL(pmbus_lock_interruptible, "PMBUS");
 
 void pmbus_unlock(struct i2c_client *client)
+	__releases(&((struct pmbus_data *)i2c_get_clientdata(client))->update_lock)
 {
 	struct pmbus_data *data = i2c_get_clientdata(client);
 

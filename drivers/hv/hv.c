@@ -539,6 +539,7 @@ static bool hv_synic_event_pending(void)
 }
 
 static int hv_pick_new_cpu(struct vmbus_channel *channel)
+	__must_hold(&vmbus_connection.channel_mutex)
 {
 	int ret = -EBUSY;
 	int start;

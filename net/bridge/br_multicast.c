@@ -102,6 +102,7 @@ br_sg_port_find(struct net_bridge *br,
 
 static struct net_bridge_mdb_entry *br_mdb_ip_get_rcu(struct net_bridge *br,
 						      struct br_ip *dst)
+	__must_hold_shared(RCU)
 {
 	return rhashtable_lookup(&br->mdb_hash_tbl, dst, br_mdb_rht_params);
 }
@@ -151,7 +152,7 @@ static struct net_bridge_mdb_entry *br_mdb_ip6_get(struct net_bridge *br,
 
 struct net_bridge_mdb_entry *
 br_mdb_entry_skb_get(struct net_bridge_mcast *brmctx, struct sk_buff *skb,
-		     u16 vid)
+		     u16 vid) __must_hold_shared(RCU)
 {
 	struct net_bridge *br = brmctx->br;
 	struct br_ip ip;

@@ -1137,6 +1137,7 @@ int vb2_fop_mmap(struct file *file, struct vm_area_struct *vma)
 EXPORT_SYMBOL_GPL(vb2_fop_mmap);
 
 int _vb2_fop_release(struct file *file, struct mutex *lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct video_device *vdev = video_devdata(file);
 
@@ -1163,6 +1164,7 @@ EXPORT_SYMBOL_GPL(vb2_fop_release);
 
 ssize_t vb2_fop_write(struct file *file, const char __user *buf,
 		size_t count, loff_t *ppos)
+	__context_unsafe(/* conditional locking */)
 {
 	struct video_device *vdev = video_devdata(file);
 	struct mutex *lock = vdev->queue->lock ? vdev->queue->lock : vdev->lock;
@@ -1187,6 +1189,7 @@ EXPORT_SYMBOL_GPL(vb2_fop_write);
 
 ssize_t vb2_fop_read(struct file *file, char __user *buf,
 		size_t count, loff_t *ppos)
+	__context_unsafe(/* conditional locking */)
 {
 	struct video_device *vdev = video_devdata(file);
 	struct mutex *lock = vdev->queue->lock ? vdev->queue->lock : vdev->lock;
@@ -1211,6 +1214,7 @@ exit:
 EXPORT_SYMBOL_GPL(vb2_fop_read);
 
 __poll_t vb2_fop_poll(struct file *file, poll_table *wait)
+	__context_unsafe(/* conditional locking */)
 {
 	struct video_device *vdev = video_devdata(file);
 	struct vb2_queue *q = vdev->queue;
@@ -1252,6 +1256,7 @@ EXPORT_SYMBOL_GPL(vb2_fop_get_unmapped_area);
 #endif
 
 void vb2_video_unregister_device(struct video_device *vdev)
+	__context_unsafe(/* conditional locking */)
 {
 	/* Check if vdev was ever registered at all */
 	if (!vdev || !video_is_registered(vdev))

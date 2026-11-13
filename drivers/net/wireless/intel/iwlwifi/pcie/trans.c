@@ -2354,6 +2354,7 @@ static void iwl_trans_pcie_reset(struct iwl_trans *trans, enum iwl_reset_mode mo
  * already disabled.
  */
 bool _iwl_trans_pcie_grab_nic_access(struct iwl_trans *trans, bool silent)
+	__cond_acquires(true, &IWL_TRANS_GET_PCIE_TRANS(trans)->reg_lock)
 {
 	int ret;
 	struct iwl_trans_pcie *trans_pcie = IWL_TRANS_GET_PCIE_TRANS(trans);
@@ -2437,6 +2438,7 @@ out:
 }
 
 bool iwl_trans_pcie_grab_nic_access(struct iwl_trans *trans)
+	__cond_acquires(true, &IWL_TRANS_GET_PCIE_TRANS(trans)->reg_lock)
 {
 	bool ret;
 
@@ -2451,6 +2453,7 @@ bool iwl_trans_pcie_grab_nic_access(struct iwl_trans *trans)
 }
 
 void iwl_trans_pcie_resched_with_nic_access(struct iwl_trans *trans)
+	__must_hold(&IWL_TRANS_GET_PCIE_TRANS(trans)->reg_lock)
 {
 	struct iwl_trans_pcie *trans_pcie = IWL_TRANS_GET_PCIE_TRANS(trans);
 
@@ -2462,6 +2465,7 @@ void iwl_trans_pcie_resched_with_nic_access(struct iwl_trans *trans)
 }
 
 void iwl_trans_pcie_release_nic_access(struct iwl_trans *trans)
+	__releases(&IWL_TRANS_GET_PCIE_TRANS(trans)->reg_lock)
 {
 	struct iwl_trans_pcie *trans_pcie = IWL_TRANS_GET_PCIE_TRANS(trans);
 
@@ -2537,6 +2541,7 @@ int iwl_trans_pcie_read_mem(struct iwl_trans *trans, u32 addr,
 
 int iwl_trans_pcie_read_mem_no_grab(struct iwl_trans *trans, u32 addr,
 				    void *buf, u32 dwords)
+	__must_hold(&IWL_TRANS_GET_PCIE_TRANS(trans)->reg_lock)
 {
 	struct iwl_trans_pcie *trans_pcie = IWL_TRANS_GET_PCIE_TRANS(trans);
 #define IWL_MAX_HW_ERRS 5

@@ -920,7 +920,8 @@ int self_check_eba(struct ubi_device *ubi, struct ubi_attach_info *ai_fastmap,
 
 /* wl.c */
 int ubi_sync_erase(struct ubi_device *ubi, struct ubi_wl_entry *e, int *torture);
-int ubi_wl_get_peb(struct ubi_device *ubi);
+int ubi_wl_get_peb(struct ubi_device *ubi)
+	__acquires_shared(&ubi->fm_eba_sem);
 int ubi_wl_put_peb(struct ubi_device *ubi, int vol_id, int lnum,
 		   int pnum, int torture);
 int ubi_wl_flush(struct ubi_device *ubi, int vol_id, int lnum);
@@ -932,7 +933,9 @@ struct ubi_wl_entry *ubi_wl_get_fm_peb(struct ubi_device *ubi, int anchor);
 int ubi_wl_put_fm_peb(struct ubi_device *ubi, struct ubi_wl_entry *used_e,
 		      int lnum, int torture);
 int ubi_is_erase_work(struct ubi_work *wrk);
-void ubi_refill_pools_and_lock(struct ubi_device *ubi);
+void ubi_refill_pools_and_lock(struct ubi_device *ubi)
+	__acquires(&ubi->fm_protect) __acquires(&ubi->work_sem)
+	__acquires(&ubi->fm_eba_sem);
 int ubi_ensure_anchor_pebs(struct ubi_device *ubi);
 int ubi_bitflip_check(struct ubi_device *ubi, int pnum, int force_scrub);
 

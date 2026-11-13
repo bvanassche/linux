@@ -1698,6 +1698,7 @@ static void scan_gray_list(void)
  * get_object() if necessaary.
  */
 static void kmemleak_cond_resched(struct kmemleak_object *object)
+	__must_hold_shared(RCU)
 {
 	if (!get_object(object))
 		return;	/* Try next object */
@@ -2222,6 +2223,7 @@ static void stop_scan_thread(void)
  * a memory scanning when the pos argument points to the first position.
  */
 static void *kmemleak_seq_start(struct seq_file *seq, loff_t *pos)
+	__context_unsafe(/* scan_mutex and RCU held unless IS_ERR() */)
 {
 	struct kmemleak_object *object;
 	loff_t n = *pos;
@@ -2270,6 +2272,7 @@ static void *kmemleak_seq_next(struct seq_file *seq, void *v, loff_t *pos)
  * Decrement the use_count of the last object required, if any.
  */
 static void kmemleak_seq_stop(struct seq_file *seq, void *v)
+	__context_unsafe(/* releases lock held by caller */)
 {
 	if (!IS_ERR(v)) {
 		/*

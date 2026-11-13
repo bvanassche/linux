@@ -39,6 +39,7 @@ struct class_function_drv {
 };
 
 static void class_function_regmap_lock(void *data)
+	__acquires((struct mutex *)data)
 {
 	struct mutex *lock = data;
 
@@ -46,6 +47,7 @@ static void class_function_regmap_lock(void *data)
 }
 
 static void class_function_regmap_unlock(void *data)
+	__releases((struct mutex *)data)
 {
 	struct mutex *lock = data;
 

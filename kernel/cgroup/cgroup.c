@@ -1650,6 +1650,7 @@ static u32 cgroup_calc_subtree_ss_mask(u32 subtree_control, u32 this_ss_mask)
  * cgroup, it should pin it before invoking this function.
  */
 void cgroup_kn_unlock(struct kernfs_node *kn)
+	__releases(&cgroup_mutex)
 {
 	struct cgroup *cgrp;
 
@@ -1683,6 +1684,7 @@ void cgroup_kn_unlock(struct kernfs_node *kn)
  * including self-removal.
  */
 struct cgroup *cgroup_kn_lock_live(struct kernfs_node *kn, bool drain_offline)
+	__context_unsafe(/* returns with a lock held that depends on the return value */)
 {
 	struct cgroup *cgrp;
 	int ret;
@@ -2260,6 +2262,7 @@ out:
 }
 
 int cgroup_do_get_tree(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct cgroup_fs_context *ctx = cgroup_fc2context(fc);
 	int ret;
@@ -2540,6 +2543,7 @@ EXPORT_SYMBOL_GPL(cgroup_path_ns);
  */
 void cgroup_attach_lock(enum cgroup_attach_lock_mode lock_mode,
 			struct task_struct *tsk)
+	__context_unsafe(/* conditional locking */)
 {
 	cpus_read_lock();
 
@@ -2565,6 +2569,7 @@ void cgroup_attach_lock(enum cgroup_attach_lock_mode lock_mode,
  */
 void cgroup_attach_unlock(enum cgroup_attach_lock_mode lock_mode,
 			  struct task_struct *tsk)
+	__context_unsafe(/* conditional locking */)
 {
 	switch (lock_mode) {
 	case CGRP_ATTACH_LOCK_NONE:
@@ -3336,6 +3341,7 @@ out_finish:
  * without it if interrupted by a signal.
  */
 int cgroup_lock_and_drain_offline(struct cgroup *cgrp)
+	__cond_acquires(0, &cgroup_mutex)
 {
 	struct cgroup *dsct;
 	struct cgroup_subsys_state *d_css;
@@ -6891,6 +6897,7 @@ static struct cgroup *cgroup_get_from_file(struct file *f)
  * parent's signal_struct and are covered by the existing read lock.
  */
 static void cgroup_fork_child_lock(struct task_struct *child)
+	__context_unsafe(/* conditional locking */)
 {
 	if (cgroup_enable_per_threadgroup_rwsem &&
 	    child->signal != current->signal)
@@ -6899,6 +6906,7 @@ static void cgroup_fork_child_lock(struct task_struct *child)
 }
 
 static void cgroup_fork_child_unlock(struct task_struct *child)
+	__context_unsafe(/* conditional locking */)
 {
 	if (cgroup_enable_per_threadgroup_rwsem &&
 	    child->signal != current->signal)
@@ -7056,6 +7064,7 @@ static void cgroup_css_set_put_fork(struct kernel_clone_args *kargs)
  * allows for a cgroup subsystem to conditionally allow or deny new forks.
  */
 int cgroup_can_fork(struct task_struct *child, struct kernel_clone_args *kargs)
+	__context_unsafe(/* cgroup_css_set_fork() locks conditionally */)
 {
 	struct cgroup_subsys *ss;
 	int i, j, ret;
@@ -7097,6 +7106,7 @@ out_revert:
  */
 void cgroup_cancel_fork(struct task_struct *child,
 			struct kernel_clone_args *kargs)
+	__context_unsafe(/* cgroup_css_set_fork() locks conditionally */)
 {
 	struct cgroup_subsys *ss;
 	int i;

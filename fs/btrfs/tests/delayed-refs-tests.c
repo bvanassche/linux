@@ -42,6 +42,7 @@ static enum btrfs_ref_type ref_type_from_disk_ref_type(u8 type)
 
 static void delete_delayed_ref_head(struct btrfs_trans_handle *trans,
 				    struct btrfs_delayed_ref_head *head)
+	__context_unsafe(/* callers too complex */)
 {
 	struct btrfs_fs_info *fs_info = trans->fs_info;
 	struct btrfs_delayed_ref_root *delayed_refs =
@@ -207,6 +208,7 @@ static int simple_test(struct btrfs_trans_handle *trans,
 			test_err("failed to find delayed ref head");
 		return -EINVAL;
 	}
+	__acquire(&head->mutex);
 
 	ret = -EINVAL;
 	if (validate_ref_head(head, head_check))
@@ -764,8 +766,10 @@ static int merge_tests(struct btrfs_trans_handle *trans,
 	}
 	ret = 0;
 out:
-	if (!IS_ERR_OR_NULL(head))
+	if (!IS_ERR_OR_NULL(head)) {
+		lockdep_assert_held(&head->mutex);
 		btrfs_unselect_ref_head(&trans->transaction->delayed_refs, head);
+	}
 	btrfs_destroy_delayed_refs(trans->transaction);
 	return ret;
 }
@@ -965,8 +969,10 @@ static int select_delayed_refs_test(struct btrfs_trans_handle *trans)
 	delete_delayed_ref_node(head, node);
 	ret = 0;
 out:
-	if (head)
+	if (head) {
+		lockdep_assert_held(&head->mutex);
 		btrfs_unselect_ref_head(delayed_refs, head);
+	}
 	btrfs_destroy_delayed_refs(trans->transaction);
 	return ret;
 }

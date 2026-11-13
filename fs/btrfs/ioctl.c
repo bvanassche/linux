@@ -3387,6 +3387,7 @@ void btrfs_update_ioctl_balance_args(struct btrfs_fs_info *fs_info,
  * as exclusive ops are blocked. In case of failure return an error code.
  */
 static int btrfs_try_lock_balance(struct btrfs_fs_info *fs_info, bool *excl_acquired)
+	__cond_acquires(0, &fs_info->balance_mutex)
 {
 	int ret;
 

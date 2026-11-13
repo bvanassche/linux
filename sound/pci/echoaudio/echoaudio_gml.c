@@ -78,6 +78,7 @@ the card is syncing to a valid clock on the ADAT or S/PDIF inputs.
 If the auto-mute is disabled, the digital inputs are enabled regardless of
 what the input clock is set or what is connected. */
 static int set_input_auto_mute(struct echoaudio *chip, int automute)
+	__must_hold(&chip->lock)
 {
 	dev_dbg(chip->card->dev, "set_input_auto_mute %d\n", automute);
 

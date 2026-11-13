@@ -57,6 +57,7 @@ static void ttm_bo_init_case_desc(const struct ttm_bo_test_case *t,
 KUNIT_ARRAY_PARAM(ttm_bo_reserve, ttm_bo_reserved_cases, ttm_bo_init_case_desc);
 
 static void ttm_bo_reserve_optimistic_no_ticket(struct kunit *test)
+	__context_unsafe(/* ttm_bo_reserve() locks conditionally */)
 {
 	const struct ttm_bo_test_case *params = test->param_value;
 	struct ttm_buffer_object *bo;
@@ -108,6 +109,7 @@ static void ttm_bo_reserve_no_wait_ticket(struct kunit *test)
 }
 
 static void ttm_bo_reserve_double_resv(struct kunit *test)
+	__context_unsafe(/* ttm_bo_reserve() locks conditionally */)
 {
 	struct ttm_buffer_object *bo;
 	struct ww_acquire_ctx ctx;
@@ -152,6 +154,7 @@ static void ttm_bo_reserve_deadlock(struct kunit *test)
 	ww_mutex_base_lock(&bo2->base.resv->lock.base);
 
 	/* The deadlock will be caught by WW mutex, don't warn about it */
+	__release(&bo2->base.resv->lock.base); /* matches lock_release() below */
 	lock_release(&bo2->base.resv->lock.base.dep_map, 1);
 
 	bo2->base.resv->lock.ctx = &ctx2;
@@ -160,6 +163,9 @@ static void ttm_bo_reserve_deadlock(struct kunit *test)
 
 	err = ttm_bo_reserve(bo1, interruptible, no_wait, &ctx1);
 	KUNIT_ASSERT_EQ(test, err, 0);
+	/* ttm_bo_reserve() is not annotated */
+	__acquire(&bo1->base.resv->lock);
+	__acquire(&bo1->base.resv->lock.base);
 
 	err = ttm_bo_reserve(bo2, interruptible, no_wait, &ctx1);
 	KUNIT_ASSERT_EQ(test, err, -EDEADLK);
@@ -237,6 +243,7 @@ static void ttm_bo_reserve_interrupted(struct kunit *test)
 #endif /* IS_BUILTIN(CONFIG_DRM_TTM_KUNIT_TEST) */
 
 static void ttm_bo_unreserve_basic(struct kunit *test)
+	__context_unsafe(/* ttm_bo_unreserve() is not annotated */)
 {
 	struct ttm_test_devices *priv = test->priv;
 	struct ttm_buffer_object *bo;
@@ -281,6 +288,7 @@ static void ttm_bo_unreserve_basic(struct kunit *test)
 }
 
 static void ttm_bo_unreserve_pinned(struct kunit *test)
+	__context_unsafe(/* ttm_bo_unreserve() is not annotated */)
 {
 	struct ttm_test_devices *priv = test->priv;
 	struct ttm_buffer_object *bo;

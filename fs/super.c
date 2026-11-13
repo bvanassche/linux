@@ -43,7 +43,8 @@
 #include "internal.h"
 
 static int thaw_super_locked(struct super_block *sb, enum freeze_holder who,
-			     const void *freeze_owner);
+			     const void *freeze_owner)
+	__releases(&sb->s_umount);
 
 static LIST_HEAD(super_blocks);
 static DEFINE_SPINLOCK(sb_lock);
@@ -55,6 +56,7 @@ static char *sb_writers_name[SB_FREEZE_LEVELS] = {
 };
 
 static inline void __super_lock(struct super_block *sb, bool excl)
+	__context_unsafe(/* conditional locking */)
 {
 	if (excl)
 		down_write(&sb->s_umount);
@@ -63,6 +65,7 @@ static inline void __super_lock(struct super_block *sb, bool excl)
 }
 
 static inline void super_unlock(struct super_block *sb, bool excl)
+	__context_unsafe(/* conditional locking */)
 {
 	if (excl)
 		up_write(&sb->s_umount);
@@ -71,18 +74,24 @@ static inline void super_unlock(struct super_block *sb, bool excl)
 }
 
 static inline void __super_lock_excl(struct super_block *sb)
+	__acquires(&sb->s_umount)
 {
 	__super_lock(sb, true);
+	__acquire(&sb->s_umount);
 }
 
 static inline void super_unlock_excl(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	super_unlock(sb, true);
+	__release(&sb->s_umount);
 }
 
 static inline void super_unlock_shared(struct super_block *sb)
+	__releases_shared(&sb->s_umount)
 {
 	super_unlock(sb, false);
+	__release_shared(&sb->s_umount);
 }
 
 static bool super_flags(const struct super_block *sb, unsigned int flags)
@@ -139,12 +148,16 @@ static __must_check bool super_lock(struct super_block *sb, bool excl)
 
 /* wait and try to acquire read-side of @sb->s_umount */
 static inline bool super_lock_shared(struct super_block *sb)
+	__cond_acquires_shared(true, &sb->s_umount)
+	__context_unsafe(/* super_lock() locks conditionally */)
 {
 	return super_lock(sb, false);
 }
 
 /* wait and try to acquire write-side of @sb->s_umount */
 static inline bool super_lock_excl(struct super_block *sb)
+	__cond_acquires(true, &sb->s_umount)
+	__context_unsafe(/* super_lock() locks conditionally */)
 {
 	return super_lock(sb, true);
 }
@@ -296,6 +309,7 @@ static void destroy_super_rcu(struct rcu_head *head)
 
 /* Free a superblock that has never been seen by anyone */
 static void destroy_unused_super(struct super_block *s)
+	__context_unsafe(/* conditional release */)
 {
 	if (!s)
 		return;
@@ -318,6 +332,7 @@ static void destroy_unused_super(struct super_block *s)
  */
 static struct super_block *alloc_super(struct file_system_type *type, int flags,
 				       struct user_namespace *user_ns)
+	__context_unsafe(/* conditional acquire on return value */)
 {
 	struct super_block *s = kzalloc_obj(struct super_block);
 	static const struct super_operations default_op;
@@ -603,6 +618,8 @@ EXPORT_SYMBOL(deactivate_super);
  *         false if not.
  */
 static bool grab_super(struct super_block *sb)
+	__releases(&sb_lock)
+	__cond_acquires(true, &sb->s_umount)
 {
 	bool locked;
 
@@ -639,6 +656,7 @@ static bool grab_super(struct super_block *sb)
  *	it's very much not a general-purpose interface.
  */
 bool super_trylock_shared(struct super_block *sb)
+	__cond_acquires_shared(true, &sb->s_umount)
 {
 	if (down_read_trylock(&sb->s_umount)) {
 		if (!(sb->s_flags & SB_DYING) && sb->s_root &&
@@ -813,6 +831,7 @@ bool mount_capable(struct fs_context *fc)
 struct super_block *sget_fc(struct fs_context *fc,
 			    int (*test)(struct super_block *, struct fs_context *),
 			    int (*set)(struct super_block *, struct fs_context *))
+	__context_unsafe(/* too complex for static analysis */)
 {
 	struct super_block *s = NULL;
 	struct super_block *old;
@@ -1137,6 +1156,7 @@ static void do_emergency_remount_callback(struct super_block *sb, void *unused)
 		fc = fs_context_for_reconfigure(sb->s_root,
 					SB_RDONLY | SB_FORCE, SB_RDONLY);
 		if (!IS_ERR(fc)) {
+			lockdep_assert_held(&fc->root->d_sb->s_umount);
 			if (parse_monolithic_mount_data(fc, NULL) == 0)
 				(void)reconfigure_super(fc);
 			put_fs_context(fc);
@@ -1353,6 +1373,7 @@ int get_tree_super(struct fs_context *fc,
 		int (*test)(struct super_block *, struct fs_context *),
 		int (*fill_super)(struct super_block *sb,
 				  struct fs_context *fc))
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct super_block *sb;
 	int err;
@@ -1466,6 +1487,7 @@ static int fs_super_thaw(struct super_block *sb)
 }
 
 static void fs_bdev_mark_dead(struct block_device *bdev, bool surprise)
+	__releases(&bdev->bd_holder_lock)
 {
 	struct super_dev cursor = { .sd_dev = bdev->bd_dev };
 	struct super_block *sb;
@@ -1491,6 +1513,7 @@ static void fs_bdev_mark_dead(struct block_device *bdev, bool surprise)
 }
 
 static void fs_bdev_sync(struct block_device *bdev)
+	__releases(&bdev->bd_holder_lock)
 {
 	struct super_dev cursor = { .sd_dev = bdev->bd_dev };
 	struct super_block *sb;
@@ -1519,6 +1542,7 @@ static void fs_bdev_sync(struct block_device *bdev)
  *         (see below), but a sync_blockdev() failure is always reported.
  */
 static int fs_bdev_freeze(struct block_device *bdev)
+	__releases(&bdev->bd_holder_lock)
 {
 	struct super_dev cursor = { .sd_dev = bdev->bd_dev };
 	struct super_block *sb;
@@ -1564,6 +1588,7 @@ static int fs_bdev_freeze(struct block_device *bdev)
  *         per-superblock errors, as fs_bdev_freeze() does.
  */
 static int fs_bdev_thaw(struct block_device *bdev)
+	__releases(&bdev->bd_holder_lock)
 {
 	struct super_dev cursor = { .sd_dev = bdev->bd_dev };
 	struct super_block *sb;
@@ -1598,6 +1623,7 @@ static const struct blk_holder_ops fs_holder_ops = {
 };
 
 static struct super_dev *super_dev_find(dev_t dev, const struct super_block *sb)
+	__must_hold(&super_dev_lock)
 {
 	struct super_dev *sd;
 
@@ -1794,6 +1820,7 @@ EXPORT_SYMBOL_GPL(setup_bdev_super);
 int get_tree_bdev_flags(struct fs_context *fc,
 		int (*fill_super)(struct super_block *sb,
 				  struct fs_context *fc), unsigned int flags)
+	__context_unsafe(/* __cond_acquires(0, &s->s_umount) */)
 {
 	struct super_block *s;
 	int error = 0;
@@ -1979,6 +2006,7 @@ EXPORT_SYMBOL(super_setup_bdi);
  * system.
  */
 static void sb_wait_write(struct super_block *sb, int level)
+	__context_unsafe(/* acquires lock for caller */)
 {
 	percpu_down_write(sb->s_writers.rw_sem + level-1);
 }
@@ -2007,12 +2035,14 @@ static void lockdep_sb_freeze_acquire(struct super_block *sb)
 }
 
 static void sb_freeze_unlock(struct super_block *sb, int level)
+	__context_unsafe(/* releases locks held by caller */)
 {
 	for (level--; level >= 0; level--)
 		percpu_up_write(sb->s_writers.rw_sem + level);
 }
 
 static int wait_for_partially_frozen(struct super_block *sb)
+	__must_hold(&sb->s_umount)
 {
 	int ret = 0;
 
@@ -2059,6 +2089,7 @@ static inline int freeze_dec(struct super_block *sb, enum freeze_holder who)
 
 static inline bool may_freeze(struct super_block *sb, enum freeze_holder who,
 			      const void *freeze_owner)
+	__must_hold(&sb->s_umount)
 {
 	lockdep_assert_held(&sb->s_umount);
 
@@ -2096,6 +2127,7 @@ static inline bool may_freeze(struct super_block *sb, enum freeze_holder who,
 
 static inline bool may_unfreeze(struct super_block *sb, enum freeze_holder who,
 				const void *freeze_owner)
+	__must_hold(&sb->s_umount)
 {
 	lockdep_assert_held(&sb->s_umount);
 
@@ -2299,6 +2331,7 @@ EXPORT_SYMBOL(freeze_super);
  */
 static int thaw_super_locked(struct super_block *sb, enum freeze_holder who,
 			     const void *freeze_owner)
+	__releases(&sb->s_umount)
 {
 	int error = -EINVAL;
 

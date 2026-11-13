@@ -1606,6 +1606,7 @@ STATIC_IFN_KUNIT void dm_destroy_cached_state(struct amdgpu_device *adev)
 EXPORT_IF_KUNIT(dm_destroy_cached_state);
 
 static int dm_suspend(struct amdgpu_ip_block *ip_block)
+	__context_unsafe(/* conditional locking */)
 {
 	struct amdgpu_device *adev = ip_block->adev;
 	struct amdgpu_display_manager *dm = &adev->dm;
@@ -1886,6 +1887,7 @@ STATIC_IFN_KUNIT void amdgpu_dm_dump_links_and_sinks(struct amdgpu_device *adev)
 EXPORT_IF_KUNIT(amdgpu_dm_dump_links_and_sinks);
 
 static int dm_resume(struct amdgpu_ip_block *ip_block)
+	__context_unsafe(/* conditional locking */)
 {
 	struct amdgpu_device *adev = ip_block->adev;
 	struct drm_device *ddev = adev_to_drm(adev);

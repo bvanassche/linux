@@ -1889,6 +1889,7 @@ static struct btrfs_delayed_extent_op *cleanup_extent_op(
 
 static int run_and_cleanup_extent_op(struct btrfs_trans_handle *trans,
 				     struct btrfs_delayed_ref_head *head)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct btrfs_delayed_extent_op *extent_op;
 	int ret;
@@ -1935,6 +1936,7 @@ u64 btrfs_cleanup_ref_head_accounting(struct btrfs_fs_info *fs_info,
 static int cleanup_ref_head(struct btrfs_trans_handle *trans,
 			    struct btrfs_delayed_ref_head *head,
 			    u64 *bytes_released)
+	__context_unsafe(/* too complex for clang */)
 {
 
 	struct btrfs_fs_info *fs_info = trans->fs_info;
@@ -1997,6 +1999,9 @@ static int cleanup_ref_head(struct btrfs_trans_handle *trans,
 static int btrfs_run_delayed_refs_for_head(struct btrfs_trans_handle *trans,
 					   struct btrfs_delayed_ref_head *locked_ref,
 					   u64 *bytes_released)
+	__cond_releases(nonzero, &locked_ref->mutex)
+	__releases(&locked_ref->lock)
+	__cond_acquires(0, &locked_ref->lock)
 {
 	struct btrfs_fs_info *fs_info = trans->fs_info;
 	struct btrfs_delayed_ref_root *delayed_refs;
@@ -2083,6 +2088,7 @@ static int btrfs_run_delayed_refs_for_head(struct btrfs_trans_handle *trans,
  */
 static noinline int __btrfs_run_delayed_refs(struct btrfs_trans_handle *trans,
 					     u64 min_bytes)
+	__context_unsafe(/* locks in a loop */)
 {
 	struct btrfs_fs_info *fs_info = trans->fs_info;
 	struct btrfs_delayed_ref_root *delayed_refs;
@@ -3768,6 +3774,7 @@ enum btrfs_loop_type {
 
 static inline void
 btrfs_lock_block_group(struct btrfs_block_group *cache, bool delalloc)
+	__context_unsafe(/* conditional locking */)
 {
 	if (delalloc)
 		down_read(&cache->data_rwsem);
@@ -3775,6 +3782,7 @@ btrfs_lock_block_group(struct btrfs_block_group *cache, bool delalloc)
 
 static inline void btrfs_grab_block_group(struct btrfs_block_group *cache,
 					  bool delalloc)
+	__context_unsafe(/* conditional locking */)
 {
 	btrfs_get_block_group(cache);
 	if (delalloc)
@@ -3786,6 +3794,7 @@ static struct btrfs_block_group *btrfs_lock_cluster(
 		   struct btrfs_free_cluster *cluster,
 		   bool delalloc)
 	__acquires(&cluster->refill_lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_block_group *used_bg = NULL;
 
@@ -3822,6 +3831,7 @@ static struct btrfs_block_group *btrfs_lock_cluster(
 
 static inline void
 btrfs_release_block_group(struct btrfs_block_group *cache, bool delalloc)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (delalloc)
 		up_read(&cache->data_rwsem);

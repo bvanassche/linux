@@ -2441,21 +2441,25 @@ static void mlx5_esw_assert_reps_locked(struct mlx5_eswitch *esw)
 }
 
 void mlx5_esw_reps_block(struct mlx5_eswitch *esw)
+	__acquires(&esw->offloads.reps_lock)
 {
 	mutex_lock(&esw->offloads.reps_lock);
 }
 
 static void mlx5_esw_reps_block_nested(struct mlx5_eswitch *esw)
+	__acquires(&esw->offloads.reps_lock)
 {
 	mutex_lock_nested(&esw->offloads.reps_lock, SINGLE_DEPTH_NESTING);
 }
 
 void mlx5_esw_reps_unblock(struct mlx5_eswitch *esw)
+	__releases(&esw->offloads.reps_lock)
 {
 	mutex_unlock(&esw->offloads.reps_lock);
 }
 
 static void esw_mode_change(struct mlx5_eswitch *esw, u16 mode)
+	__must_hold(&esw->offloads.reps_lock)
 {
 	mlx5_devcom_comp_assert_locked(esw->dev->priv.hca_devcom_comp);
 	mlx5_esw_reps_unblock(esw);
@@ -2605,6 +2609,7 @@ static void mlx5_esw_fdb_inactive(struct mlx5_eswitch *esw)
 
 static int esw_offloads_start(struct mlx5_eswitch *esw,
 			      struct netlink_ext_ack *extack)
+	__must_hold(&esw->offloads.reps_lock)
 {
 	int err;
 
@@ -2960,6 +2965,7 @@ void mlx5_esw_offloads_unload_rep(struct mlx5_eswitch *esw, struct mlx5_vport *v
 
 static int esw_set_slave_root_fdb(struct mlx5_core_dev *master,
 				  struct mlx5_core_dev *slave)
+	__context_unsafe(/* too complex for static analysis */)
 {
 	u32 in[MLX5_ST_SZ_DW(set_flow_table_root_in)]   = {};
 	u32 out[MLX5_ST_SZ_DW(set_flow_table_root_out)] = {};
@@ -4250,6 +4256,7 @@ err_roce:
 
 static int esw_offloads_stop(struct mlx5_eswitch *esw,
 			     struct netlink_ext_ack *extack)
+	__must_hold(&esw->offloads.reps_lock)
 {
 	int err;
 
@@ -4381,6 +4388,7 @@ int mlx5_eswitch_block_mode(struct mlx5_core_dev *dev, bool check_users)
 	if (err < 0)
 		return err;
 
+	lockdep_assert_held_write(&esw->mode_lock);
 	esw->offloads.num_block_mode++;
 	mlx5_esw_unlock(esw);
 	return 0;
@@ -4484,6 +4492,7 @@ void mlx5_eswitch_safe_aux_devs_remove(struct mlx5_core_dev *dev)
 
 int mlx5_devlink_eswitch_mode_set(struct devlink *devlink, u16 mode,
 				  struct netlink_ext_ack *extack)
+	__context_unsafe(/* mode_lock is taken by mlx5_esw_try_lock() */)
 {
 	u16 cur_mlx5_mode, mlx5_mode = 0;
 	struct mlx5_eswitch *esw;
@@ -4725,7 +4734,7 @@ int mlx5_eswitch_block_encap(struct mlx5_core_dev *dev, bool from_fdb)
 		return 1;
 
 	ret = mlx5_esw_lock(esw);
-	if (ret)
+	if (ret < 0)
 		return ret;
 
 	encap = esw->offloads.encap;

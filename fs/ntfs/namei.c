@@ -913,6 +913,7 @@ static void ntfs_cleanup_deleted_inode(struct ntfs_inode *ni)
  */
 static int ntfs_delete(struct ntfs_inode *ni, struct ntfs_inode *dir_ni,
 		__le16 *name, u8 name_len, bool need_lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ntfs_attr_search_ctx *actx = NULL;
 	struct file_name_attr *fn = NULL;
@@ -1337,6 +1338,7 @@ err_out:
 static int ntfs_rename(const struct mnt_idmap *idmap, struct inode *old_dir,
 		struct dentry *old_dentry, struct inode *new_dir,
 		struct dentry *new_dentry, unsigned int flags)
+	__context_unsafe(/* conditional locking */)
 {
 	struct inode *old_inode, *new_inode = NULL;
 	int err = 0;

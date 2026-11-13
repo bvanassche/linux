@@ -79,7 +79,7 @@ static int netfs_requests_seq_show(struct seq_file *m, void *v)
 }
 
 static void *netfs_requests_seq_start(struct seq_file *m, loff_t *_pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return seq_list_start_head(&netfs_io_requests, *_pos);
@@ -91,7 +91,7 @@ static void *netfs_requests_seq_next(struct seq_file *m, void *v, loff_t *_pos)
 }
 
 static void netfs_requests_seq_stop(struct seq_file *m, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

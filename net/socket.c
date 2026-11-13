@@ -724,6 +724,7 @@ struct socket *sock_alloc(void)
 EXPORT_SYMBOL(sock_alloc);
 
 static void __sock_release(struct socket *sock, struct inode *inode)
+	__context_unsafe(/* conditional locking */)
 {
 	const struct proto_ops *ops = READ_ONCE(sock->ops);
 

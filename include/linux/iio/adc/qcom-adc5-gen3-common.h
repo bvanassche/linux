@@ -227,8 +227,10 @@ void adc5_gen3_update_dig_param(struct adc5_channel_common_prop *prop,
 int adc5_gen3_status_clear(struct adc5_device_data *adc,
 			   int sdam_index, u16 offset, u8 *val, int len);
 
-void adc5_gen3_mutex_lock(struct device *dev);
-void adc5_gen3_mutex_unlock(struct device *dev);
+void adc5_gen3_mutex_lock(struct device *dev)
+	__acquires(&((struct adc5_chip *)iio_priv(dev_get_drvdata(dev->parent)))->lock);
+void adc5_gen3_mutex_unlock(struct device *dev)
+	__releases(&((struct adc5_chip *)iio_priv(dev_get_drvdata(dev->parent)))->lock);
 int adc5_gen3_get_scaled_reading(struct device *dev,
 				 struct adc5_channel_common_prop *common_props,
 				 int *val);

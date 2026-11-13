@@ -161,6 +161,7 @@ xe_cpu_bind_update_pgtables_no_job(struct xe_cpu_bind *cpu_bind,
 static struct dma_fence *
 xe_cpu_bind_update_pgtables_job(struct xe_cpu_bind *cpu_bind,
 				struct xe_cpu_bind_pt_update *pt_update)
+	__context_unsafe(/* conditional locking */)
 {
 	const struct xe_cpu_bind_pt_update_ops *ops = pt_update->ops;
 	struct xe_exec_queue *q = pt_update->vops->q;
@@ -250,8 +251,8 @@ xe_cpu_bind_update_pgtables(struct xe_cpu_bind *cpu_bind,
  * Lock the cpu_bind job lock if the queue is a cpu bind queue, otherwise
  * assert the VM's dma-resv is held (user queue's have own locking).
  */
-void xe_cpu_bind_job_lock(struct xe_cpu_bind *cpu_bind,
-			  struct xe_exec_queue *q)
+void xe_cpu_bind_job_lock(struct xe_cpu_bind *cpu_bind, struct xe_exec_queue *q)
+	__context_unsafe(/* conditional locking */)
 {
 	bool is_cpu_bind = is_cpu_bind_queue(cpu_bind, q);
 
@@ -271,6 +272,7 @@ void xe_cpu_bind_job_lock(struct xe_cpu_bind *cpu_bind,
  */
 void xe_cpu_bind_job_unlock(struct xe_cpu_bind *cpu_bind,
 			    struct xe_exec_queue *q)
+	__context_unsafe(/* conditional locking */)
 {
 	bool is_cpu_bind = is_cpu_bind_queue(cpu_bind, q);
 

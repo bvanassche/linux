@@ -113,6 +113,7 @@ static inline struct mutex *get_task_bps_mutex(struct perf_event *bp)
 }
 
 static struct mutex *bp_constraints_lock(struct perf_event *bp)
+	__context_unsafe(/* acquires locks for caller */)
 {
 	struct mutex *tsk_mtx = get_task_bps_mutex(bp);
 
@@ -137,6 +138,7 @@ static struct mutex *bp_constraints_lock(struct perf_event *bp)
 }
 
 static void bp_constraints_unlock(struct mutex *tsk_mtx)
+	__context_unsafe(/* releases locks held by caller */)
 {
 	if (tsk_mtx) {
 		percpu_up_read(&bp_cpuinfo_sem);

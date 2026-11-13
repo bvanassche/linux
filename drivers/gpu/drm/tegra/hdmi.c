@@ -377,12 +377,14 @@ static const struct drm_encoder_funcs tegra_hdmi_encoder_funcs = {
 };
 
 static void tegra_hdmi_audio_lock(struct tegra_hdmi *hdmi)
+	__acquires(&hdmi->audio_lock)
 {
 	mutex_lock(&hdmi->audio_lock);
 	disable_irq(hdmi->irq);
 }
 
 static void tegra_hdmi_audio_unlock(struct tegra_hdmi *hdmi)
+	__releases(&hdmi->audio_lock)
 {
 	enable_irq(hdmi->irq);
 	mutex_unlock(&hdmi->audio_lock);

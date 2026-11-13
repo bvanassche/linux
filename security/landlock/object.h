@@ -22,8 +22,7 @@ struct landlock_object_underops {
 	/**
 	 * @release: Releases the underlying object (e.g. iput() for an inode).
 	 */
-	void (*release)(struct landlock_object *const object)
-		__releases(object->lock);
+	void (*release)(struct landlock_object *const object);
 };
 
 /**

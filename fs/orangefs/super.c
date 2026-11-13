@@ -471,6 +471,7 @@ static int orangefs_fill_sb(struct super_block *sb,
 }
 
 static int orangefs_get_tree(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	int ret;
 	struct super_block *sb = ERR_PTR(-EINVAL);
@@ -614,6 +615,7 @@ int orangefs_init_fs_context(struct fs_context *fc)
 }
 
 void orangefs_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	int r;
 	gossip_debug(GOSSIP_SUPER_DEBUG, "orangefs_kill_sb: called\n");

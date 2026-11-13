@@ -322,6 +322,7 @@ static void dcmi_set_crop(struct stm32_dcmi *dcmi)
 }
 
 static void dcmi_process_frame(struct stm32_dcmi *dcmi)
+	__must_hold(&dcmi->irqlock)
 {
 	struct dma_tx_state state, state_dma;
 	size_t bytes_used;

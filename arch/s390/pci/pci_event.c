@@ -331,6 +331,7 @@ static void __zpci_event_print_error(struct pci_dev *pdev, struct zpci_ccdf_err 
 }
 
 static void __zpci_event_error(struct zpci_ccdf_err *ccdf)
+	__context_unsafe(/* conditional locking */)
 {
 	struct zpci_dev *zdev = get_zdev_by_fid(ccdf->fid);
 	struct pci_dev *pdev = NULL;

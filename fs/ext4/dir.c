@@ -128,6 +128,7 @@ int __ext4_check_dir_entry(const char *function, unsigned int line,
 }
 
 static int ext4_readdir(struct file *file, struct dir_context *ctx)
+	__must_hold_shared(&file_inode(file)->i_rwsem)
 {
 	unsigned int offset;
 	int i;

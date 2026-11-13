@@ -666,16 +666,20 @@ struct uverbs_attr_bundle {
 struct ib_uobject *rdma_lookup_get_uobject(const struct uverbs_api_object *obj,
 					   struct ib_uverbs_file *ufile, s64 id,
 					   enum rdma_lookup_mode mode,
-					   struct uverbs_attr_bundle *attrs);
+					   struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&ufile->device->disassociate_srcu);
 void rdma_lookup_put_uobject(struct ib_uobject *uobj,
 			     enum rdma_lookup_mode mode);
 struct ib_uobject *rdma_alloc_begin_uobject(const struct uverbs_api_object *obj,
-					    struct uverbs_attr_bundle *attrs);
+					    struct uverbs_attr_bundle *attrs)
+	__cond_acquires_shared_err_ptr(&attrs->ufile->hw_destroy_rwsem);
 void rdma_alloc_abort_uobject(struct ib_uobject *uobj,
 			      struct uverbs_attr_bundle *attrs,
-			      bool hw_obj_valid);
+			      bool hw_obj_valid)
+	__releases_shared(&attrs->ufile->hw_destroy_rwsem);
 void rdma_alloc_commit_uobject(struct ib_uobject *uobj,
-			       struct uverbs_attr_bundle *attrs);
+			       struct uverbs_attr_bundle *attrs)
+	__releases_shared(&attrs->ufile->hw_destroy_rwsem);
 void rdma_assign_uobject(struct ib_uobject *to_uobj,
 			 struct ib_uobject *new_uobj,
 			 struct uverbs_attr_bundle *attrs);

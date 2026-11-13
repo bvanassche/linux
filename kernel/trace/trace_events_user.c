@@ -263,6 +263,7 @@ out:
 }
 
 static void user_event_put(struct user_event *user, bool locked)
+	__context_unsafe(/* conditional locking */)
 {
 	bool delete;
 

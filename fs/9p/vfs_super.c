@@ -80,6 +80,7 @@ static int v9fs_fill_super(struct super_block *sb)
  */
 
 static int v9fs_get_tree(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &sb->s_umount) */)
 {
 	struct super_block *sb = NULL;
 	struct inode *inode = NULL;
@@ -164,6 +165,7 @@ release_sb:
  */
 
 static void v9fs_kill_super(struct super_block *s)
+	__releases(&s->s_umount)
 {
 	struct v9fs_session_info *v9ses = s->s_fs_info;
 

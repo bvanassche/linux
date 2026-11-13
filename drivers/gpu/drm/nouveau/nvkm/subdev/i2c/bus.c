@@ -31,6 +31,8 @@
  ******************************************************************************/
 static int
 nvkm_i2c_bus_pre_xfer(struct i2c_adapter *adap)
+	__cond_acquires(0, &container_of(adap, struct nvkm_i2c_bus, i2c)->mutex)
+	__cond_acquires(0, &container_of(adap, struct nvkm_i2c_bus, i2c)->pad->mutex)
 {
 	struct nvkm_i2c_bus *bus = container_of(adap, typeof(*bus), i2c);
 	return nvkm_i2c_bus_acquire(bus);
@@ -38,6 +40,8 @@ nvkm_i2c_bus_pre_xfer(struct i2c_adapter *adap)
 
 static void
 nvkm_i2c_bus_post_xfer(struct i2c_adapter *adap)
+	__releases(&container_of(adap, struct nvkm_i2c_bus, i2c)->mutex)
+	__releases(&container_of(adap, struct nvkm_i2c_bus, i2c)->pad->mutex)
 {
 	struct nvkm_i2c_bus *bus = container_of(adap, typeof(*bus), i2c);
 	return nvkm_i2c_bus_release(bus);
@@ -127,6 +131,8 @@ nvkm_i2c_bus_fini(struct nvkm_i2c_bus *bus)
 
 void
 nvkm_i2c_bus_release(struct nvkm_i2c_bus *bus)
+	__releases(&bus->mutex)
+	__releases(&bus->pad->mutex)
 {
 	struct nvkm_i2c_pad *pad = bus->pad;
 	BUS_TRACE(bus, "release");
@@ -136,6 +142,8 @@ nvkm_i2c_bus_release(struct nvkm_i2c_bus *bus)
 
 int
 nvkm_i2c_bus_acquire(struct nvkm_i2c_bus *bus)
+	__cond_acquires(0, &bus->mutex)
+	__cond_acquires(0, &bus->pad->mutex)
 {
 	struct nvkm_i2c_pad *pad = bus->pad;
 	int ret;

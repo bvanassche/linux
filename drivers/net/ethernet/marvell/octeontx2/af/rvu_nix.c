@@ -6286,6 +6286,7 @@ exit:
 /* Called with mutex rsrc_lock */
 static void nix_clear_ratelimit_aggr(struct rvu *rvu, struct nix_hw *nix_hw,
 				     u32 leaf_prof)
+	__must_hold(&rvu->rsrc_lock)
 {
 	struct nix_cn10k_aq_enq_req aq_req;
 	struct nix_cn10k_aq_enq_rsp aq_rsp;
@@ -6532,6 +6533,7 @@ int rvu_mbox_handler_nix_mcast_grp_create(struct rvu *rvu,
 int rvu_mbox_handler_nix_mcast_grp_destroy(struct rvu *rvu,
 					   struct nix_mcast_grp_destroy_req *req,
 					   struct msg_rsp *rsp)
+	__context_unsafe(/* conditional locking */)
 {
 	struct npc_delete_flow_req uninstall_req = { 0 };
 	struct npc_delete_flow_rsp uninstall_rsp = { 0 };
@@ -6596,6 +6598,7 @@ unlock_grp:
 int rvu_mbox_handler_nix_mcast_grp_update(struct rvu *rvu,
 					  struct nix_mcast_grp_update_req *req,
 					  struct nix_mcast_grp_update_rsp *rsp)
+	__context_unsafe(/* conditional locking */)
 {
 	struct nix_mcast_grp_destroy_req dreq = { 0 };
 	struct npc_mcam *mcam = &rvu->hw->mcam;

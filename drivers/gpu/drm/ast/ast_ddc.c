@@ -70,6 +70,7 @@ static void ast_ddc_algo_bit_data_setscl(void *data, int state)
 }
 
 static int ast_ddc_algo_bit_data_pre_xfer(struct i2c_adapter *adapter)
+	__acquires(&((struct ast_ddc *)i2c_get_adapdata(adapter))->ast->modeset_lock)
 {
 	struct ast_ddc *ddc = i2c_get_adapdata(adapter);
 	struct ast_device *ast = ddc->ast;
@@ -84,6 +85,7 @@ static int ast_ddc_algo_bit_data_pre_xfer(struct i2c_adapter *adapter)
 }
 
 static void ast_ddc_algo_bit_data_post_xfer(struct i2c_adapter *adapter)
+	__releases(&((struct ast_ddc *)i2c_get_adapdata(adapter))->ast->modeset_lock)
 {
 	struct ast_ddc *ddc = i2c_get_adapdata(adapter);
 	struct ast_device *ast = ddc->ast;

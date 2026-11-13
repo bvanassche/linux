@@ -72,11 +72,13 @@ static inline int is_master(struct dlm_rsb *r)
 }
 
 static inline void lock_rsb(struct dlm_rsb *r)
+	__acquires(&r->res_lock)
 {
 	spin_lock_bh(&r->res_lock);
 }
 
 static inline void unlock_rsb(struct dlm_rsb *r)
+	__releases(&r->res_lock)
 {
 	spin_unlock_bh(&r->res_lock);
 }

@@ -500,6 +500,7 @@ DEFINE_FREE(sink_release, struct dc_sink *, if (_T) dc_sink_release(_T))
 
 void amdgpu_dm_update_connector_after_detect(
 		struct amdgpu_dm_connector *aconnector)
+	__context_unsafe(/* conditional locking */)
 {
 	struct drm_connector *connector = &aconnector->base;
 	struct dc_sink *sink __free(sink_release) = NULL;

@@ -1040,6 +1040,7 @@ static int __device_attach_driver(struct device_driver *drv, void *_data)
  * interface, @parent lock will be held as well.
  */
 static void __device_driver_lock(struct device *dev, struct device *parent)
+	__context_unsafe(/* conditional locking */)
 {
 	if (dev->type && dev->type->need_parent_lock && parent)
 		device_lock(parent);
@@ -1056,6 +1057,7 @@ static void __device_driver_lock(struct device *dev, struct device *parent)
  * USB interface, @parent lock will be released as well.
  */
 static void __device_driver_unlock(struct device *dev, struct device *parent)
+	__context_unsafe(/* conditional locking */)
 {
 	device_unlock(dev);
 	if (dev->type && dev->type->need_parent_lock && parent)

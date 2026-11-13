@@ -69,6 +69,7 @@ static void fotg210_set_cxdone(struct fotg210_udc *fotg210)
 
 static void fotg210_done(struct fotg210_ep *ep, struct fotg210_request *req,
 			int status)
+	__context_unsafe(/* drops and reacquires ep->fotg210->lock */)
 {
 	list_del_init(&req->queue);
 
@@ -743,6 +744,7 @@ static void fotg210_ep0_complete(struct usb_ep *_ep, struct usb_request *req)
 
 static void fotg210_get_status(struct fotg210_udc *fotg210,
 				struct usb_ctrlrequest *ctrl)
+	__context_unsafe(/* drops and reacquires fotg210->lock */)
 {
 	u8 epnum;
 

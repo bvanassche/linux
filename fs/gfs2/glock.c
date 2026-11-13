@@ -208,6 +208,7 @@ static void gfs2_glock_queue_work(struct gfs2_glock *gl, unsigned long delay) {
 }
 
 static void __gfs2_glock_put(struct gfs2_glock *gl)
+	__releases(&gl->gl_lockref.lock)
 {
 	struct gfs2_sbd *sdp = glock_sbd(gl);
 	struct address_space *mapping = gfs2_glock2aspace(gl);
@@ -225,6 +226,7 @@ static void __gfs2_glock_put(struct gfs2_glock *gl)
 }
 
 static bool __gfs2_glock_put_or_lock(struct gfs2_glock *gl)
+	__cond_acquires(false, &gl->gl_lockref.lock)
 {
 	if (lockref_put_or_lock(&gl->gl_lockref))
 		return true;
@@ -528,6 +530,7 @@ static void gfs2_demote_wake(struct gfs2_glock *gl)
  */
 
 static void finish_xmote(struct gfs2_glock *gl, unsigned int ret)
+	__context_unsafe(/* drops and reacquires gl->gl_lockref.lock */)
 {
 	const struct gfs2_glock_operations *glops = gl->gl_ops;
 
@@ -2333,7 +2336,7 @@ static void gfs2_glock_iter_next(struct gfs2_glock_iter *gi, loff_t n)
 }
 
 static void *gfs2_glock_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(RCU)
+	__acquires_shared(RCU)
 {
 	struct gfs2_glock_iter *gi = seq->private;
 	loff_t n;
@@ -2369,7 +2372,7 @@ static void *gfs2_glock_seq_next(struct seq_file *seq, void *iter_ptr,
 }
 
 static void gfs2_glock_seq_stop(struct seq_file *seq, void *iter_ptr)
-	__releases(RCU)
+	__releases_shared(RCU)
 {
 	struct gfs2_glock_iter *gi = seq->private;
 

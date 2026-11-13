@@ -483,8 +483,10 @@ void drm_dev_put(struct drm_device *dev);
 void drm_put_dev(struct drm_device *dev);
 extern struct srcu_struct drm_unplug_srcu;
 
-bool drm_dev_enter(struct drm_device *dev, int *idx);
-void drm_dev_exit(int idx);
+bool drm_dev_enter(struct drm_device *dev, int *idx)
+	__cond_acquires_shared(true, &drm_unplug_srcu);
+void drm_dev_exit(int idx)
+	__releases_shared(&drm_unplug_srcu);
 void drm_dev_unplug(struct drm_device *dev);
 int drm_dev_wedged_event(struct drm_device *dev, unsigned long method,
 			 struct drm_wedge_task_info *info);

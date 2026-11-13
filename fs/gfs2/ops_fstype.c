@@ -1669,6 +1669,7 @@ static int test_meta_super(struct super_block *s, struct fs_context *fc)
 }
 
 static int gfs2_meta_get_tree(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &s->s_umount) */)
 {
 	struct super_block *s;
 	struct gfs2_sbd *sdp;
@@ -1767,6 +1768,7 @@ static void gfs2_evict_inodes(struct super_block *sb)
 }
 
 static void gfs2_kill_sb(struct super_block *sb)
+	__releases(&sb->s_umount)
 {
 	struct gfs2_sbd *sdp = sb->s_fs_info;
 

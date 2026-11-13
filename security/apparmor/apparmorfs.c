@@ -2084,6 +2084,7 @@ fail2:
 
 static struct dentry *ns_mkdir_op(const struct mnt_idmap *idmap, struct inode *dir,
 				  struct dentry *dentry, umode_t mode)
+	__context_unsafe(/* drops and reacquires dir->i_rwsem */)
 {
 	struct aa_ns *ns, *parent;
 	/* TODO: improve permission check */
@@ -2135,6 +2136,7 @@ out:
 }
 
 static int ns_rmdir_op(struct inode *dir, struct dentry *dentry)
+	__context_unsafe(/* drops and reacquires inode locks */)
 {
 	struct aa_ns *ns, *parent;
 	/* TODO: improve permission check */
@@ -2352,6 +2354,7 @@ fail2:
  * NOTE: will not unlock root->lock
  */
 static struct aa_ns *__next_ns(struct aa_ns *root, struct aa_ns *ns)
+	__context_unsafe(/* conditional locking */)
 {
 	struct aa_ns *parent, *next;
 
@@ -2473,6 +2476,7 @@ static struct aa_profile *next_profile(struct aa_ns *root,
  * acquires first ns->lock
  */
 static void *p_start(struct seq_file *f, loff_t *pos)
+	__context_unsafe(/* acquires root->lock for caller */)
 {
 	struct aa_profile *profile = NULL;
 	struct aa_ns *root = aa_get_current_ns();
@@ -2517,6 +2521,7 @@ static void *p_next(struct seq_file *f, void *p, loff_t *pos)
  * Release all locking done by p_start/p_next on namespace tree
  */
 static void p_stop(struct seq_file *f, void *p)
+	__context_unsafe(/* releases locks held by caller */)
 {
 	struct aa_profile *profile = p;
 	struct aa_ns *root = f->private, *ns;

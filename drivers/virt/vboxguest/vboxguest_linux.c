@@ -432,6 +432,7 @@ static void vbg_pci_remove(struct pci_dev *pci)
 }
 
 struct vbg_dev *vbg_get_gdev(void)
+	__cond_acquires_err_ptr(&vbg_gdev_mutex)
 {
 	struct vbg_dev *gdev;
 
@@ -452,6 +453,7 @@ struct vbg_dev *vbg_get_gdev(void)
 EXPORT_SYMBOL(vbg_get_gdev);
 
 void vbg_put_gdev(struct vbg_dev *gdev)
+	__releases(&vbg_gdev_mutex)
 {
 	WARN_ON(gdev != vbg_gdev);
 	mutex_unlock(&vbg_gdev_mutex);

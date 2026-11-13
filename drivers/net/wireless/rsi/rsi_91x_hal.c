@@ -39,6 +39,7 @@ static struct ta_metadata metadata[] = {{"pmemdata_dummy", 0x00000000},
 };
 
 int rsi_send_pkt_to_bus(struct rsi_common *common, struct sk_buff *skb)
+	__context_unsafe(/* conditional locking */)
 {
 	struct rsi_hw *adapter = common->priv;
 	int status;

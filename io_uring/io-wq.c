@@ -281,7 +281,7 @@ static inline bool __io_acct_run_queue(struct io_wq_acct *acct)
  * returns false with no lock held.
  */
 static inline bool io_acct_run_queue(struct io_wq_acct *acct)
-	__acquires(&acct->lock)
+	__cond_acquires(true, &acct->lock)
 {
 	raw_spin_lock(&acct->lock);
 	if (__io_acct_run_queue(acct))
@@ -296,7 +296,7 @@ static inline bool io_acct_run_queue(struct io_wq_acct *acct)
  * caller must create one.
  */
 static bool io_acct_activate_free_worker(struct io_wq_acct *acct)
-	__must_hold(RCU)
+	__must_hold_shared(RCU)
 {
 	struct hlist_nulls_node *n;
 	struct io_worker *worker;
@@ -500,7 +500,7 @@ static void __io_worker_busy(struct io_wq_acct *acct, struct io_worker *worker)
  * No work, worker going to sleep. Move to freelist.
  */
 static void __io_worker_idle(struct io_wq_acct *acct, struct io_worker *worker)
-	__must_hold(acct->workers_lock)
+	__must_hold(&acct->workers_lock)
 {
 	if (!test_bit(IO_WORKER_F_FREE, &worker->flags)) {
 		set_bit(IO_WORKER_F_FREE, &worker->flags);
@@ -528,7 +528,7 @@ static bool io_wait_on_hash(struct io_wq *wq, unsigned int hash)
 static struct io_wq_work *io_get_next_work(struct io_wq_acct *acct,
 					   struct io_wq *wq,
 					   bool *need_wake)
-	__must_hold(acct->lock)
+	__must_hold(&acct->lock)
 {
 	struct io_wq_work_node *node, *prev;
 	struct io_wq_work *work, *tail;

@@ -451,8 +451,10 @@ static inline bool ovl_open_flags_need_copy_up(int flags)
 /* util.c */
 int ovl_get_write_access(struct dentry *dentry);
 void ovl_put_write_access(struct dentry *dentry);
-void ovl_start_write(struct dentry *dentry);
-void ovl_end_write(struct dentry *dentry);
+void ovl_start_write(struct dentry *dentry)
+	__acquires_shared(ovl_upper_mnt(OVL_FS(dentry->d_sb))->mnt_sb);
+void ovl_end_write(struct dentry *dentry)
+	__releases_shared(ovl_upper_mnt(OVL_FS(dentry->d_sb))->mnt_sb);
 int ovl_want_write(struct dentry *dentry);
 void ovl_drop_write(struct dentry *dentry);
 struct dentry *ovl_workdir(struct dentry *dentry);
@@ -722,16 +724,19 @@ static inline unsigned int ovl_xino_bits(struct ovl_fs *ofs)
 }
 
 static inline void ovl_inode_lock(struct inode *inode)
+	__context_unsafe(/* acquires OVL_I(inode)->lock for caller */)
 {
 	mutex_lock(&OVL_I(inode)->lock);
 }
 
 static inline int ovl_inode_lock_interruptible(struct inode *inode)
+	__context_unsafe(/* acquires OVL_I(inode)->lock for caller */)
 {
 	return mutex_lock_interruptible(&OVL_I(inode)->lock);
 }
 
 static inline void ovl_inode_unlock(struct inode *inode)
+	__context_unsafe(/* releases OVL_I(inode)->lock held by caller */)
 {
 	mutex_unlock(&OVL_I(inode)->lock);
 }

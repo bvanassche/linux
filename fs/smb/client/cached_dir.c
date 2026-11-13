@@ -20,7 +20,8 @@ static inline struct cached_fid *ref_to_cached_fid(struct kref *ref)
 	return container_of(ref, struct cached_fid, refcount);
 }
 
-static void smb2_close_cached_fid(struct kref *ref);
+static void smb2_close_cached_fid(struct kref *ref)
+	__releases(&ref_to_cached_fid(ref)->cfids->cfid_list_lock);
 static void cfids_laundromat_worker(struct work_struct *work);
 static void close_cached_dir_locked(struct cached_fid *cfid);
 
@@ -468,7 +469,7 @@ int open_cached_dir_by_dentry(struct cifs_tcon *tcon,
 
 static void
 smb2_close_cached_fid(struct kref *ref)
-__releases(&cfid->cfids->cfid_list_lock)
+	__releases(&ref_to_cached_fid(ref)->cfids->cfid_list_lock)
 {
 	struct cached_fid *cfid = ref_to_cached_fid(ref);
 	int rc;

@@ -9872,6 +9872,7 @@ struct dm_test_force_ctx {
 };
 
 static void dm_test_force_drop_locks(void *data)
+	__context_unsafe(/* KUnit deferred lock cleanup */)
 {
 	struct dm_test_force_ctx *ctx = data;
 
@@ -9888,6 +9889,7 @@ static void dm_test_force_drop_locks(void *data)
  */
 static struct dm_test_force_ctx *
 dm_test_force_ctx_alloc(struct kunit *test, const struct drm_connector_funcs *funcs)
+	__context_unsafe(/* KUnit deferred lock cleanup */)
 {
 	struct dm_test_force_ctx *ctx;
 	struct drm_encoder *encoder;

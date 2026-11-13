@@ -1195,6 +1195,7 @@ static int nilfs_reconfigure(struct fs_context *fc)
 
 static int
 nilfs_get_tree(struct fs_context *fc)
+	__context_unsafe(/* __cond_acquires(0, &s->s_umount) */)
 {
 	struct nilfs_fs_context *ctx = fc->fs_private;
 	struct super_block *s;

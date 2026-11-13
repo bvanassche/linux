@@ -1295,6 +1295,7 @@ static void amdgpu_cs_post_dependencies(struct amdgpu_cs_parser *p)
 
 static int amdgpu_cs_submit(struct amdgpu_cs_parser *p,
 			    union drm_amdgpu_cs *cs)
+	__context_unsafe(/* conditional unlock */)
 {
 	struct amdgpu_fpriv *fpriv = p->filp->driver_priv;
 	struct amdgpu_job *leader = p->gang_leader;
@@ -1441,6 +1442,7 @@ static void amdgpu_cs_parser_fini(struct amdgpu_cs_parser *parser)
 }
 
 int amdgpu_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *filp)
+	__context_unsafe(/* conditional unlock */)
 {
 	struct amdgpu_device *adev = drm_to_adev(dev);
 	struct amdgpu_bo_list_entry *e;

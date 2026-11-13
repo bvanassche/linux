@@ -44,6 +44,7 @@ static int encx24j600_cmdn(struct encx24j600_context *ctx, u8 opcode,
 }
 
 static void regmap_lock_mutex(void *context)
+	__acquires(&((struct encx24j600_context *)context)->mutex)
 {
 	struct encx24j600_context *ctx = context;
 
@@ -51,6 +52,7 @@ static void regmap_lock_mutex(void *context)
 }
 
 static void regmap_unlock_mutex(void *context)
+	__releases(&((struct encx24j600_context *)context)->mutex)
 {
 	struct encx24j600_context *ctx = context;
 

@@ -240,7 +240,7 @@ static struct lock_torture_ops lock_busted_ops = {
 static DEFINE_SPINLOCK(torture_spinlock);
 
 static int torture_spin_lock_write_lock(int tid __maybe_unused)
-__acquires(torture_spinlock)
+__acquires(&torture_spinlock)
 {
 	spin_lock(&torture_spinlock);
 	return 0;
@@ -266,7 +266,7 @@ static void torture_spin_lock_write_delay(struct torture_random_state *trsp)
 }
 
 static void torture_spin_lock_write_unlock(int tid __maybe_unused)
-__releases(torture_spinlock)
+__releases(&torture_spinlock)
 {
 	spin_unlock(&torture_spinlock);
 }
@@ -283,7 +283,7 @@ static struct lock_torture_ops spin_lock_ops = {
 };
 
 static int torture_spin_lock_write_lock_irq(int tid __maybe_unused)
-__acquires(torture_spinlock)
+__acquires(&torture_spinlock)
 {
 	unsigned long flags;
 
@@ -293,7 +293,7 @@ __acquires(torture_spinlock)
 }
 
 static void torture_lock_spin_write_unlock_irq(int tid __maybe_unused)
-__releases(torture_spinlock)
+__releases(&torture_spinlock)
 {
 	spin_unlock_irqrestore(&torture_spinlock, cxt.cur_ops->flags);
 }
@@ -312,14 +312,14 @@ static struct lock_torture_ops spin_lock_irq_ops = {
 static DEFINE_RAW_SPINLOCK(torture_raw_spinlock);
 
 static int torture_raw_spin_lock_write_lock(int tid __maybe_unused)
-__acquires(torture_raw_spinlock)
+__acquires(&torture_raw_spinlock)
 {
 	raw_spin_lock(&torture_raw_spinlock);
 	return 0;
 }
 
 static void torture_raw_spin_lock_write_unlock(int tid __maybe_unused)
-__releases(torture_raw_spinlock)
+__releases(&torture_raw_spinlock)
 {
 	raw_spin_unlock(&torture_raw_spinlock);
 }
@@ -336,7 +336,7 @@ static struct lock_torture_ops raw_spin_lock_ops = {
 };
 
 static int torture_raw_spin_lock_write_lock_irq(int tid __maybe_unused)
-__acquires(torture_raw_spinlock)
+__acquires(&torture_raw_spinlock)
 {
 	unsigned long flags;
 
@@ -346,7 +346,7 @@ __acquires(torture_raw_spinlock)
 }
 
 static void torture_raw_spin_lock_write_unlock_irq(int tid __maybe_unused)
-__releases(torture_raw_spinlock)
+__releases(&torture_raw_spinlock)
 {
 	raw_spin_unlock_irqrestore(&torture_raw_spinlock, cxt.cur_ops->flags);
 }
@@ -419,7 +419,7 @@ static struct lock_torture_ops raw_res_spin_lock_irq_ops = {
 static DEFINE_RWLOCK(torture_rwlock);
 
 static int torture_rwlock_write_lock(int tid __maybe_unused)
-__acquires(torture_rwlock)
+__acquires(&torture_rwlock)
 {
 	write_lock(&torture_rwlock);
 	return 0;
@@ -439,13 +439,13 @@ static void torture_rwlock_write_delay(struct torture_random_state *trsp)
 }
 
 static void torture_rwlock_write_unlock(int tid __maybe_unused)
-__releases(torture_rwlock)
+__releases(&torture_rwlock)
 {
 	write_unlock(&torture_rwlock);
 }
 
 static int torture_rwlock_read_lock(int tid __maybe_unused)
-__acquires(torture_rwlock)
+__acquires_shared(&torture_rwlock)
 {
 	read_lock(&torture_rwlock);
 	return 0;
@@ -465,7 +465,7 @@ static void torture_rwlock_read_delay(struct torture_random_state *trsp)
 }
 
 static void torture_rwlock_read_unlock(int tid __maybe_unused)
-__releases(torture_rwlock)
+__releases_shared(&torture_rwlock)
 {
 	read_unlock(&torture_rwlock);
 }
@@ -482,7 +482,7 @@ static struct lock_torture_ops rw_lock_ops = {
 };
 
 static int torture_rwlock_write_lock_irq(int tid __maybe_unused)
-__acquires(torture_rwlock)
+__acquires(&torture_rwlock)
 {
 	unsigned long flags;
 
@@ -492,13 +492,13 @@ __acquires(torture_rwlock)
 }
 
 static void torture_rwlock_write_unlock_irq(int tid __maybe_unused)
-__releases(torture_rwlock)
+__releases(&torture_rwlock)
 {
 	write_unlock_irqrestore(&torture_rwlock, cxt.cur_ops->flags);
 }
 
 static int torture_rwlock_read_lock_irq(int tid __maybe_unused)
-__acquires(torture_rwlock)
+__acquires_shared(&torture_rwlock)
 {
 	unsigned long flags;
 
@@ -508,7 +508,7 @@ __acquires(torture_rwlock)
 }
 
 static void torture_rwlock_read_unlock_irq(int tid __maybe_unused)
-__releases(torture_rwlock)
+__releases_shared(&torture_rwlock)
 {
 	read_unlock_irqrestore(&torture_rwlock, cxt.cur_ops->flags);
 }
@@ -539,6 +539,7 @@ static void torture_mutex_init(void)
 
 static int torture_mutex_nested_lock(int tid __maybe_unused,
 				     u32 lockset)
+	__context_unsafe(/* locks in a loop */)
 {
 	int i;
 
@@ -549,7 +550,7 @@ static int torture_mutex_nested_lock(int tid __maybe_unused,
 }
 
 static int torture_mutex_lock(int tid __maybe_unused)
-__acquires(torture_mutex)
+__acquires(&torture_mutex)
 {
 	mutex_lock(&torture_mutex);
 	return 0;
@@ -565,13 +566,14 @@ static void torture_mutex_delay(struct torture_random_state *trsp)
 }
 
 static void torture_mutex_unlock(int tid __maybe_unused)
-__releases(torture_mutex)
+__releases(&torture_mutex)
 {
 	mutex_unlock(&torture_mutex);
 }
 
 static void torture_mutex_nested_unlock(int tid __maybe_unused,
 					u32 lockset)
+	__context_unsafe(/* unlocks in a loop */)
 {
 	int i;
 
@@ -622,9 +624,14 @@ static void torture_ww_mutex_exit(void)
 }
 
 static int torture_ww_mutex_lock(int tid)
-__acquires(torture_ww_mutex_0)
-__acquires(torture_ww_mutex_1)
-__acquires(torture_ww_mutex_2)
+__acquires(&torture_ww_mutex_0)
+__acquires(&torture_ww_mutex_0.base)
+__acquires(&torture_ww_mutex_1)
+__acquires(&torture_ww_mutex_1.base)
+__acquires(&torture_ww_mutex_2)
+__acquires(&torture_ww_mutex_2.base)
+__acquires(&ww_acquire_ctxs[tid])
+__context_unsafe(/* lock is accessed through an alias */)
 {
 	LIST_HEAD(list);
 	struct reorder_lock {
@@ -666,9 +673,13 @@ __acquires(torture_ww_mutex_2)
 }
 
 static void torture_ww_mutex_unlock(int tid)
-__releases(torture_ww_mutex_0)
-__releases(torture_ww_mutex_1)
-__releases(torture_ww_mutex_2)
+__releases(&torture_ww_mutex_0)
+__releases(&torture_ww_mutex_0.base)
+__releases(&torture_ww_mutex_1)
+__releases(&torture_ww_mutex_1.base)
+__releases(&torture_ww_mutex_2)
+__releases(&torture_ww_mutex_2.base)
+__releases(&ww_acquire_ctxs[tid])
 {
 	struct ww_acquire_ctx *ctx = &ww_acquire_ctxs[tid];
 
@@ -707,6 +718,7 @@ static void torture_rtmutex_init(void)
 
 static int torture_rtmutex_nested_lock(int tid __maybe_unused,
 				       u32 lockset)
+	__context_unsafe(/* locks in a loop */)
 {
 	int i;
 
@@ -717,7 +729,7 @@ static int torture_rtmutex_nested_lock(int tid __maybe_unused,
 }
 
 static int torture_rtmutex_lock(int tid __maybe_unused)
-__acquires(torture_rtmutex)
+	__acquires(&torture_rtmutex)
 {
 	rt_mutex_lock(&torture_rtmutex);
 	return 0;
@@ -741,7 +753,7 @@ static void torture_rtmutex_delay(struct torture_random_state *trsp)
 }
 
 static void torture_rtmutex_unlock(int tid __maybe_unused)
-__releases(torture_rtmutex)
+	__releases(&torture_rtmutex)
 {
 	rt_mutex_unlock(&torture_rtmutex);
 }
@@ -756,6 +768,7 @@ static void torture_rt_boost_rtmutex(struct torture_random_state *trsp)
 
 static void torture_rtmutex_nested_unlock(int tid __maybe_unused,
 					  u32 lockset)
+	__context_unsafe(/* releases caller-held locks in a loop */)
 {
 	int i;
 
@@ -781,7 +794,7 @@ static struct lock_torture_ops rtmutex_lock_ops = {
 
 static DECLARE_RWSEM(torture_rwsem);
 static int torture_rwsem_down_write(int tid __maybe_unused)
-__acquires(torture_rwsem)
+	__acquires(&torture_rwsem)
 {
 	down_write(&torture_rwsem);
 	return 0;
@@ -797,13 +810,13 @@ static void torture_rwsem_write_delay(struct torture_random_state *trsp)
 }
 
 static void torture_rwsem_up_write(int tid __maybe_unused)
-__releases(torture_rwsem)
+	__releases(&torture_rwsem)
 {
 	up_write(&torture_rwsem);
 }
 
 static int torture_rwsem_down_read(int tid __maybe_unused)
-__acquires(torture_rwsem)
+	__acquires_shared(&torture_rwsem)
 {
 	down_read(&torture_rwsem);
 	return 0;
@@ -821,7 +834,7 @@ static void torture_rwsem_read_delay(struct torture_random_state *trsp)
 }
 
 static void torture_rwsem_up_read(int tid __maybe_unused)
-__releases(torture_rwsem)
+	__releases_shared(&torture_rwsem)
 {
 	up_read(&torture_rwsem);
 }
@@ -851,27 +864,27 @@ static void torture_percpu_rwsem_exit(void)
 }
 
 static int torture_percpu_rwsem_down_write(int tid __maybe_unused)
-__acquires(pcpu_rwsem)
+	__acquires(&pcpu_rwsem)
 {
 	percpu_down_write(&pcpu_rwsem);
 	return 0;
 }
 
 static void torture_percpu_rwsem_up_write(int tid __maybe_unused)
-__releases(pcpu_rwsem)
+	__releases(&pcpu_rwsem)
 {
 	percpu_up_write(&pcpu_rwsem);
 }
 
 static int torture_percpu_rwsem_down_read(int tid __maybe_unused)
-__acquires(pcpu_rwsem)
+	__acquires_shared(&pcpu_rwsem)
 {
 	percpu_down_read(&pcpu_rwsem);
 	return 0;
 }
 
 static void torture_percpu_rwsem_up_read(int tid __maybe_unused)
-__releases(pcpu_rwsem)
+	__releases_shared(&pcpu_rwsem)
 {
 	percpu_up_read(&pcpu_rwsem);
 }

@@ -203,8 +203,6 @@ static inline void musb_try_b_hnp_enable(struct musb *musb)
 static int
 service_zero_data_request(struct musb *musb,
 		struct usb_ctrlrequest *ctrlrequest)
-__releases(musb->lock)
-__acquires(musb->lock)
 {
 	int handled = -EINVAL;
 	void __iomem *mbase = musb->mregs;
@@ -621,8 +619,7 @@ musb_read_setup(struct musb *musb, struct usb_ctrlrequest *req)
 
 static int
 forward_to_driver(struct musb *musb, const struct usb_ctrlrequest *ctrlrequest)
-__releases(musb->lock)
-__acquires(musb->lock)
+	__must_hold(&musb->lock)
 {
 	int retval;
 	if (!musb->gadget_driver)
@@ -639,6 +636,7 @@ __acquires(musb->lock)
  * Context: irq handler; we won't re-enter the driver that way.
  */
 irqreturn_t musb_g_ep0_irq(struct musb *musb)
+	__must_hold(&musb->lock)
 {
 	u16		csr;
 	u16		len;

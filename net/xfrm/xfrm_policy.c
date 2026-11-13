@@ -255,6 +255,7 @@ bool xfrm_selector_match(const struct xfrm_selector *sel, const struct flowi *fl
 }
 
 static const struct xfrm_policy_afinfo *xfrm_policy_get_afinfo(unsigned short family)
+	__cond_acquires_shared(nonnull, RCU)
 {
 	const struct xfrm_policy_afinfo *afinfo;
 
@@ -2052,6 +2053,7 @@ xfrm_policy_find_inexact_candidates(struct xfrm_pol_inexact_candidates *cand,
 static struct xfrm_pol_inexact_bin *
 xfrm_policy_inexact_lookup_rcu(struct net *net, u8 type, u16 family,
 			       u8 dir, u32 if_id)
+	__must_hold_shared(RCU)
 {
 	struct xfrm_pol_inexact_key k = {
 		.family = family,

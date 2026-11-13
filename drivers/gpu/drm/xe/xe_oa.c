@@ -631,6 +631,7 @@ static __poll_t xe_oa_poll(struct file *file, poll_table *wait)
 }
 
 static void xe_oa_lock_vma(struct xe_exec_queue *q)
+	__context_unsafe(/* conditional locking */)
 {
 	if (q->vm) {
 		down_read(&q->vm->lock);
@@ -639,6 +640,7 @@ static void xe_oa_lock_vma(struct xe_exec_queue *q)
 }
 
 static void xe_oa_unlock_vma(struct xe_exec_queue *q)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (q->vm) {
 		xe_vm_unlock(q->vm);

@@ -4780,9 +4780,6 @@ void ieee80211_check_fast_rx(struct sta_info *sta)
 	bool assign = false;
 	bool offload;
 
-	/* use sparse to check that we don't return without updating */
-	__acquire(check_fast_rx);
-
 	BUILD_BUG_ON(sizeof(fastrx.rfc1042_hdr) != sizeof(rfc1042_header));
 	BUILD_BUG_ON(sizeof(fastrx.rfc1042_hdr) != ETH_ALEN);
 	ether_addr_copy(fastrx.rfc1042_hdr, rfc1042_header);
@@ -4892,8 +4889,6 @@ void ieee80211_check_fast_rx(struct sta_info *sta)
  clear_rcu:
 	rcu_read_unlock();
  clear:
-	__release(check_fast_rx);
-
 	if (assign)
 		new = kmemdup(&fastrx, sizeof(fastrx), GFP_KERNEL);
 
@@ -5392,6 +5387,7 @@ static void __ieee80211_rx_handle_packet(struct ieee80211_hw *hw,
 					 struct ieee80211_link_sta *link_pubsta,
 					 struct sk_buff *skb,
 					 struct list_head *list)
+	__must_hold_shared(RCU)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 	struct ieee80211_sub_if_data *sdata;
@@ -5793,11 +5789,13 @@ void ieee80211_rx_list(struct ieee80211_hw *hw,
 			ieee80211_is_data_present(hdr->frame_control))
 			ieee80211_tpt_led_trig_rx(local, skb->len);
 
+		context_unsafe(
 		if (status->flag & RX_FLAG_8023)
 			__ieee80211_rx_handle_8023(hw, link_pubsta, skb, list);
 		else
 			__ieee80211_rx_handle_packet(hw, link_pubsta, skb,
 						     list);
+		);
 	}
 
 	kcov_remote_stop();

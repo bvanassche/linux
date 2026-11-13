@@ -1121,6 +1121,7 @@ err:
  */
 static enum lru_status shrink_memcg_cb(struct list_head *item, struct list_lru_one *l,
 				       void *arg)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct zswap_entry *entry = container_of(item, struct zswap_entry, lru);
 	bool *encountered_page_in_swapcache = (bool *)arg;

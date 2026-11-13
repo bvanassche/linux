@@ -70,6 +70,7 @@ struct allocinfo_private {
 };
 
 static void *allocinfo_start(struct seq_file *m, loff_t *pos)
+	__acquires_shared(alloc_tag_cttype)
 {
 	struct allocinfo_private *priv;
 	loff_t node = *pos;
@@ -101,6 +102,7 @@ static void *allocinfo_next(struct seq_file *m, void *arg, loff_t *pos)
 }
 
 static void allocinfo_stop(struct seq_file *m, void *arg)
+	__releases_shared(alloc_tag_cttype)
 {
 	codetag_unlock_module_list(alloc_tag_cttype);
 }

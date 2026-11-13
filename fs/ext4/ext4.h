@@ -1889,36 +1889,42 @@ static inline struct ext4_inode_info *EXT4_I(struct inode *inode)
 }
 
 static inline int ext4_writepages_down_read(struct super_block *sb)
+	__acquires_shared(&EXT4_SB(sb)->s_writepages_rwsem)
 {
 	percpu_down_read(&EXT4_SB(sb)->s_writepages_rwsem);
 	return memalloc_nofs_save();
 }
 
 static inline void ext4_writepages_up_read(struct super_block *sb, int ctx)
+	__releases_shared(&EXT4_SB(sb)->s_writepages_rwsem)
 {
 	memalloc_nofs_restore(ctx);
 	percpu_up_read(&EXT4_SB(sb)->s_writepages_rwsem);
 }
 
 static inline int ext4_writepages_down_write(struct super_block *sb)
+	__acquires(&EXT4_SB(sb)->s_writepages_rwsem)
 {
 	percpu_down_write(&EXT4_SB(sb)->s_writepages_rwsem);
 	return memalloc_nofs_save();
 }
 
 static inline void ext4_writepages_up_write(struct super_block *sb, int ctx)
+	__releases(&EXT4_SB(sb)->s_writepages_rwsem)
 {
 	memalloc_nofs_restore(ctx);
 	percpu_up_write(&EXT4_SB(sb)->s_writepages_rwsem);
 }
 
 static inline int ext4_fc_lock(struct super_block *sb)
+	__acquires(&EXT4_SB(sb)->s_fc_lock)
 {
 	mutex_lock(&EXT4_SB(sb)->s_fc_lock);
 	return memalloc_nofs_save();
 }
 
 static inline void ext4_fc_unlock(struct super_block *sb, int ctx)
+	__releases(&EXT4_SB(sb)->s_fc_lock)
 {
 	memalloc_nofs_restore(ctx);
 	mutex_unlock(&EXT4_SB(sb)->s_fc_lock);
@@ -3750,6 +3756,7 @@ static inline int ext4_fs_is_busy(struct ext4_sb_info *sbi)
 }
 
 static inline bool ext4_try_lock_group(struct super_block *sb, ext4_group_t group)
+	__cond_acquires(true, ext4_group_lock_ptr(sb, group))
 {
 	if (!spin_trylock(ext4_group_lock_ptr(sb, group)))
 		return false;
@@ -3762,6 +3769,7 @@ static inline bool ext4_try_lock_group(struct super_block *sb, ext4_group_t grou
 }
 
 static inline void ext4_lock_group(struct super_block *sb, ext4_group_t group)
+	__acquires(ext4_group_lock_ptr(sb, group))
 {
 	if (!ext4_try_lock_group(sb, group)) {
 		/*
@@ -3776,6 +3784,7 @@ static inline void ext4_lock_group(struct super_block *sb, ext4_group_t group)
 
 static inline void ext4_unlock_group(struct super_block *sb,
 					ext4_group_t group)
+	__releases(ext4_group_lock_ptr(sb, group))
 {
 	spin_unlock(ext4_group_lock_ptr(sb, group));
 }
@@ -4021,9 +4030,12 @@ extern int ext4_ext_clear_bb(struct inode *inode);
 
 /* move_extent.c */
 extern void ext4_double_down_write_data_sem(struct inode *first,
-					    struct inode *second);
+					    struct inode *second)
+	__acquires(&EXT4_I(first)->i_data_sem, &EXT4_I(second)->i_data_sem);
 extern void ext4_double_up_write_data_sem(struct inode *orig_inode,
-					  struct inode *donor_inode);
+					  struct inode *donor_inode)
+	__releases(&EXT4_I(orig_inode)->i_data_sem,
+		   &EXT4_I(donor_inode)->i_data_sem);
 extern int ext4_move_extents(struct file *o_filp, struct file *d_filp,
 			     __u64 start_orig, __u64 start_donor,
 			     __u64 len, __u64 *moved_len);

@@ -1389,6 +1389,7 @@ static void afs_rmdir_edit_dir(struct afs_operation *op)
 }
 
 static void afs_rmdir_put(struct afs_operation *op)
+	__context_unsafe(/* releases rmdir_lock held by caller */)
 {
 	_enter("op=%08x", op->debug_id);
 	if (op->file[1].vnode)
@@ -1408,6 +1409,7 @@ static const struct afs_operation_ops afs_rmdir_operation = {
  * remove a directory from an AFS filesystem
  */
 static int afs_rmdir(struct inode *dir, struct dentry *dentry)
+	__context_unsafe(/* conditional locking */)
 {
 	struct afs_operation *op;
 	struct afs_vnode *dvnode = AFS_FS_I(dir), *vnode = NULL;
@@ -1890,6 +1892,7 @@ static void afs_rename_success(struct afs_operation *op)
 }
 
 static void afs_rename_edit_dir(struct afs_operation *op)
+	__context_unsafe(/* conditional locking */)
 {
 	struct netfs_cache_resources orig_cres = {}, new_cres = {};
 	struct afs_vnode_param *orig_dvp = &op->file[0];

@@ -42,6 +42,7 @@ void am335x_tsc_se_set_cache(struct ti_tscadc_dev *tscadc, u32 val)
 EXPORT_SYMBOL_GPL(am335x_tsc_se_set_cache);
 
 static void am335x_tscadc_need_adc(struct ti_tscadc_dev *tscadc)
+	__must_hold(&tscadc->reg_lock)
 {
 	DEFINE_WAIT(wait);
 	u32 reg;

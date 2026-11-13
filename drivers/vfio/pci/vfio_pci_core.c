@@ -395,6 +395,7 @@ static int vfio_pci_runtime_pm_entry(struct vfio_pci_core_device *vdev,
 
 static int vfio_pci_core_pm_entry(struct vfio_pci_core_device *vdev, u32 flags,
 				  void __user *arg, size_t argsz)
+	__context_unsafe(/* vfio_pci_runtime_pm_entry() locks conditionally */)
 {
 	int ret;
 
@@ -1704,12 +1705,14 @@ static void vfio_pci_zap_bars(struct vfio_pci_core_device *vdev)
 }
 
 void vfio_pci_zap_and_down_write_memory_lock(struct vfio_pci_core_device *vdev)
+	__acquires(&vdev->memory_lock)
 {
 	down_write(&vdev->memory_lock);
 	vfio_pci_zap_bars(vdev);
 }
 
 u16 vfio_pci_memory_lock_and_enable(struct vfio_pci_core_device *vdev)
+	__acquires(&vdev->memory_lock)
 {
 	u16 cmd;
 
@@ -1723,6 +1726,7 @@ u16 vfio_pci_memory_lock_and_enable(struct vfio_pci_core_device *vdev)
 }
 
 void vfio_pci_memory_unlock_and_restore(struct vfio_pci_core_device *vdev, u16 cmd)
+	__releases(&vdev->memory_lock)
 {
 	pci_write_config_word(vdev->pdev, PCI_COMMAND, cmd);
 	up_write(&vdev->memory_lock);
@@ -2481,6 +2485,7 @@ unwind:
 static int vfio_pci_dev_set_hot_reset(struct vfio_device_set *dev_set,
 				      struct vfio_pci_group_info *groups,
 				      struct iommufd_ctx *iommufd_ctx)
+	__context_unsafe(/* locking inside loop */)
 {
 	struct vfio_pci_core_device *vdev;
 	struct pci_dev *pdev;

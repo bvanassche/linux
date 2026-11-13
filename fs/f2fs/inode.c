@@ -1055,6 +1055,7 @@ void f2fs_evict_inode(struct inode *inode)
 /* caller should call f2fs_lock_op() */
 void f2fs_handle_failed_inode(struct inode *inode,
 		struct f2fs_lock_context *lc, bool orphan_free)
+	__releases_shared(&F2FS_I_SB(inode)->cp_rwsem.internal_rwsem)
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
 	struct node_info ni;

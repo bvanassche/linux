@@ -805,6 +805,7 @@ int hwmon_notify_event(struct device *dev, enum hwmon_sensor_types type,
 EXPORT_SYMBOL_GPL(hwmon_notify_event);
 
 void hwmon_lock(struct device *dev)
+	__acquires(&to_hwmon_device(dev)->lock)
 {
 	struct hwmon_device *hwdev = to_hwmon_device(dev);
 
@@ -813,6 +814,7 @@ void hwmon_lock(struct device *dev)
 EXPORT_SYMBOL_GPL(hwmon_lock);
 
 void hwmon_unlock(struct device *dev)
+	__releases(&to_hwmon_device(dev)->lock)
 {
 	struct hwmon_device *hwdev = to_hwmon_device(dev);
 

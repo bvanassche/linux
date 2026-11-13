@@ -483,6 +483,7 @@ static int stmfx_pinctrl_irq_set_type(struct irq_data *data, unsigned int type)
 }
 
 static void stmfx_pinctrl_irq_bus_lock(struct irq_data *data)
+	__acquires(&((struct stmfx_pinctrl *)gpiochip_get_data(irq_data_get_irq_chip_data(data)))->lock)
 {
 	struct gpio_chip *gpio_chip = irq_data_get_irq_chip_data(data);
 	struct stmfx_pinctrl *pctl = gpiochip_get_data(gpio_chip);
@@ -491,6 +492,7 @@ static void stmfx_pinctrl_irq_bus_lock(struct irq_data *data)
 }
 
 static void stmfx_pinctrl_irq_bus_sync_unlock(struct irq_data *data)
+	__releases(&((struct stmfx_pinctrl *)gpiochip_get_data(irq_data_get_irq_chip_data(data)))->lock)
 {
 	struct gpio_chip *gpio_chip = irq_data_get_irq_chip_data(data);
 	struct stmfx_pinctrl *pctl = gpiochip_get_data(gpio_chip);

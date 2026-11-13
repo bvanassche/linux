@@ -389,6 +389,7 @@ STATIC void
 xfs_trans_dqlockedjoin(
 	struct xfs_trans	*tp,
 	struct xfs_dqtrx	*q)
+	__context_unsafe(/* acquires locks for caller */)
 {
 	unsigned int		i;
 	ASSERT(q[0].qt_dquot != NULL);
@@ -475,6 +476,7 @@ xfs_trans_apply_dquot_deltas_hook(
 void
 xfs_trans_apply_dquot_deltas(
 	struct xfs_trans	*tp)
+	__context_unsafe(/* acquires dquot locks for caller */)
 {
 	int			i, j;
 	struct xfs_dquot	*dqp;
@@ -658,6 +660,7 @@ void
 xfs_trans_unreserve_and_mod_dquots(
 	struct xfs_trans	*tp,
 	bool			already_locked)
+	__context_unsafe(/* conditional locking */)
 {
 	int			i, j;
 	struct xfs_dquot	*dqp;

@@ -180,6 +180,7 @@ static int write_relocate_add(Elf64_Shdr *sechdrs,
 			      unsigned int relsec,
 			      struct module *me,
 			      bool apply)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 	bool early = me->state == MODULE_STATE_UNFORMED;

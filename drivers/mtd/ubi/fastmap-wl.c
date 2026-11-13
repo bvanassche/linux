@@ -183,6 +183,9 @@ static int can_fill_pools(struct ubi_device *ubi, int free)
  * @ubi: UBI device description object
  */
 void ubi_refill_pools_and_lock(struct ubi_device *ubi)
+	__acquires(&ubi->fm_protect)
+	__acquires(&ubi->work_sem)
+	__acquires(&ubi->fm_eba_sem)
 {
 	struct ubi_fm_pool *wl_pool = &ubi->fm_wl_pool;
 	struct ubi_fm_pool *pool = &ubi->fm_pool;
@@ -292,6 +295,7 @@ static int produce_free_peb(struct ubi_device *ubi)
  * Returns with ubi->fm_eba_sem held in read mode!
  */
 int ubi_wl_get_peb(struct ubi_device *ubi)
+	__acquires_shared(&ubi->fm_eba_sem)
 {
 	int ret, attempts = 0;
 	struct ubi_fm_pool *pool = &ubi->fm_pool;

@@ -943,6 +943,7 @@ static int smc_phy_fixed(struct net_device *dev)
  * Must be called with lp->lock locked.
  */
 static int smc_phy_reset(struct smc_local *lp, struct net_device *dev, int phy)
+	__must_hold(&lp->lock)
 {
 	unsigned int bmcr;
 	int timeout;

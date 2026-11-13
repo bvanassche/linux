@@ -117,6 +117,7 @@ static int pcie_bwctrl_change_speed(struct pci_dev *port, u16 target_speed, bool
  */
 int pcie_set_target_speed(struct pci_dev *port, enum pci_bus_speed speed_req,
 			  bool use_lt)
+	__context_unsafe(/* conditional locking */)
 {
 	struct pci_bus *bus = port->subordinate;
 	u16 target_speed;

@@ -71,6 +71,7 @@ void free_urbp_and_urb(struct urbp *urb_p)
 
 /* called with spinlock held */
 static void nuke(struct vudc *udc, struct vep *ep)
+	__must_hold(&udc->lock)
 {
 	struct vrequest	*req;
 
@@ -88,6 +89,7 @@ static void nuke(struct vudc *udc, struct vep *ep)
 
 /* caller must hold lock */
 static void stop_activity(struct vudc *udc)
+	__must_hold(&udc->lock)
 {
 	int i;
 	struct urbp *urb_p, *tmp;

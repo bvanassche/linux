@@ -204,6 +204,7 @@ static inline void fail_non_kasan_kunit_test(void) { }
 static DEFINE_RAW_SPINLOCK(report_lock);
 
 static void start_report(unsigned long *flags)
+	__acquires(&report_lock)
 {
 	fail_non_kasan_kunit_test();
 	/* Respect the /proc/sys/kernel/traceoff_on_warning interface. */
@@ -217,6 +218,7 @@ static void start_report(unsigned long *flags)
 }
 
 static void end_report(unsigned long *flags, const void *addr, bool is_write)
+	__releases(&report_lock)
 {
 	if (addr)
 		trace_error_report_end(ERROR_DETECTOR_KASAN,

@@ -86,6 +86,7 @@ static int io_install_fixed_file(struct io_ring_ctx *ctx, struct file *file,
 
 int __io_fixed_fd_install(struct io_ring_ctx *ctx, struct file *file,
 			  unsigned int file_slot)
+	__must_hold(&ctx->uring_lock)
 {
 	bool alloc_slot = file_slot == IORING_FILE_INDEX_ALLOC;
 	int ret;

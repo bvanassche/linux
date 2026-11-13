@@ -274,10 +274,12 @@ int mac802154_add_seclevel(struct net_device *dev,
 int mac802154_del_seclevel(struct net_device *dev,
 			   const struct ieee802154_llsec_seclevel *sl);
 
-void mac802154_lock_table(struct net_device *dev);
+void mac802154_lock_table(struct net_device *dev)
+	__acquires(&IEEE802154_DEV_TO_SUB_IF(dev)->sec_mtx);
 void mac802154_get_table(struct net_device *dev,
 			 struct ieee802154_llsec_table **t);
-void mac802154_unlock_table(struct net_device *dev);
+void mac802154_unlock_table(struct net_device *dev)
+	__releases(&IEEE802154_DEV_TO_SUB_IF(dev)->sec_mtx);
 
 int mac802154_wpan_update_llsec(struct net_device *dev);
 

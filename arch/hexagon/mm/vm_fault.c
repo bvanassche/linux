@@ -35,6 +35,7 @@
  * Canonical page fault handler
  */
 static void do_page_fault(unsigned long address, long cause, struct pt_regs *regs)
+	__context_unsafe(/* handle_mm_fault() unlocks conditionally */)
 {
 	struct vm_area_struct *vma;
 	struct mm_struct *mm = current->mm;

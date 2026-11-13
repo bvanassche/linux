@@ -378,6 +378,7 @@ static bool sunxi_sram_regmap_accessible_reg(struct device *dev,
 }
 
 static void sunxi_sram_lock(void *_lock)
+	__acquires((spinlock_t *)_lock)
 {
 	spinlock_t *lock = _lock;
 
@@ -385,6 +386,7 @@ static void sunxi_sram_lock(void *_lock)
 }
 
 static void sunxi_sram_unlock(void *_lock)
+	__releases((spinlock_t *)_lock)
 {
 	spinlock_t *lock = _lock;
 

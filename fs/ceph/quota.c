@@ -214,6 +214,7 @@ void ceph_cleanup_quotarealms_inodes(struct ceph_mds_client *mdsc)
 static int get_quota_realm(struct ceph_mds_client *mdsc, struct inode *inode,
 			   enum quota_get_realm which_quota,
 			   struct ceph_snap_realm **realmp, bool retry)
+	__must_hold_shared(&mdsc->snap_rwsem)
 {
 	struct ceph_client *cl = mdsc->fsc->client;
 	struct ceph_inode_info *ci = NULL;

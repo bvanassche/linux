@@ -2113,6 +2113,7 @@ void bpf_put_raw_tracepoint(struct bpf_raw_event_map *btp)
 
 static __always_inline
 void __bpf_trace_run(struct bpf_raw_tp_link *link, u64 *args)
+	__context_unsafe(/* conditional locking */)
 {
 	struct srcu_ctr __percpu *scp = NULL;
 	struct bpf_prog *prog = link->link.prog;
@@ -3150,6 +3151,7 @@ static int uprobe_prog_run(struct bpf_uprobe *uprobe,
 			   unsigned long entry_ip,
 			   struct pt_regs *regs,
 			   bool is_return, void *data)
+	__context_unsafe(/* conditional locking */)
 {
 	struct bpf_uprobe_multi_link *link = uprobe->link;
 	struct bpf_uprobe_multi_run_ctx run_ctx = {

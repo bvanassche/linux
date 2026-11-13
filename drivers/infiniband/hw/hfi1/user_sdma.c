@@ -275,6 +275,7 @@ static u8 dlid_to_selector(u16 dlid)
 int hfi1_user_sdma_process_request(struct hfi1_filedata *fd,
 				   struct iovec *iovec, unsigned long dim,
 				   unsigned long *count)
+	__must_hold_shared(&fd->pq_srcu)
 {
 	int ret = 0, i;
 	struct hfi1_ctxtdata *uctxt = fd->uctxt;

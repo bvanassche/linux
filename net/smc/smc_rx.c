@@ -263,6 +263,7 @@ static int smc_rx_data_available_and_no_splice_pend(struct smc_connection *conn,
 int smc_rx_wait(struct sock *sk, struct smc_sock *smc, long *timeo,
 		size_t peeked,
 		int (*fcrit)(struct smc_connection *conn, size_t baseline))
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct smc_connection *conn = &smc->conn;
@@ -292,6 +293,7 @@ int smc_rx_wait(struct sock *sk, struct smc_sock *smc, long *timeo,
  */
 static void smc_rx_wait_splice(struct sock *sk, struct smc_sock *smc,
 			       long *timeo)
+	__must_hold(sk)
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct smc_connection *conn = &smc->conn;
@@ -372,6 +374,7 @@ static bool smc_rx_recvmsg_data_available(struct smc_sock *smc, size_t peeked)
  */
 int smc_rx_recvmsg(struct sock *sk, struct smc_sock *smc, struct msghdr *msg,
 		   struct pipe_inode_info *pipe, size_t len, int flags)
+	__must_hold(sk)
 {
 	size_t copylen, read_done = 0, read_remaining = len, peeked_bytes = 0;
 	size_t chunk_len, chunk_off, chunk_len_sum;

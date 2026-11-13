@@ -67,6 +67,7 @@ static struct intel_engine_cs *rcs0(struct drm_i915_private *i915)
 }
 
 static int igt_add_request(void *arg)
+	__context_unsafe(/* mock_request() locks conditionally */)
 {
 	struct drm_i915_private *i915 = arg;
 	struct i915_request *request;
@@ -83,6 +84,7 @@ static int igt_add_request(void *arg)
 }
 
 static int igt_wait_request(void *arg)
+	__context_unsafe(/* mock_request() locks conditionally */)
 {
 	const long T = HZ / 4;
 	struct drm_i915_private *i915 = arg;

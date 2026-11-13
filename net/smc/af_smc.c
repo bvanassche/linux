@@ -286,6 +286,7 @@ static void smc_restore_fallback_changes(struct smc_sock *smc)
 }
 
 static int __smc_release(struct sock *sk)
+	__must_hold(sk)
 {
 	struct smc_sock *smc = smc_sk(sk);
 	int rc = 0;
@@ -326,6 +327,7 @@ static int __smc_release(struct sock *sk)
 }
 
 static int _smc_release(struct socket *sock, struct sock *sk, int old_state)
+	__must_hold(sk)
 {
 	struct smc_sock *smc = smc_sk(sk);
 	int rc;
@@ -580,6 +582,7 @@ static int smcr_lgr_reg_sndbufs(struct smc_link *link,
 /* register the new rmb on all links */
 static int smcr_lgr_reg_rmbs(struct smc_link *link,
 			     struct smc_buf_desc *rmb_desc)
+	__context_unsafe(/* locks in both shared and exclusive modes */)
 {
 	struct smc_link_group *lgr = link->lgr;
 	bool do_slow = false;
@@ -1752,6 +1755,7 @@ out_err:
 }
 
 static int smc_clcsock_accept(struct smc_sock *lsmc, struct smc_sock **new_smc)
+	__must_hold(&lsmc->sk)
 {
 	struct socket *new_clcsock = NULL;
 	struct sock *lsk = &lsmc->sk;
@@ -1940,6 +1944,7 @@ static int smcr_serv_conf_first_link(struct smc_sock *smc)
 
 /* listen worker: finish */
 static void smc_listen_out(struct smc_sock *new_smc)
+	__releases(&new_smc->sk)
 {
 	struct smc_sock *lsmc = new_smc->listen_smc;
 	struct sock *newsmcsk = &new_smc->sk;
@@ -1964,6 +1969,7 @@ static void smc_listen_out(struct smc_sock *new_smc)
 
 /* listen worker: finish in state connected */
 static void smc_listen_out_connected(struct smc_sock *new_smc)
+	__releases(&new_smc->sk)
 {
 	struct sock *newsmcsk = &new_smc->sk;
 
@@ -1975,6 +1981,7 @@ static void smc_listen_out_connected(struct smc_sock *new_smc)
 
 /* listen worker: finish in error state */
 static void smc_listen_out_err(struct smc_sock *new_smc)
+	__releases(&new_smc->sk)
 {
 	struct sock *newsmcsk = &new_smc->sk;
 	struct net *net = sock_net(newsmcsk);
@@ -1990,6 +1997,7 @@ static void smc_listen_out_err(struct smc_sock *new_smc)
 /* listen worker: decline and fall back if possible */
 static void smc_listen_decline(struct smc_sock *new_smc, int reason_code,
 			       int local_first, u8 version)
+	__releases(&new_smc->sk)
 {
 	/* RDMA setup failed, switch back to TCP */
 	smc_conn_abort(new_smc, local_first);
@@ -2465,6 +2473,7 @@ static int smc_listen_rdma_finish(struct smc_sock *new_smc,
 
 /* setup for connection of server */
 static void smc_listen_work(struct work_struct *work)
+	__context_unsafe(/* conditional unlocking */)
 {
 	struct smc_sock *new_smc = container_of(work, struct smc_sock,
 						smc_listen_work);

@@ -107,6 +107,7 @@ out_unlock:
 }
 
 static void submit_unlock_object(struct etnaviv_gem_submit *submit, int i)
+	__context_unsafe(/* conditional locking */)
 {
 	if (submit->bos[i].flags & BO_LOCKED) {
 		struct drm_gem_object *obj = &submit->bos[i].obj->base;
@@ -118,6 +119,7 @@ static void submit_unlock_object(struct etnaviv_gem_submit *submit, int i)
 
 static int submit_lock_objects(struct etnaviv_gem_submit *submit,
 		struct ww_acquire_ctx *ticket)
+	__context_unsafe(/* acquire inside loop */)
 {
 	int contended, slow_locked = -1, i, ret = 0;
 

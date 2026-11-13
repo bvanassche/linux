@@ -137,6 +137,7 @@ static void amdgpu_pasid_clear_owner(u32 pasid)
  * amdgpu_pasid_unlock().
  */
 void amdgpu_pasid_lock(unsigned long *flags)
+	__context_unsafe(/* lock is not visible to callers */)
 {
 	xa_lock_irqsave(&amdgpu_pasid_xa, *flags);
 }
@@ -149,6 +150,7 @@ void amdgpu_pasid_lock(unsigned long *flags)
  * interrupt state.
  */
 void amdgpu_pasid_unlock(unsigned long flags)
+	__context_unsafe(/* lock is not visible to callers */)
 {
 	xa_unlock_irqrestore(&amdgpu_pasid_xa, flags);
 }

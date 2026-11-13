@@ -245,6 +245,8 @@ static void free_block_entry(struct block_entry *be)
 static struct block_entry *add_block_entry(struct btrfs_fs_info *fs_info,
 					   u64 bytenr, u64 len,
 					   u64 root_objectid)
+	__cond_acquires_err_ptr(&fs_info->ref_verify_lock)
+	__context_unsafe(/* may return ERR_PTR() */)
 {
 	struct block_entry *be = NULL, *exist;
 	struct root_entry *re = NULL;

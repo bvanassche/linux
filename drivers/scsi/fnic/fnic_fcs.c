@@ -292,6 +292,7 @@ void fnic_handle_frame(struct work_struct *work)
 	struct fc_frame_header *fchdr;
 
 	spin_lock_irqsave(&fnic->fnic_lock, fnic->lock_flags);
+	lockdep_assert_held(&fnic->iport.fnic->fnic_lock);
 	list_for_each_entry_safe(cur_frame, next, &fnic->frame_queue, links) {
 		if (fnic->stop_rx_link_events) {
 			list_del(&cur_frame->links);
@@ -1031,6 +1032,7 @@ void fnic_delete_fcp_tports(struct fnic *fnic)
 	unsigned long flags;
 
 	spin_lock_irqsave(&fnic->fnic_lock, flags);
+	lockdep_assert_held(&fnic->iport.fnic->fnic_lock);
 	list_for_each_entry_safe(tport, next, &fnic->iport.tport_list, links) {
 		FNIC_FCS_DBG(KERN_INFO, fnic,
 					 "removing fcp rport fcid: 0x%x", tport->fcid);
@@ -1058,6 +1060,7 @@ void fnic_tport_event_handler(struct work_struct *work)
 	struct fnic_tport_s *tport;
 
 	spin_lock_irqsave(&fnic->fnic_lock, flags);
+	lockdep_assert_held(&fnic->iport.fnic->fnic_lock);
 	list_for_each_entry_safe(cur_evt, next, &fnic->tport_event_list, links) {
 		tport = cur_evt->arg1;
 		switch (cur_evt->event) {

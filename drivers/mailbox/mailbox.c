@@ -649,6 +649,7 @@ EXPORT_SYMBOL_GPL(devm_mbox_controller_register);
 
 #ifdef CONFIG_DEBUG_FS
 static void *mbox_seq_start(struct seq_file *s, loff_t *pos)
+	__acquires(&con_mutex)
 {
 	mutex_lock(&con_mutex);
 	return seq_list_start(&mbox_cons, *pos);
@@ -660,6 +661,7 @@ static void *mbox_seq_next(struct seq_file *s, void *v, loff_t *pos)
 }
 
 static void mbox_seq_stop(struct seq_file *s, void *v)
+	__releases(&con_mutex)
 {
 	mutex_unlock(&con_mutex);
 }

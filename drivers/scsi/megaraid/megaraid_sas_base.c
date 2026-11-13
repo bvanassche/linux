@@ -5190,6 +5190,7 @@ static void megasas_update_ext_vd_details(struct megasas_instance *instance)
  * Status:			 MFI_STAT_OK- Command successful
  */
 void megasas_get_snapdump_properties(struct megasas_instance *instance)
+	__must_hold(&instance->reset_mutex)
 {
 	int ret = 0;
 	struct megasas_cmd *cmd;
@@ -5275,6 +5276,7 @@ void megasas_get_snapdump_properties(struct megasas_instance *instance)
  */
 int
 megasas_get_ctrl_info(struct megasas_instance *instance)
+	__must_hold(&instance->reset_mutex)
 {
 	int ret = 0;
 	struct megasas_cmd *cmd;
@@ -6817,6 +6819,7 @@ megasas_register_aen(struct megasas_instance *instance, u32 seq_num,
 int
 megasas_get_target_prop(struct megasas_instance *instance,
 			struct scsi_device *sdev)
+	__must_hold(&instance->reset_mutex)
 {
 	int ret;
 	struct megasas_cmd *cmd;

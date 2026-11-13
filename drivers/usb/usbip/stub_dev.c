@@ -340,6 +340,8 @@ static int stub_probe(struct usb_device *udev)
 		goto sdev_free;
 	}
 
+	__acquire(&busid_priv->busid_lock);
+
 	if ((busid_priv->status == STUB_BUSID_REMOV) ||
 	    (busid_priv->status == STUB_BUSID_OTHER)) {
 		dev_info(&udev->dev,
@@ -451,6 +453,9 @@ static void stub_disconnect(struct usb_device *udev)
 		BUG();
 		return;
 	}
+
+	/* get_busid_priv() returned with busid_lock held */
+	__acquire(&busid_priv->busid_lock);
 
 	sdev = dev_get_drvdata(&udev->dev);
 

@@ -488,6 +488,7 @@ struct inode *jffs2_new_inode (struct inode *dir_i, umode_t mode, struct jffs2_r
 		return ERR_PTR(-EINVAL);
 	}
 
+	__release(&f->sem); /* acquire on return value */
 	return inode;
 }
 

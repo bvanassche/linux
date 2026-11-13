@@ -436,6 +436,7 @@ static int fill_con_write_page(const char *s, unsigned int n,
 }
 
 static void sunhv_console_write_paged(struct console *con, const char *s, unsigned n)
+	__context_unsafe(/* conditional locking */)
 {
 	struct uart_port *port = sunhv_port;
 	unsigned long flags;
@@ -491,6 +492,7 @@ static inline void sunhv_console_putchar(struct uart_port *port, char c)
 }
 
 static void sunhv_console_write_bychar(struct console *con, const char *s, unsigned n)
+	__context_unsafe(/* conditional locking */)
 {
 	struct uart_port *port = sunhv_port;
 	unsigned long flags;

@@ -61,7 +61,8 @@ int uobj_destroy(struct ib_uobject *uobj, struct uverbs_attr_bundle *attrs);
  */
 struct ib_uobject *
 uverbs_get_uobject_from_file(u16 object_id, enum uverbs_obj_access access,
-			     s64 id, struct uverbs_attr_bundle *attrs);
+			     s64 id, struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu);
 
 void uverbs_finalize_object(struct ib_uobject *uobj,
 			    enum uverbs_obj_access access, bool hw_obj_valid,

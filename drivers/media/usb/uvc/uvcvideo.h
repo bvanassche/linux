@@ -769,15 +769,19 @@ bool uvc_ctrl_status_event_async(struct urb *urb, struct uvc_video_chain *chain,
 void uvc_ctrl_status_event(struct uvc_video_chain *chain,
 			   struct uvc_control *ctrl, const u8 *data);
 
-int uvc_ctrl_begin(struct uvc_video_chain *chain);
+int uvc_ctrl_begin(struct uvc_video_chain *chain)
+	__cond_acquires_range(0, INT_MAX, &chain->ctrl_mutex);
 int __uvc_ctrl_commit(struct uvc_fh *handle, int rollback,
-		      struct v4l2_ext_controls *ctrls);
+		      struct v4l2_ext_controls *ctrls)
+	__releases(&handle->chain->ctrl_mutex);
 static inline int uvc_ctrl_commit(struct uvc_fh *handle,
 				  struct v4l2_ext_controls *ctrls)
+	__releases(&handle->chain->ctrl_mutex)
 {
 	return __uvc_ctrl_commit(handle, 0, ctrls);
 }
 static inline int uvc_ctrl_rollback(struct uvc_fh *handle)
+	__releases(&handle->chain->ctrl_mutex)
 {
 	return __uvc_ctrl_commit(handle, 1, NULL);
 }

@@ -980,6 +980,7 @@ static void uprobe_buffer_disable(void)
 }
 
 static struct uprobe_cpu_buffer *uprobe_buffer_get(void)
+	__context_unsafe(/* acquires ucb->mutex for caller */)
 {
 	struct uprobe_cpu_buffer *ucb;
 	int cpu;
@@ -997,6 +998,7 @@ static struct uprobe_cpu_buffer *uprobe_buffer_get(void)
 }
 
 static void uprobe_buffer_put(struct uprobe_cpu_buffer *ucb)
+	__context_unsafe(/* releases ucb->mutex held by caller */)
 {
 	if (!ucb)
 		return;

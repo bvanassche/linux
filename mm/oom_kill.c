@@ -132,6 +132,7 @@ static bool oom_cpuset_eligible(struct task_struct *tsk, struct oom_control *oc)
  * task_lock() held.
  */
 struct task_struct *find_lock_task_mm(struct task_struct *p)
+	__context_unsafe(/* returns with the returned task locked */)
 {
 	struct task_struct *t;
 
@@ -207,6 +208,8 @@ long oom_badness(struct task_struct *p, unsigned long totalpages)
 	p = find_lock_task_mm(p);
 	if (!p)
 		return LONG_MIN;
+
+	__acquire(&p->alloc_lock);
 
 	/*
 	 * Do not even consider tasks which are explicitly marked oom
@@ -389,6 +392,8 @@ static int dump_task(struct task_struct *p, void *arg)
 		 */
 		return 0;
 	}
+
+	__acquire(&task->alloc_lock);
 
 	pr_info("[%7d] %5d %5d %8lu %8lu %8lu %8lu %9lu %8ld %8lu         %5hd %s\n",
 		task->pid, from_kuid(&init_user_ns, task_uid(task)),
@@ -804,6 +809,7 @@ void oom_killer_enable(void)
  * disabled.
  */
 bool oom_killer_disable(signed long timeout)
+	__context_unsafe(/* mutex_lock_killable() locks conditionally */)
 {
 	signed long ret;
 
@@ -919,6 +925,7 @@ static void __oom_kill_process(struct task_struct *victim, const char *message)
 		put_task_struct(victim);
 		victim = p;
 	}
+	__acquire(&victim->alloc_lock);
 
 	/* Get a reference to safely compare mm after task_unlock(victim) */
 	mm = victim->mm;
@@ -1211,6 +1218,8 @@ SYSCALL_DEFINE2(process_mrelease, int, pidfd, unsigned int, flags)
 		ret = -ESRCH;
 		goto put_task;
 	}
+
+	__acquire(&p->alloc_lock);
 
 	mm = p->mm;
 	mmgrab(mm);

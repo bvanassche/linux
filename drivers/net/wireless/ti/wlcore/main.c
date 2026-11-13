@@ -1982,6 +1982,7 @@ static int wl1271_op_start(struct ieee80211_hw *hw)
 }
 
 static void wlcore_op_stop_locked(struct wl1271 *wl)
+	__must_hold(&wl->mutex)
 {
 	int i;
 
@@ -2375,6 +2376,7 @@ static int wl12xx_init_vif_data(struct wl1271 *wl, struct ieee80211_vif *vif)
 }
 
 static int wl12xx_init_fw(struct wl1271 *wl)
+	__must_hold(&wl->mutex)
 {
 	struct wlcore_platdev_data *pdev_data = dev_get_platdata(&wl->pdev->dev);
 	int retries = WL1271_BOOT_RETRIES;
@@ -2712,6 +2714,7 @@ out_unlock:
 static void __wl1271_op_remove_interface(struct wl1271 *wl,
 					 struct ieee80211_vif *vif,
 					 bool reset_tx_queues)
+	__must_hold(&wl->mutex)
 {
 	struct wl12xx_vif *wlvif = wl12xx_vif_to_data(vif);
 	int i, ret;

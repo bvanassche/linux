@@ -1082,6 +1082,7 @@ out:
 }
 
 static void mv88e6xxx_g2_irq_bus_lock(struct irq_data *d)
+	__acquires(&((struct mv88e6xxx_chip *)irq_data_get_irq_chip_data(d))->reg_lock)
 {
 	struct mv88e6xxx_chip *chip = irq_data_get_irq_chip_data(d);
 
@@ -1089,6 +1090,7 @@ static void mv88e6xxx_g2_irq_bus_lock(struct irq_data *d)
 }
 
 static void mv88e6xxx_g2_irq_bus_sync_unlock(struct irq_data *d)
+	__releases(&((struct mv88e6xxx_chip *)irq_data_get_irq_chip_data(d))->reg_lock)
 {
 	struct mv88e6xxx_chip *chip = irq_data_get_irq_chip_data(d);
 	int err;

@@ -561,6 +561,7 @@ static void st7920_crtc_atomic_enable(struct drm_crtc *crtc,
 
 static void st7920_crtc_atomic_disable(struct drm_crtc *crtc,
 				       struct drm_atomic_commit *state)
+	__context_unsafe(/* ignores drm_dev_enter() return value */)
 {
 	struct spi7920_error err = {0};
 	struct drm_device *drm = crtc->dev;

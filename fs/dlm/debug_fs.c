@@ -395,6 +395,7 @@ static int table_seq_show(struct seq_file *seq, void *iter_ptr)
 }
 
 static void *table_seq_start(struct seq_file *seq, loff_t *pos)
+	__acquires_shared(&((struct dlm_ls *)seq->private)->ls_rsbtbl_lock)
 {
 	struct dlm_ls *ls = seq->private;
 	struct list_head *list;
@@ -431,6 +432,7 @@ static void *table_seq_next(struct seq_file *seq, void *iter_ptr, loff_t *pos)
 }
 
 static void table_seq_stop(struct seq_file *seq, void *iter_ptr)
+	__releases_shared(&((struct dlm_ls *)seq->private)->ls_rsbtbl_lock)
 {
 	struct dlm_ls *ls = seq->private;
 

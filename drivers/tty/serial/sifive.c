@@ -792,6 +792,7 @@ static void sifive_serial_console_putchar(struct uart_port *port, unsigned char 
 }
 
 static void sifive_serial_device_lock(struct console *co, unsigned long *flags)
+	__acquires(&sifive_serial_console_ports[co->index]->port.lock)
 {
 	struct uart_port *up = &sifive_serial_console_ports[co->index]->port;
 
@@ -799,6 +800,7 @@ static void sifive_serial_device_lock(struct console *co, unsigned long *flags)
 }
 
 static void sifive_serial_device_unlock(struct console *co, unsigned long flags)
+	__releases(&sifive_serial_console_ports[co->index]->port.lock)
 {
 	struct uart_port *up = &sifive_serial_console_ports[co->index]->port;
 

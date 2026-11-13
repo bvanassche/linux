@@ -549,6 +549,7 @@ static int xudc_eptxrx(struct xusb_ep *ep, struct xusb_req *req,
  * status.
  */
 static void xudc_done(struct xusb_ep *ep, struct xusb_req *req, int status)
+	__context_unsafe(/* drops and reacquires udc->lock */)
 {
 	struct xusb_udc *udc = ep->udc;
 
@@ -1471,6 +1472,7 @@ static void xudc_clear_stall_all_ep(struct xusb_udc *udc)
  * This function handles the RESET,SUSPEND,RESUME and DISCONNECT interrupts.
  */
 static void xudc_startup_handler(struct xusb_udc *udc, u32 intrstatus)
+	__context_unsafe(/* drops and reacquires udc->lock */)
 {
 	u32 intrreg;
 
@@ -1937,6 +1939,7 @@ static void xudc_ep0_in(struct xusb_udc *udc)
  * Processes the commands received during enumeration phase.
  */
 static void xudc_ctrl_ep_handler(struct xusb_udc *udc, u32 intrstatus)
+	__must_hold(&udc->lock)
 {
 
 	if (intrstatus & XUSB_STATUS_SETUP_PACKET_MASK) {

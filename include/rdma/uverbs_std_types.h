@@ -47,13 +47,15 @@ static inline void *_uobj_get_obj_read(struct ib_uobject *uobj)
 				_attrs)
 
 int __uobj_perform_destroy(const struct uverbs_api_object *obj, u32 id,
-			   struct uverbs_attr_bundle *attrs);
+			   struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu);
 #define uobj_perform_destroy(_type, _id, _attrs)                               \
 	__uobj_perform_destroy(uobj_get_type(_attrs, _type),                   \
 			       _uobj_check_id(_id), _attrs)
 
 struct ib_uobject *__uobj_get_destroy(const struct uverbs_api_object *obj,
-				      u32 id, struct uverbs_attr_bundle *attrs);
+				      u32 id, struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu);
 
 #define uobj_get_destroy(_type, _id, _attrs)                                   \
 	__uobj_get_destroy(uobj_get_type(_attrs, _type), _uobj_check_id(_id),  \
@@ -79,12 +81,14 @@ static inline void uobj_put_write(struct ib_uobject *uobj)
 
 static inline void uobj_alloc_abort(struct ib_uobject *uobj,
 				    struct uverbs_attr_bundle *attrs)
+	__releases_shared(&attrs->ufile->hw_destroy_rwsem)
 {
 	rdma_alloc_abort_uobject(uobj, attrs, false);
 }
 
 static inline void uobj_finalize_uobj_create(struct ib_uobject *uobj,
 					     struct uverbs_attr_bundle *attrs)
+	__releases_shared(&attrs->ufile->hw_destroy_rwsem)
 {
 	/*
 	 * Tell the core code that the write() handler has completed
@@ -95,11 +99,13 @@ static inline void uobj_finalize_uobj_create(struct ib_uobject *uobj,
 	 */
 	WARN_ON(attrs->uobject);
 	attrs->uobject = uobj;
+	__release_shared(&attrs->ufile->hw_destroy_rwsem);
 }
 
 static inline struct ib_uobject *
 __uobj_alloc(const struct uverbs_api_object *obj,
 	     struct uverbs_attr_bundle *attrs, struct ib_device **ib_dev)
+	__cond_acquires_shared_err_ptr(&attrs->ufile->hw_destroy_rwsem)
 {
 	struct ib_uobject *uobj = rdma_alloc_begin_uobject(obj, attrs);
 

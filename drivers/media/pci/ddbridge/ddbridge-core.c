@@ -858,6 +858,7 @@ static struct dvb_device dvbdev_ci = {
 /****************************************************************************/
 
 static int locked_gate_ctrl(struct dvb_frontend *fe, int enable)
+	__context_unsafe(/* conditional locking */)
 {
 	struct ddb_input *input = fe->sec_priv;
 	struct ddb_port *port = input->port;

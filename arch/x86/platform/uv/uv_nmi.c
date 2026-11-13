@@ -513,6 +513,7 @@ static int uv_set_in_nmi(int cpu, struct uv_hub_nmi_s *hub_nmi)
 
 /* Check if this is a system NMI event */
 static int uv_check_nmi(struct uv_hub_nmi_s *hub_nmi)
+	__context_unsafe(/* conditional locking */)
 {
 	int cpu = smp_processor_id();
 	int nmi = 0;
@@ -579,6 +580,7 @@ slave_wait:		cpu_relax();
 
 /* Need to reset the NMI MMR register, but only once per hub. */
 static inline void uv_clear_nmi(int cpu)
+	__context_unsafe(/* conditional unlock */)
 {
 	struct uv_hub_nmi_s *hub_nmi = uv_hub_nmi;
 

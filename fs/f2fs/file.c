@@ -72,6 +72,7 @@ static int do_zero_post_eof_page(struct inode *inode, loff_t new_size)
 
 static int f2fs_zero_post_eof_page(struct inode *inode,
 					loff_t new_size, bool lock, bool writeback)
+	__context_unsafe(/* conditional locking */)
 {
 	loff_t old_size = i_size_read(inode);
 	bool strict =
@@ -841,6 +842,7 @@ truncate_out:
 }
 
 int f2fs_do_truncate_blocks(struct inode *inode, u64 from, bool lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
 	struct dnode_of_data dn;
@@ -2546,6 +2548,7 @@ static int f2fs_ioc_abort_atomic_write(struct file *filp)
 
 int f2fs_do_shutdown(struct f2fs_sb_info *sbi, unsigned int flag,
 						bool readonly, bool need_lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct super_block *sb = sbi->sb;
 	int ret = 0;
@@ -3263,6 +3266,8 @@ static int f2fs_move_file_range(struct file *file_in, loff_t pos_in,
 		ret = -EBUSY;
 		if (!inode_trylock(dst))
 			goto out;
+	} else {
+		__acquire(&dst->i_rwsem);
 	}
 
 	if (f2fs_compressed_file(src) || f2fs_compressed_file(dst) ||
@@ -3333,6 +3338,8 @@ static int f2fs_move_file_range(struct file *file_in, loff_t pos_in,
 		ret = -EBUSY;
 		if (!f2fs_down_write_trylock(&F2FS_I(dst)->i_gc_rwsem[WRITE]))
 			goto out_src;
+	} else {
+		__acquire(&F2FS_I(dst)->i_gc_rwsem[WRITE].internal_rwsem);
 	}
 
 	f2fs_lock_op(sbi, &lc);
@@ -3350,6 +3357,8 @@ static int f2fs_move_file_range(struct file *file_in, loff_t pos_in,
 
 	if (src != dst)
 		f2fs_up_write(&F2FS_I(dst)->i_gc_rwsem[WRITE]);
+	else
+		__release(&F2FS_I(dst)->i_gc_rwsem[WRITE].internal_rwsem);
 out_src:
 	f2fs_up_write(&F2FS_I(src)->i_gc_rwsem[WRITE]);
 	if (ret)
@@ -3366,6 +3375,8 @@ out_src:
 out_unlock:
 	if (src != dst)
 		inode_unlock(dst);
+	else
+		__release(&dst->i_rwsem);
 out:
 	inode_unlock(src);
 	return ret;
@@ -5529,6 +5540,7 @@ static void f2fs_flush_buffered_write(struct address_space *mapping,
 
 static ssize_t f2fs_dio_write_iter(struct kiocb *iocb, struct iov_iter *from,
 				   bool *may_need_sync)
+	__context_unsafe(/* conditional locking */)
 {
 	struct file *file = iocb->ki_filp;
 	struct inode *inode = file_inode(file);

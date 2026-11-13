@@ -112,11 +112,13 @@ static struct mlx5_core_dev *mlx5_clock_mdev_get(struct mlx5_clock *clock)
 }
 
 static void mlx5_clock_lock(struct mlx5_clock *clock)
+	__context_unsafe(/* conditional locking */)
 {
 	mutex_lock(&clock_priv(clock)->lock);
 }
 
 static void mlx5_clock_unlock(struct mlx5_clock *clock)
+	__context_unsafe(/* conditional locking */)
 {
 	mutex_unlock(&clock_priv(clock)->lock);
 }

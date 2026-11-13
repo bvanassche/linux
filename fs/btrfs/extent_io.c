@@ -3154,6 +3154,7 @@ static bool folio_range_has_eb(struct folio *folio)
 }
 
 static void detach_extent_buffer_folio(const struct extent_buffer *eb, struct folio *folio)
+	__context_unsafe(/* conditional locking */)
 {
 	struct btrfs_fs_info *fs_info = eb->fs_info;
 	struct address_space *mapping = folio->mapping;
@@ -4061,6 +4062,7 @@ static void clear_extent_buffer_reading(struct extent_buffer *eb)
 
 static void free_extent_buffer_clear_reading(struct extent_buffer *eb,
 					     bool clear_reading)
+	__context_unsafe(/* conditional locking */)
 {
 	int refs;
 

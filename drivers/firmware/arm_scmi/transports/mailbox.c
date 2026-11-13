@@ -286,6 +286,7 @@ static int mailbox_chan_free(int id, void *p, void *data)
 
 static int mailbox_send_message(struct scmi_chan_info *cinfo,
 				struct scmi_xfer *xfer)
+	__cond_acquires(0, &((struct scmi_mailbox *)cinfo->transport_info)->chan_lock)
 {
 	struct scmi_mailbox *smbox = cinfo->transport_info;
 	int ret;
@@ -311,6 +312,7 @@ static int mailbox_send_message(struct scmi_chan_info *cinfo,
 
 static void mailbox_mark_txdone(struct scmi_chan_info *cinfo, int ret,
 				struct scmi_xfer *__unused)
+	__releases(&((struct scmi_mailbox *)cinfo->transport_info)->chan_lock)
 {
 	struct scmi_mailbox *smbox = cinfo->transport_info;
 

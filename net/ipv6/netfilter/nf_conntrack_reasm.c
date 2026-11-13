@@ -144,6 +144,7 @@ static void nf_ct_frag6_expire(struct timer_list *t)
 /* Creation primitives. */
 static struct frag_queue *fq_find(struct net *net, __be32 id, u32 user,
 				  const struct ipv6hdr *hdr, int iif)
+	__must_hold_shared(RCU)
 {
 	struct nft_ct_frag6_pernet *nf_frag = nf_frag_pernet(net);
 	struct frag_v6_compare_key key = {

@@ -608,6 +608,7 @@ static int usbtmc_ioctl_get_srq_stb(struct usbtmc_file_data *file_data,
 
 static int usbtmc488_ioctl_wait_srq(struct usbtmc_file_data *file_data,
 				    __u32 __user *arg)
+	__must_hold(&((struct usbtmc_device_data *)file_data->data)->io_mutex)
 {
 	struct usbtmc_device_data *data = file_data->data;
 	struct device *dev = &data->intf->dev;
@@ -2575,6 +2576,7 @@ static int usbtmc_resume(struct usb_interface *intf)
 }
 
 static int usbtmc_pre_reset(struct usb_interface *intf)
+	__context_unsafe(/* conditionally acquires io_mutex for caller */)
 {
 	struct usbtmc_device_data *data  = usb_get_intfdata(intf);
 	struct list_head *elem;
@@ -2597,6 +2599,7 @@ static int usbtmc_pre_reset(struct usb_interface *intf)
 }
 
 static int usbtmc_post_reset(struct usb_interface *intf)
+	__releases(&((struct usbtmc_device_data *)usb_get_intfdata(intf))->io_mutex)
 {
 	struct usbtmc_device_data *data  = usb_get_intfdata(intf);
 

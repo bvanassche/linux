@@ -56,11 +56,13 @@ static int intel_sbi_rw(struct intel_display *display, u16 reg,
 }
 
 void intel_sbi_lock(struct intel_display *display)
+	__acquires(&display->sbi.lock)
 {
 	mutex_lock(&display->sbi.lock);
 }
 
 void intel_sbi_unlock(struct intel_display *display)
+	__releases(&display->sbi.lock)
 {
 	mutex_unlock(&display->sbi.lock);
 }

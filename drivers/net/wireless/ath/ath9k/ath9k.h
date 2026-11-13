@@ -565,10 +565,13 @@ static inline void ath_chanctx_check_active(struct ath_softc *sc,
 #endif /* CONFIG_ATH9K_CHANNEL_CONTEXT */
 
 static inline void ath_txq_lock(struct ath_softc *sc, struct ath_txq *txq)
+	__acquires(&txq->axq_lock)
 {
 	spin_lock_bh(&txq->axq_lock);
 }
+
 static inline void ath_txq_unlock(struct ath_softc *sc, struct ath_txq *txq)
+	__releases(&txq->axq_lock)
 {
 	spin_unlock_bh(&txq->axq_lock);
 }

@@ -244,6 +244,7 @@ void __kmap_flush_unused(void)
 }
 
 static inline unsigned long map_new_virtual(struct page *page)
+	__must_hold(&kmap_lock)
 {
 	unsigned long vaddr;
 	int count;

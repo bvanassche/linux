@@ -44,8 +44,14 @@ EXPORT_SYMBOL_GPL(fpga_region_class_find);
  * * -ENODEV if can't take parent driver module refcount.
  */
 static struct fpga_region *fpga_region_get(struct fpga_region *region)
+	__cond_acquires_err_ptr(&region->mutex)
 {
-	struct device *dev = &region->dev;
+	struct device *dev;
+
+	if (IS_ERR(region))
+		unreachable();
+
+	dev = &region->dev;
 
 	if (!mutex_trylock(&region->mutex)) {
 		dev_dbg(dev, "%s: FPGA Region already in use\n", __func__);
@@ -70,6 +76,7 @@ static struct fpga_region *fpga_region_get(struct fpga_region *region)
  * @region: FPGA region
  */
 static void fpga_region_put(struct fpga_region *region)
+	__releases(&region->mutex)
 {
 	struct device *dev = &region->dev;
 
@@ -98,12 +105,13 @@ int fpga_region_program_fpga(struct fpga_region *region)
 {
 	struct device *dev = &region->dev;
 	struct fpga_image_info *info = region->info;
+	struct fpga_region *r;
 	int ret;
 
-	region = fpga_region_get(region);
-	if (IS_ERR(region)) {
+	r = fpga_region_get(region);
+	if (IS_ERR(r)) {
 		dev_err(dev, "failed to get FPGA region\n");
-		return PTR_ERR(region);
+		return PTR_ERR(r);
 	}
 
 	ret = fpga_mgr_lock(region->mgr);

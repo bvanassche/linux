@@ -111,20 +111,24 @@ static inline void debug_spin_unlock(raw_spinlock_t *lock)
  * the detection here with an unfair lock which can cause problem of its own.
  */
 void do_raw_spin_lock(raw_spinlock_t *lock)
+	__acquires(lock)
 {
 	debug_spin_lock_before(lock);
 	arch_spin_lock(&lock->raw_lock);
 	mmiowb_spin_lock();
 	debug_spin_lock_after(lock);
+	__acquire(lock);
 }
 
 int do_raw_spin_trylock(raw_spinlock_t *lock)
+	__cond_acquires(true, lock)
 {
 	int ret = arch_spin_trylock(&lock->raw_lock);
 
 	if (ret) {
 		mmiowb_spin_lock();
 		debug_spin_lock_after(lock);
+		__acquire(lock);
 	}
 #ifndef CONFIG_SMP
 	/*
@@ -136,7 +140,9 @@ int do_raw_spin_trylock(raw_spinlock_t *lock)
 }
 
 void do_raw_spin_unlock(raw_spinlock_t *lock)
+	__releases(lock)
 {
+	__release(lock);
 	mmiowb_spin_unlock();
 	debug_spin_unlock(lock);
 	arch_spin_unlock(&lock->raw_lock);
@@ -157,15 +163,20 @@ static void rwlock_bug(rwlock_t *lock, const char *msg)
 #define RWLOCK_BUG_ON(cond, lock, msg) if (unlikely(cond)) rwlock_bug(lock, msg)
 
 void do_raw_read_lock(rwlock_t *lock)
+	__acquires_shared(lock)
 {
 	RWLOCK_BUG_ON(lock->magic != RWLOCK_MAGIC, lock, "bad magic");
 	arch_read_lock(&lock->raw_lock);
+	__acquire_shared(lock);
 }
 
 int do_raw_read_trylock(rwlock_t *lock)
+	__cond_acquires_shared(true, lock)
 {
 	int ret = arch_read_trylock(&lock->raw_lock);
 
+	if (ret)
+		__acquire_shared(lock);
 #ifndef CONFIG_SMP
 	/*
 	 * Must not happen on UP:
@@ -176,7 +187,9 @@ int do_raw_read_trylock(rwlock_t *lock)
 }
 
 void do_raw_read_unlock(rwlock_t *lock)
+	__releases_shared(lock)
 {
+	__release_shared(lock);
 	RWLOCK_BUG_ON(lock->magic != RWLOCK_MAGIC, lock, "bad magic");
 	arch_read_unlock(&lock->raw_lock);
 }
@@ -206,18 +219,23 @@ static inline void debug_write_unlock(rwlock_t *lock)
 }
 
 void do_raw_write_lock(rwlock_t *lock)
+	__acquires(lock)
 {
 	debug_write_lock_before(lock);
 	arch_write_lock(&lock->raw_lock);
 	debug_write_lock_after(lock);
+	__acquire(lock);
 }
 
 int do_raw_write_trylock(rwlock_t *lock)
+	__cond_acquires(true, lock)
 {
 	int ret = arch_write_trylock(&lock->raw_lock);
 
-	if (ret)
+	if (ret) {
 		debug_write_lock_after(lock);
+		__acquire(lock);
+	}
 #ifndef CONFIG_SMP
 	/*
 	 * Must not happen on UP:
@@ -228,7 +246,9 @@ int do_raw_write_trylock(rwlock_t *lock)
 }
 
 void do_raw_write_unlock(rwlock_t *lock)
+	__releases(lock)
 {
+	__release(lock);
 	debug_write_unlock(lock);
 	arch_write_unlock(&lock->raw_lock);
 }

@@ -664,6 +664,7 @@ out:
 }
 
 int sock_bindtoindex(struct sock *sk, int ifindex, bool lock_sk)
+	__context_unsafe(/* conditional locking */)
 {
 	int ret;
 
@@ -1144,6 +1145,7 @@ frag_limit_reached:
 #endif
 
 void sockopt_lock_sock(struct sock *sk)
+	__context_unsafe(/* conditional locking */)
 {
 	/* When current->bpf_ctx is set, the setsockopt is called from
 	 * a bpf prog.  bpf has ensured the sk lock has been
@@ -1157,6 +1159,7 @@ void sockopt_lock_sock(struct sock *sk)
 EXPORT_SYMBOL(sockopt_lock_sock);
 
 void sockopt_release_sock(struct sock *sk)
+	__context_unsafe(/* conditional unlocking */)
 {
 	if (has_current_bpf_ctx())
 		return;
@@ -2508,6 +2511,7 @@ static void sk_init_common(struct sock *sk)
  */
 struct sock *sk_clone(const struct sock *sk, const gfp_t priority,
 		      bool lock)
+	__context_unsafe(/* conditional locking */)
 {
 	struct proto *prot = READ_ONCE(sk->sk_prot);
 	struct sk_filter *filter;

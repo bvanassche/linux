@@ -3274,6 +3274,7 @@ static void add_to_engine(struct i915_request *rq)
 }
 
 static void remove_from_engine(struct i915_request *rq)
+	__context_unsafe(/* too complex for Clang */)
 {
 	struct intel_engine_cs *engine, *locked;
 

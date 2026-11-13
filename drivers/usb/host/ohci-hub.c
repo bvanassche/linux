@@ -345,6 +345,7 @@ static int ohci_bus_resume (struct usb_hcd *hcd)
 /* Carry out polling-, autostop-, and autoresume-related state changes */
 static int ohci_root_hub_state_changes(struct ohci_hcd *ohci, int changed,
 		int any_connected, int rhsc_status)
+	__context_unsafe(/* ohci_rh_suspend() drops and reacquires lock */)
 {
 	int	poll_rh = 1;
 	int	rhsc_enable;

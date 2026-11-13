@@ -1102,6 +1102,7 @@ ssize_t __blockdev_direct_IO(struct kiocb *iocb, struct inode *inode,
 		struct block_device *bdev, struct iov_iter *iter,
 		get_block_t get_block, dio_iodone_t end_io,
 		int flags)
+	__context_unsafe(/* conditional locking */)
 {
 	unsigned i_blkbits = READ_ONCE(inode->i_blkbits);
 	unsigned blkbits = i_blkbits;

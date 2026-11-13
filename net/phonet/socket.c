@@ -551,7 +551,7 @@ static struct sock *pn_sock_get_next(struct seq_file *seq, struct sock *sk)
 }
 
 static void *pn_sock_seq_start(struct seq_file *seq, loff_t *pos)
-	__acquires(rcu)
+	__acquires_shared(RCU)
 {
 	rcu_read_lock();
 	return *pos ? pn_sock_get_idx(seq, *pos - 1) : SEQ_START_TOKEN;
@@ -570,7 +570,7 @@ static void *pn_sock_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 }
 
 static void pn_sock_seq_stop(struct seq_file *seq, void *v)
-	__releases(rcu)
+	__releases_shared(RCU)
 {
 	rcu_read_unlock();
 }

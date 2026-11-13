@@ -1886,6 +1886,7 @@ static int __meminit init_admin_reserve(void)
 subsys_initcall(init_admin_reserve);
 
 int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
+	__releases(&oldmm->mmap_lock)
 {
 	mmap_assert_write_locked(oldmm);
 	dup_mm_exe_file(mm, oldmm);

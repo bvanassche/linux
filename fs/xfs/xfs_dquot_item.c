@@ -121,6 +121,7 @@ xfs_qm_dquot_logitem_push(
 	struct list_head	*buffer_list)
 		__releases(&lip->li_ailp->ail_lock)
 		__acquires(&lip->li_ailp->ail_lock)
+	__context_unsafe(/* conditionally drops and reacquires ail_lock */)
 {
 	struct xfs_dq_logitem	*qlip = DQUOT_ITEM(lip);
 	struct xfs_dquot	*dqp = qlip->qli_dquot;
@@ -188,6 +189,7 @@ out_unlock:
 STATIC void
 xfs_qm_dquot_logitem_release(
 	struct xfs_log_item	*lip)
+	__releases(&DQUOT_ITEM(lip)->qli_dquot->q_qlock)
 {
 	struct xfs_dquot	*dqp = DQUOT_ITEM(lip)->qli_dquot;
 
@@ -206,6 +208,7 @@ STATIC void
 xfs_qm_dquot_logitem_committing(
 	struct xfs_log_item	*lip,
 	xfs_csn_t		seq)
+	__releases(&DQUOT_ITEM(lip)->qli_dquot->q_qlock)
 {
 	return xfs_qm_dquot_logitem_release(lip);
 }

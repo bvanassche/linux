@@ -746,6 +746,7 @@ static void tbstream_dev_stop(struct tbstream_dev *sdev)
 
 /* Use only with read_iter/write_iter() to handle nowait */
 static int tbstream_dev_lock(struct tbstream_dev *sdev, bool nowait)
+	__cond_acquires(0, &sdev->lock)
 {
 	if (nowait) {
 		if (!mutex_trylock(&sdev->lock))

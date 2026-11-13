@@ -2201,7 +2201,7 @@ int i915_vma_unbind(struct i915_vma *vma)
 		/* XXX not always required: nop_clear_range */
 		wakeref = intel_runtime_pm_get(&vm->i915->runtime_pm);
 
-	err = mutex_lock_interruptible_nested(&vma->vm->mutex, !wakeref);
+	err = mutex_lock_interruptible_nested(&vm->mutex, !wakeref);
 	if (err)
 		goto out_rpm;
 

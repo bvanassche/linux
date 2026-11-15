@@ -553,7 +553,7 @@ done:
 }
 
 static int __sock_xmit(struct nbd_device *nbd, struct socket *sock, int send,
-		       struct iov_iter *iter, int msg_flags, int *sent)
+		       struct iov_iter *iter, int msg_flags)
 {
 	int result;
 	struct msghdr msg = {} ;
@@ -586,8 +586,6 @@ static int __sock_xmit(struct nbd_device *nbd, struct socket *sock, int send,
 					result = -EPIPE; /* short read */
 				break;
 			}
-			if (sent)
-				*sent += result;
 		} while (msg_data_left(&msg));
 	}
 
@@ -601,12 +599,12 @@ static int __sock_xmit(struct nbd_device *nbd, struct socket *sock, int send,
  *  negtive value on failure, and never return 0.
  */
 static int sock_xmit(struct nbd_device *nbd, int index, int send,
-		     struct iov_iter *iter, int msg_flags, int *sent)
+		     struct iov_iter *iter, int msg_flags)
 {
 	struct nbd_config *config = nbd->config;
 	struct socket *sock = config->socks[index]->sock;
 
-	return __sock_xmit(nbd, sock, send, iter, msg_flags, sent);
+	return __sock_xmit(nbd, sock, send, iter, msg_flags);
 }
 
 /*
@@ -666,7 +664,7 @@ static blk_status_t nbd_send_cmd(struct nbd_device *nbd, struct nbd_cmd *cmd,
 		req, nbdcmd_to_ascii(type),
 		(unsigned long long)blk_rq_pos(req) << 9, blk_rq_bytes(req));
 	result = sock_xmit(nbd, index, 1, &from,
-			(type == NBD_CMD_WRITE) ? MSG_MORE : 0, NULL);
+			(type == NBD_CMD_WRITE) ? MSG_MORE : 0);
 	trace_nbd_header_sent(req, handle);
 	if (result < 0) {
 		dev_err_ratelimited(disk_to_dev(nbd->disk),
@@ -689,7 +687,7 @@ static blk_status_t nbd_send_cmd(struct nbd_device *nbd, struct nbd_cmd *cmd,
 			dev_dbg(nbd_to_dev(nbd), "request %p: sending %d bytes data\n",
 				req, bvec.bv_len);
 			iov_iter_bvec(&from, ITER_SOURCE, &bvec, 1, bvec.bv_len);
-			result = sock_xmit(nbd, index, 1, &from, flags, NULL);
+			result = sock_xmit(nbd, index, 1, &from, flags);
 			if (result < 0) {
 				dev_err(disk_to_dev(nbd->disk),
 					"Send data failed (result %d)\n",
@@ -730,7 +728,7 @@ static int nbd_read_reply(struct nbd_device *nbd, struct socket *sock,
 
 	reply->magic = 0;
 	iov_iter_kvec(&to, ITER_DEST, &iov, 1, sizeof(*reply));
-	result = __sock_xmit(nbd, sock, 0, &to, MSG_WAITALL, NULL);
+	result = __sock_xmit(nbd, sock, 0, &to, MSG_WAITALL);
 	if (result < 0) {
 		if (!nbd_disconnected(nbd->config))
 			dev_err(disk_to_dev(nbd->disk),
@@ -819,7 +817,7 @@ static struct nbd_cmd *nbd_handle_reply(struct nbd_device *nbd, int index,
 
 		rq_for_each_segment(bvec, req, iter) {
 			iov_iter_bvec(&to, ITER_DEST, &bvec, 1, bvec.bv_len);
-			result = sock_xmit(nbd, index, 0, &to, MSG_WAITALL, NULL);
+			result = sock_xmit(nbd, index, 0, &to, MSG_WAITALL);
 			if (result < 0) {
 				dev_err(disk_to_dev(nbd->disk), "Receive data failed (result %d)\n",
 					result);
@@ -1319,7 +1317,7 @@ static void send_disconnects(struct nbd_device *nbd)
 
 		iov_iter_kvec(&from, ITER_SOURCE, &iov, 1, sizeof(request));
 		mutex_lock(&nsock->tx_lock);
-		ret = sock_xmit(nbd, i, 1, &from, 0, NULL);
+		ret = sock_xmit(nbd, i, 1, &from, 0);
 		if (ret < 0)
 			dev_err(disk_to_dev(nbd->disk),
 				"Send disconnect failed %d\n", ret);

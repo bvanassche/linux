@@ -63,6 +63,10 @@ struct nbd_sock {
 	int fallback_index;
 	int cookie;
 	struct work_struct work;
+	spinlock_t cmd_lock;
+	struct list_head cmd_list;
+	struct work_struct tx_work;
+	int index;
 };
 
 struct recv_thread_args {
@@ -123,6 +127,7 @@ struct nbd_device {
 	struct mutex config_lock;
 	struct gendisk *disk;
 	struct workqueue_struct *recv_workq;
+	struct workqueue_struct *send_workq;
 	struct work_struct remove_work;
 
 	struct list_head list;
@@ -136,7 +141,7 @@ struct nbd_device {
 
 #define NBD_CMD_REQUEUED	1
 /*
- * This flag will be set if nbd_queue_rq() succeed, and will be checked and
+ * This flag will be set if nbd_send_cmd() succeeded, and will be checked and
  * cleared in completion. Both setting and clearing of the flag are protected
  * by cmd->lock.
  */
@@ -148,6 +153,7 @@ struct nbd_device {
 struct nbd_cmd {
 	struct nbd_device *nbd;
 	struct mutex lock;
+	struct list_head list_entry;
 	int index;
 	int cookie;
 	int retries;
@@ -267,6 +273,7 @@ static void nbd_dev_remove(struct nbd_device *nbd)
 	struct gendisk *disk = nbd->disk;
 
 	del_gendisk(disk);
+	destroy_workqueue(nbd->send_workq);
 	blk_mq_free_tag_set(&nbd->tag_set);
 
 	/*
@@ -1080,6 +1087,7 @@ static bool nbd_clear_req(struct request *req, void *data)
 static void nbd_clear_que(struct nbd_device *nbd)
 {
 	blk_mq_quiesce_queue(nbd->disk->queue);
+	flush_workqueue(nbd->send_workq);
 	blk_mq_tagset_busy_iter(&nbd->tag_set, nbd_clear_req, NULL);
 	blk_mq_unquiesce_queue(nbd->disk->queue);
 	dev_dbg(disk_to_dev(nbd->disk), "queue cleared\n");
@@ -1139,36 +1147,12 @@ static blk_status_t nbd_handle_cmd(struct nbd_cmd *cmd, int index)
 {
 	struct request *req = blk_mq_rq_from_pdu(cmd);
 	struct nbd_device *nbd = cmd->nbd;
-	struct nbd_config *config;
+	struct nbd_config *config = nbd->config;
 	struct nbd_sock *nsock;
 	blk_status_t ret;
 
 	lockdep_assert_held(&cmd->lock);
 
-	/*
-	 * No config_refs reference is held here. nbd->config and
-	 * config->socks remain valid because nbd_config_put() calls
-	 * nbd_clear_que(), which quiesces the request queue, before freeing
-	 * them. The only other place that modifies config->socks is
-	 * nbd_add_socket(). It only runs before nbd_start_device(), while the
-	 * capacity is zero and the write cache is disabled, so no request
-	 * reaches this driver concurrently (see also commit 285908f554fe
-	 * ("nbd: remove queue freeze in nbd_add_socket")).
-	 */
-	if (!refcount_read(&nbd->config_refs)) {
-		dev_err_ratelimited(disk_to_dev(nbd->disk),
-				    "Socks array is empty\n");
-		return BLK_STS_IOERR;
-	}
-	/* Pairs with smp_wmb() in nbd_alloc_and_init_config(). */
-	smp_rmb();
-	config = READ_ONCE(nbd->config);
-
-	if (index >= config->num_connections) {
-		dev_err_ratelimited(disk_to_dev(nbd->disk),
-				    "Attempted send on invalid socket\n");
-		return BLK_STS_IOERR;
-	}
 	cmd->status = BLK_STS_OK;
 again:
 	nsock = config->socks[index];
@@ -1189,6 +1173,7 @@ again:
 			 * and instead just error out.
 			 */
 			sock_shutdown(nbd);
+			blk_mq_start_request(req);
 			return BLK_STS_IOERR;
 		}
 		goto again;
@@ -1211,33 +1196,98 @@ out:
 	return ret;
 }
 
+static void nbd_tx_work(struct work_struct *work)
+{
+	struct nbd_sock *nsock = container_of(work, struct nbd_sock, tx_work);
+	struct nbd_cmd *cmd;
+	unsigned int memflags;
+
+	/* See nbd_queue_rq() for why nsock and nbd->config remain valid. */
+	memflags = memalloc_noio_save();
+
+	spin_lock(&nsock->cmd_lock);
+	while (!list_empty(&nsock->cmd_list)) {
+		struct request *req;
+		blk_status_t ret;
+
+		cmd = list_first_entry(&nsock->cmd_list, struct nbd_cmd,
+				       list_entry);
+		list_del_init(&cmd->list_entry);
+		spin_unlock(&nsock->cmd_lock);
+
+		req = blk_mq_rq_from_pdu(cmd);
+		/*
+		 * Since we look at the bio's to send the request over the
+		 * network we need to make sure the completion work doesn't
+		 * mark this request done before we are done doing our send.
+		 * This keeps us from dereferencing freed data if we have
+		 * particularly fast completions (ie we get the completion
+		 * before we exit sock_xmit on the last bvec) or in the case
+		 * that the server is misbehaving (or there was an error)
+		 * before we're done sending everything over the wire.
+		 */
+		mutex_lock(&cmd->lock);
+		clear_bit(NBD_CMD_REQUEUED, &cmd->flags);
+		ret = nbd_handle_cmd(cmd, nsock->index);
+		if (ret != BLK_STS_OK)
+			cmd->status = ret;
+		mutex_unlock(&cmd->lock);
+
+		if (ret != BLK_STS_OK)
+			blk_mq_complete_request(req);
+
+		cond_resched();
+
+		spin_lock(&nsock->cmd_lock);
+	}
+	spin_unlock(&nsock->cmd_lock);
+
+	memalloc_noio_restore(memflags);
+}
+
 static blk_status_t nbd_queue_rq(struct blk_mq_hw_ctx *hctx,
 			const struct blk_mq_queue_data *bd)
 {
-	struct nbd_cmd *cmd = blk_mq_rq_to_pdu(bd->rq);
-	blk_status_t ret;
+	struct request *req = bd->rq;
+	struct nbd_cmd *cmd = blk_mq_rq_to_pdu(req);
+	struct nbd_device *nbd = cmd->nbd;
+	struct nbd_config *config;
+	struct nbd_sock *nsock;
+	unsigned int index = hctx->queue_num;
 
 	/*
-	 * Since we look at the bio's to send the request over the network we
-	 * need to make sure the completion work doesn't mark this request done
-	 * before we are done doing our send.  This keeps us from dereferencing
-	 * freed data if we have particularly fast completions (ie we get the
-	 * completion before we exit sock_xmit on the last bvec) or in the case
-	 * that the server is misbehaving (or there was an error) before we're
-	 * done sending everything over the wire.
+	 * No config_refs reference is held here or in nbd_tx_work().
+	 * nbd->config and config->socks remain valid because
+	 * nbd_config_put() calls nbd_clear_que(), which quiesces the request
+	 * queue and flushes nbd->send_workq, before freeing them. The only
+	 * other place that modifies config->socks is nbd_add_socket(). It only
+	 * runs before nbd_start_device(), while the capacity is zero and the
+	 * write cache is disabled, so no request reaches this driver
+	 * concurrently (see also commit 285908f554fe ("nbd: remove queue freeze
+	 * in nbd_add_socket")).
 	 */
-	mutex_lock(&cmd->lock);
-	clear_bit(NBD_CMD_REQUEUED, &cmd->flags);
+	if (!refcount_read(&nbd->config_refs)) {
+		dev_err_ratelimited(disk_to_dev(nbd->disk),
+				    "Socks array is empty\n");
+		return BLK_STS_IOERR;
+	}
+	/* Pairs with smp_wmb() in nbd_alloc_and_init_config(). */
+	smp_rmb();
+	config = READ_ONCE(nbd->config);
 
-	/* We can be called directly from the user space process, which means we
-	 * could possibly have signals pending so our sendmsg will fail.  In
-	 * this case we need to return that we are busy, otherwise error out as
-	 * appropriate.
-	 */
-	ret = nbd_handle_cmd(cmd, hctx->queue_num);
-	mutex_unlock(&cmd->lock);
+	if (index >= config->num_connections) {
+		dev_err_ratelimited(disk_to_dev(nbd->disk),
+				    "Attempted send on invalid socket\n");
+		return BLK_STS_IOERR;
+	}
 
-	return ret;
+	nsock = config->socks[index];
+	spin_lock(&nsock->cmd_lock);
+	list_add_tail(&cmd->list_entry, &nsock->cmd_list);
+	queue_work(nbd->send_workq, &nsock->tx_work);
+	spin_unlock(&nsock->cmd_lock);
+
+	return BLK_STS_OK;
 }
 
 static struct socket *nbd_get_socket(struct nbd_device *nbd, unsigned long fd,
@@ -1364,6 +1414,10 @@ static int nbd_add_socket(struct nbd_device *nbd, unsigned long arg,
 	nsock->pending = NULL;
 	nsock->sent = 0;
 	nsock->cookie = 0;
+	nsock->index = config->num_connections;
+	spin_lock_init(&nsock->cmd_lock);
+	INIT_LIST_HEAD(&nsock->cmd_list);
+	INIT_WORK(&nsock->tx_work, nbd_tx_work);
 	INIT_WORK(&nsock->work, nbd_pending_cmd_work);
 	socks[config->num_connections++] = nsock;
 	atomic_inc(&config->live_connections);
@@ -1766,7 +1820,7 @@ static int nbd_alloc_and_init_config(struct nbd_device *nbd)
 	 * readers that observe a non-zero config_refs also observe the new
 	 * nbd->config value. Pairs with the barrier after
 	 * refcount_inc_not_zero() in nbd_get_config_unlocked() and with the
-	 * smp_rmb() in nbd_handle_cmd().
+	 * smp_rmb() in nbd_queue_rq().
 	 */
 	smp_wmb(); /* Pairs with smp_rmb() and smp_mb__after_atomic(). */
 	refcount_set(&nbd->config_refs, 1);
@@ -1965,6 +2019,7 @@ static int nbd_init_request(struct blk_mq_tag_set *set, struct request *rq,
 	struct nbd_cmd *cmd = blk_mq_rq_to_pdu(rq);
 	cmd->nbd = set->driver_data;
 	cmd->flags = 0;
+	INIT_LIST_HEAD(&cmd->list_entry);
 	mutex_init(&cmd->lock);
 	return 0;
 }
@@ -2040,6 +2095,15 @@ static struct nbd_device *nbd_dev_add(int index, unsigned int refs,
 		goto out_err_disk;
 	}
 
+	nbd->send_workq = alloc_workqueue("nbd%d-send",
+					  WQ_MEM_RECLAIM | WQ_HIGHPRI |
+					  WQ_UNBOUND, 0, nbd->index);
+	if (!nbd->send_workq) {
+		dev_err(disk_to_dev(nbd->disk), "Could not allocate knbd send work queue.\n");
+		err = -ENOMEM;
+		goto out_free_recv_work;
+	}
+
 	mutex_init(&nbd->config_lock);
 	refcount_set(&nbd->config_refs, 0);
 	/*
@@ -2066,6 +2130,8 @@ static struct nbd_device *nbd_dev_add(int index, unsigned int refs,
 	return nbd;
 
 out_free_work:
+	destroy_workqueue(nbd->send_workq);
+out_free_recv_work:
 	destroy_workqueue(nbd->recv_workq);
 out_err_disk:
 	put_disk(disk);

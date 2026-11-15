@@ -335,7 +335,7 @@ static void nbd_mark_nsock_dead(struct nbd_device *nbd, struct nbd_sock *nsock,
 			}
 		}
 	}
-	nsock->dead = true;
+	WRITE_ONCE(nsock->dead, true);
 	nsock->pending = NULL;
 	nsock->sent = 0;
 }
@@ -1447,26 +1447,31 @@ static int nbd_genl_reconnect_sock_cb(struct nbd_device *nbd, unsigned long arg)
 		return -ENOMEM;
 	}
 
+	lockdep_assert_held(&nbd->config_lock);
+
 	for (i = 0; i < config->num_connections; i++) {
 		struct nbd_sock *nsock = config->socks[i];
 
-		if (!nsock->dead)
+		/*
+		 * Only this function, with config_lock held, clears
+		 * nsock->dead. Other contexts may set it concurrently; if that
+		 * happens after this check, the socket is reconnected on a
+		 * later reconfigure request.
+		 */
+		if (!READ_ONCE(nsock->dead))
 			continue;
 
-		mutex_lock(&nsock->tx_lock);
-		if (!nsock->dead) {
-			mutex_unlock(&nsock->tx_lock);
-			continue;
-		}
 		sk_set_memalloc(sock->sk);
 		if (nbd->tag_set.timeout)
 			sock->sk->sk_sndtimeo = nbd->tag_set.timeout;
 		atomic_inc(&config->recv_threads);
 		refcount_inc(&nbd->config_refs);
+
+		mutex_lock(&nsock->tx_lock);
 		old = nsock->sock;
 		nsock->fallback_index = -1;
 		nsock->sock = sock;
-		nsock->dead = false;
+		WRITE_ONCE(nsock->dead, false);
 		INIT_WORK(&args->work, recv_work);
 		args->index = i;
 		args->nbd = nbd;

@@ -322,6 +322,7 @@ static void nbd_mark_nsock_dead(struct nbd_device *nbd, struct nbd_sock *nsock,
 					       &nbd->config->runtime_flags)) {
 				set_bit(NBD_RT_DISCONNECTED,
 					&nbd->config->runtime_flags);
+				wake_up(&nbd->config->conn_wait);
 				dev_info(nbd_to_dev(nbd),
 					"Disconnected due to user request.\n");
 			}
@@ -420,6 +421,7 @@ static void sock_shutdown(struct nbd_device *nbd)
 		nbd_mark_nsock_dead(nbd, nsock, 0);
 		mutex_unlock(&nsock->tx_lock);
 	}
+	wake_up(&config->conn_wait);
 	dev_warn(disk_to_dev(nbd->disk), "shutting down sockets\n");
 }
 
@@ -2327,7 +2329,6 @@ static void nbd_disconnect_and_put(struct nbd_device *nbd)
 	mutex_lock(&nbd->config_lock);
 	nbd_disconnect(nbd);
 	sock_shutdown(nbd);
-	wake_up(&nbd->config->conn_wait);
 	/*
 	 * Make sure recv thread has finished, we can safely call nbd_clear_que()
 	 * to cancel the inflight I/Os.

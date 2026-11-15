@@ -629,11 +629,16 @@ static inline int was_interrupted(int result)
  * We've already sent header or part of data payload, have no choice but
  * to set pending and schedule it in work.
  *
- * And we have to return BLK_STS_OK to block core, otherwise this same
- * request may be re-dispatched with different tag, but our header has
- * been sent out with old tag, and this way does confuse reply handling.
+ * The request must not be requeued, otherwise this same request may be
+ * re-dispatched with different tag, but our header has been sent out with
+ * old tag, and this way does confuse reply handling.
+ *
+ * Returns true if nsock->work has been scheduled. Returns false if no
+ * config_refs reference could be obtained because the device is being torn
+ * down. In that case the caller must mark @nsock dead, since a truncated
+ * request has been sent, and fail the request.
  */
-static void nbd_sched_pending_work(struct nbd_device *nbd,
+static bool nbd_sched_pending_work(struct nbd_device *nbd,
 				   struct nbd_sock *nsock,
 				   struct nbd_cmd *cmd, int sent)
 {
@@ -642,11 +647,14 @@ static void nbd_sched_pending_work(struct nbd_device *nbd,
 	/* pending work should be scheduled only once */
 	WARN_ON_ONCE(test_bit(NBD_CMD_PARTIAL_SEND, &cmd->flags));
 
+	if (!refcount_inc_not_zero(&nbd->config_refs))
+		return false;
+
 	nsock->pending = req;
 	nsock->sent = sent;
 	set_bit(NBD_CMD_PARTIAL_SEND, &cmd->flags);
-	refcount_inc(&nbd->config_refs);
 	schedule_work(&nsock->work);
+	return true;
 }
 
 /*
@@ -734,8 +742,16 @@ static blk_status_t nbd_send_cmd(struct nbd_device *nbd, struct nbd_cmd *cmd,
 			 * completely done.
 			 */
 			if (sent) {
-				nbd_sched_pending_work(nbd, nsock, cmd, sent);
-				return BLK_STS_OK;
+				if (nbd_sched_pending_work(nbd, nsock, cmd,
+							   sent))
+					return BLK_STS_OK;
+				/*
+				 * Don't send anything after a truncated request.
+				 * The device is being torn down, so don't notify
+				 * user space that the link is dead.
+				 */
+				nbd_mark_nsock_dead(nbd, nsock, 0);
+				return BLK_STS_IOERR;
 			}
 			nbd_requeue_cmd(cmd);
 			return BLK_STS_OK;
@@ -772,8 +788,11 @@ send_pages:
 			result = sock_xmit(nbd, index, 1, &from, flags, &sent);
 			if (result < 0) {
 				if (was_interrupted(result)) {
-					nbd_sched_pending_work(nbd, nsock, cmd, sent);
-					return BLK_STS_OK;
+					if (nbd_sched_pending_work(nbd, nsock,
+								   cmd, sent))
+						return BLK_STS_OK;
+					nbd_mark_nsock_dead(nbd, nsock, 0);
+					return BLK_STS_IOERR;
 				}
 				dev_err(disk_to_dev(nbd->disk),
 					"Send data failed (result %d)\n",
@@ -1126,17 +1145,28 @@ static blk_status_t nbd_handle_cmd(struct nbd_cmd *cmd, int index)
 
 	lockdep_assert_held(&cmd->lock);
 
-	config = nbd_get_config_unlocked(nbd);
-	if (!config) {
+	/*
+	 * No config_refs reference is held here. nbd->config and
+	 * config->socks remain valid because nbd_config_put() calls
+	 * nbd_clear_que(), which quiesces the request queue, before freeing
+	 * them. The only other place that modifies config->socks is
+	 * nbd_add_socket(). It only runs before nbd_start_device(), while the
+	 * capacity is zero and the write cache is disabled, so no request
+	 * reaches this driver concurrently (see also commit 285908f554fe
+	 * ("nbd: remove queue freeze in nbd_add_socket")).
+	 */
+	if (!refcount_read(&nbd->config_refs)) {
 		dev_err_ratelimited(disk_to_dev(nbd->disk),
 				    "Socks array is empty\n");
 		return BLK_STS_IOERR;
 	}
+	/* Pairs with smp_wmb() in nbd_alloc_and_init_config(). */
+	smp_rmb();
+	config = READ_ONCE(nbd->config);
 
 	if (index >= config->num_connections) {
 		dev_err_ratelimited(disk_to_dev(nbd->disk),
 				    "Attempted send on invalid socket\n");
-		nbd_config_put(nbd);
 		return BLK_STS_IOERR;
 	}
 	cmd->status = BLK_STS_OK;
@@ -1159,7 +1189,6 @@ again:
 			 * and instead just error out.
 			 */
 			sock_shutdown(nbd);
-			nbd_config_put(nbd);
 			return BLK_STS_IOERR;
 		}
 		goto again;
@@ -1179,7 +1208,6 @@ again:
 	ret = nbd_send_cmd(nbd, cmd, index);
 out:
 	mutex_unlock(&nsock->tx_lock);
-	nbd_config_put(nbd);
 	return ret;
 }
 
@@ -1734,12 +1762,13 @@ static int nbd_alloc_and_init_config(struct nbd_device *nbd)
 
 	nbd->config = config;
 	/*
-	 * Order refcount_set(&nbd->config_refs, 1) and nbd->config assignment,
-	 * its pair is the barrier in nbd_get_config_unlocked().
-	 * So nbd_get_config_unlocked() won't see nbd->config as null after
-	 * refcount_inc_not_zero() succeed.
+	 * Order the nbd->config assignment before refcount_set(), such that
+	 * readers that observe a non-zero config_refs also observe the new
+	 * nbd->config value. Pairs with the barrier after
+	 * refcount_inc_not_zero() in nbd_get_config_unlocked() and with the
+	 * smp_rmb() in nbd_handle_cmd().
 	 */
-	smp_mb__before_atomic();
+	smp_wmb(); /* Pairs with smp_rmb() and smp_mb__after_atomic(). */
 	refcount_set(&nbd->config_refs, 1);
 
 	return 0;

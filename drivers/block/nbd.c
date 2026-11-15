@@ -650,8 +650,7 @@ static void nbd_sched_pending_work(struct nbd_device *nbd,
 }
 
 /*
- * Returns BLK_STS_RESOURCE if the caller should retry after a delay.
- * Returns BLK_STS_IOERR if sending failed.
+ * Returns BLK_STS_IOERR if sending failed and cannot be retried.
  */
 static blk_status_t nbd_send_cmd(struct nbd_device *nbd, struct nbd_cmd *cmd,
 				 int index)
@@ -728,7 +727,8 @@ static blk_status_t nbd_send_cmd(struct nbd_device *nbd, struct nbd_cmd *cmd,
 	trace_nbd_header_sent(req, handle);
 	if (result < 0) {
 		if (was_interrupted(result)) {
-			/* If we haven't sent anything we can just return BUSY,
+			/*
+			 * If we haven't sent anything we can just requeue,
 			 * however if we have sent something we need to make
 			 * sure we only allow this req to be sent until we are
 			 * completely done.
@@ -737,8 +737,8 @@ static blk_status_t nbd_send_cmd(struct nbd_device *nbd, struct nbd_cmd *cmd,
 				nbd_sched_pending_work(nbd, nsock, cmd, sent);
 				return BLK_STS_OK;
 			}
-			set_bit(NBD_CMD_REQUEUED, &cmd->flags);
-			return BLK_STS_RESOURCE;
+			nbd_requeue_cmd(cmd);
+			return BLK_STS_OK;
 		}
 		dev_err_ratelimited(disk_to_dev(nbd->disk),
 			"Send control failed (result %d)\n", result);

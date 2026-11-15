@@ -630,6 +630,7 @@ void gpio_device_teardown_shared(struct gpio_device *gdev)
 }
 
 static void gpio_shared_release(struct kref *kref)
+	__context_unsafe(/* __releases(&entry->lock) */)
 {
 	struct gpio_shared_entry *entry =
 		container_of(kref, struct gpio_shared_entry, ref);

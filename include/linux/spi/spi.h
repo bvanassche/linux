@@ -281,7 +281,25 @@ struct spi_device {
 static_assert((SPI_MODE_KERNEL_MASK & SPI_MODE_USER_MASK) == 0,
 	      "SPI_MODE_USER_MASK & SPI_MODE_KERNEL_MASK must not overlap");
 
+#if defined(WARN_CONTEXT_ANALYSIS) && !defined(__CHECKER__) && !defined(__GENKSYMS__)
+static inline __overloadable struct spi_device *to_spi_device(struct device *dev)
+{
+	return container_of(dev, struct spi_device, dev);
+}
+
+static inline __overloadable struct spi_device *to_spi_device(void *dev)
+{
+	return container_of(dev, struct spi_device, dev);
+}
+
+static inline __overloadable const struct spi_device *
+to_spi_device(const struct device *dev)
+{
+	return container_of(dev, struct spi_device, dev);
+}
+#else
 #define to_spi_device(__dev)	container_of_const(__dev, struct spi_device, dev)
+#endif
 
 /* Most drivers won't need to care about device refcounting */
 static inline struct spi_device *spi_dev_get(struct spi_device *spi)

@@ -770,6 +770,7 @@ static inline void blk_zone_wplug_bio_io_error(struct blk_zone_wplug *zwplug,
  * Abort (fail) all plugged BIOs of a zone write plug.
  */
 static void disk_zone_wplug_abort(struct blk_zone_wplug *zwplug)
+	__must_hold(&zwplug->lock)
 {
 	struct gendisk *disk = zwplug->disk;
 	struct bio *bio;
@@ -807,6 +808,7 @@ static void disk_zone_wplug_abort(struct blk_zone_wplug *zwplug)
  * unhashed when its last reference is dropped.
  */
 static void disk_mark_zone_wplug_dead(struct blk_zone_wplug *zwplug)
+	__must_hold(&zwplug->lock)
 {
 	lockdep_assert_held(&zwplug->lock);
 
@@ -817,6 +819,7 @@ static void disk_mark_zone_wplug_dead(struct blk_zone_wplug *zwplug)
 }
 
 static inline bool disk_check_zone_wplug_dead(struct blk_zone_wplug *zwplug)
+	__must_hold(&zwplug->lock)
 {
 	if (disk_zone_wplug_is_offline_or_readonly(zwplug)) {
 		disk_zone_wplug_abort(zwplug);
@@ -912,6 +915,7 @@ again:
  */
 static void disk_zone_wplug_update_cond(struct gendisk *disk,
 					struct blk_zone_wplug *zwplug)
+	__must_hold(&zwplug->lock)
 {
 	lockdep_assert_held(&zwplug->lock);
 
@@ -932,6 +936,7 @@ static void disk_zone_wplug_update_cond(struct gendisk *disk,
 static void disk_zone_wplug_set_wp_offset(struct gendisk *disk,
 					  struct blk_zone_wplug *zwplug,
 					  unsigned int wp_offset)
+	__must_hold(&zwplug->lock)
 {
 	lockdep_assert_held(&zwplug->lock);
 
@@ -1354,6 +1359,7 @@ void blk_zone_mgmt_bio_endio(struct bio *bio)
 
 static void disk_zone_wplug_schedule_work(struct gendisk *disk,
 					  struct blk_zone_wplug *zwplug)
+	__must_hold(&zwplug->lock)
 {
 	lockdep_assert_held(&zwplug->lock);
 
@@ -1375,6 +1381,7 @@ static void disk_zone_wplug_schedule_work(struct gendisk *disk,
 static inline void disk_zone_wplug_add_bio(struct gendisk *disk,
 				struct blk_zone_wplug *zwplug,
 				struct bio *bio, unsigned int nr_segs)
+	__must_hold(&zwplug->lock)
 {
 	/*
 	 * Grab an extra reference on the BIO request queue usage counter.
@@ -1530,6 +1537,7 @@ void blk_zone_write_plug_init_request(struct request *req)
  */
 static bool blk_zone_wplug_prepare_bio(struct blk_zone_wplug *zwplug,
 				       struct bio *bio)
+	__must_hold(&zwplug->lock)
 {
 	struct gendisk *disk = bio->bi_bdev->bd_disk;
 
@@ -2055,6 +2063,7 @@ static unsigned int disk_get_nr_zones(struct gendisk *disk, sector_t capacity)
 #define BLK_ZONE_WPLUG_DEFAULT_POOL_SIZE	128
 
 static int disk_alloc_zone_resources(struct gendisk *disk, sector_t capacity)
+	__must_hold(&disk->zone_revalidate_mutex)
 {
 	struct queue_limits *lim = &disk->queue->limits;
 	unsigned int nr_zones, pool_size, i;
@@ -2201,6 +2210,7 @@ struct blk_revalidate_zone_args {
 
 static int disk_init_revalidate_args(struct gendisk *disk,
 				     struct blk_revalidate_zone_args *args)
+	__must_hold(&disk->zone_revalidate_mutex)
 {
 	args->disk = disk;
 	args->nr_zones = disk_get_nr_zones(disk, args->capacity);
@@ -2221,6 +2231,7 @@ static int disk_init_revalidate_args(struct gendisk *disk,
  */
 static int disk_revalidate_zone_resources(struct gendisk *disk,
 					  struct blk_revalidate_zone_args *args)
+	__must_hold(&disk->zone_revalidate_mutex)
 {
 	struct request_queue *q = disk->queue;
 	unsigned int nr_seq_zones;
@@ -2328,6 +2339,7 @@ static void disk_drop_zone_wplug(struct blk_zone_wplug *zwplug, void *data)
 
 static int disk_revalidate_capacity(struct gendisk *disk,
 				    struct blk_revalidate_zone_args *args)
+	__must_hold(&disk->zone_revalidate_mutex)
 {
 	struct queue_limits *lim = &disk->queue->limits;
 	sector_t zone_sectors = lim->chunk_sectors;

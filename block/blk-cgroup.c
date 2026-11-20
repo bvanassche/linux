@@ -391,15 +391,16 @@ out_free_blkg:
  * necessary using %GFP_NOWAIT.  @new_blkg is always consumed on return.
  */
 static struct blkcg_gq *blkg_create(struct blkcg *blkcg, struct gendisk *disk,
+				    struct request_queue *q,
 				    struct blkcg_gq *new_blkg)
 {
 	struct blkcg_gq *blkg;
 	int i, ret;
 
-	lockdep_assert_held(&disk->queue->queue_lock);
+	lockdep_assert_held(&q->queue_lock);
 
 	/* request_queue is dying, do not create/recreate a blkg */
-	if (blk_queue_dying(disk->queue)) {
+	if (blk_queue_dying(q)) {
 		ret = -ENODEV;
 		goto err_free_blkg;
 	}
@@ -416,7 +417,7 @@ static struct blkcg_gq *blkg_create(struct blkcg *blkcg, struct gendisk *disk,
 
 	/* link parent */
 	if (blkcg_parent(blkcg)) {
-		blkg->parent = blkg_lookup(blkcg_parent(blkcg), disk->queue);
+		blkg->parent = blkg_lookup(blkcg_parent(blkcg), q);
 		if (WARN_ON_ONCE(!blkg->parent)) {
 			ret = -ENODEV;
 			goto err_free_blkg;
@@ -434,10 +435,10 @@ static struct blkcg_gq *blkg_create(struct blkcg *blkcg, struct gendisk *disk,
 
 	/* insert */
 	spin_lock(&blkcg->lock);
-	ret = radix_tree_insert(&blkcg->blkg_tree, disk->queue->id, blkg);
+	ret = radix_tree_insert(&blkcg->blkg_tree, q->id, blkg);
 	if (likely(!ret)) {
 		hlist_add_head_rcu(&blkg->blkcg_node, &blkcg->blkg_list);
-		list_add(&blkg->q_node, &disk->queue->blkg_list);
+		list_add(&blkg->q_node, &q->blkg_list);
 
 		for (i = 0; i < BLKCG_MAX_POLS; i++) {
 			struct blkcg_policy *pol = blkcg_policy[i];
@@ -469,6 +470,7 @@ err_free_blkg:
  * blkg_lookup_create - lookup blkg, try to create one if not there
  * @blkcg: blkcg of interest
  * @disk: gendisk of interest
+ * @q: request queue associated with @disk
  *
  * Lookup blkg for the @blkcg - @disk pair.  If it doesn't exist, try to
  * create one.  blkg creation is performed recursively from blkcg_root such
@@ -479,9 +481,8 @@ err_free_blkg:
  * down from root.
  */
 static struct blkcg_gq *blkg_lookup_create(struct blkcg *blkcg,
-		struct gendisk *disk)
+		struct gendisk *disk, struct request_queue *q)
 {
-	struct request_queue *q = disk->queue;
 	struct blkcg_gq *blkg;
 
 	rcu_read_lock();
@@ -516,7 +517,7 @@ static struct blkcg_gq *blkg_lookup_create(struct blkcg *blkcg,
 			parent = blkcg_parent(parent);
 		}
 
-		blkg = blkg_create(pos, disk, NULL);
+		blkg = blkg_create(pos, disk, q, NULL);
 		if (IS_ERR(blkg)) {
 			blkg = ret_blkg;
 			break;
@@ -915,7 +916,7 @@ int blkg_conf_prep(struct blkcg *blkcg, const struct blkcg_policy *pol,
 		if (blkg) {
 			blkg_free(new_blkg);
 		} else {
-			blkg = blkg_create(pos, disk, new_blkg);
+			blkg = blkg_create(pos, disk, q, new_blkg);
 			if (IS_ERR(blkg)) {
 				ret = PTR_ERR(blkg);
 				goto fail_preloaded;
@@ -1512,7 +1513,7 @@ int blkcg_init_disk(struct gendisk *disk)
 	/* Make sure the root blkg exists. */
 	/* spin_lock_irq can serve as RCU read-side critical section. */
 	spin_lock_irq(&q->queue_lock);
-	blkg = blkg_create(&blkcg_root, disk, new_blkg);
+	blkg = blkg_create(&blkcg_root, disk, q, new_blkg);
 	if (IS_ERR(blkg))
 		goto err_unlock;
 	q->root_blkg = blkg;
@@ -2130,7 +2131,7 @@ static inline struct blkcg_gq *blkg_tryget_closest(struct bio *bio,
 	 * time, hold lock to create new blkg.
 	 */
 	spin_lock_irqsave(&q->queue_lock, flags);
-	blkg = blkg_lookup_create(blkcg, bio->bi_bdev->bd_disk);
+	blkg = blkg_lookup_create(blkcg, bio->bi_bdev->bd_disk, q);
 	if (blkg)
 		blkg = blkg_lookup_tryget(blkg);
 	spin_unlock_irqrestore(&q->queue_lock, flags);

@@ -46,7 +46,7 @@
 #include "blk-cgroup.h"
 
 static DEFINE_SPINLOCK(elv_list_lock);
-static LIST_HEAD(elv_list);
+static __guarded_by(&elv_list_lock) LIST_HEAD(elv_list);
 
 /*
  * Merge hash stuff.

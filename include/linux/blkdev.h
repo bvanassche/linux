@@ -975,7 +975,8 @@ static inline unsigned int bdev_nr_zones(struct block_device *bdev)
 	return disk_nr_zones(bdev->bd_disk);
 }
 
-int bdev_disk_changed(struct gendisk *disk, bool invalidate);
+int bdev_disk_changed(struct gendisk *disk, bool invalidate)
+	__must_hold(&disk->open_mutex);
 
 void put_disk(struct gendisk *disk);
 struct gendisk *__blk_alloc_disk(struct queue_limits *lim, int node,

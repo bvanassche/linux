@@ -3,6 +3,8 @@
 # Makefile for the linux kernel.
 #
 
+CONTEXT_ANALYSIS := y
+
 obj-$(CONFIG_BLOCK) += core.o
 obj-$(CONFIG_ACORN_PARTITION) += acorn.o
 obj-$(CONFIG_AMIGA_PARTITION) += amiga.o

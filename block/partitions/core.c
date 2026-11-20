@@ -295,6 +295,7 @@ static const DEVICE_ATTR(whole_disk, 0444, whole_disk_show, NULL);
 static struct block_device *add_partition(struct gendisk *disk, int partno,
 				sector_t start, sector_t len, int flags,
 				struct partition_meta_info *info)
+	__must_hold(&disk->open_mutex)
 {
 	dev_t devt = MKDEV(0, 0);
 	struct device *ddev = disk_to_dev(disk);
@@ -530,6 +531,7 @@ static bool disk_unlock_native_capacity(struct gendisk *disk)
 
 static bool blk_add_partition(struct gendisk *disk,
 		struct parsed_partitions *state, int p)
+	__must_hold(&disk->open_mutex)
 {
 	sector_t size = state->parts[p].size;
 	sector_t from = state->parts[p].from;
@@ -581,6 +583,7 @@ static bool blk_add_partition(struct gendisk *disk,
 }
 
 static int blk_add_partitions(struct gendisk *disk)
+	__must_hold(&disk->open_mutex)
 {
 	struct parsed_partitions *state;
 	int ret = -EAGAIN, p;
@@ -642,6 +645,7 @@ out_free_state:
 }
 
 int bdev_disk_changed(struct gendisk *disk, bool invalidate)
+	__must_hold(&disk->open_mutex)
 {
 	struct block_device *part;
 	unsigned long idx;

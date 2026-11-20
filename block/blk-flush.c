@@ -92,7 +92,8 @@ enum {
 };
 
 static void blk_kick_flush(struct request_queue *q,
-			   struct blk_flush_queue *fq, blk_opf_t flags);
+			   struct blk_flush_queue *fq, blk_opf_t flags)
+	__must_hold(&fq->mq_flush_lock);
 
 static inline struct blk_flush_queue *
 blk_get_flush_queue(struct blk_mq_ctx *ctx)
@@ -148,6 +149,7 @@ static void blk_account_io_flush(struct request *rq)
 static void blk_flush_complete_seq(struct request *rq,
 				   struct blk_flush_queue *fq,
 				   unsigned int seq, blk_status_t error)
+	__must_hold(&fq->mq_flush_lock)
 {
 	struct request_queue *q = rq->q;
 	struct list_head *pending = &fq->flush_queue[fq->flush_pending_idx];
@@ -281,6 +283,7 @@ bool is_flush_rq(struct request *rq)
  */
 static void blk_kick_flush(struct request_queue *q, struct blk_flush_queue *fq,
 			   blk_opf_t flags)
+	__must_hold(&fq->mq_flush_lock)
 {
 	struct list_head *pending = &fq->flush_queue[fq->flush_pending_idx];
 	struct request *first_rq =

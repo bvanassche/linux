@@ -667,6 +667,7 @@ static bool flush_busy_kcq(struct sbitmap *sb, unsigned int bitnr, void *data)
 static void kyber_flush_busy_kcqs(struct kyber_hctx_data *khd,
 				  unsigned int sched_domain,
 				  struct list_head *list)
+	__must_hold(&khd->lock)
 {
 	struct flush_kcq_data data = {
 		.khd = khd,
@@ -692,6 +693,7 @@ static int kyber_domain_wake(wait_queue_entry_t *wqe, unsigned mode, int flags,
 static int kyber_get_domain_token(struct kyber_queue_data *kqd,
 				  struct kyber_hctx_data *khd,
 				  struct blk_mq_hw_ctx *hctx)
+	__must_hold(&khd->lock)
 {
 	unsigned int sched_domain = khd->cur_domain;
 	struct sbitmap_queue *domain_tokens = &kqd->domain_tokens[sched_domain];
@@ -740,6 +742,7 @@ static struct request *
 kyber_dispatch_cur_domain(struct kyber_queue_data *kqd,
 			  struct kyber_hctx_data *khd,
 			  struct blk_mq_hw_ctx *hctx)
+	__must_hold(&khd->lock)
 {
 	struct list_head *rqs;
 	struct request *rq;

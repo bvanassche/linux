@@ -97,6 +97,7 @@ static bool elevator_match(const struct elevator_type *e, const char *name)
 }
 
 static struct elevator_type *__elevator_find(const char *name)
+	__must_hold(&elv_list_lock)
 {
 	struct elevator_type *e;
 
@@ -150,6 +151,7 @@ static void elevator_release(struct kobject *kobj)
 }
 
 static void elevator_exit(struct request_queue *q)
+	__must_hold(&q->elevator_lock)
 {
 	struct elevator_queue *e = q->elevator;
 
@@ -560,6 +562,7 @@ EXPORT_SYMBOL_GPL(elv_unregister);
  * to restore the old io scheduler, so leaving the io scheduler being none.
  */
 static int elevator_switch(struct request_queue *q, struct elv_change_ctx *ctx)
+	__must_hold(&q->elevator_lock)
 {
 	struct elevator_type *new_e = NULL;
 	int ret = 0;

@@ -194,8 +194,10 @@ static inline int do_raw_spin_trylock(raw_spinlock_t *lock)
 {
 	int ret = arch_spin_trylock(&(lock)->raw_lock);
 
-	if (ret)
+	if (ret) {
+		__acquire(lock);
 		mmiowb_spin_lock();
+	}
 
 	return ret;
 }

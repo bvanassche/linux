@@ -586,6 +586,7 @@ long nr_blockdev_pages(void)
  */
 static bool bd_may_claim(struct block_device *bdev, void *holder,
 		const struct blk_holder_ops *hops)
+	__must_hold(&bdev_lock)
 {
 	struct block_device *whole = bdev_whole(bdev);
 
@@ -661,6 +662,7 @@ retry:
 EXPORT_SYMBOL_GPL(bd_prepare_to_claim); /* only for the loop driver */
 
 static void bd_clear_claiming(struct block_device *whole, void *holder)
+	__must_hold(&bdev_lock)
 {
 	lockdep_assert_held(&bdev_lock);
 	/* tell others that we're done */

@@ -109,16 +109,16 @@ struct child_latency_info {
 	spinlock_t lock;
 
 	/* Last time we adjusted the scale of everybody. */
-	u64 last_scale_event;
+	u64 last_scale_event __guarded_by(&lock);
 
 	/* The latency that we missed. */
-	u64 scale_lat;
+	u64 scale_lat __guarded_by(&lock);
 
 	/* Total io's from all of our children for the last summation. */
-	u64 nr_samples;
+	u64 nr_samples __guarded_by(&lock);
 
 	/* The guy who actually changed the latency numbers. */
-	struct iolatency_grp *scale_grp;
+	struct iolatency_grp *scale_grp __guarded_by(&lock);
 
 	/* Cookie to tell if we need to scale up or down. */
 	atomic_t scale_cookie;
@@ -412,7 +412,8 @@ static void check_scale_change(struct iolatency_grp *iolat)
 
 	lat_info = &parent->child_lat;
 	cur_cookie = atomic_read(&lat_info->scale_cookie);
-	scale_lat = READ_ONCE(lat_info->scale_lat);
+	/* Lockless read, see also WRITE_ONCE() in iolatency_check_latencies(). */
+	scale_lat = context_unsafe(READ_ONCE(lat_info->scale_lat));
 
 	if (cur_cookie < our_cookie)
 		direction = -1;
@@ -438,7 +439,8 @@ static void check_scale_change(struct iolatency_grp *iolat)
 		 * or less of the IO's for the last summation just skip this
 		 * scale down event.
 		 */
-		samples_thresh = lat_info->nr_samples * 5;
+		/* Lockless hint read; stale values are fine. */
+		samples_thresh = context_unsafe(lat_info->nr_samples) * 5;
 		samples_thresh = max(1ULL, div64_u64(samples_thresh, 100));
 		if (iolat->nr_samples <= samples_thresh)
 			return;

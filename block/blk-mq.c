@@ -4134,9 +4134,9 @@ static void blk_mq_init_cpu_queues(struct request_queue *q,
 		int k;
 
 		__ctx->cpu = i;
-		spin_lock_init(&__ctx->lock);
-		for (k = HCTX_TYPE_DEFAULT; k < HCTX_MAX_TYPES; k++)
-			INIT_LIST_HEAD(&__ctx->rq_lists[k]);
+		scoped_guard(spinlock_init, &__ctx->lock)
+			for (k = HCTX_TYPE_DEFAULT; k < HCTX_MAX_TYPES; k++)
+				INIT_LIST_HEAD(&__ctx->rq_lists[k]);
 
 		__ctx->queue = q;
 

@@ -19,7 +19,7 @@ struct blk_mq_ctxs {
 struct blk_mq_ctx {
 	struct {
 		spinlock_t		lock;
-		struct list_head	rq_lists[HCTX_MAX_TYPES];
+		struct list_head	rq_lists[HCTX_MAX_TYPES] __guarded_by(&lock);
 	} ____cacheline_aligned_in_smp;
 
 	unsigned int		cpu;

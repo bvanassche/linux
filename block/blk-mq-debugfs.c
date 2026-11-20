@@ -506,6 +506,7 @@ static void *ctx_##name##_rq_list_start(struct seq_file *m, loff_t *pos) \
 									\
 static void *ctx_##name##_rq_list_next(struct seq_file *m, void *v,	\
 				     loff_t *pos)			\
+	__must_hold(&TO_CTX(m)->lock)					\
 {									\
 	struct blk_mq_ctx *ctx = m->private;				\
 									\

@@ -48,7 +48,8 @@ int blk_mq_poll(struct request_queue *q, blk_qc_t cookie, struct io_comp_batch *
 void blk_mq_exit_queue(struct request_queue *q);
 struct elevator_tags *blk_mq_update_nr_requests(struct request_queue *q,
 						struct elevator_tags *tags,
-						unsigned int nr);
+						unsigned int nr)
+	__must_hold(&q->elevator_lock);
 void blk_mq_wake_waiters(struct request_queue *q);
 bool blk_mq_dispatch_rq_list(struct blk_mq_hw_ctx *hctx, struct list_head *,
 			     bool);

@@ -70,6 +70,7 @@ static bool blk_mq_hctx_has_pending(struct blk_mq_hw_ctx *hctx)
  */
 static void blk_mq_hctx_mark_pending(struct blk_mq_hw_ctx *hctx,
 				     struct blk_mq_ctx *ctx)
+	__must_hold(&ctx->lock)
 {
 	const int bit = ctx->index_hw[hctx->type];
 
@@ -79,6 +80,7 @@ static void blk_mq_hctx_mark_pending(struct blk_mq_hw_ctx *hctx,
 
 static void blk_mq_hctx_clear_pending(struct blk_mq_hw_ctx *hctx,
 				      struct blk_mq_ctx *ctx)
+	__must_hold(&ctx->lock)
 {
 	const int bit = ctx->index_hw[hctx->type];
 
@@ -115,6 +117,7 @@ void blk_mq_in_driver_rw(struct block_device *part, unsigned int inflight[2])
 #ifdef CONFIG_LOCKDEP
 static bool blk_freeze_set_owner(struct request_queue *q,
 				 struct task_struct *owner)
+	__must_hold(&q->mq_freeze_lock)
 {
 	if (!owner)
 		return false;
@@ -136,6 +139,7 @@ static bool blk_freeze_set_owner(struct request_queue *q,
 
 /* verify the last unfreeze in owner context */
 static bool blk_unfreeze_check_owner(struct request_queue *q)
+	__must_hold(&q->mq_freeze_lock)
 {
 	if (q->mq_freeze_owner != current)
 		return false;
@@ -150,11 +154,13 @@ static bool blk_unfreeze_check_owner(struct request_queue *q)
 
 static bool blk_freeze_set_owner(struct request_queue *q,
 				 struct task_struct *owner)
+	__must_hold(&q->mq_freeze_lock)
 {
 	return false;
 }
 
 static bool blk_unfreeze_check_owner(struct request_queue *q)
+	__must_hold(&q->mq_freeze_lock)
 {
 	return false;
 }
@@ -3861,6 +3867,7 @@ static int blk_mq_hctx_notify_dead(unsigned int cpu, struct hlist_node *node)
 }
 
 static void __blk_mq_remove_cpuhp(struct blk_mq_hw_ctx *hctx)
+	__must_hold(&blk_mq_cpuhp_lock)
 {
 	lockdep_assert_held(&blk_mq_cpuhp_lock);
 
@@ -3886,6 +3893,7 @@ static void blk_mq_remove_cpuhp(struct blk_mq_hw_ctx *hctx)
 }
 
 static void __blk_mq_add_cpuhp(struct blk_mq_hw_ctx *hctx)
+	__must_hold(&blk_mq_cpuhp_lock)
 {
 	lockdep_assert_held(&blk_mq_cpuhp_lock);
 
@@ -3900,6 +3908,7 @@ static void __blk_mq_add_cpuhp(struct blk_mq_hw_ctx *hctx)
 }
 
 static void __blk_mq_remove_cpuhp_list(struct list_head *head)
+	__must_hold(&blk_mq_cpuhp_lock)
 {
 	struct blk_mq_hw_ctx *hctx;
 
@@ -4004,6 +4013,7 @@ static void blk_mq_exit_hctx(struct request_queue *q,
 
 static void blk_mq_exit_hw_queues(struct request_queue *q,
 		struct blk_mq_tag_set *set, int nr_queue)
+	__must_hold(&set->tag_list_lock)
 {
 	struct blk_mq_hw_ctx *hctx;
 	unsigned long i;
@@ -4335,6 +4345,7 @@ static void queue_set_hctx_shared(struct request_queue *q, bool shared)
 
 static void blk_mq_update_tag_set_shared(struct blk_mq_tag_set *set,
 					 bool shared)
+	__must_hold(&set->tag_list_lock)
 {
 	struct request_queue *q;
 	unsigned int memflags;
@@ -4349,6 +4360,7 @@ static void blk_mq_update_tag_set_shared(struct blk_mq_tag_set *set,
 }
 
 static void blk_mq_del_queue_tag_set(struct request_queue *q)
+	__must_hold(&q->tag_set->tag_list_lock)
 {
 	struct blk_mq_tag_set *set = q->tag_set;
 
@@ -4368,6 +4380,7 @@ static void blk_mq_del_queue_tag_set(struct request_queue *q)
 
 static void blk_mq_add_queue_tag_set(struct blk_mq_tag_set *set,
 				     struct request_queue *q)
+	__must_hold(&set->tag_list_lock)
 {
 	unsigned int i;
 
@@ -5054,6 +5067,7 @@ EXPORT_SYMBOL(blk_mq_free_tag_set);
 struct elevator_tags *blk_mq_update_nr_requests(struct request_queue *q,
 						struct elevator_tags *et,
 						unsigned int nr)
+	__must_hold(&q->elevator_lock)
 {
 	struct blk_mq_tag_set *set = q->tag_set;
 	struct elevator_tags *old_et = NULL;
@@ -5175,6 +5189,8 @@ static int blk_mq_elv_switch_none(struct request_queue *q,
 
 static void __blk_mq_update_nr_hw_queues(struct blk_mq_tag_set *set,
 							int nr_hw_queues)
+	__must_hold(&set->update_nr_hwq_lock)
+	__must_hold(&set->tag_list_lock)
 {
 	struct request_queue *q;
 	int prev_nr_hw_queues = set->nr_hw_queues;

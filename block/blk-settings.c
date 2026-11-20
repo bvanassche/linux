@@ -552,6 +552,7 @@ int blk_set_default_limits(struct queue_limits *lim)
  */
 int queue_limits_commit_update(struct request_queue *q,
 		struct queue_limits *lim)
+	__releases(&q->limits_lock)
 {
 	int error;
 
@@ -591,6 +592,7 @@ EXPORT_SYMBOL_GPL(queue_limits_commit_update);
  */
 int queue_limits_commit_update_frozen(struct request_queue *q,
 		struct queue_limits *lim)
+	__releases(&q->limits_lock)
 {
 	unsigned int memflags;
 	int ret;
@@ -615,6 +617,7 @@ EXPORT_SYMBOL_GPL(queue_limits_commit_update_frozen);
  * Returns 0 if successful, else a negative error code.
  */
 int queue_limits_set(struct request_queue *q, struct queue_limits *lim)
+	__must_not_hold(&q->limits_lock)
 {
 	mutex_lock(&q->limits_lock);
 	return queue_limits_commit_update(q, lim);

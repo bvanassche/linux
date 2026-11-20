@@ -691,8 +691,10 @@ long compat_blkdev_ioctl(struct file *file, unsigned cmd, unsigned long arg);
 
 extern const struct address_space_operations def_blk_aops;
 
-int disk_register_independent_access_ranges(struct gendisk *disk);
-void disk_unregister_independent_access_ranges(struct gendisk *disk);
+int disk_register_independent_access_ranges(struct gendisk *disk)
+	__must_hold(&disk->queue->sysfs_lock);
+void disk_unregister_independent_access_ranges(struct gendisk *disk)
+	__must_hold(&disk->queue->sysfs_lock);
 
 int should_fail_bio(struct bio *bio);
 #ifdef CONFIG_FAIL_MAKE_REQUEST

@@ -106,6 +106,7 @@ static const struct kobj_type blk_ia_ranges_ktype = {
  * Register with sysfs a set of independent access ranges for @disk.
  */
 int disk_register_independent_access_ranges(struct gendisk *disk)
+	__must_hold(&disk->queue->sysfs_lock)
 {
 	struct blk_independent_access_ranges *iars = disk->ia_ranges;
 	struct request_queue *q = disk->queue;
@@ -149,6 +150,7 @@ int disk_register_independent_access_ranges(struct gendisk *disk)
 }
 
 void disk_unregister_independent_access_ranges(struct gendisk *disk)
+	__must_hold(&disk->queue->sysfs_lock)
 {
 	struct request_queue *q = disk->queue;
 	struct blk_independent_access_ranges *iars = disk->ia_ranges;

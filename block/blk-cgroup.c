@@ -58,7 +58,7 @@ atomic_t blkcg_nr_congested __read_mostly = ATOMIC_INIT(0);
 
 static struct blkcg_policy *blkcg_policy[BLKCG_MAX_POLS];
 
-static LIST_HEAD(all_blkcgs);		/* protected by blkcg_pol_mutex */
+static __guarded_by(&blkcg_pol_mutex) LIST_HEAD(all_blkcgs);
 
 bool blkcg_debug_stats = false;
 

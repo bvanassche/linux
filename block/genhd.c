@@ -175,6 +175,8 @@ EXPORT_SYMBOL_GPL(bdev_count_inflight);
  *
  */
 #define BLKDEV_MAJOR_HASH_SIZE 255
+static DEFINE_MUTEX(major_names_lock);
+static DEFINE_SPINLOCK(major_names_spinlock);
 static struct blk_major_name {
 	struct blk_major_name *next;
 	int major;
@@ -182,9 +184,8 @@ static struct blk_major_name {
 #ifdef CONFIG_BLOCK_LEGACY_AUTOLOAD
 	void (*probe)(dev_t devt);
 #endif
-} *major_names[BLKDEV_MAJOR_HASH_SIZE];
-static DEFINE_MUTEX(major_names_lock);
-static DEFINE_SPINLOCK(major_names_spinlock);
+} *major_names[BLKDEV_MAJOR_HASH_SIZE]
+	__guarded_by(&major_names_lock, &major_names_spinlock);
 
 /* index in the above - for now: assume no multimajor ranges */
 static inline int major_to_index(unsigned major)

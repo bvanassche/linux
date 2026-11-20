@@ -20,27 +20,35 @@ struct blk_mq_debugfs_attr {
 int __blk_mq_debugfs_rq_show(struct seq_file *m, struct request *rq);
 int blk_mq_debugfs_rq_show(struct seq_file *m, void *v);
 
-void blk_mq_debugfs_register(struct request_queue *q);
+void blk_mq_debugfs_register(struct request_queue *q)
+	__must_hold(&q->debugfs_mutex);
 void blk_mq_debugfs_register_hctx(struct request_queue *q,
-				  struct blk_mq_hw_ctx *hctx);
+				  struct blk_mq_hw_ctx *hctx)
+	__must_hold(&q->debugfs_mutex);
 void blk_mq_debugfs_unregister_hctx(struct blk_mq_hw_ctx *hctx);
 void blk_mq_debugfs_register_hctxs(struct request_queue *q);
 void blk_mq_debugfs_unregister_hctxs(struct request_queue *q);
 
-void blk_mq_debugfs_register_sched(struct request_queue *q);
-void blk_mq_debugfs_unregister_sched(struct request_queue *q);
+void blk_mq_debugfs_register_sched(struct request_queue *q)
+	__must_hold(&q->debugfs_mutex);
+void blk_mq_debugfs_unregister_sched(struct request_queue *q)
+	__must_hold(&q->debugfs_mutex);
 void blk_mq_debugfs_register_sched_hctx(struct request_queue *q,
-				       struct blk_mq_hw_ctx *hctx);
+				       struct blk_mq_hw_ctx *hctx)
+	__must_hold(&q->debugfs_mutex);
 void blk_mq_debugfs_unregister_sched_hctx(struct blk_mq_hw_ctx *hctx);
 
-void blk_mq_debugfs_register_rq_qos(struct request_queue *q);
+void blk_mq_debugfs_register_rq_qos(struct request_queue *q)
+	__must_hold(&q->debugfs_mutex);
 #else
 static inline void blk_mq_debugfs_register(struct request_queue *q)
+	__must_hold(&q->debugfs_mutex)
 {
 }
 
 static inline void blk_mq_debugfs_register_hctx(struct request_queue *q,
 						struct blk_mq_hw_ctx *hctx)
+	__must_hold(&q->debugfs_mutex)
 {
 }
 
@@ -57,15 +65,18 @@ static inline void blk_mq_debugfs_unregister_hctxs(struct request_queue *q)
 }
 
 static inline void blk_mq_debugfs_register_sched(struct request_queue *q)
+	__must_hold(&q->debugfs_mutex)
 {
 }
 
 static inline void blk_mq_debugfs_unregister_sched(struct request_queue *q)
+	__must_hold(&q->debugfs_mutex)
 {
 }
 
 static inline void blk_mq_debugfs_register_sched_hctx(struct request_queue *q,
 						      struct blk_mq_hw_ctx *hctx)
+	__must_hold(&q->debugfs_mutex)
 {
 }
 
@@ -74,6 +85,7 @@ static inline void blk_mq_debugfs_unregister_sched_hctx(struct blk_mq_hw_ctx *hc
 }
 
 static inline void blk_mq_debugfs_register_rq_qos(struct request_queue *q)
+	__must_hold(&q->debugfs_mutex)
 {
 }
 

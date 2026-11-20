@@ -643,6 +643,7 @@ static void debugfs_create_files(struct request_queue *q, struct dentry *parent,
 }
 
 void blk_mq_debugfs_register(struct request_queue *q)
+	__must_hold(&q->debugfs_mutex)
 {
 	struct blk_mq_hw_ctx *hctx;
 	unsigned long i;
@@ -672,6 +673,7 @@ static void blk_mq_debugfs_register_ctx(struct blk_mq_hw_ctx *hctx,
 
 void blk_mq_debugfs_register_hctx(struct request_queue *q,
 				  struct blk_mq_hw_ctx *hctx)
+	__must_hold(&q->debugfs_mutex)
 {
 	struct blk_mq_ctx *ctx;
 	char name[20];
@@ -721,6 +723,7 @@ void blk_mq_debugfs_unregister_hctxs(struct request_queue *q)
 }
 
 void blk_mq_debugfs_register_sched(struct request_queue *q)
+	__must_hold(&q->debugfs_mutex)
 {
 	struct elevator_type *e = q->elevator->type;
 
@@ -742,6 +745,7 @@ void blk_mq_debugfs_register_sched(struct request_queue *q)
 }
 
 void blk_mq_debugfs_unregister_sched(struct request_queue *q)
+	__must_hold(&q->debugfs_mutex)
 {
 	lockdep_assert_held(&q->debugfs_mutex);
 
@@ -782,6 +786,7 @@ static void blk_mq_debugfs_register_rqos(struct rq_qos *rqos)
 }
 
 void blk_mq_debugfs_register_rq_qos(struct request_queue *q)
+	__must_hold(&q->debugfs_mutex)
 {
 	lockdep_assert_held(&q->debugfs_mutex);
 
@@ -797,6 +802,7 @@ void blk_mq_debugfs_register_rq_qos(struct request_queue *q)
 
 void blk_mq_debugfs_register_sched_hctx(struct request_queue *q,
 					struct blk_mq_hw_ctx *hctx)
+	__must_hold(&q->debugfs_mutex)
 {
 	struct elevator_type *e = q->elevator->type;
 

@@ -173,9 +173,9 @@ struct kyber_queue_data {
 
 struct kyber_hctx_data {
 	spinlock_t lock;
-	struct list_head rqs[KYBER_NUM_DOMAINS];
-	unsigned int cur_domain;
-	unsigned int batching;
+	struct list_head rqs[KYBER_NUM_DOMAINS] __guarded_by(&lock);
+	unsigned int cur_domain __guarded_by(&lock);
+	unsigned int batching __guarded_by(&lock);
 	struct kyber_ctx_queue *kcqs;
 	struct sbitmap kcq_map[KYBER_NUM_DOMAINS];
 	struct sbq_wait domain_wait[KYBER_NUM_DOMAINS];
@@ -483,10 +483,14 @@ static int kyber_init_hctx(struct blk_mq_hw_ctx *hctx, unsigned int hctx_idx)
 		}
 	}
 
-	spin_lock_init(&khd->lock);
+	scoped_guard(spinlock_init, &khd->lock) {
+		for (i = 0; i < KYBER_NUM_DOMAINS; i++)
+			INIT_LIST_HEAD(&khd->rqs[i]);
+		khd->cur_domain = 0;
+		khd->batching = 0;
+	}
 
 	for (i = 0; i < KYBER_NUM_DOMAINS; i++) {
-		INIT_LIST_HEAD(&khd->rqs[i]);
 		khd->domain_wait[i].sbq = NULL;
 		init_waitqueue_func_entry(&khd->domain_wait[i].wait,
 					  kyber_domain_wake);
@@ -494,9 +498,6 @@ static int kyber_init_hctx(struct blk_mq_hw_ctx *hctx, unsigned int hctx_idx)
 		INIT_LIST_HEAD(&khd->domain_wait[i].wait.entry);
 		atomic_set(&khd->wait_index[i], 0);
 	}
-
-	khd->cur_domain = 0;
-	khd->batching = 0;
 
 	hctx->sched_data = khd;
 
@@ -911,6 +912,7 @@ static void *kyber_##name##_rqs_start(struct seq_file *m, loff_t *pos)	\
 									\
 static void *kyber_##name##_rqs_next(struct seq_file *m, void *v,	\
 				     loff_t *pos)			\
+	__must_hold(&KYBER_HCTX_DATA(HCTX_FROM_SEQ_FILE(m))->lock)	\
 {									\
 	struct blk_mq_hw_ctx *hctx = m->private;			\
 	struct kyber_hctx_data *khd = hctx->sched_data;			\
@@ -954,7 +956,8 @@ static int kyber_cur_domain_show(void *data, struct seq_file *m)
 	struct blk_mq_hw_ctx *hctx = data;
 	struct kyber_hctx_data *khd = hctx->sched_data;
 
-	seq_printf(m, "%s\n", kyber_domain_names[khd->cur_domain]);
+	/* Racy debugfs read. */
+	seq_printf(m, "%s\n", kyber_domain_names[context_unsafe(khd->cur_domain)]);
 	return 0;
 }
 
@@ -963,7 +966,8 @@ static int kyber_batching_show(void *data, struct seq_file *m)
 	struct blk_mq_hw_ctx *hctx = data;
 	struct kyber_hctx_data *khd = hctx->sched_data;
 
-	seq_printf(m, "%u\n", khd->batching);
+	/* Racy debugfs read. */
+	seq_printf(m, "%u\n", context_unsafe(khd->batching));
 	return 0;
 }
 

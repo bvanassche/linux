@@ -103,6 +103,9 @@ struct deadline_data {
 	spinlock_t lock;
 };
 
+#define DD_DATA_FROM_RQ(rq)					\
+	((struct deadline_data *)(rq)->elevator->elevator_data)
+
 /* Maps an I/O priority class to a deadline scheduler priority. */
 static const enum dd_prio ioprio_class_to_prio[] = {
 	[IOPRIO_CLASS_NONE]	= DD_BE_PRIO,
@@ -183,6 +186,7 @@ static void deadline_remove_request(struct request_queue *q,
 
 static void dd_request_merged(struct request_queue *q, struct request *req,
 			      enum elv_merge type)
+	__must_hold(&DD_DATA_FROM_RQ(q)->lock)
 {
 	struct deadline_data *dd = q->elevator->elevator_data;
 	const u8 ioprio_class = dd_rq_ioclass(req);
@@ -203,6 +207,7 @@ static void dd_request_merged(struct request_queue *q, struct request *req,
  */
 static void dd_merged_requests(struct request_queue *q, struct request *req,
 			       struct request *next)
+	__must_hold(&DD_DATA_FROM_RQ(q)->lock)
 {
 	struct deadline_data *dd = q->elevator->elevator_data;
 	const u8 ioprio_class = dd_rq_ioclass(next);
@@ -244,6 +249,7 @@ static void deadline_move_request(struct dd_per_prio *per_prio,
 
 /* Number of requests queued for a given priority level. */
 static u32 dd_queued(struct deadline_data *dd, enum dd_prio prio)
+	__must_hold(&dd->lock)
 {
 	const struct io_stats_per_prio *stats = &dd->per_prio[prio].stats;
 
@@ -305,6 +311,7 @@ static bool started_after(struct deadline_data *dd, struct request *rq,
 static struct request *dd_start_request(struct deadline_data *dd,
 					enum dd_data_dir data_dir,
 					struct request *rq)
+	__must_hold(&dd->lock)
 {
 	u8 ioprio_class = dd_rq_ioclass(rq);
 	enum dd_prio prio = ioprio_class_to_prio[ioprio_class];
@@ -322,6 +329,7 @@ static struct request *dd_start_request(struct deadline_data *dd,
 static struct request *__dd_dispatch_request(struct deadline_data *dd,
 					     struct dd_per_prio *per_prio,
 					     unsigned long latest_start)
+	__must_hold(&dd->lock)
 {
 	struct request *rq, *next_rq;
 	enum dd_data_dir data_dir;
@@ -416,6 +424,7 @@ dispatch_request:
  */
 static struct request *dd_dispatch_prio_aged_requests(struct deadline_data *dd,
 						      unsigned long now)
+	__must_hold(&dd->lock)
 {
 	struct request *rq;
 	enum dd_prio prio;
@@ -567,6 +576,7 @@ static int dd_init_sched(struct request_queue *q, struct elevator_queue *eq)
  */
 static int dd_request_merge(struct request_queue *q, struct request **rq,
 			    struct bio *bio)
+	__must_hold(&DD_DATA_FROM_RQ(q)->lock)
 {
 	struct deadline_data *dd = q->elevator->elevator_data;
 	const u8 ioprio_class = IOPRIO_PRIO_CLASS(bio->bi_ioprio);
@@ -619,6 +629,7 @@ static bool dd_bio_merge(struct request_queue *q, struct bio *bio,
  */
 static void dd_insert_request(struct blk_mq_hw_ctx *hctx, struct request *rq,
 			      blk_insert_t flags, struct list_head *free)
+	__must_hold(&DD_DATA_FROM_RQ(hctx->queue)->lock)
 {
 	struct request_queue *q = hctx->queue;
 	struct deadline_data *dd = q->elevator->elevator_data;
@@ -792,8 +803,6 @@ static const struct elv_fs_entry deadline_attrs[] = {
 };
 
 #define RQ_FROM_SEQ_FILE(m) ((struct request_queue *)(m)->private)
-#define DD_DATA_FROM_RQ(rq)					\
-	((struct deadline_data *)(rq)->elevator->elevator_data)
 
 #ifdef CONFIG_BLK_DEBUG_FS
 #define DEADLINE_DEBUGFS_DDIR_ATTRS(prio, data_dir, name)		\
@@ -895,6 +904,7 @@ static int dd_queued_show(void *data, struct seq_file *m)
 
 /* Number of requests owned by the block driver for a given priority. */
 static u32 dd_owned_by_driver(struct deadline_data *dd, enum dd_prio prio)
+	__must_hold(&dd->lock)
 {
 	const struct io_stats_per_prio *stats = &dd->per_prio[prio].stats;
 

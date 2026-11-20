@@ -448,6 +448,7 @@ void blk_mq_free_sched_res(struct elevator_resources *res,
 
 void blk_mq_free_sched_res_batch(struct xarray *elv_tbl,
 		struct blk_mq_tag_set *set)
+	__must_hold(&set->update_nr_hwq_lock)
 {
 	struct request_queue *q;
 	struct elv_change_ctx *ctx;
@@ -486,6 +487,7 @@ void blk_mq_free_sched_ctx_batch(struct xarray *elv_tbl)
 
 int blk_mq_alloc_sched_ctx_batch(struct xarray *elv_tbl,
 		struct blk_mq_tag_set *set)
+	__must_hold(&set->update_nr_hwq_lock)
 {
 	struct request_queue *q;
 	struct elv_change_ctx *ctx;
@@ -572,6 +574,7 @@ int blk_mq_alloc_sched_res(struct request_queue *q,
 
 int blk_mq_alloc_sched_res_batch(struct xarray *elv_tbl,
 		struct blk_mq_tag_set *set, unsigned int nr_hw_queues)
+	__must_hold(&set->update_nr_hwq_lock)
 {
 	struct elv_change_ctx *ctx;
 	struct request_queue *q;
@@ -617,6 +620,7 @@ out_unwind:
 /* caller must have a reference to @e, will grab another one if successful */
 int blk_mq_init_sched(struct request_queue *q, struct elevator_type *e,
 		struct elevator_resources *res)
+	__must_hold(&q->elevator_lock)
 {
 	unsigned int flags = q->tag_set->flags;
 	struct elevator_tags *et = res->et;
@@ -689,6 +693,7 @@ void blk_mq_sched_free_rqs(struct request_queue *q)
 }
 
 void blk_mq_exit_sched(struct request_queue *q, struct elevator_queue *e)
+	__must_hold(&q->elevator_lock)
 {
 	struct blk_mq_hw_ctx *hctx;
 	unsigned long i;

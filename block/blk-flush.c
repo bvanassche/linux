@@ -495,15 +495,15 @@ struct blk_flush_queue *blk_alloc_flush_queue(int node, int cmd_size,
 	if (!fq)
 		goto fail;
 
-	spin_lock_init(&fq->mq_flush_lock);
+	scoped_guard(spinlock_init, &fq->mq_flush_lock) {
+		INIT_LIST_HEAD(&fq->flush_queue[0]);
+		INIT_LIST_HEAD(&fq->flush_queue[1]);
+	}
 
 	rq_sz = round_up(rq_sz + cmd_size, cache_line_size());
 	fq->flush_rq = kzalloc_node(rq_sz, flags, node);
 	if (!fq->flush_rq)
 		goto fail_rq;
-
-	INIT_LIST_HEAD(&fq->flush_queue[0]);
-	INIT_LIST_HEAD(&fq->flush_queue[1]);
 
 	return fq;
 

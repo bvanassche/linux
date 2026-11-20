@@ -224,8 +224,10 @@ static const u8 opalmethod[][OPAL_METHOD_LENGTH] = {
 		{ 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x08, 0x01 },
 };
 
-static int end_opal_session_error(struct opal_dev *dev);
-static int opal_discovery0_step(struct opal_dev *dev);
+static int end_opal_session_error(struct opal_dev *dev)
+	__must_hold(&dev->dev_lock);
+static int opal_discovery0_step(struct opal_dev *dev)
+	__must_hold(&dev->dev_lock);
 
 struct opal_suspend_data {
 	struct opal_lock_unlock unlk;
@@ -522,6 +524,7 @@ static void check_geometry(struct opal_dev *dev, const void *data)
 
 static int execute_step(struct opal_dev *dev,
 			const struct opal_step *step, size_t stepIndex)
+	__must_hold(&dev->dev_lock)
 {
 	int error = step->fn(dev, step->data);
 
@@ -536,6 +539,7 @@ static int execute_step(struct opal_dev *dev,
 
 static int execute_steps(struct opal_dev *dev,
 			 const struct opal_step *steps, size_t n_steps)
+	__must_hold(&dev->dev_lock)
 {
 	size_t state = 0;
 	int error;
@@ -686,6 +690,7 @@ static int opal_discovery0(struct opal_dev *dev, void *data)
 }
 
 static int opal_discovery0_step(struct opal_dev *dev)
+	__must_hold(&dev->dev_lock)
 {
 	const struct opal_step discovery0_step = {
 		opal_discovery0, NULL
@@ -1238,6 +1243,7 @@ static int start_opal_session_cont(struct opal_dev *dev)
 
 static void add_suspend_info(struct opal_dev *dev,
 			     struct opal_suspend_data *sus)
+	__must_hold(&dev->dev_lock)
 {
 	struct opal_suspend_data *iter;
 
@@ -2541,6 +2547,7 @@ static int end_opal_session(struct opal_dev *dev, void *data)
 }
 
 static int end_opal_session_error(struct opal_dev *dev)
+	__must_hold(&dev->dev_lock)
 {
 	const struct opal_step error_end_session = {
 		end_opal_session,
@@ -2550,6 +2557,7 @@ static int end_opal_session_error(struct opal_dev *dev)
 }
 
 static inline void setup_opal_dev(struct opal_dev *dev)
+	__must_hold(&dev->dev_lock)
 {
 	dev->tsn = 0;
 	dev->hsn = 0;
@@ -2902,6 +2910,7 @@ static int opal_reverttper(struct opal_dev *dev, struct opal_key *opal, bool psi
 
 static int __opal_lock_unlock(struct opal_dev *dev,
 			      struct opal_lock_unlock *lk_unlk)
+	__must_hold(&dev->dev_lock)
 {
 	const struct opal_step unlock_steps[] = {
 		{ start_auth_opal_session, &lk_unlk->session },
@@ -2923,6 +2932,7 @@ static int __opal_lock_unlock(struct opal_dev *dev,
 }
 
 static int __opal_set_mbr_done(struct opal_dev *dev, struct opal_key *key)
+	__must_hold(&dev->dev_lock)
 {
 	u8 mbr_done_tf = OPAL_TRUE;
 	const struct opal_step mbrdone_step[] = {
@@ -2936,6 +2946,7 @@ static int __opal_set_mbr_done(struct opal_dev *dev, struct opal_key *key)
 
 static void opal_lock_check_for_saved_key(struct opal_dev *dev,
 			    struct opal_lock_unlock *lk_unlk)
+	__must_hold(&dev->dev_lock)
 {
 	struct opal_suspend_data *iter;
 
@@ -3297,6 +3308,7 @@ EXPORT_SYMBOL(opal_unlock_from_suspend);
 
 static int opal_read_table(struct opal_dev *dev,
 			   struct opal_read_write_table *rw_tbl)
+	__must_hold(&dev->dev_lock)
 {
 	const struct opal_step read_table_steps[] = {
 		{ start_admin1LSP_opal_session, &rw_tbl->key },
@@ -3313,6 +3325,7 @@ static int opal_read_table(struct opal_dev *dev,
 
 static int opal_write_table(struct opal_dev *dev,
 			    struct opal_read_write_table *rw_tbl)
+	__must_hold(&dev->dev_lock)
 {
 	const struct opal_step write_table_steps[] = {
 		{ start_admin1LSP_opal_session, &rw_tbl->key },

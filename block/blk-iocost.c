@@ -784,6 +784,7 @@ static inline u32 iocg_hweight_cache_inuse(struct ioc_gq *iocg)
 #include <trace/events/iocost.h>
 
 static void ioc_refresh_margins(struct ioc *ioc)
+	__must_hold(&ioc->lock)
 {
 	struct ioc_margins *margins = &ioc->margins;
 	u32 period_us = ioc->period_us;
@@ -796,6 +797,7 @@ static void ioc_refresh_margins(struct ioc *ioc)
 
 /* latency Qos params changed, update period_us and all the dependent params */
 static void ioc_refresh_period_us(struct ioc *ioc)
+	__must_hold(&ioc->lock)
 {
 	u32 ppm, lat, multi, period_us;
 
@@ -928,6 +930,7 @@ static void calc_lcoefs(u64 bps, u64 seqiops, u64 randiops,
 }
 
 static void ioc_refresh_lcoefs(struct ioc *ioc)
+	__must_hold(&ioc->lock)
 {
 	u64 *u = ioc->params.i_lcoefs;
 	u64 *c = ioc->params.lcoefs;
@@ -947,6 +950,7 @@ static void ioc_refresh_lcoefs(struct ioc *ioc)
  */
 static bool ioc_refresh_params_disk(struct ioc *ioc, bool force,
 				    struct gendisk *disk)
+	__must_hold(&ioc->lock)
 {
 	const struct ioc_params *p;
 	int idx;
@@ -985,6 +989,7 @@ static bool ioc_refresh_params_disk(struct ioc *ioc, bool force,
 }
 
 static bool ioc_refresh_params(struct ioc *ioc, bool force)
+	__must_hold(&ioc->lock)
 {
 	return ioc_refresh_params_disk(ioc, force, ioc->rqos.disk);
 }
@@ -997,6 +1002,7 @@ static bool ioc_refresh_params(struct ioc *ioc, bool force)
  * matches what got lost.
  */
 static void ioc_refresh_vrate(struct ioc *ioc, struct ioc_now *now)
+	__must_hold(&ioc->lock)
 {
 	s64 pleft = ioc->period_at + ioc->period_us - now->now;
 	s64 vperiod = ioc->period_us * ioc->vtime_base_rate;
@@ -1029,6 +1035,7 @@ done:
 static void ioc_adjust_base_vrate(struct ioc *ioc, u32 rq_wait_pct,
 				  int nr_lagging, int nr_shortages,
 				  int prev_busy_level, u32 *missed_ppm)
+	__must_hold(&ioc->lock)
 {
 	u64 vrate = ioc->vtime_base_rate;
 	u64 vrate_min = ioc->vrate_min, vrate_max = ioc->vrate_max;
@@ -1188,6 +1195,7 @@ static void __propagate_weights(struct ioc_gq *iocg, u32 active, u32 inuse,
 }
 
 static void commit_weights(struct ioc *ioc)
+	__must_hold(&ioc->lock)
 {
 	lockdep_assert_held(&ioc->lock);
 
@@ -1201,6 +1209,7 @@ static void commit_weights(struct ioc *ioc)
 
 static void propagate_weights(struct ioc_gq *iocg, u32 active, u32 inuse,
 			      bool save, struct ioc_now *now)
+	__must_hold(&iocg->ioc->lock)
 {
 	__propagate_weights(iocg, active, inuse, save, now);
 	commit_weights(iocg->ioc);
@@ -1402,6 +1411,7 @@ fail_unlock:
 }
 
 static bool iocg_kick_delay(struct ioc_gq *iocg, struct ioc_now *now)
+	__must_hold(&iocg->waitq.lock)
 {
 	struct ioc *ioc = iocg->ioc;
 	struct blkcg_gq *blkg = iocg_to_blkg(iocg);
@@ -1468,6 +1478,7 @@ static bool iocg_kick_delay(struct ioc_gq *iocg, struct ioc_now *now)
 
 static void iocg_incur_debt(struct ioc_gq *iocg, u64 abs_cost,
 			    struct ioc_now *now)
+	__must_hold(&iocg->waitq.lock)
 {
 	struct iocg_pcpu_stat *gcs;
 
@@ -1493,6 +1504,8 @@ static void iocg_incur_debt(struct ioc_gq *iocg, u64 abs_cost,
 
 static void iocg_pay_debt(struct ioc_gq *iocg, u64 abs_vpay,
 			  struct ioc_now *now)
+	__must_hold(&iocg->ioc->lock)
+	__must_hold(&iocg->waitq.lock)
 {
 	lockdep_assert_held(&iocg->ioc->lock);
 	lockdep_assert_held(&iocg->waitq.lock);
@@ -1550,6 +1563,7 @@ static int iocg_wake_fn(struct wait_queue_entry *wq_entry, unsigned mode,
  */
 static void iocg_kick_waitq(struct ioc_gq *iocg, bool pay_debt,
 			    struct ioc_now *now)
+	__must_hold(&iocg->waitq.lock)
 {
 	struct ioc *ioc = iocg->ioc;
 	struct iocg_wake_ctx ctx = { .iocg = iocg };
@@ -2146,6 +2160,7 @@ out:
  */
 static void ioc_forgive_debts(struct ioc *ioc, u64 usage_us_sum, int nr_debtors,
 			      struct ioc_now *now)
+	__must_hold(&ioc->lock)
 {
 	struct ioc_gq *iocg;
 	u64 dur, usage_pct, nr_cycles, nr_cycles_shift;
@@ -2238,6 +2253,7 @@ static void ioc_forgive_debts(struct ioc *ioc, u64 usage_us_sum, int nr_debtors,
  * iocgs.
  */
 static int ioc_check_iocgs(struct ioc *ioc, struct ioc_now *now)
+	__must_hold(&ioc->lock)
 {
 	int nr_debtors = 0;
 	struct ioc_gq *iocg, *tiocg;
@@ -2699,6 +2715,7 @@ iocg_handle_over_budget(struct rq_qos *rqos, struct ioc_gq *iocg,
 			struct bio *bio, struct ioc_now *now,
 			struct iocg_wait *wait, bool use_debt, bool ioc_locked,
 			u64 abs_cost, u64 cost)
+	__must_hold(&iocg->waitq.lock)
 {
 	lockdep_assert_held(&iocg->waitq.lock);
 

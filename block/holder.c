@@ -12,6 +12,7 @@ static DEFINE_MUTEX(blk_holder_mutex);
 
 static struct bd_holder_disk *bd_find_holder_disk(struct block_device *bdev,
 						  struct gendisk *disk)
+	__must_hold(&blk_holder_mutex)
 {
 	struct bd_holder_disk *holder;
 

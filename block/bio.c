@@ -86,6 +86,7 @@ static DEFINE_MUTEX(bio_slab_lock);
 static DEFINE_XARRAY(bio_slabs);
 
 static struct bio_slab *create_bio_slab(unsigned int size)
+	__must_hold(&bio_slab_lock)
 {
 	struct bio_slab *bslab = kzalloc_obj(*bslab);
 

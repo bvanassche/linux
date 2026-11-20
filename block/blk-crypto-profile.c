@@ -189,6 +189,7 @@ blk_crypto_remove_slot_from_lru_list(struct blk_crypto_keyslot *slot)
 static struct blk_crypto_keyslot *
 blk_crypto_find_keyslot(struct blk_crypto_profile *profile,
 			const struct blk_crypto_key *key)
+	__must_hold_shared(&profile->lock)
 {
 	const struct hlist_head *head =
 		blk_crypto_hash_bucket_for_key(profile, key);
@@ -204,6 +205,7 @@ blk_crypto_find_keyslot(struct blk_crypto_profile *profile,
 static struct blk_crypto_keyslot *
 blk_crypto_find_and_grab_keyslot(struct blk_crypto_profile *profile,
 				 const struct blk_crypto_key *key)
+	__must_hold_shared(&profile->lock)
 {
 	struct blk_crypto_keyslot *slot;
 

@@ -535,6 +535,7 @@ int blk_crypto_fallback_evict_key(const struct blk_crypto_key *key)
 
 static bool blk_crypto_fallback_inited;
 static int blk_crypto_fallback_init(void)
+	__must_hold(&tfms_init_lock)
 {
 	int i;
 	int err;

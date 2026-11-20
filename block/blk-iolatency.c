@@ -329,6 +329,7 @@ static inline unsigned long scale_amount(unsigned long qd, bool up)
 static void scale_cookie_change(struct blk_iolatency *blkiolat,
 				struct child_latency_info *lat_info,
 				bool up)
+	__must_hold(&lat_info->lock)
 {
 	unsigned long qd = blkiolat->rqos.disk->queue->nr_requests;
 	unsigned long scale = scale_amount(qd, up);

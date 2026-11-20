@@ -13,9 +13,12 @@ struct disk_events {
 	spinlock_t		lock;
 
 	struct mutex		block_mutex;	/* protects blocking */
-	int			block;		/* event blocking depth */
-	unsigned int		pending;	/* events already sent out */
-	unsigned int		clearing;	/* events being cleared */
+	/* event blocking depth */
+	int			block __guarded_by(&lock);
+	/* events already sent out */
+	unsigned int		pending __guarded_by(&lock);
+	/* events being cleared */
+	unsigned int		clearing __guarded_by(&lock);
 
 	long			poll_msecs;	/* interval, -1 for default */
 	struct delayed_work	dwork;
@@ -33,7 +36,7 @@ static char *disk_uevents[] = {
 
 /* list of all disk_events */
 static DEFINE_MUTEX(disk_events_mutex);
-static LIST_HEAD(disk_events);
+static __guarded_by(&disk_events_mutex) LIST_HEAD(disk_events);
 
 /* disable in-kernel polling by default */
 static unsigned long disk_events_dfl_poll_msecs;
@@ -250,7 +253,8 @@ static unsigned int disk_clear_events(struct gendisk *disk, unsigned int mask)
 	 * if ev->clearing is not 0, the disk_flush_events got called in the
 	 * middle of this function, so we want to run the workfn without delay.
 	 */
-	__disk_unblock_events(disk, ev->clearing ? true : false);
+	/* Existing lockless check; preserve behavior without taking ev->lock. */
+	__disk_unblock_events(disk, context_unsafe(ev->clearing) ? true : false);
 
 	/* then, fetch and clear pending events */
 	spin_lock_irq(&ev->lock);
@@ -310,7 +314,8 @@ static void disk_events_workfn(struct work_struct *work)
 	struct delayed_work *dwork = to_delayed_work(work);
 	struct disk_events *ev = container_of(dwork, struct disk_events, dwork);
 
-	disk_check_events(ev, &ev->clearing);
+	/* disk_check_events() clears *clearing_ptr under ev->lock. */
+	disk_check_events(ev, context_unsafe(&ev->clearing));
 }
 
 /*
@@ -445,9 +450,9 @@ int disk_alloc_events(struct gendisk *disk)
 
 	INIT_LIST_HEAD(&ev->node);
 	ev->disk = disk;
-	spin_lock_init(&ev->lock);
 	mutex_init(&ev->block_mutex);
-	ev->block = 1;
+	scoped_guard(spinlock_init, &ev->lock)
+		ev->block = 1;
 	ev->poll_msecs = -1;
 	INIT_DELAYED_WORK(&ev->dwork, disk_events_workfn);
 
@@ -484,7 +489,10 @@ void disk_del_events(struct gendisk *disk)
 
 void disk_release_events(struct gendisk *disk)
 {
-	/* the block count should be 1 from disk_del_events() */
-	WARN_ON_ONCE(disk->ev && disk->ev->block != 1);
+	/*
+	 * The block count should be 1 from disk_del_events() and no other
+	 * context can access disk->ev once it is about to be freed.
+	 */
+	context_unsafe(WARN_ON_ONCE(disk->ev && disk->ev->block != 1));
 	kfree(disk->ev);
 }

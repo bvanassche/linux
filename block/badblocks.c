@@ -550,6 +550,7 @@ static bool can_merge_front(struct badblocks *bb, int prev,
  * merged from bad->len.
  */
 static int front_merge(struct badblocks *bb, int prev, struct badblocks_context *bad)
+	__must_hold(&bb->lock)
 {
 	sector_t sectors = bad->len;
 	sector_t s = bad->start;
@@ -607,6 +608,7 @@ static bool can_combine_front(struct badblocks *bb, int prev,
  * it is unnecessary to clear p[perv] after front merge.
  */
 static void front_combine(struct badblocks *bb, int prev)
+	__must_hold(&bb->lock)
 {
 	u64 *p = bb->page;
 
@@ -715,6 +717,7 @@ static bool can_front_overwrite(struct badblocks *bb, int prev,
  */
 static int front_overwrite(struct badblocks *bb, int prev,
 			   struct badblocks_context *bad, int extra)
+	__must_hold(&bb->lock)
 {
 	u64 *p = bb->page;
 	sector_t orig_end = BB_END(p[prev]);
@@ -776,6 +779,7 @@ static int front_overwrite(struct badblocks *bb, int prev,
  * the location is indexed by 'at'.
  */
 static int insert_at(struct badblocks *bb, int at, struct badblocks_context *bad)
+	__must_hold(&bb->lock)
 {
 	u64 *p = bb->page;
 	int len;
@@ -791,6 +795,7 @@ static int insert_at(struct badblocks *bb, int at, struct badblocks_context *bad
 }
 
 static void badblocks_update_acked(struct badblocks *bb)
+	__must_hold(&bb->lock)
 {
 	bool unacked = false;
 	u64 *p = bb->page;
@@ -815,6 +820,7 @@ static void badblocks_update_acked(struct badblocks *bb)
  * overlapped with the bad range (from bad table) indexed by 'behind'.
  */
 static bool try_adjacent_combine(struct badblocks *bb, int prev)
+	__must_hold(&bb->lock)
 {
 	u64 *p = bb->page;
 
@@ -987,6 +993,7 @@ out:
  */
 static int front_clear(struct badblocks *bb, int prev,
 		       struct badblocks_context *bad, int *deleted)
+	__must_hold(&bb->lock)
 {
 	sector_t sectors = bad->len;
 	sector_t s = bad->start;
@@ -1030,6 +1037,7 @@ static int front_clear(struct badblocks *bb, int prev,
  */
 static int front_splitting_clear(struct badblocks *bb, int prev,
 				  struct badblocks_context *bad)
+	__must_hold(&bb->lock)
 {
 	u64 *p = bb->page;
 	u64 end = BB_END(p[prev]);

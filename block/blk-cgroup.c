@@ -393,6 +393,7 @@ out_free_blkg:
 static struct blkcg_gq *blkg_create(struct blkcg *blkcg, struct gendisk *disk,
 				    struct request_queue *q,
 				    struct blkcg_gq *new_blkg)
+	__must_hold(&q->queue_lock)
 {
 	struct blkcg_gq *blkg;
 	int i, ret;
@@ -482,6 +483,7 @@ err_free_blkg:
  */
 static struct blkcg_gq *blkg_lookup_create(struct blkcg *blkcg,
 		struct gendisk *disk, struct request_queue *q)
+	__must_hold(&q->queue_lock)
 {
 	struct blkcg_gq *blkg;
 
@@ -1000,6 +1002,7 @@ static void blkg_iostat_sub(struct blkg_iostat *dst, struct blkg_iostat *src)
 
 static void blkcg_iostat_update(struct blkcg_gq *blkg, struct blkg_iostat *cur,
 				struct blkg_iostat *last)
+	__must_hold(&blkg_stat_lock)
 {
 	struct blkg_iostat delta;
 	unsigned long flags;
@@ -1570,6 +1573,7 @@ EXPORT_SYMBOL_GPL(io_cgrp_subsys);
  */
 static void blkcg_policy_teardown_pds(struct request_queue *q,
 				      const struct blkcg_policy *pol)
+	__must_hold(&q->queue_lock)
 {
 	struct blkcg_gq *blkg;
 
@@ -1747,6 +1751,7 @@ void blkcg_deactivate_policy(struct gendisk *disk,
 EXPORT_SYMBOL_GPL(blkcg_deactivate_policy);
 
 static void blkcg_free_all_cpd(struct blkcg_policy *pol)
+	__must_hold(&blkcg_pol_mutex)
 {
 	struct blkcg *blkcg;
 

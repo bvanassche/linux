@@ -164,16 +164,16 @@ static inline bool blk_zstate_is_conv(enum blk_zstate zs)
 struct blk_zone_wplug {
 	struct hlist_node	node;
 	struct list_head	entry;
-	struct bio_list		bio_list;
+	struct bio_list		bio_list __guarded_by(&lock);
 	struct work_struct	bio_work;
 	struct rcu_head		rcu_head;
 	struct gendisk		*disk;
 	spinlock_t		lock;
 	refcount_t		ref;
-	unsigned int		flags;
+	unsigned int		flags __guarded_by(&lock);
 	unsigned int		zone_no;
-	unsigned int		wp_offset;
-	enum blk_zone_cond	cond;
+	unsigned int		wp_offset __guarded_by(&lock);
+	enum blk_zone_cond	cond __guarded_by(&lock);
 };
 
 static inline bool disk_need_zone_resources(struct gendisk *disk)
@@ -614,6 +614,7 @@ static bool disk_zone_is_last(struct gendisk *disk, struct blk_zone *zone)
 
 static bool disk_zone_wplug_is_full(struct gendisk *disk,
 				    struct blk_zone_wplug *zwplug)
+	__must_hold(&zwplug->lock)
 {
 	if (zwplug->zone_no < disk->nr_zones - 1)
 		return zwplug->wp_offset >= disk->zone_capacity;
@@ -621,6 +622,7 @@ static bool disk_zone_wplug_is_full(struct gendisk *disk,
 }
 
 static bool disk_zone_wplug_is_offline_or_readonly(struct blk_zone_wplug *zwplug)
+	__must_hold(&zwplug->lock)
 {
 	return disk_zone_cond_is_offline_or_readonly(zwplug->cond);
 }
@@ -652,15 +654,14 @@ static bool disk_insert_zone_wplug(struct gendisk *disk,
 	 * Set the zone condition: if we do not yet have a zones_state array
 	 * attached to the disk, then this is a zone write plug insert from the
 	 * first call to blk_revalidate_disk_zones(), in which case the zone is
-	 * necessarilly in the active condition.
+	 * necessarily in the active condition.
 	 */
 	zones_state = rcu_dereference_check(disk->zones_state,
 				lockdep_is_held(&disk->zone_wplugs_hash_lock));
-	if (zones_state)
-		zwplug->cond =
-			blk_zstate_to_zone_cond(zones_state[zwplug->zone_no]);
-	else
-		zwplug->cond = BLK_ZONE_COND_ACTIVE;
+	/* Not yet published in zone_wplugs_hash, so zwplug->lock is unneeded. */
+	context_unsafe(zwplug->cond = zones_state ?
+		blk_zstate_to_zone_cond(zones_state[zwplug->zone_no]) :
+		BLK_ZONE_COND_ACTIVE);
 
 	hlist_add_head_rcu(&zwplug->node, &disk->zone_wplugs_hash[idx]);
 	atomic_inc(&disk->nr_zone_wplugs);
@@ -733,14 +734,22 @@ static void disk_free_zone_wplug(struct blk_zone_wplug *zwplug)
 	struct gendisk *disk = zwplug->disk;
 	unsigned long flags;
 
-	WARN_ON_ONCE(!(zwplug->flags & BLK_ZONE_WPLUG_DEAD));
-	WARN_ON_ONCE(zwplug->flags & BLK_ZONE_WPLUG_PLUGGED);
-	WARN_ON_ONCE(!bio_list_empty(&zwplug->bio_list));
+	/*
+	 * The last reference has been dropped and disk_free_zone_wplug() may
+	 * be called either with or without zwplug->lock held.
+	 */
+	context_unsafe(
+		WARN_ON_ONCE(!(zwplug->flags & BLK_ZONE_WPLUG_DEAD));
+		WARN_ON_ONCE(zwplug->flags & BLK_ZONE_WPLUG_PLUGGED);
+		WARN_ON_ONCE(!bio_list_empty(&zwplug->bio_list))
+	);
 
 	spin_lock_irqsave(&disk->zone_wplugs_hash_lock, flags);
 	blk_zstate_set(rcu_dereference_check(disk->zones_state,
 				lockdep_is_held(&disk->zone_wplugs_hash_lock)),
-		       disk->nr_zones, zwplug->zone_no, zwplug->cond, 0);
+		       disk->nr_zones, zwplug->zone_no,
+		       /* May be called with or without zwplug->lock held. */
+		       context_unsafe(zwplug->cond), 0);
 	hlist_del_init_rcu(&zwplug->node);
 	atomic_dec(&disk->nr_zone_wplugs);
 	spin_unlock_irqrestore(&disk->zone_wplugs_hash_lock, flags);
@@ -888,11 +897,13 @@ again:
 
 	INIT_HLIST_NODE(&zwplug->node);
 	refcount_set(&zwplug->ref, 2);
-	spin_lock_init(&zwplug->lock);
-	zwplug->flags = 0;
+	scoped_guard(spinlock_init, &zwplug->lock) {
+		zwplug->flags = 0;
+		zwplug->wp_offset =
+			bdev_offset_from_zone_start(disk->part0, sector);
+		bio_list_init(&zwplug->bio_list);
+	}
 	zwplug->zone_no = zno;
-	zwplug->wp_offset = bdev_offset_from_zone_start(disk->part0, sector);
-	bio_list_init(&zwplug->bio_list);
 	INIT_WORK(&zwplug->bio_work, blk_zone_wplug_bio_work);
 	INIT_LIST_HEAD(&zwplug->entry);
 	zwplug->disk = disk;

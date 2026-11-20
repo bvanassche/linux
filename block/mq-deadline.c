@@ -83,13 +83,15 @@ struct deadline_data {
 	 * run time data
 	 */
 
-	struct list_head dispatch;
-	struct dd_per_prio per_prio[DD_PRIO_COUNT];
+	struct list_head dispatch __guarded_by(&lock);
+	struct dd_per_prio per_prio[DD_PRIO_COUNT] __guarded_by(&lock);
 
 	/* Data direction of latest dispatched request. */
-	enum dd_data_dir last_dir;
-	unsigned int batching;		/* number of sequential requests made */
-	unsigned int starved;		/* times reads have starved writes */
+	enum dd_data_dir last_dir __guarded_by(&lock);
+	/* number of sequential requests made */
+	unsigned int batching __guarded_by(&lock);
+	/* times reads have starved writes */
+	unsigned int starved __guarded_by(&lock);
 
 	/*
 	 * settings that change how the i/o scheduler behaves
@@ -543,23 +545,24 @@ static int dd_init_sched(struct request_queue *q, struct elevator_queue *eq)
 
 	eq->elevator_data = dd;
 
-	INIT_LIST_HEAD(&dd->dispatch);
-	for (prio = 0; prio <= DD_PRIO_MAX; prio++) {
-		struct dd_per_prio *per_prio = &dd->per_prio[prio];
+	scoped_guard(spinlock_init, &dd->lock) {
+		INIT_LIST_HEAD(&dd->dispatch);
+		for (prio = 0; prio <= DD_PRIO_MAX; prio++) {
+			struct dd_per_prio *per_prio = &dd->per_prio[prio];
 
-		INIT_LIST_HEAD(&per_prio->fifo_list[DD_READ]);
-		INIT_LIST_HEAD(&per_prio->fifo_list[DD_WRITE]);
-		per_prio->sort_list[DD_READ] = RB_ROOT;
-		per_prio->sort_list[DD_WRITE] = RB_ROOT;
+			INIT_LIST_HEAD(&per_prio->fifo_list[DD_READ]);
+			INIT_LIST_HEAD(&per_prio->fifo_list[DD_WRITE]);
+			per_prio->sort_list[DD_READ] = RB_ROOT;
+			per_prio->sort_list[DD_WRITE] = RB_ROOT;
+		}
+		dd->last_dir = DD_WRITE;
 	}
 	dd->fifo_expire[DD_READ] = read_expire;
 	dd->fifo_expire[DD_WRITE] = write_expire;
 	dd->writes_starved = writes_starved;
 	dd->front_merges = 1;
-	dd->last_dir = DD_WRITE;
 	dd->fifo_batch = fifo_batch;
 	dd->prio_aging_expire = prio_aging_expire;
-	spin_lock_init(&dd->lock);
 
 	/* We dispatch from request queue wide instead of hw queue */
 	blk_queue_flag_set(QUEUE_FLAG_SQ_SCHED, q);
@@ -733,7 +736,8 @@ static bool dd_has_work(struct blk_mq_hw_ctx *hctx)
 		return true;
 
 	for (prio = 0; prio <= DD_PRIO_MAX; prio++)
-		if (dd_has_work_for_prio(&dd->per_prio[prio]))
+		/* dd_has_work_for_prio() performs a lockless check. */
+		if (dd_has_work_for_prio(context_unsafe(&dd->per_prio[prio])))
 			return true;
 
 	return false;
@@ -820,6 +824,7 @@ static void *deadline_##name##_fifo_start(struct seq_file *m,		\
 									\
 static void *deadline_##name##_fifo_next(struct seq_file *m, void *v,	\
 					 loff_t *pos)			\
+	__must_hold(&DD_DATA_FROM_RQ(RQ_FROM_SEQ_FILE(m))->lock)	\
 {									\
 	struct request_queue *q = m->private;				\
 	struct deadline_data *dd = q->elevator->elevator_data;		\
@@ -872,7 +877,8 @@ static int deadline_batching_show(void *data, struct seq_file *m)
 	struct request_queue *q = data;
 	struct deadline_data *dd = q->elevator->elevator_data;
 
-	seq_printf(m, "%u\n", dd->batching);
+	/* Racy debugfs read. */
+	seq_printf(m, "%u\n", context_unsafe(dd->batching));
 	return 0;
 }
 
@@ -881,7 +887,8 @@ static int deadline_starved_show(void *data, struct seq_file *m)
 	struct request_queue *q = data;
 	struct deadline_data *dd = q->elevator->elevator_data;
 
-	seq_printf(m, "%u\n", dd->starved);
+	/* Racy debugfs read. */
+	seq_printf(m, "%u\n", context_unsafe(dd->starved));
 	return 0;
 }
 
@@ -942,6 +949,7 @@ static void *deadline_dispatch_start(struct seq_file *m, loff_t *pos)
 }
 
 static void *deadline_dispatch_next(struct seq_file *m, void *v, loff_t *pos)
+	__must_hold(&DD_DATA_FROM_RQ(RQ_FROM_SEQ_FILE(m))->lock)
 {
 	struct request_queue *q = m->private;
 	struct deadline_data *dd = q->elevator->elevator_data;

@@ -76,14 +76,15 @@ EXPORT_SYMBOL(fs_bio_set);
 /*
  * Our slab pool management
  */
+static DEFINE_MUTEX(bio_slab_lock);
+
 struct bio_slab {
 	struct kmem_cache *slab;
-	unsigned int slab_ref;
+	unsigned int slab_ref __guarded_by(&bio_slab_lock);
 	unsigned int slab_size;
 	char name[12];
 };
-static DEFINE_MUTEX(bio_slab_lock);
-static DEFINE_XARRAY(bio_slabs);
+static __guarded_by(&bio_slab_lock) DEFINE_XARRAY(bio_slabs);
 
 static struct bio_slab *create_bio_slab(unsigned int size)
 	__must_hold(&bio_slab_lock)

@@ -61,6 +61,7 @@ struct block_device *file_bdev(struct file *bdev_file)
 EXPORT_SYMBOL(file_bdev);
 
 static void bdev_write_inode(struct gendisk *disk, struct block_device *bdev)
+	__must_hold(&disk->open_mutex)
 {
 	struct inode *inode = BD_INODE(bdev);
 	int ret;
@@ -137,6 +138,7 @@ invalidate:
 }
 
 static void set_init_blocksize(struct gendisk *disk, struct block_device *bdev)
+	__must_hold(&disk->open_mutex)
 {
 	unsigned int bsize = bdev_logical_block_size(bdev);
 	loff_t size = i_size_read(BD_INODE(bdev));
@@ -678,6 +680,7 @@ static void bd_clear_claiming(struct block_device *whole, void *holder)
  */
 static void bd_finish_claiming(struct block_device *bdev, void *holder,
 		const struct blk_holder_ops *hops)
+	__must_hold(&bdev->bd_disk->open_mutex)
 {
 	struct block_device *whole = bdev_whole(bdev);
 
@@ -716,6 +719,7 @@ void bd_abort_claiming(struct block_device *bdev, void *holder)
 EXPORT_SYMBOL(bd_abort_claiming);
 
 static void bd_end_claim(struct block_device *bdev, void *holder)
+	__must_hold(&bdev->bd_disk->open_mutex)
 {
 	struct block_device *whole = bdev_whole(bdev);
 	bool unblock = false;
@@ -752,6 +756,7 @@ static void bd_end_claim(struct block_device *bdev, void *holder)
 
 static void blkdev_flush_mapping(struct gendisk *disk,
 				 struct block_device *bdev)
+	__must_hold(&disk->open_mutex)
 {
 	WARN_ON_ONCE(bdev->bd_holders);
 	sync_blockdev(bdev);
@@ -760,6 +765,7 @@ static void blkdev_flush_mapping(struct gendisk *disk,
 }
 
 static void blkdev_put_whole(struct gendisk *disk, struct block_device *bdev)
+	__must_hold(&disk->open_mutex)
 {
 	if (atomic_dec_and_test(&bdev->bd_openers))
 		blkdev_flush_mapping(disk, bdev);
@@ -769,6 +775,7 @@ static void blkdev_put_whole(struct gendisk *disk, struct block_device *bdev)
 
 static int blkdev_get_whole(struct gendisk *disk, struct block_device *bdev,
 			    blk_mode_t mode)
+	__must_hold(&disk->open_mutex)
 {
 	int ret;
 
@@ -802,6 +809,7 @@ static int blkdev_get_whole(struct gendisk *disk, struct block_device *bdev,
 
 static int blkdev_get_part(struct gendisk *disk, struct block_device *part,
 			   blk_mode_t mode)
+	__must_hold(&disk->open_mutex)
 {
 	int ret;
 
@@ -851,6 +859,7 @@ int bdev_permission(dev_t dev, blk_mode_t mode, void *holder)
 }
 
 static void blkdev_put_part(struct gendisk *disk, struct block_device *part)
+	__must_hold(&disk->open_mutex)
 {
 	struct block_device *whole = bdev_whole(part);
 
@@ -891,21 +900,25 @@ void blkdev_put_no_open(struct block_device *bdev)
 }
 
 static bool bdev_writes_blocked(struct block_device *bdev)
+	__must_hold(&bdev->bd_disk->open_mutex)
 {
 	return bdev->bd_writers < 0;
 }
 
 static void bdev_block_writes(struct block_device *bdev)
+	__must_hold(&bdev->bd_disk->open_mutex)
 {
 	bdev->bd_writers--;
 }
 
 static void bdev_unblock_writes(struct gendisk *disk, struct block_device *bdev)
+	__must_hold(&disk->open_mutex)
 {
 	bdev->bd_writers++;
 }
 
 static bool bdev_may_open(struct block_device *bdev, blk_mode_t mode)
+	__must_hold(&bdev->bd_disk->open_mutex)
 {
 	if (bdev_allow_write_mounted)
 		return true;
@@ -918,6 +931,7 @@ static bool bdev_may_open(struct block_device *bdev, blk_mode_t mode)
 }
 
 static void bdev_claim_write_access(struct block_device *bdev, blk_mode_t mode)
+	__must_hold(&bdev->bd_disk->open_mutex)
 {
 	if (bdev_allow_write_mounted)
 		return;
@@ -931,12 +945,14 @@ static void bdev_claim_write_access(struct block_device *bdev, blk_mode_t mode)
 
 static inline bool bdev_unclaimed(struct gendisk *disk,
 				  const struct file *bdev_file)
+	__must_hold(&disk->open_mutex)
 {
 	return bdev_file->private_data == BDEV_I(bdev_file->f_mapping->host);
 }
 
 static void bdev_yield_write_access(struct gendisk *disk,
 				    struct file *bdev_file)
+	__must_hold(&disk->open_mutex)
 {
 	struct block_device *bdev;
 
@@ -1140,6 +1156,7 @@ struct file *bdev_file_open_by_path(const char *path, blk_mode_t mode,
 EXPORT_SYMBOL(bdev_file_open_by_path);
 
 static inline void bd_yield_claim(struct gendisk *disk, struct file *bdev_file)
+	__must_hold(&disk->open_mutex)
 {
 	struct block_device *bdev = file_bdev(bdev_file);
 	void *holder = bdev_file->private_data;

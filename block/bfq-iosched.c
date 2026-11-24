@@ -5481,22 +5481,12 @@ static void bfq_exit_icq(struct io_cq *icq)
 	struct bfq_data *bfqd = bic_to_bfqd(bic);
 	unsigned long flags;
 
-	/*
-	 * If bfqd and thus bfqd->num_actuators is not available any
-	 * longer, then cycle over all possible per-actuator bfqqs in
-	 * next loop. We rely on bic being zeroed on creation, and
-	 * therefore on its unused per-actuator fields being NULL.
-	 *
-	 * bfqd is NULL if scheduler already exited, and in that case
-	 * this is the last time these queues are accessed.
-	 */
-	if (bfqd) {
-		spin_lock_irqsave(&bfqd->lock, flags);
-		_bfq_exit_icq(bic, bfqd->num_actuators);
-		spin_unlock_irqrestore(&bfqd->lock, flags);
-	} else {
-		_bfq_exit_icq(bic, BFQ_MAX_ACTUATORS);
-	}
+	if (WARN_ON_ONCE(!bfqd))
+		return;
+
+	spin_lock_irqsave(&bfqd->lock, flags);
+	_bfq_exit_icq(bic, bfqd->num_actuators);
+	spin_unlock_irqrestore(&bfqd->lock, flags);
 }
 
 /*

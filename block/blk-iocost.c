@@ -420,13 +420,13 @@ struct ioc {
 
 	spinlock_t			lock;
 	struct timer_list		timer;
-	struct list_head		active_iocgs;	/* active cgroups */
+	struct list_head		active_iocgs __guarded_by(&lock); /* active cgroups */
 	struct ioc_pcpu_stat __percpu	*pcpu_stat;
 
-	enum ioc_running		running;
+	enum ioc_running		running __guarded_by(&lock);
 	atomic64_t			vtime_rate;
 	u64				vtime_base_rate;
-	s64				vtime_err;
+	s64				vtime_err __guarded_by(&lock);
 
 	seqcount_spinlock_t		period_seqcount;
 	u64				period_at;	/* wallclock starttime */
@@ -435,19 +435,19 @@ struct ioc {
 	atomic64_t			cur_period;	/* inc'd each period */
 	int				busy_level;	/* saturation history */
 
-	bool				weights_updated;
+	bool				weights_updated __guarded_by(&lock);
 	atomic_t			hweight_gen;	/* for lazy hweights */
 
 	/* debt forgivness */
-	u64				dfgv_period_at;
-	u64				dfgv_period_rem;
-	u64				dfgv_usage_us_sum;
+	u64				dfgv_period_at __guarded_by(&lock);
+	u64				dfgv_period_rem __guarded_by(&lock);
+	u64				dfgv_usage_us_sum __guarded_by(&lock);
 
-	u64				autop_too_fast_at;
-	u64				autop_too_slow_at;
-	int				autop_idx;
-	bool				user_qos_params:1;
-	bool				user_cost_model:1;
+	u64				autop_too_fast_at __guarded_by(&lock);
+	u64				autop_too_slow_at __guarded_by(&lock);
+	int				autop_idx __guarded_by(&lock);
+	bool				user_qos_params:1 __guarded_by(&lock);
+	bool				user_cost_model:1 __guarded_by(&lock);
 };
 
 struct iocg_pcpu_stat {
@@ -840,6 +840,7 @@ static void ioc_refresh_period_us(struct ioc *ioc)
  *  the init path.
  */
 static int ioc_autop_idx(struct ioc *ioc, struct gendisk *disk)
+	__must_hold(&ioc->lock)
 {
 	int idx = ioc->autop_idx;
 	const struct ioc_params *p = &autop[idx];
@@ -1107,6 +1108,7 @@ static void ioc_now(struct ioc *ioc, struct ioc_now *now)
 }
 
 static void ioc_start_period(struct ioc *ioc, struct ioc_now *now)
+	__must_hold(&ioc->lock)
 {
 	WARN_ON_ONCE(ioc->running != IOC_RUNNING);
 
@@ -1826,6 +1828,7 @@ static void iocg_flush_stat(struct list_head *target_iocgs, struct ioc_now *now)
 static u32 hweight_after_donation(struct ioc *ioc, struct ioc_gq *iocg,
 				  u32 old_hwi, u32 hwm, u32 usage,
 				  struct ioc_now *now)
+	__must_hold(&ioc->lock)
 {
 	u64 vtime = atomic64_read(&iocg->vtime);
 	s64 excess, delta, target, new_hwi;
@@ -3048,11 +3051,11 @@ static int blk_iocost_init(struct gendisk *disk)
 		local64_set(&ccs->rq_wait_ns, 0);
 	}
 
-	spin_lock_init(&ioc->lock);
 	timer_setup(&ioc->timer, ioc_timer_fn, 0);
-	INIT_LIST_HEAD(&ioc->active_iocgs);
-
-	ioc->running = IOC_IDLE;
+	scoped_guard(spinlock_init, &ioc->lock) {
+		INIT_LIST_HEAD(&ioc->active_iocgs);
+		ioc->running = IOC_IDLE;
+	}
 	ioc->vtime_base_rate = VTIME_PER_USEC;
 	atomic64_set(&ioc->vtime_rate, VTIME_PER_USEC);
 	seqcount_spinlock_init(&ioc->period_seqcount, &ioc->lock);

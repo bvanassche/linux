@@ -2459,7 +2459,7 @@ static bool bfq_bio_merge(struct request_queue *q, struct bio *bio,
 		 * Make sure cgroup info is uptodate for current process before
 		 * considering the merge.
 		 */
-		bfq_bic_update_cgroup(bic, bio);
+		bfq_bic_update_cgroup(bfqd, bic, bio);
 
 		bfqd->bio_bfqq = bic_to_bfqq(bic, op_is_sync(bio->bi_opf),
 					     bfq_actuator_index(bfqd, bio));
@@ -5446,22 +5446,19 @@ static void bfq_exit_bfqq(struct bfq_data *bfqd, struct bfq_queue *bfqq)
 	bfq_release_process_ref(bfqd, bfqq);
 }
 
-static void bfq_exit_icq_bfqq(struct bfq_io_cq *bic, bool is_sync,
-			      unsigned int actuator_idx)
+static void bfq_exit_icq_bfqq(struct bfq_data *bfqd, struct bfq_io_cq *bic,
+			      bool is_sync, unsigned int actuator_idx)
 {
 	struct bfq_queue *bfqq = bic_to_bfqq(bic, is_sync, actuator_idx);
-	struct bfq_data *bfqd;
 
-	if (bfqq)
-		bfqd = bfqq->bfqd; /* NULL if scheduler already exited */
-
-	if (bfqq && bfqd) {
+	if (bfqq) {
 		bic_set_bfqq(bic, NULL, is_sync, actuator_idx);
 		bfq_exit_bfqq(bfqd, bfqq);
 	}
 }
 
-static void _bfq_exit_icq(struct bfq_io_cq *bic, unsigned int num_actuators)
+static void _bfq_exit_icq(struct bfq_data *bfqd, struct bfq_io_cq *bic,
+			  unsigned int num_actuators)
 {
 	struct bfq_iocq_bfqq_data *bfqq_data = bic->bfqq_data;
 	unsigned int act_idx;
@@ -5470,8 +5467,8 @@ static void _bfq_exit_icq(struct bfq_io_cq *bic, unsigned int num_actuators)
 		if (bfqq_data[act_idx].stable_merge_bfqq)
 			bfq_put_stable_ref(bfqq_data[act_idx].stable_merge_bfqq);
 
-		bfq_exit_icq_bfqq(bic, true, act_idx);
-		bfq_exit_icq_bfqq(bic, false, act_idx);
+		bfq_exit_icq_bfqq(bfqd, bic, true, act_idx);
+		bfq_exit_icq_bfqq(bfqd, bic, false, act_idx);
 	}
 }
 
@@ -5485,7 +5482,7 @@ static void bfq_exit_icq(struct io_cq *icq)
 		return;
 
 	spin_lock_irqsave(&bfqd->lock, flags);
-	_bfq_exit_icq(bic, bfqd->num_actuators);
+	_bfq_exit_icq(bfqd, bic, bfqd->num_actuators);
 	spin_unlock_irqrestore(&bfqd->lock, flags);
 }
 
@@ -6222,7 +6219,7 @@ static inline void bfq_update_insert_stats(struct request_queue *q,
 					   blk_opf_t cmd_flags) {}
 #endif /* CONFIG_BFQ_CGROUP_DEBUG */
 
-static struct bfq_queue *bfq_init_rq(struct request *rq);
+static struct bfq_queue *bfq_init_rq(struct bfq_data *bfqd, struct request *rq);
 
 static void bfq_insert_request(struct blk_mq_hw_ctx *hctx, struct request *rq,
 			       blk_insert_t flags)
@@ -6239,7 +6236,7 @@ static void bfq_insert_request(struct blk_mq_hw_ctx *hctx, struct request *rq,
 		bfqg_stats_update_legacy_io(q, rq);
 #endif
 	spin_lock_irq(&bfqd->lock);
-	bfqq = bfq_init_rq(rq);
+	bfqq = bfq_init_rq(bfqd, rq);
 	if (blk_mq_sched_try_insert_merge(q, rq, &free)) {
 		spin_unlock_irq(&bfqd->lock);
 		blk_mq_free_requests(&free);
@@ -6915,11 +6912,9 @@ static struct bfq_queue *bfq_get_bfqq_handle_split(struct bfq_data *bfqd,
  * rq after rq has been inserted or merged. So, it is safe to execute
  * these preparation operations when rq is finally inserted or merged.
  */
-static struct bfq_queue *bfq_init_rq(struct request *rq)
+static struct bfq_queue *bfq_init_rq(struct bfq_data *bfqd, struct request *rq)
 {
-	struct request_queue *q = rq->q;
 	struct bio *bio = rq->bio;
-	struct bfq_data *bfqd = q->elevator->elevator_data;
 	struct bfq_io_cq *bic;
 	const int is_sync = rq_is_sync(rq);
 	struct bfq_queue *bfqq;
@@ -6940,7 +6935,7 @@ static struct bfq_queue *bfq_init_rq(struct request *rq)
 
 	bic = icq_to_bic(rq->elv.icq);
 	bfq_check_ioprio_change(bic, bio);
-	bfq_bic_update_cgroup(bic, bio);
+	bfq_bic_update_cgroup(bfqd, bic, bio);
 	bfqq = bfq_get_bfqq_handle_split(bfqd, bic, bio, a_idx, is_sync);
 
 	bfqq_request_allocated(bfqq);

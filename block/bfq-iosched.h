@@ -1082,7 +1082,8 @@ void bfqg_stats_update_avg_queue_size(struct bfq_group *bfqg);
 #endif
 
 void bfq_init_entity(struct bfq_entity *entity, struct bfq_group *bfqg);
-void bfq_bic_update_cgroup(struct bfq_io_cq *bic, struct bio *bio);
+void bfq_bic_update_cgroup(struct bfq_data *bfqd, struct bfq_io_cq *bic,
+			   struct bio *bio);
 void bfq_end_wr_async(struct bfq_data *bfqd);
 struct bfq_group *bfq_bio_bfqg(struct bfq_data *bfqd, struct bio *bio);
 struct blkcg_gq *bfqg_to_blkg(struct bfq_group *bfqg);

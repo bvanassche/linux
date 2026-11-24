@@ -779,9 +779,9 @@ static void __bfq_bic_change_cgroup(struct bfq_data *bfqd,
 	}
 }
 
-void bfq_bic_update_cgroup(struct bfq_io_cq *bic, struct bio *bio)
+void bfq_bic_update_cgroup(struct bfq_data *bfqd, struct bfq_io_cq *bic,
+			   struct bio *bio)
 {
-	struct bfq_data *bfqd = bic_to_bfqd(bic);
 	struct bfq_group *bfqg = bfq_bio_bfqg(bfqd, bio);
 	uint64_t serial_nr;
 
@@ -791,7 +791,7 @@ void bfq_bic_update_cgroup(struct bfq_io_cq *bic, struct bio *bio)
 	 * Check whether blkcg has changed.  The condition may trigger
 	 * spuriously on a newly created cic but there's no harm.
 	 */
-	if (unlikely(!bfqd) || likely(bic->blkcg_serial_nr == serial_nr))
+	if (likely(bic->blkcg_serial_nr == serial_nr))
 		return;
 
 	/*
@@ -1430,7 +1430,10 @@ void bfq_init_entity(struct bfq_entity *entity, struct bfq_group *bfqg)
 	entity->sched_data = &bfqg->sched_data;
 }
 
-void bfq_bic_update_cgroup(struct bfq_io_cq *bic, struct bio *bio) {}
+void bfq_bic_update_cgroup(struct bfq_data *bfqd, struct bfq_io_cq *bic,
+			   struct bio *bio)
+{
+}
 
 void bfq_end_wr_async(struct bfq_data *bfqd)
 {

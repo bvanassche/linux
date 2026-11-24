@@ -1823,10 +1823,10 @@ static void iocg_flush_stat(struct list_head *target_iocgs, struct ioc_now *now)
  * capacity. @hwm is the upper bound and used to signal no donation. This
  * function also throws away @iocg's excess budget.
  */
-static u32 hweight_after_donation(struct ioc_gq *iocg, u32 old_hwi, u32 hwm,
-				  u32 usage, struct ioc_now *now)
+static u32 hweight_after_donation(struct ioc *ioc, struct ioc_gq *iocg,
+				  u32 old_hwi, u32 hwm, u32 usage,
+				  struct ioc_now *now)
 {
-	struct ioc *ioc = iocg->ioc;
 	u64 vtime = atomic64_read(&iocg->vtime);
 	s64 excess, delta, target, new_hwi;
 
@@ -2424,8 +2424,8 @@ static void ioc_timer_fn(struct timer_list *timer)
 			 */
 			current_hweight(iocg, &hwa, &old_hwi);
 			hwm = current_hweight_max(iocg);
-			new_hwi = hweight_after_donation(iocg, old_hwi, hwm,
-							 usage, &now);
+			new_hwi = hweight_after_donation(ioc, iocg, old_hwi,
+							 hwm, usage, &now);
 			/*
 			 * Donation calculation assumes hweight_after_donation
 			 * to be positive, a condition that a donor w/ hwa < 2

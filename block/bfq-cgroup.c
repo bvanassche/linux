@@ -642,6 +642,7 @@ struct bfq_group *bfq_bio_bfqg(struct bfq_data *bfqd, struct bio *bio)
  */
 void bfq_bfqq_move(struct bfq_data *bfqd, struct bfq_queue *bfqq,
 		   struct bfq_group *bfqg)
+	__must_hold(&bfqd->lock)
 {
 	struct bfq_entity *entity = &bfqq->entity;
 	struct bfq_group *old_parent = bfqq_group(bfqq);
@@ -713,6 +714,7 @@ static void bfq_sync_bfqq_move(struct bfq_data *bfqd,
 			       struct bfq_io_cq *bic,
 			       struct bfq_group *bfqg,
 			       unsigned int act_idx)
+	__must_hold(&bfqd->lock)
 {
 	struct bfq_queue *bfqq;
 
@@ -761,6 +763,7 @@ static void bfq_sync_bfqq_move(struct bfq_data *bfqd,
 static void __bfq_bic_change_cgroup(struct bfq_data *bfqd,
 				    struct bfq_io_cq *bic,
 				    struct bfq_group *bfqg)
+	__must_hold(&bfqd->lock)
 {
 	unsigned int act_idx;
 
@@ -781,6 +784,7 @@ static void __bfq_bic_change_cgroup(struct bfq_data *bfqd,
 
 void bfq_bic_update_cgroup(struct bfq_data *bfqd, struct bfq_io_cq *bic,
 			   struct bio *bio)
+	__must_hold(&bfqd->lock)
 {
 	struct bfq_group *bfqg = bfq_bio_bfqg(bfqd, bio);
 	uint64_t serial_nr;
@@ -825,6 +829,7 @@ static void bfq_flush_idle_tree(struct bfq_service_tree *st)
 static void bfq_reparent_leaf_entity(struct bfq_data *bfqd,
 				     struct bfq_entity *entity,
 				     int ioprio_class)
+	__must_hold(&bfqd->lock)
 {
 	struct bfq_queue *bfqq;
 	struct bfq_entity *child_entity = entity;
@@ -856,6 +861,7 @@ static void bfq_reparent_active_queues(struct bfq_data *bfqd,
 				       struct bfq_group *bfqg,
 				       struct bfq_service_tree *st,
 				       int ioprio_class)
+	__must_hold(&bfqd->lock)
 {
 	struct rb_root *active = &st->active;
 	struct bfq_entity *entity;
@@ -1415,7 +1421,10 @@ struct cftype bfq_blkg_files[] = {
 #else	/* CONFIG_BFQ_GROUP_IOSCHED */
 
 void bfq_bfqq_move(struct bfq_data *bfqd, struct bfq_queue *bfqq,
-		   struct bfq_group *bfqg) {}
+		   struct bfq_group *bfqg)
+	__must_hold(&bfqd->lock)
+{
+}
 
 void bfq_init_entity(struct bfq_entity *entity, struct bfq_group *bfqg)
 {
@@ -1432,6 +1441,7 @@ void bfq_init_entity(struct bfq_entity *entity, struct bfq_group *bfqg)
 
 void bfq_bic_update_cgroup(struct bfq_data *bfqd, struct bfq_io_cq *bic,
 			   struct bio *bio)
+	__must_hold(&bfqd->lock)
 {
 }
 

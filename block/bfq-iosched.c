@@ -465,6 +465,7 @@ static struct bfq_io_cq *bfq_bic_lookup(struct request_queue *q)
  * driver that will restart queueing.
  */
 void bfq_schedule_dispatch(struct bfq_data *bfqd)
+	__must_hold(&bfqd->lock)
 {
 	lockdep_assert_held(&bfqd->lock);
 
@@ -2627,6 +2628,7 @@ static void bfq_bfqq_end_wr(struct bfq_queue *bfqq)
 
 void bfq_end_wr_async_queues(struct bfq_data *bfqd,
 			     struct bfq_group *bfqg)
+	__must_hold(&bfqd->lock)
 {
 	int i, j, k;
 
@@ -5433,6 +5435,7 @@ void bfq_put_cooperator(struct bfq_queue *bfqq)
 }
 
 static void bfq_exit_bfqq(struct bfq_data *bfqd, struct bfq_queue *bfqq)
+	__must_hold(&bfqd->lock)
 {
 	if (bfqq == bfqd->in_service_queue) {
 		__bfq_bfqq_expire(bfqd, bfqq, BFQQE_BUDGET_TIMEOUT);
@@ -5448,6 +5451,7 @@ static void bfq_exit_bfqq(struct bfq_data *bfqd, struct bfq_queue *bfqq)
 
 static void bfq_exit_icq_bfqq(struct bfq_data *bfqd, struct bfq_io_cq *bic,
 			      bool is_sync, unsigned int actuator_idx)
+	__must_hold(&bfqd->lock)
 {
 	struct bfq_queue *bfqq = bic_to_bfqq(bic, is_sync, actuator_idx);
 
@@ -5459,6 +5463,7 @@ static void bfq_exit_icq_bfqq(struct bfq_data *bfqd, struct bfq_io_cq *bic,
 
 static void _bfq_exit_icq(struct bfq_data *bfqd, struct bfq_io_cq *bic,
 			  unsigned int num_actuators)
+	__must_hold(&bfqd->lock)
 {
 	struct bfq_iocq_bfqq_data *bfqq_data = bic->bfqq_data;
 	unsigned int act_idx;
@@ -6219,7 +6224,8 @@ static inline void bfq_update_insert_stats(struct request_queue *q,
 					   blk_opf_t cmd_flags) {}
 #endif /* CONFIG_BFQ_CGROUP_DEBUG */
 
-static struct bfq_queue *bfq_init_rq(struct bfq_data *bfqd, struct request *rq);
+static struct bfq_queue *bfq_init_rq(struct bfq_data *bfqd, struct request *rq)
+	__must_hold(&bfqd->lock);
 
 static void bfq_insert_request(struct blk_mq_hw_ctx *hctx, struct request *rq,
 			       blk_insert_t flags)
@@ -6332,6 +6338,7 @@ static void bfq_update_hw_tag(struct bfq_data *bfqd)
 }
 
 static void bfq_completed_request(struct bfq_queue *bfqq, struct bfq_data *bfqd)
+	__must_hold(&bfqd->lock)
 {
 	u64 now_ns;
 	u32 delta_us;
@@ -6913,6 +6920,7 @@ static struct bfq_queue *bfq_get_bfqq_handle_split(struct bfq_data *bfqd,
  * these preparation operations when rq is finally inserted or merged.
  */
 static struct bfq_queue *bfq_init_rq(struct bfq_data *bfqd, struct request *rq)
+	__must_hold(&bfqd->lock)
 {
 	struct bio *bio = rq->bio;
 	struct bfq_io_cq *bic;
@@ -7058,6 +7066,7 @@ static enum hrtimer_restart bfq_idle_slice_timer(struct hrtimer *timer)
 
 static void __bfq_put_async_bfqq(struct bfq_data *bfqd,
 				 struct bfq_queue **bfqq_ptr)
+	__must_hold(&bfqd->lock)
 {
 	struct bfq_queue *bfqq = *bfqq_ptr;
 
@@ -7079,6 +7088,7 @@ static void __bfq_put_async_bfqq(struct bfq_data *bfqd,
  * exist for sure until all the requests on a device are gone).
  */
 void bfq_put_async_queues(struct bfq_data *bfqd, struct bfq_group *bfqg)
+	__must_hold(&bfqd->lock)
 {
 	int i, j, k;
 

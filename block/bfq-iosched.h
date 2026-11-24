@@ -1054,10 +1054,13 @@ void bfq_bfqq_expire(struct bfq_data *bfqd, struct bfq_queue *bfqq,
 		     bool compensate, enum bfqq_expiration reason);
 void bfq_put_queue(struct bfq_queue *bfqq);
 void bfq_put_cooperator(struct bfq_queue *bfqq);
-void bfq_end_wr_async_queues(struct bfq_data *bfqd, struct bfq_group *bfqg);
+void bfq_end_wr_async_queues(struct bfq_data *bfqd, struct bfq_group *bfqg)
+	__must_hold(&bfqd->lock);
 void bfq_release_process_ref(struct bfq_data *bfqd, struct bfq_queue *bfqq);
-void bfq_schedule_dispatch(struct bfq_data *bfqd);
-void bfq_put_async_queues(struct bfq_data *bfqd, struct bfq_group *bfqg);
+void bfq_schedule_dispatch(struct bfq_data *bfqd)
+	__must_hold(&bfqd->lock);
+void bfq_put_async_queues(struct bfq_data *bfqd, struct bfq_group *bfqg)
+	__must_hold(&bfqd->lock);
 
 /* ------------ end of main algorithm interface -------------- */
 
@@ -1071,7 +1074,8 @@ void bfqg_stats_update_completion(struct bfq_group *bfqg, u64 start_time_ns,
 void bfqg_stats_update_dequeue(struct bfq_group *bfqg);
 void bfqg_stats_set_start_idle_time(struct bfq_group *bfqg);
 void bfq_bfqq_move(struct bfq_data *bfqd, struct bfq_queue *bfqq,
-		   struct bfq_group *bfqg);
+		   struct bfq_group *bfqg)
+	__must_hold(&bfqd->lock);
 
 #ifdef CONFIG_BFQ_CGROUP_DEBUG
 void bfqg_stats_update_io_add(struct bfq_group *bfqg, struct bfq_queue *bfqq,
@@ -1083,7 +1087,8 @@ void bfqg_stats_update_avg_queue_size(struct bfq_group *bfqg);
 
 void bfq_init_entity(struct bfq_entity *entity, struct bfq_group *bfqg);
 void bfq_bic_update_cgroup(struct bfq_data *bfqd, struct bfq_io_cq *bic,
-			   struct bio *bio);
+			   struct bio *bio)
+	__must_hold(&bfqd->lock);
 void bfq_end_wr_async(struct bfq_data *bfqd);
 struct bfq_group *bfq_bio_bfqg(struct bfq_data *bfqd, struct bio *bio);
 struct blkcg_gq *bfqg_to_blkg(struct bfq_group *bfqg);

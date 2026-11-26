@@ -281,7 +281,7 @@ struct spi_device {
 static_assert((SPI_MODE_KERNEL_MASK & SPI_MODE_USER_MASK) == 0,
 	      "SPI_MODE_USER_MASK & SPI_MODE_KERNEL_MASK must not overlap");
 
-#if defined(WARN_CONTEXT_ANALYSIS) && !defined(__CHECKER__) && !defined(__GENKSYMS__)
+#if defined(WARN_CONTEXT_ANALYSIS) && __has_attribute(__capability__) && __has_attribute(__overloadable__) && !defined(__GENKSYMS__)
 static inline __overloadable struct spi_device *to_spi_device(struct device *dev)
 {
 	return container_of(dev, struct spi_device, dev);

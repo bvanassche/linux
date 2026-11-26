@@ -315,7 +315,7 @@ do {								\
 
 #endif /* CONFIG_PREEMPT_RT */
 
-#if defined(WARN_CONTEXT_ANALYSIS) && !defined(__CHECKER__)
+#if defined(WARN_CONTEXT_ANALYSIS) && __has_attribute(__capability__) && __has_attribute(__overloadable__)
 /*
  * Because the compiler only knows about the base per-CPU variable, use this
  * helper function to make the compiler think we lock/unlock the @base variable,

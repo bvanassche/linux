@@ -110,9 +110,10 @@ endif
 # (depends on variables CONTEXT_ANALYSIS_obj.o, CONTEXT_ANALYSIS)
 #
 ifeq ($(CONFIG_WARN_CONTEXT_ANALYSIS),y)
-_c_flags += $(if $(patsubst n%,, \
-		$(CONTEXT_ANALYSIS_$(target-stem).o)$(CONTEXT_ANALYSIS)$(if $(is-kernel-object),$(CONFIG_WARN_CONTEXT_ANALYSIS_ALL))), \
-		$(CFLAGS_CONTEXT_ANALYSIS))
+context-analysis-enabled = $(patsubst n%,, \
+		$(CONTEXT_ANALYSIS_$(target-stem).o)$(CONTEXT_ANALYSIS)$(if $(is-kernel-object),$(CONFIG_WARN_CONTEXT_ANALYSIS_ALL)))
+_c_flags += $(if $(context-analysis-enabled),$(CFLAGS_CONTEXT_ANALYSIS))
+check_flags += $(if $(context-analysis-enabled),$(CHECKFLAGS_CONTEXT_ANALYSIS))
 endif
 
 #

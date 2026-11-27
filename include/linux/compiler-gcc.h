@@ -28,12 +28,14 @@
  * the inline assembly constraint from =g to =r, in this particular
  * case either is valid.
  */
+#ifndef __CHECKER__
 #define RELOC_HIDE(ptr, off)						\
 ({									\
 	unsigned long __ptr;						\
 	__asm__ ("" : "=r"(__ptr) : "0"(ptr));				\
 	(typeof(ptr)) (__ptr + (off));					\
 })
+#endif
 
 #if defined(LATENT_ENTROPY_PLUGIN) && !defined(__CHECKER__)
 #define __latent_entropy __attribute__((latent_entropy))

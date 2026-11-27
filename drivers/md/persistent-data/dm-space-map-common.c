@@ -476,7 +476,6 @@ int sm_ll_insert(struct ll_disk *ll, dm_block_t b,
 		sm_set_bitmap(bm_le, bit, 3);
 		dm_tm_unlock(ll->tm, nb);
 
-		__dm_bless_for_disk(&le_rc);
 		r = dm_btree_insert(&ll->ref_count_info, ll->ref_count_root,
 				    &b, &le_rc, &ll->ref_count_root);
 		if (r < 0) {
@@ -686,7 +685,6 @@ static inline int sm_ll_inc_bitmap(struct ll_disk *ll, dm_block_t b,
 			reset_inc_context(ll, ic);
 
 			le_rc = cpu_to_le32(3);
-			__dm_bless_for_disk(&le_rc);
 			r = dm_btree_insert(&ll->ref_count_info, ll->ref_count_root,
 					    &b, &le_rc, &ll->ref_count_root);
 			if (r < 0) {
@@ -1095,7 +1093,6 @@ int sm_ll_open_metadata(struct ll_disk *ll, struct dm_transaction_manager *tm,
 static inline int ie_cache_writeback(struct ll_disk *ll, struct ie_cache *iec)
 {
 	iec->dirty = false;
-	__dm_bless_for_disk(iec->ie);
 	return dm_btree_insert(&ll->bitmap_info, ll->bitmap_root,
 			       &iec->index, &iec->ie, &ll->bitmap_root);
 }

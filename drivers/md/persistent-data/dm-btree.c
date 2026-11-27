@@ -20,15 +20,12 @@
  *--------------------------------------------------------------
  */
 static void memcpy_disk(void *dest, const void *src, size_t len)
-	__dm_written_to_disk(src)
 {
 	memcpy(dest, src, len);
-	__dm_unbless_for_disk(src);
 }
 
 static void array_insert(void *base, size_t elt_size, unsigned int nr_elts,
 			 unsigned int index, void *elt)
-	__dm_written_to_disk(elt)
 {
 	if (index < nr_elts)
 		memmove(base + (elt_size * (index + 1)),
@@ -85,7 +82,6 @@ void inc_children(struct dm_transaction_manager *tm, struct btree_node *n,
 
 static int insert_at(size_t value_size, struct btree_node *node, unsigned int index,
 		     uint64_t key, void *value)
-	__dm_written_to_disk(value)
 {
 	uint32_t nr_entries = le32_to_cpu(node->header.nr_entries);
 	uint32_t max_entries = le32_to_cpu(node->header.max_entries);
@@ -95,11 +91,8 @@ static int insert_at(size_t value_size, struct btree_node *node, unsigned int in
 	    index >= max_entries ||
 	    nr_entries >= max_entries) {
 		DMERR("too many entries in btree node for insert");
-		__dm_unbless_for_disk(value);
 		return -ENOMEM;
 	}
-
-	__dm_bless_for_disk(&key_le);
 
 	array_insert(node->keys, sizeof(*node->keys), nr_entries, index, &key_le);
 	array_insert(value_base(node), value_size, nr_entries, index, value);
@@ -679,7 +672,6 @@ static int split_one_into_two(struct shadow_spine *s, unsigned int parent_index,
 	pn = dm_block_data(parent);
 
 	location = cpu_to_le64(dm_block_location(right));
-	__dm_bless_for_disk(&location);
 	r = insert_at(sizeof(__le64), pn, parent_index + 1,
 		      le64_to_cpu(rn->keys[0]), &location);
 	if (r) {
@@ -778,7 +770,6 @@ static int split_two_into_three(struct shadow_spine *s, unsigned int parent_inde
 	/* patch up the parent */
 	pn->keys[middle_index] = rn->keys[0];
 	location = cpu_to_le64(dm_block_location(middle));
-	__dm_bless_for_disk(&location);
 	r = insert_at(sizeof(__le64), pn, middle_index,
 		      le64_to_cpu(mn->keys[0]), &location);
 	if (r) {
@@ -893,12 +884,10 @@ static int btree_split_beneath(struct shadow_spine *s, uint64_t key)
 	pn->header.value_size = cpu_to_le32(sizeof(__le64));
 
 	val = cpu_to_le64(dm_block_location(left));
-	__dm_bless_for_disk(&val);
 	pn->keys[0] = ln->keys[0];
 	memcpy_disk(value_ptr(pn, 0), &val, sizeof(__le64));
 
 	val = cpu_to_le64(dm_block_location(right));
-	__dm_bless_for_disk(&val);
 	pn->keys[1] = rn->keys[0];
 	memcpy_disk(value_ptr(pn, 1), &val, sizeof(__le64));
 
@@ -1111,7 +1100,6 @@ static int btree_insert_raw(struct shadow_spine *s, dm_block_t root,
 		if (shadow_has_parent(s) && i >= 0) { /* FIXME: second clause unness. */
 			__le64 location = cpu_to_le64(dm_block_location(shadow_current(s)));
 
-			__dm_bless_for_disk(&location);
 			memcpy_disk(value_ptr(dm_block_data(shadow_parent(s)), i),
 				    &location, sizeof(__le64));
 		}
@@ -1175,7 +1163,6 @@ static int __btree_get_overwrite_leaf(struct shadow_spine *s, dm_block_t root,
 		if (shadow_has_parent(s) && i >= 0) {
 			__le64 location = cpu_to_le64(dm_block_location(shadow_current(s)));
 
-			__dm_bless_for_disk(&location);
 			memcpy_disk(value_ptr(dm_block_data(shadow_parent(s)), i),
 				    &location, sizeof(__le64));
 		}
@@ -1234,7 +1221,6 @@ static bool need_insert(struct btree_node *node, uint64_t *keys,
 static int insert(struct dm_btree_info *info, dm_block_t root,
 		  uint64_t *keys, void *value, dm_block_t *new_root,
 		  int *inserted)
-		  __dm_written_to_disk(value)
 {
 	int r;
 	unsigned int level, index = -1, last_level = info->levels - 1;
@@ -1262,7 +1248,6 @@ static int insert(struct dm_btree_info *info, dm_block_t root,
 				goto bad;
 
 			new_le = cpu_to_le64(new_tree);
-			__dm_bless_for_disk(&new_le);
 
 			r = insert_at(sizeof(uint64_t), n, index,
 				      keys[level], &new_le);
@@ -1288,7 +1273,7 @@ static int insert(struct dm_btree_info *info, dm_block_t root,
 		r = insert_at(info->value_type.size, n, index,
 			      keys[level], value);
 		if (r)
-			goto bad_unblessed;
+			goto bad;
 	} else {
 		if (inserted)
 			*inserted = 0;
@@ -1312,15 +1297,12 @@ static int insert(struct dm_btree_info *info, dm_block_t root,
 	return 0;
 
 bad:
-	__dm_unbless_for_disk(value);
-bad_unblessed:
 	exit_shadow_spine(&spine);
 	return r;
 }
 
 int dm_btree_insert(struct dm_btree_info *info, dm_block_t root,
 		    uint64_t *keys, void *value, dm_block_t *new_root)
-	__dm_written_to_disk(value)
 {
 	return insert(info, root, keys, value, new_root, NULL);
 }
@@ -1329,7 +1311,6 @@ EXPORT_SYMBOL_GPL(dm_btree_insert);
 int dm_btree_insert_notify(struct dm_btree_info *info, dm_block_t root,
 			   uint64_t *keys, void *value, dm_block_t *new_root,
 			   int *inserted)
-	__dm_written_to_disk(value)
 {
 	return insert(info, root, keys, value, new_root, inserted);
 }

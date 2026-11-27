@@ -109,8 +109,7 @@ int dm_array_empty(struct dm_array_info *info, dm_block_t *root);
  */
 int dm_array_resize(struct dm_array_info *info, dm_block_t root,
 		    uint32_t old_size, uint32_t new_size,
-		    const void *value, dm_block_t *new_root)
-	__dm_written_to_disk(value);
+		    const void *value, dm_block_t *new_root);
 
 /*
  * Creates a new array populated with values provided by a callback
@@ -156,8 +155,8 @@ int dm_array_get_value(struct dm_array_info *info, dm_block_t root,
  * info - describes the array
  * root - root block of the array
  * index - array index
- * value - value to be written to disk.  Make sure you confirm the value is
- *         in on-disk format with__dm_bless_for_disk() before calling.
+ * value - value to be written to disk.  Make sure the value is in on-disk
+ *         format before calling.
  * new_root - the new root block
  *
  * The old value being overwritten will be decremented, the new value
@@ -166,8 +165,7 @@ int dm_array_get_value(struct dm_array_info *info, dm_block_t root,
  * -ENODATA will be returned if the index is out of bounds.
  */
 int dm_array_set_value(struct dm_array_info *info, dm_block_t root,
-		       uint32_t index, const void *value, dm_block_t *new_root)
-	__dm_written_to_disk(value);
+		       uint32_t index, const void *value, dm_block_t *new_root);
 
 /*
  * Walk through all the entries in an array.

@@ -727,7 +727,6 @@ static int metadata_digest_transcribe_writeset(struct era_metadata *md,
 		if (!marked)
 			continue;
 
-		__dm_bless_for_disk(&d->value);
 		r = dm_array_set_value(&md->era_array_info, md->era_array_root,
 				       b, &d->value, &md->era_array_root);
 		if (r) {
@@ -877,7 +876,6 @@ static int metadata_resize(struct era_metadata *md, void *arg)
 	}
 
 	value = cpu_to_le32(0u);
-	__dm_bless_for_disk(&value);
 	r = dm_array_resize(&md->era_array_info, md->era_array_root,
 			    md->nr_blocks, *new_size,
 			    &value, &md->era_array_root);
@@ -908,7 +906,6 @@ static int metadata_era_archive(struct era_metadata *md)
 	ws_pack(&md->current_writeset->md, &value);
 
 	keys[0] = md->current_era;
-	__dm_bless_for_disk(&value);
 	r = dm_btree_insert(&md->writeset_tree_info, md->writeset_tree_root,
 			    keys, &value, &md->writeset_tree_root);
 	if (r) {

@@ -88,7 +88,6 @@ int dm_bitset_resize(struct dm_disk_bitset *info, dm_block_t root,
 	uint32_t new_blocks = dm_div_up(new_nr_entries, BITS_PER_ARRAY_ENTRY);
 	__le64 value = default_value ? cpu_to_le64(~0) : cpu_to_le64(0);
 
-	__dm_bless_for_disk(&value);
 	return dm_array_resize(&info->array_info, root, old_blocks, new_blocks,
 			       &value, new_root);
 }
@@ -111,7 +110,6 @@ int dm_bitset_flush(struct dm_disk_bitset *info, dm_block_t root,
 
 	value = cpu_to_le64(info->current_bits);
 
-	__dm_bless_for_disk(&value);
 	r = dm_array_set_value(&info->array_info, root, info->current_index,
 			       &value, new_root);
 	if (r)

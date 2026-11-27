@@ -867,7 +867,6 @@ static int __write_changed_details(struct dm_pool_metadata *pmd)
 		details.transaction_id = cpu_to_le64(td->transaction_id);
 		details.creation_time = cpu_to_le32(td->creation_time);
 		details.snapshotted_time = cpu_to_le32(td->snapshotted_time);
-		__dm_bless_for_disk(&details);
 
 		r = dm_btree_insert(&pmd->details_info, pmd->details_root,
 				    &key, &details, &pmd->details_root);
@@ -1131,7 +1130,6 @@ static int __create_thin(struct dm_pool_metadata *pmd,
 	 * Insert it into the main mapping tree.
 	 */
 	value = cpu_to_le64(dev_root);
-	__dm_bless_for_disk(&value);
 	r = dm_btree_insert(&pmd->tl_info, pmd->root, &key, &value, &pmd->root);
 	if (r) {
 		dm_btree_del(&pmd->bl_info, dev_root);
@@ -1208,7 +1206,6 @@ static int __create_snap(struct dm_pool_metadata *pmd,
 
 	/* insert into the main mapping tree */
 	value = cpu_to_le64(origin_root);
-	__dm_bless_for_disk(&value);
 	key = dev;
 	r = dm_btree_insert(&pmd->tl_info, pmd->root, &key, &value, &pmd->root);
 	if (r) {
@@ -1647,7 +1644,6 @@ static int __insert(struct dm_thin_device *td, dm_block_t block,
 	dm_block_t keys[2] = { td->id, block };
 
 	value = cpu_to_le64(pack_block_time(data_block, pmd->time));
-	__dm_bless_for_disk(&value);
 
 	r = dm_btree_insert_notify(&pmd->info, pmd->root, keys, &value,
 				   &pmd->root, &inserted);
@@ -1729,7 +1725,6 @@ static int __remove_range(struct dm_thin_device *td, dm_block_t begin, dm_block_
 	 * Reinsert the mapping tree.
 	 */
 	value = cpu_to_le64(mapping_root);
-	__dm_bless_for_disk(&value);
 	return dm_btree_insert(&pmd->tl_info, pmd->root, keys, &value, &pmd->root);
 }
 

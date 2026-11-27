@@ -14,23 +14,6 @@ struct dm_transaction_manager;
 /*----------------------------------------------------------------*/
 
 /*
- * Annotations used to check on-disk metadata is handled as little-endian.
- */
-#ifdef __CHECKER__
-#  define __dm_written_to_disk(x) __releases(x)
-#  define __dm_reads_from_disk(x) __acquires(x)
-#  define __dm_bless_for_disk(x) __acquire(x)
-#  define __dm_unbless_for_disk(x) __release(x)
-#else
-#  define __dm_written_to_disk(x)
-#  define __dm_reads_from_disk(x)
-#  define __dm_bless_for_disk(x)
-#  define __dm_unbless_for_disk(x)
-#endif
-
-/*----------------------------------------------------------------*/
-
-/*
  * Manipulates hierarchical B+ trees with 64-bit keys and arbitrary-sized
  * values.
  */
@@ -121,8 +104,7 @@ int dm_btree_lookup_next(struct dm_btree_info *info, dm_block_t root,
  * Insertion (or overwrite an existing value).  O(ln(n))
  */
 int dm_btree_insert(struct dm_btree_info *info, dm_block_t root,
-		    uint64_t *keys, void *value, dm_block_t *new_root)
-	__dm_written_to_disk(value);
+		    uint64_t *keys, void *value, dm_block_t *new_root);
 
 /*
  * A variant of insert that indicates whether it actually inserted or just
@@ -131,8 +113,7 @@ int dm_btree_insert(struct dm_btree_info *info, dm_block_t root,
  */
 int dm_btree_insert_notify(struct dm_btree_info *info, dm_block_t root,
 			   uint64_t *keys, void *value, dm_block_t *new_root,
-			   int *inserted)
-			   __dm_written_to_disk(value);
+			   int *inserted);
 
 /*
  * Remove a key if present.  This doesn't remove empty sub trees.  Normally

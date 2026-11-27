@@ -113,25 +113,49 @@
  * Note: The implementation defines several helper functions that can acquire
  * and release the context lock.
  */
+# ifdef __CHECKER__
+#  define __ctx_lock_fn(fn)		__##fn
+#  define __ctx_lock_ptr(var) \
+	((__typeof_unqual__(*(var)) __attribute__((force)) *)(var))
+#  define __acquire_ctx_lock(var) \
+	____acquire_ctx_lock(__ctx_lock_ptr(var))
+#  define __acquire_shared_ctx_lock(var) \
+	____acquire_shared_ctx_lock(__ctx_lock_ptr(var))
+#  define __try_acquire_ctx_lock(var, ret) \
+	____try_acquire_ctx_lock(__ctx_lock_ptr(var), ret)
+#  define __try_acquire_shared_ctx_lock(var, ret) \
+	____try_acquire_shared_ctx_lock(__ctx_lock_ptr(var), ret)
+#  define __release_ctx_lock(var) \
+	____release_ctx_lock(__ctx_lock_ptr(var))
+#  define __release_shared_ctx_lock(var) \
+	____release_shared_ctx_lock(__ctx_lock_ptr(var))
+#  define __assume_ctx_lock(var) \
+	____assume_ctx_lock(__ctx_lock_ptr(var))
+#  define __assume_shared_ctx_lock(var) \
+	____assume_shared_ctx_lock(__ctx_lock_ptr(var))
+# else
+#  define __ctx_lock_fn(fn)		fn
+# endif
+
 # define context_lock_struct(name, ...)									\
 	struct __ctx_lock_type(name) __VA_ARGS__ name;							\
-	static __always_inline void __acquire_ctx_lock(const struct name *var)				\
+	static __always_inline void __ctx_lock_fn(__acquire_ctx_lock)(const struct name *var)		\
 		__attribute__((overloadable)) __no_context_analysis __acquires_ctx_lock(var) { }	\
-	static __always_inline void __acquire_shared_ctx_lock(const struct name *var)			\
+	static __always_inline void __ctx_lock_fn(__acquire_shared_ctx_lock)(const struct name *var)	\
 		__attribute__((overloadable)) __no_context_analysis __acquires_shared_ctx_lock(var) { } \
-	static __always_inline bool __try_acquire_ctx_lock(const struct name *var, bool ret)		\
+	static __always_inline bool __ctx_lock_fn(__try_acquire_ctx_lock)(const struct name *var, bool ret) \
 		__attribute__((overloadable)) __no_context_analysis __try_acquires_ctx_lock(1, var)	\
 	{ return ret; }											\
-	static __always_inline bool __try_acquire_shared_ctx_lock(const struct name *var, bool ret)	\
+	static __always_inline bool __ctx_lock_fn(__try_acquire_shared_ctx_lock)(const struct name *var, bool ret) \
 		__attribute__((overloadable)) __no_context_analysis __try_acquires_shared_ctx_lock(1, var) \
 	{ return ret; }											\
-	static __always_inline void __release_ctx_lock(const struct name *var)				\
+	static __always_inline void __ctx_lock_fn(__release_ctx_lock)(const struct name *var)		\
 		__attribute__((overloadable)) __no_context_analysis __releases_ctx_lock(var) { }	\
-	static __always_inline void __release_shared_ctx_lock(const struct name *var)			\
+	static __always_inline void __ctx_lock_fn(__release_shared_ctx_lock)(const struct name *var)	\
 		__attribute__((overloadable)) __no_context_analysis __releases_shared_ctx_lock(var) { } \
-	static __always_inline void __assume_ctx_lock(const struct name *var)				\
+	static __always_inline void __ctx_lock_fn(__assume_ctx_lock)(const struct name *var)		\
 		__attribute__((overloadable)) __assumes_ctx_lock(var) { }				\
-	static __always_inline void __assume_shared_ctx_lock(const struct name *var)			\
+	static __always_inline void __ctx_lock_fn(__assume_shared_ctx_lock)(const struct name *var)	\
 		__attribute__((overloadable)) __assumes_shared_ctx_lock(var) { }			\
 	struct name
 

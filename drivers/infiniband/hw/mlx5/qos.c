@@ -23,6 +23,7 @@ static bool pp_is_supported(struct ib_device *device)
 
 static int UVERBS_HANDLER(MLX5_IB_METHOD_PP_OBJ_ALLOC)(
 	struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	u8 rl_raw[MLX5_ST_SZ_BYTES(set_pp_rate_limit_context)] = {};
 	struct ib_uobject *uobj = uverbs_attr_get_uobject(attrs,

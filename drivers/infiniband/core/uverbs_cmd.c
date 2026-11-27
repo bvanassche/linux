@@ -367,6 +367,7 @@ static void copy_query_dev_fields(struct ib_ucontext *ucontext,
 }
 
 static int ib_uverbs_query_device(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_query_device      cmd;
 	struct ib_uverbs_query_device_resp resp;
@@ -388,6 +389,7 @@ static int ib_uverbs_query_device(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_query_port(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_query_port      cmd;
 	struct ib_uverbs_query_port_resp resp;
@@ -3583,6 +3585,7 @@ static int ib_uverbs_destroy_srq(struct uverbs_attr_bundle *attrs)
 }
 
 static int ib_uverbs_ex_query_device(struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_ex_query_device_resp resp = {};
 	struct ib_uverbs_ex_query_device  cmd;

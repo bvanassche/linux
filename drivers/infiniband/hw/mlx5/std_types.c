@@ -152,6 +152,7 @@ static int fill_switchdev_info(struct mlx5_ib_dev *dev, u32 port_num,
 
 static int UVERBS_HANDLER(MLX5_IB_METHOD_QUERY_PORT)(
 	struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct mlx5_ib_uapi_query_port info = {};
 	struct mlx5_ib_ucontext *c;
@@ -187,6 +188,7 @@ static int UVERBS_HANDLER(MLX5_IB_METHOD_QUERY_PORT)(
 
 static int UVERBS_HANDLER(MLX5_IB_METHOD_GET_DATA_DIRECT_SYSFS_PATH)(
 	struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct mlx5_data_direct_dev *data_direct_dev;
 	struct mlx5_ib_ucontext *c;

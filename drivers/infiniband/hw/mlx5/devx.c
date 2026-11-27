@@ -119,6 +119,7 @@ struct devx_umem_reg_cmd {
 
 static struct mlx5_ib_ucontext *
 devx_ufile2uctx(const struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	return to_mucontext(ib_uverbs_get_ucontext(attrs));
 }
@@ -1029,6 +1030,7 @@ static bool devx_is_general_cmd(void *in, struct mlx5_ib_dev *dev)
 
 static int UVERBS_HANDLER(MLX5_IB_METHOD_DEVX_QUERY_EQN)(
 	struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct mlx5_ib_ucontext *c;
 	struct mlx5_ib_dev *dev;
@@ -1078,6 +1080,7 @@ static int UVERBS_HANDLER(MLX5_IB_METHOD_DEVX_QUERY_EQN)(
  */
 static int UVERBS_HANDLER(MLX5_IB_METHOD_DEVX_QUERY_UAR)(
 	struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct mlx5_ib_ucontext *c;
 	struct mlx5_ib_dev *dev;
@@ -1106,6 +1109,7 @@ static int UVERBS_HANDLER(MLX5_IB_METHOD_DEVX_QUERY_UAR)(
 
 static int UVERBS_HANDLER(MLX5_IB_METHOD_DEVX_OTHER)(
 	struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct mlx5_ib_ucontext *c;
 	struct mlx5_ib_dev *dev;

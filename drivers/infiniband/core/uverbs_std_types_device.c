@@ -175,6 +175,7 @@ void copy_port_attr_to_resp(struct ib_port_attr *attr,
 
 static int UVERBS_HANDLER(UVERBS_METHOD_QUERY_PORT)(
 	struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_device *ib_dev;
 	struct ib_port_attr attr = {};
@@ -211,6 +212,7 @@ static int UVERBS_HANDLER(UVERBS_METHOD_QUERY_PORT)(
 
 static int UVERBS_HANDLER(UVERBS_METHOD_QUERY_PORT_SPEED)(
 	struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_ucontext *ucontext;
 	struct ib_device *ib_dev;
@@ -283,6 +285,7 @@ UVERBS_HANDLER(UVERBS_METHOD_GET_CONTEXT)(struct uverbs_attr_bundle *attrs)
 
 static int UVERBS_HANDLER(UVERBS_METHOD_QUERY_CONTEXT)(
 	struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	u64 core_support = IB_UVERBS_CORE_SUPPORT_OPTIONAL_MR_ACCESS;
 	struct ib_ucontext *ucontext;
@@ -355,6 +358,7 @@ static int copy_gid_entries_to_user(struct uverbs_attr_bundle *attrs,
 
 static int UVERBS_HANDLER(UVERBS_METHOD_QUERY_GID_TABLE)(
 	struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_gid_entry *entries;
 	struct ib_ucontext *ucontext;
@@ -410,6 +414,7 @@ static int UVERBS_HANDLER(UVERBS_METHOD_QUERY_GID_TABLE)(
 
 static int UVERBS_HANDLER(UVERBS_METHOD_QUERY_GID_ENTRY)(
 	struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_uverbs_gid_entry entry = {};
 	const struct ib_gid_attr *gid_attr;
@@ -476,6 +481,7 @@ out:
 
 static int UVERBS_HANDLER(UVERBS_METHOD_QUERY_COMP_CNTR_CAPS)(
 	struct uverbs_attr_bundle *attrs)
+	__must_hold_shared(&attrs->ufile->device->disassociate_srcu)
 {
 	struct ib_comp_cntr_caps caps = {};
 	struct ib_ucontext *ucontext;

@@ -15,21 +15,18 @@
 #include "posix-timers.h"
 
 /*
- * Returns NULL if the posix_clock instance attached to 'fp' is old and stale.
+ * Returns false if @clk is old and stale.
  */
-static struct posix_clock *get_posix_clock(struct file *fp)
+static bool get_posix_clock(struct posix_clock *clk)
 {
-	struct posix_clock_context *pccontext = fp->private_data;
-	struct posix_clock *clk = pccontext->clk;
-
 	down_read(&clk->rwsem);
 
 	if (!clk->zombie)
-		return clk;
+		return true;
 
 	up_read(&clk->rwsem);
 
-	return NULL;
+	return false;
 }
 
 static void put_posix_clock(struct posix_clock *clk)
@@ -41,10 +38,10 @@ static ssize_t posix_clock_read(struct file *fp, char __user *buf,
 				size_t count, loff_t *ppos)
 {
 	struct posix_clock_context *pccontext = fp->private_data;
-	struct posix_clock *clk = get_posix_clock(fp);
+	struct posix_clock *clk = pccontext->clk;
 	int err = -EINVAL;
 
-	if (!clk)
+	if (!get_posix_clock(clk))
 		return -ENODEV;
 
 	if (clk->ops.read)
@@ -58,10 +55,10 @@ static ssize_t posix_clock_read(struct file *fp, char __user *buf,
 static __poll_t posix_clock_poll(struct file *fp, poll_table *wait)
 {
 	struct posix_clock_context *pccontext = fp->private_data;
-	struct posix_clock *clk = get_posix_clock(fp);
+	struct posix_clock *clk = pccontext->clk;
 	__poll_t result = 0;
 
-	if (!clk)
+	if (!get_posix_clock(clk))
 		return EPOLLERR;
 
 	if (clk->ops.poll)
@@ -76,10 +73,10 @@ static long posix_clock_ioctl(struct file *fp,
 			      unsigned int cmd, unsigned long arg)
 {
 	struct posix_clock_context *pccontext = fp->private_data;
-	struct posix_clock *clk = get_posix_clock(fp);
+	struct posix_clock *clk = pccontext->clk;
 	int err = -ENOTTY;
 
-	if (!clk)
+	if (!get_posix_clock(clk))
 		return -ENODEV;
 
 	if (clk->ops.ioctl)
@@ -196,6 +193,7 @@ struct posix_clock_desc {
 
 static int get_clock_desc(const clockid_t id, struct posix_clock_desc *cd)
 {
+	struct posix_clock_context *pccontext;
 	struct file *fp = fget(clockid_to_fd(id));
 	int err = -EINVAL;
 
@@ -205,13 +203,15 @@ static int get_clock_desc(const clockid_t id, struct posix_clock_desc *cd)
 	if (fp->f_op->open != posix_clock_open || !fp->private_data)
 		goto out;
 
+	pccontext = fp->private_data;
 	cd->fp = fp;
-	cd->clk = get_posix_clock(fp);
+	cd->clk = pccontext->clk;
+	if (get_posix_clock(cd->clk))
+		return 0;
 
-	err = cd->clk ? 0 : -ENODEV;
+	err = -ENODEV;
 out:
-	if (err)
-		fput(fp);
+	fput(fp);
 	return err;
 }
 

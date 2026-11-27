@@ -18,6 +18,7 @@
  * Returns false if @clk is old and stale.
  */
 static bool get_posix_clock(struct posix_clock *clk)
+	__cond_acquires_shared(true, &clk->rwsem)
 {
 	down_read(&clk->rwsem);
 
@@ -30,6 +31,7 @@ static bool get_posix_clock(struct posix_clock *clk)
 }
 
 static void put_posix_clock(struct posix_clock *clk)
+	__releases_shared(&clk->rwsem)
 {
 	up_read(&clk->rwsem);
 }
@@ -192,6 +194,7 @@ struct posix_clock_desc {
 };
 
 static int get_clock_desc(const clockid_t id, struct posix_clock_desc *cd)
+	__cond_acquires_shared(0, &cd->clk->rwsem)
 {
 	struct posix_clock_context *pccontext;
 	struct file *fp = fget(clockid_to_fd(id));
@@ -216,6 +219,7 @@ out:
 }
 
 static void put_clock_desc(struct posix_clock_desc *cd)
+	__releases_shared(&cd->clk->rwsem)
 {
 	put_posix_clock(cd->clk);
 	fput(cd->fp);

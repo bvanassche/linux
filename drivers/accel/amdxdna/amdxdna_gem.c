@@ -521,7 +521,7 @@ static int amdxdna_insert_pages(struct amdxdna_gem_obj *abo,
 		XDNA_ERR(xdna, "Failed to insert pages %d", ret);
 		/* dma_resv_lock() cannot fail if the second argument is NULL. */
 		if (dma_resv_lock(to_gobj(abo)->resv, NULL))
-			unreachable();
+			BUG();
 		drm_gem_shmem_put_pages_locked(&abo->base);
 		dma_resv_unlock(to_gobj(abo)->resv);
 		return ret;
@@ -622,7 +622,7 @@ static void amdxdna_gem_mixedmap_vm_open(struct vm_area_struct *vma)
 	 */
 	/* dma_resv_lock() cannot fail if the second argument is NULL. */
 	if (dma_resv_lock(gobj->resv, NULL))
-		unreachable();
+		BUG();
 	drm_WARN_ON_ONCE(gobj->dev, !refcount_inc_not_zero(&shmem->pages_use_count));
 	dma_resv_unlock(gobj->resv);
 
@@ -636,7 +636,7 @@ static void amdxdna_gem_mixedmap_vm_close(struct vm_area_struct *vma)
 
 	/* dma_resv_lock() cannot fail if the second argument is NULL. */
 	if (dma_resv_lock(gobj->resv, NULL))
-		unreachable();
+		BUG();
 	drm_gem_shmem_put_pages_locked(shmem);
 	dma_resv_unlock(gobj->resv);
 

@@ -329,7 +329,7 @@ msm_gem_lock(struct drm_gem_object *obj)
 	__acquires(&obj->resv->lock.base)
 {
 	if (dma_resv_lock(obj->resv, NULL))
-		unreachable();
+		BUG();
 }
 
 static inline bool __must_check

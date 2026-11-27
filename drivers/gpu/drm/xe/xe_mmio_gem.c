@@ -260,7 +260,7 @@ static vm_fault_t xe_mmio_gem_vm_fault(struct vm_fault *vmf)
 	vm_fault_t ret;
 
 	if (dma_resv_lock(base->resv, NULL))
-		unreachable();
+		BUG();
 	ret = xe_mmio_gem_vm_fault_locked(vmf);
 	dma_resv_unlock(base->resv);
 	return ret;

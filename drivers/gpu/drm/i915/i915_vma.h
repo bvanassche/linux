@@ -279,7 +279,7 @@ static inline void i915_vma_lock(struct i915_vma *vma)
 	__context_unsafe(/* conditional locking */)
 {
 	if (dma_resv_lock(vma->obj->base.resv, NULL))
-		unreachable();
+		BUG();
 }
 
 static inline void i915_vma_unlock(struct i915_vma *vma)

@@ -852,7 +852,7 @@ static int pagefault_dmabuf_mr(struct mlx5_ib_mr *mr, size_t bcnt,
 		xlt_flags |= MLX5_IB_UPD_XLT_ENABLE;
 
 	if (dma_resv_lock(umem_dmabuf->attach->dmabuf->resv, NULL))
-		unreachable();
+		BUG();
 	err = ib_umem_dmabuf_map_pages(umem_dmabuf);
 	if (err) {
 		dma_resv_unlock(umem_dmabuf->attach->dmabuf->resv);

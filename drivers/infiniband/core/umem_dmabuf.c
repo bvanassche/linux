@@ -336,7 +336,7 @@ void ib_umem_dmabuf_revoke_lock(struct ib_umem_dmabuf *umem_dmabuf)
 	struct dma_buf *dmabuf = umem_dmabuf->attach->dmabuf;
 
 	if (dma_resv_lock(dmabuf->resv, NULL))
-		unreachable();
+		BUG();
 }
 EXPORT_SYMBOL(ib_umem_dmabuf_revoke_lock);
 

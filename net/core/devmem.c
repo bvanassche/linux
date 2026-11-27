@@ -76,7 +76,7 @@ void __net_devmem_dmabuf_binding_free(struct work_struct *wq)
 	kvfree(binding->area.niovs);
 	/* dma_resv_lock() cannot fail if the second argument is NULL. */
 	if (dma_resv_lock(binding->dmabuf->resv, NULL))
-		unreachable();
+		BUG();
 	dma_buf_unmap_attachment(binding->attachment, binding->sgt,
 				 binding->direction);
 	dma_buf_unpin(binding->attachment);
@@ -361,7 +361,7 @@ err_free_freelist:
 err_unmap:
 	/* dma_resv_lock() cannot fail if the second argument is NULL. */
 	if (dma_resv_lock(dmabuf->resv, NULL))
-		unreachable();
+		BUG();
 	dma_buf_unmap_attachment(binding->attachment, binding->sgt, direction);
 err_unpin:
 	dma_buf_unpin(binding->attachment);

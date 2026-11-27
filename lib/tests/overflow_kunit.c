@@ -28,7 +28,7 @@
  * Clang 11 and earlier generate unwanted libcalls for signed output
  * on unsigned input.
  */
-#if defined(CONFIG_CC_IS_CLANG) && __clang_major__ <= 11
+#if defined(CONFIG_CC_IS_CLANG) && CONFIG_CLANG_VERSION < 120000
 # define SKIP_SIGN_MISMATCH(t)	SKIP(t, "Clang 11 unwanted libcalls")
 #else
 # define SKIP_SIGN_MISMATCH(t)	do { } while (0)
@@ -38,7 +38,7 @@
  * Clang 13 and earlier generate unwanted libcalls for 64-bit tests on
  * 32-bit hosts.
  */
-#if defined(CONFIG_CC_IS_CLANG) && __clang_major__ <= 13 &&	\
+#if defined(CONFIG_CC_IS_CLANG) && CONFIG_CLANG_VERSION < 140000 &&	\
     BITS_PER_LONG != 64
 # define SKIP_64_ON_32(t)	SKIP(t, "Clang 13 unwanted libcalls")
 #else
